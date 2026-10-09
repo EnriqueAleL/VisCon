@@ -1,0 +1,241 @@
+{
+  "lecture": 16,
+  "title": "Lecture 16",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "16.1",
+      "start": 0.614,
+      "end": 171.294,
+      "title": "Announcements and roadmap for execution paradigms"
+    },
+    {
+      "id": "16.2",
+      "start": 171.294,
+      "end": 326.694,
+      "title": "Recap of superscalar execution and hardware dependence checking"
+    },
+    {
+      "id": "16.3",
+      "start": 326.694,
+      "end": 397.294,
+      "title": "Compiler reordering to improve superscalar IPC"
+    },
+    {
+      "id": "16.4",
+      "start": 397.294,
+      "end": 515.654,
+      "title": "Definition of VLIW as compiler-packed instruction bundles"
+    },
+    {
+      "id": "16.5",
+      "start": 515.654,
+      "end": 563.534,
+      "title": "Q&A on malicious compilers and VLIW security assumptions"
+    },
+    {
+      "id": "16.6",
+      "start": 563.534,
+      "end": 656.814,
+      "title": "VLIW program counter, operation slots, and direct routing to functional units"
+    },
+    {
+      "id": "16.7",
+      "start": 656.814,
+      "end": 840.854,
+      "title": "Traditional VLIW characteristics: independent operations and lockstep bundles"
+    },
+    {
+      "id": "16.8",
+      "start": 840.854,
+      "end": 938.454,
+      "title": "Example of two-wide VLIW execution and no-op insertion"
+    },
+    {
+      "id": "16.9",
+      "start": 938.454,
+      "end": 1099.454,
+      "title": "Lockstep execution and the problem of variable-latency memory operations"
+    },
+    {
+      "id": "16.10",
+      "start": 1099.454,
+      "end": 1309.774,
+      "title": "Historical philosophy of VLIW and RISC: smart compiler, dumb machine"
+    },
+    {
+      "id": "16.11",
+      "start": 1309.774,
+      "end": 1467.134,
+      "title": "Commercial VLIW machines and domains where VLIW succeeded"
+    },
+    {
+      "id": "16.12",
+      "start": 1467.134,
+      "end": 1734.654,
+      "title": "Case study: Intel IA-64 Itanium and EPIC as VLIW-inspired ISA design"
+    },
+    {
+      "id": "16.13",
+      "start": 1734.654,
+      "end": 1876.254,
+      "title": "VLIW trade-offs: simple hardware versus compiler complexity and compatibility"
+    },
+    {
+      "id": "16.14",
+      "start": 1876.254,
+      "end": 2012.974,
+      "title": "VLIW legacy in optimizing compilers and superscalar performance"
+    },
+    {
+      "id": "16.15",
+      "start": 2012.974,
+      "end": 2240.534,
+      "title": "Trace scheduling for hot paths across basic blocks"
+    },
+    {
+      "id": "16.16",
+      "start": 2240.534,
+      "end": 2443.896,
+      "title": "Superblocks and tail duplication to eliminate side entrances"
+    },
+    {
+      "id": "16.17",
+      "start": 2443.896,
+      "end": 2651.934,
+      "title": "Example: superblock optimization enables strength reduction"
+    },
+    {
+      "id": "16.18",
+      "start": 2651.934,
+      "end": 2700.71,
+      "title": "Predicate execution and advanced VLIW compiler issues"
+    },
+    {
+      "id": "16.19",
+      "start": 2700.71,
+      "end": 2829.774,
+      "title": "ISA translation and Transmeta Crusoe’s x86-to-VLIW code morphing"
+    },
+    {
+      "id": "16.20",
+      "start": 2829.774,
+      "end": 2877.814,
+      "title": "Dynamic code optimization as hardware–software co-design"
+    },
+    {
+      "id": "16.21",
+      "start": 2877.814,
+      "end": 2903.418,
+      "title": "Break before systolic arrays"
+    },
+    {
+      "id": "16.22",
+      "start": 2903.418,
+      "end": 3147.727,
+      "title": "Administrative note: research opportunities and architecture courses"
+    },
+    {
+      "id": "16.23",
+      "start": 3147.727,
+      "end": 3219.128,
+      "title": "Motivation and modern relevance of systolic arrays"
+    },
+    {
+      "id": "16.24",
+      "start": 3219.128,
+      "end": 3405.848,
+      "title": "Definition of systolic computation as a special-purpose execution model"
+    },
+    {
+      "id": "16.25",
+      "start": 3405.848,
+      "end": 3474.568,
+      "title": "Systolic array motivation: balancing computation with I/O bandwidth"
+    },
+    {
+      "id": "16.26",
+      "start": 3474.568,
+      "end": 3636.368,
+      "title": "Linear systolic array analogy: memory as heart and data as blood"
+    },
+    {
+      "id": "16.27",
+      "start": 3636.368,
+      "end": 3775.128,
+      "title": "Why systolic arrays are more general than simple pipelines"
+    },
+    {
+      "id": "16.28",
+      "start": 3775.128,
+      "end": 3928.568,
+      "title": "Convolution as a target computation for systolic acceleration"
+    },
+    {
+      "id": "16.29",
+      "start": 3928.568,
+      "end": 4251.568,
+      "title": "Expressing convolution as matrix multiplication and the AlexNet GPU story"
+    },
+    {
+      "id": "16.30",
+      "start": 4251.568,
+      "end": 4524.768,
+      "title": "One-dimensional systolic hardware for convolution"
+    },
+    {
+      "id": "16.31",
+      "start": 4524.768,
+      "end": 4616.088,
+      "title": "Design issues in specialized systolic convolution arrays"
+    },
+    {
+      "id": "16.32",
+      "start": 4616.088,
+      "end": 4864.968,
+      "title": "Two-dimensional systolic array for matrix multiplication"
+    },
+    {
+      "id": "16.33",
+      "start": 4864.968,
+      "end": 4938.618,
+      "title": "Other systolic arrays and specialized numerical computations"
+    },
+    {
+      "id": "16.34",
+      "start": 4938.618,
+      "end": 5010.488,
+      "title": "Advantages and disadvantages of systolic arrays"
+    },
+    {
+      "id": "16.35",
+      "start": 5010.488,
+      "end": 5244.688,
+      "title": "Generalizing systolic computation into stream and pipeline parallelism"
+    },
+    {
+      "id": "16.36",
+      "start": 5244.688,
+      "end": 5331.393,
+      "title": "History: H. T. Kung’s Warp computer at Carnegie Mellon"
+    },
+    {
+      "id": "16.37",
+      "start": 5331.393,
+      "end": 5426.288,
+      "title": "Google TPU systolic matrix multiplication unit"
+    },
+    {
+      "id": "16.38",
+      "start": 5426.288,
+      "end": 5520.368,
+      "title": "Scaling TPUs with high-bandwidth memory, interconnects, and VLIW sequencing"
+    },
+    {
+      "id": "16.39",
+      "start": 5520.368,
+      "end": 5653.808,
+      "title": "Memory bottlenecks in systolic accelerators and closing comparison to other ML hardware"
+    }
+  ]
+}

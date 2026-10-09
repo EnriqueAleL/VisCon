@@ -1,0 +1,121 @@
+{
+  "lecture": 7,
+  "title": "Lecture 7",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "7.1",
+      "start": 0.921,
+      "end": 371.321,
+      "title": "Announcements and recap: timing analysis and design principles"
+    },
+    {
+      "id": "7.2",
+      "start": 371.321,
+      "end": 938.921,
+      "title": "Motivation for verification, testing, and robust systems"
+    },
+    {
+      "id": "7.3",
+      "start": 938.921,
+      "end": 1125.281,
+      "title": "Course transition from digital design to ISA and microarchitecture"
+    },
+    {
+      "id": "7.4",
+      "start": 1125.281,
+      "end": 1334.521,
+      "title": "Definition of a computer, program, instruction, and instruction set"
+    },
+    {
+      "id": "7.5",
+      "start": 1334.521,
+      "end": 1472.161,
+      "title": "Definition of the von Neumann execution model"
+    },
+    {
+      "id": "7.6",
+      "start": 1472.161,
+      "end": 1883.881,
+      "title": "Memory organization: address space, addressability, bytes, and words"
+    },
+    {
+      "id": "7.7",
+      "start": 1883.881,
+      "end": 2155.441,
+      "title": "Endianness in byte-addressable memory"
+    },
+    {
+      "id": "7.8",
+      "start": 2155.441,
+      "end": 2320.481,
+      "title": "Memory reads and writes using MAR and MDR"
+    },
+    {
+      "id": "7.9",
+      "start": 2320.481,
+      "end": 2488.761,
+      "title": "Processing unit and ALU operations specified by the ISA"
+    },
+    {
+      "id": "7.10",
+      "start": 2488.761,
+      "end": 2857.001,
+      "title": "Registers and the register file as fast temporary storage"
+    },
+    {
+      "id": "7.11",
+      "start": 2857.001,
+      "end": 2924.961,
+      "title": "Input, output, and memory-mapped I/O"
+    },
+    {
+      "id": "7.12",
+      "start": 2924.961,
+      "end": 2947.881,
+      "title": "Break"
+    },
+    {
+      "id": "7.13",
+      "start": 2947.881,
+      "end": 3267.151,
+      "title": "Control unit, instruction register, and program counter"
+    },
+    {
+      "id": "7.14",
+      "start": 3267.151,
+      "end": 3654.711,
+      "title": "Stored program and sequential instruction processing"
+    },
+    {
+      "id": "7.15",
+      "start": 3654.711,
+      "end": 4023.271,
+      "title": "Instruction storage, fetching, sample program, and instruction formats"
+    },
+    {
+      "id": "7.16",
+      "start": 4023.271,
+      "end": 4438.711,
+      "title": "Operate instructions: ADD and AND in LC-3 and MIPS"
+    },
+    {
+      "id": "7.17",
+      "start": 4438.711,
+      "end": 4785.311,
+      "title": "Memory operations: load word and base-plus-offset addressing"
+    },
+    {
+      "id": "7.18",
+      "start": 4785.311,
+      "end": 5449.991,
+      "title": "Instruction processing cycle: fetch, decode, address, execute, and store result"
+    },
+    {
+      "id": "7.19",
+      "start": 5449.991,
+      "end": 5572.751,
+      "title": "Control-flow instructions: jump and changing the PC"
+    }
+  ]
+}

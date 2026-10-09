@@ -1,0 +1,81 @@
+WEBVTT
+
+10.1
+00:00:04.441 --> 00:01:49.641
+Announcements and agenda: from single-cycle to multicycle and pipelined processors
+
+10.2
+00:01:49.641 --> 00:05:36.041
+Review of single-cycle performance and slow memory
+
+10.3
+00:05:36.041 --> 00:10:27.686
+Problems with single-cycle design and violated microarchitecture principles
+
+10.4
+00:10:27.686 --> 00:14:08.081
+System design principles: simplicity and low cost
+
+10.5
+00:14:08.081 --> 00:17:12.161
+Definition and motivation of multicycle microarchitecture
+
+10.6
+00:17:12.161 --> 00:21:26.841
+Benefits and costs of multicycle design
+
+10.7
+00:21:26.841 --> 00:23:45.841
+Finite-state-machine control for multicycle processors
+
+10.8
+00:23:45.841 --> 00:25:17.801
+Design goals for the multicycle MIPS datapath
+
+10.9
+00:25:17.801 --> 00:31:25.081
+Datapath for load word in a multicycle processor
+
+10.10
+00:31:25.081 --> 00:41:30.456
+Extending the multicycle datapath for PC update, store, R-type, and branch
+
+10.11
+00:41:30.456 --> 00:44:59.078
+Q&A and break: branch target calculation and branch timing
+
+10.12
+00:44:59.078 --> 00:50:37.918
+Control-unit FSM for fetch and decode states
+
+10.13
+00:50:37.918 --> 00:59:41.638
+Control FSM states for load, store, R-type, branch, add immediate, and jump
+
+10.14
+00:59:41.638 --> 01:03:40.421
+Handling variable-latency memory in a multicycle FSM
+
+10.15
+01:03:40.421 --> 01:06:02.581
+Introduction to microprogrammed multicycle control
+
+10.16
+01:06:02.581 --> 01:12:05.861
+Microprogram control terminology and controller-store organization
+
+10.17
+01:12:05.861 --> 01:15:09.141
+Microprogramming as an abstraction layer and ISA translator
+
+10.18
+01:15:09.141 --> 01:22:13.850
+Advantages, patching, and tradeoffs of microprogrammed control
+
+10.19
+01:22:13.850 --> 01:24:36.770
+Motivation for pipelining: limited concurrency in multicycle processors
+
+10.20
+01:24:36.770 --> 01:29:11.410
+Basic pipeline execution and throughput improvement

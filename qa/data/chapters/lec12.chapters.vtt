@@ -1,0 +1,85 @@
+WEBVTT
+
+12.1
+00:00:02.046 --> 00:02:55.286
+Announcements and lecture roadmap: precise exceptions, interrupts, and pipelining
+
+12.2
+00:02:55.286 --> 00:09:02.126
+Problem: variable-latency functional units violate sequential semantics
+
+12.3
+00:09:02.126 --> 00:13:42.566
+Exception example: divide by zero, breakpoints, and the need for precise state
+
+12.4
+00:13:42.566 --> 00:18:14.726
+Definitions and examples of exceptions versus interrupts
+
+12.5
+00:18:14.726 --> 00:21:20.406
+When and how exceptions and interrupts are handled
+
+12.6
+00:21:20.406 --> 00:23:22.966
+Definition of precise exceptions and precise interrupts
+
+12.7
+00:23:22.966 --> 00:26:20.406
+Pipeline control actions for servicing an exception
+
+12.8
+00:26:20.406 --> 00:33:57.926
+Why precise exceptions matter: ISA contract, debugging, restart, and traps
+
+12.9
+00:33:57.926 --> 00:38:02.805
+Supporting precise exceptions in single-cycle and multi-cycle machines
+
+12.10
+00:38:02.805 --> 00:42:51.446
+MIPS exception datapath: EPC, Cause register, and MFC0
+
+12.11
+00:42:51.446 --> 00:45:33.366
+Variable-latency pipelines require hardware beyond simple multi-cycle exception states
+
+12.12
+00:45:33.366 --> 00:49:30.446
+Concept of the reorder buffer for in-order retirement
+
+12.13
+00:49:30.446 --> 00:49:52.840
+Break announcement
+
+12.14
+00:49:52.840 --> 00:55:34.180
+Reorder buffer entry fields and retirement finite-state machine
+
+12.15
+00:55:34.180 --> 00:57:56.700
+Challenge: reading source operands whose newest values are still in the reorder buffer
+
+12.16
+00:57:56.700 --> 01:00:57.660
+Content-addressable lookup in the reorder buffer
+
+12.17
+01:00:57.660 --> 01:16:26.900
+Worked example: ROB search with invalid register-file entries
+
+12.18
+01:16:26.900 --> 01:19:59.740
+Indirection with ROB tags to avoid content-addressable register-value lookup
+
+12.19
+01:19:59.740 --> 01:26:47.460
+Worked example: register renaming using ROB tags
+
+12.20
+01:26:47.460 --> 01:31:17.060
+Real processors and elimination of false dependences
+
+12.21
+01:31:17.060 --> 01:34:16.500
+Summary of in-order pipeline with ROB, tradeoffs, readings, and closing

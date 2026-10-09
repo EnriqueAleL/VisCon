@@ -1,0 +1,115 @@
+{
+  "lecture": 20,
+  "title": "Lecture 20",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "20.1",
+      "start": 2.34,
+      "end": 52.1,
+      "title": "Opening announcements and lecture plan for memory hierarchy"
+    },
+    {
+      "id": "20.2",
+      "start": 52.1,
+      "end": 465.3,
+      "title": "Review of ideal memory, memory arrays, SRAM, and DRAM organization"
+    },
+    {
+      "id": "20.3",
+      "start": 465.3,
+      "end": 674.38,
+      "title": "Comparison of DRAM and SRAM tradeoffs"
+    },
+    {
+      "id": "20.4",
+      "start": 674.38,
+      "end": 1019.62,
+      "title": "Introduction to phase-change memory and Intel Optane"
+    },
+    {
+      "id": "20.5",
+      "start": 1019.62,
+      "end": 1545.02,
+      "title": "DRAM versus PCM and charge versus resistive memory"
+    },
+    {
+      "id": "20.6",
+      "start": 1545.02,
+      "end": 1812.38,
+      "title": "Why emerging memory technologies and processing-in-memory matter"
+    },
+    {
+      "id": "20.7",
+      "start": 1812.38,
+      "end": 2281.94,
+      "title": "Motivation for memory hierarchy and quantitative device tradeoffs"
+    },
+    {
+      "id": "20.8",
+      "start": 2281.94,
+      "end": 2479.66,
+      "title": "Definition of hierarchical memory levels and cache capacities"
+    },
+    {
+      "id": "20.9",
+      "start": 2479.66,
+      "end": 2713.34,
+      "title": "Principle of temporal and spatial locality in programs"
+    },
+    {
+      "id": "20.10",
+      "start": 2713.34,
+      "end": 2734.278,
+      "title": "Break and return from break"
+    },
+    {
+      "id": "20.11",
+      "start": 2734.278,
+      "end": 3026.851,
+      "title": "How caches exploit temporal and spatial locality"
+    },
+    {
+      "id": "20.12",
+      "start": 3026.851,
+      "end": 3359.251,
+      "title": "Pipeline integration and manual versus automatic cache management"
+    },
+    {
+      "id": "20.13",
+      "start": 3359.251,
+      "end": 3669.156,
+      "title": "Historical perspective on memory and modern hierarchy management"
+    },
+    {
+      "id": "20.14",
+      "start": 3669.156,
+      "end": 4319.854,
+      "title": "Derivation of cache hierarchy access-time equations and AMAT example"
+    },
+    {
+      "id": "20.15",
+      "start": 4319.854,
+      "end": 4787.334,
+      "title": "Cache abstraction, blocks, tag store, and design decisions"
+    },
+    {
+      "id": "20.16",
+      "start": 4787.334,
+      "end": 5147.734,
+      "title": "Direct-mapped cache organization and address decomposition"
+    },
+    {
+      "id": "20.17",
+      "start": 5147.734,
+      "end": 5402.054,
+      "title": "Set-associative and fully associative caches"
+    },
+    {
+      "id": "20.18",
+      "start": 5402.054,
+      "end": 5405.134,
+      "title": "Closing and next lecture preview"
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+WEBVTT
+
+16.1
+00:00:00.614 --> 00:02:51.294
+Announcements and roadmap for execution paradigms
+
+16.2
+00:02:51.294 --> 00:05:26.694
+Recap of superscalar execution and hardware dependence checking
+
+16.3
+00:05:26.694 --> 00:06:37.294
+Compiler reordering to improve superscalar IPC
+
+16.4
+00:06:37.294 --> 00:08:35.654
+Definition of VLIW as compiler-packed instruction bundles
+
+16.5
+00:08:35.654 --> 00:09:23.534
+Q&A on malicious compilers and VLIW security assumptions
+
+16.6
+00:09:23.534 --> 00:10:56.814
+VLIW program counter, operation slots, and direct routing to functional units
+
+16.7
+00:10:56.814 --> 00:14:00.854
+Traditional VLIW characteristics: independent operations and lockstep bundles
+
+16.8
+00:14:00.854 --> 00:15:38.454
+Example of two-wide VLIW execution and no-op insertion
+
+16.9
+00:15:38.454 --> 00:18:19.454
+Lockstep execution and the problem of variable-latency memory operations
+
+16.10
+00:18:19.454 --> 00:21:49.774
+Historical philosophy of VLIW and RISC: smart compiler, dumb machine
+
+16.11
+00:21:49.774 --> 00:24:27.134
+Commercial VLIW machines and domains where VLIW succeeded
+
+16.12
+00:24:27.134 --> 00:28:54.654
+Case study: Intel IA-64 Itanium and EPIC as VLIW-inspired ISA design
+
+16.13
+00:28:54.654 --> 00:31:16.254
+VLIW trade-offs: simple hardware versus compiler complexity and compatibility
+
+16.14
+00:31:16.254 --> 00:33:32.974
+VLIW legacy in optimizing compilers and superscalar performance
+
+16.15
+00:33:32.974 --> 00:37:20.534
+Trace scheduling for hot paths across basic blocks
+
+16.16
+00:37:20.534 --> 00:40:43.896
+Superblocks and tail duplication to eliminate side entrances
+
+16.17
+00:40:43.896 --> 00:44:11.934
+Example: superblock optimization enables strength reduction
+
+16.18
+00:44:11.934 --> 00:45:00.710
+Predicate execution and advanced VLIW compiler issues
+
+16.19
+00:45:00.710 --> 00:47:09.774
+ISA translation and Transmeta Crusoe’s x86-to-VLIW code morphing
+
+16.20
+00:47:09.774 --> 00:47:57.814
+Dynamic code optimization as hardware–software co-design
+
+16.21
+00:47:57.814 --> 00:48:23.418
+Break before systolic arrays
+
+16.22
+00:48:23.418 --> 00:52:27.727
+Administrative note: research opportunities and architecture courses
+
+16.23
+00:52:27.727 --> 00:53:39.128
+Motivation and modern relevance of systolic arrays
+
+16.24
+00:53:39.128 --> 00:56:45.848
+Definition of systolic computation as a special-purpose execution model
+
+16.25
+00:56:45.848 --> 00:57:54.568
+Systolic array motivation: balancing computation with I/O bandwidth
+
+16.26
+00:57:54.568 --> 01:00:36.368
+Linear systolic array analogy: memory as heart and data as blood
+
+16.27
+01:00:36.368 --> 01:02:55.128
+Why systolic arrays are more general than simple pipelines
+
+16.28
+01:02:55.128 --> 01:05:28.568
+Convolution as a target computation for systolic acceleration
+
+16.29
+01:05:28.568 --> 01:10:51.568
+Expressing convolution as matrix multiplication and the AlexNet GPU story
+
+16.30
+01:10:51.568 --> 01:15:24.768
+One-dimensional systolic hardware for convolution
+
+16.31
+01:15:24.768 --> 01:16:56.088
+Design issues in specialized systolic convolution arrays
+
+16.32
+01:16:56.088 --> 01:21:04.968
+Two-dimensional systolic array for matrix multiplication
+
+16.33
+01:21:04.968 --> 01:22:18.618
+Other systolic arrays and specialized numerical computations
+
+16.34
+01:22:18.618 --> 01:23:30.488
+Advantages and disadvantages of systolic arrays
+
+16.35
+01:23:30.488 --> 01:27:24.688
+Generalizing systolic computation into stream and pipeline parallelism
+
+16.36
+01:27:24.688 --> 01:28:51.393
+History: H. T. Kung’s Warp computer at Carnegie Mellon
+
+16.37
+01:28:51.393 --> 01:30:26.288
+Google TPU systolic matrix multiplication unit
+
+16.38
+01:30:26.288 --> 01:32:00.368
+Scaling TPUs with high-bandwidth memory, interconnects, and VLIW sequencing
+
+16.39
+01:32:00.368 --> 01:34:13.808
+Memory bottlenecks in systolic accelerators and closing comparison to other ML hardware

@@ -1,0 +1,127 @@
+{
+  "lecture": 10,
+  "title": "Lecture 10",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "10.1",
+      "start": 4.441,
+      "end": 109.641,
+      "title": "Announcements and agenda: from single-cycle to multicycle and pipelined processors"
+    },
+    {
+      "id": "10.2",
+      "start": 109.641,
+      "end": 336.041,
+      "title": "Review of single-cycle performance and slow memory"
+    },
+    {
+      "id": "10.3",
+      "start": 336.041,
+      "end": 627.686,
+      "title": "Problems with single-cycle design and violated microarchitecture principles"
+    },
+    {
+      "id": "10.4",
+      "start": 627.686,
+      "end": 848.081,
+      "title": "System design principles: simplicity and low cost"
+    },
+    {
+      "id": "10.5",
+      "start": 848.081,
+      "end": 1032.161,
+      "title": "Definition and motivation of multicycle microarchitecture"
+    },
+    {
+      "id": "10.6",
+      "start": 1032.161,
+      "end": 1286.841,
+      "title": "Benefits and costs of multicycle design"
+    },
+    {
+      "id": "10.7",
+      "start": 1286.841,
+      "end": 1425.841,
+      "title": "Finite-state-machine control for multicycle processors"
+    },
+    {
+      "id": "10.8",
+      "start": 1425.841,
+      "end": 1517.801,
+      "title": "Design goals for the multicycle MIPS datapath"
+    },
+    {
+      "id": "10.9",
+      "start": 1517.801,
+      "end": 1885.081,
+      "title": "Datapath for load word in a multicycle processor"
+    },
+    {
+      "id": "10.10",
+      "start": 1885.081,
+      "end": 2490.456,
+      "title": "Extending the multicycle datapath for PC update, store, R-type, and branch"
+    },
+    {
+      "id": "10.11",
+      "start": 2490.456,
+      "end": 2699.078,
+      "title": "Q&A and break: branch target calculation and branch timing"
+    },
+    {
+      "id": "10.12",
+      "start": 2699.078,
+      "end": 3037.918,
+      "title": "Control-unit FSM for fetch and decode states"
+    },
+    {
+      "id": "10.13",
+      "start": 3037.918,
+      "end": 3581.638,
+      "title": "Control FSM states for load, store, R-type, branch, add immediate, and jump"
+    },
+    {
+      "id": "10.14",
+      "start": 3581.638,
+      "end": 3820.421,
+      "title": "Handling variable-latency memory in a multicycle FSM"
+    },
+    {
+      "id": "10.15",
+      "start": 3820.421,
+      "end": 3962.581,
+      "title": "Introduction to microprogrammed multicycle control"
+    },
+    {
+      "id": "10.16",
+      "start": 3962.581,
+      "end": 4325.861,
+      "title": "Microprogram control terminology and controller-store organization"
+    },
+    {
+      "id": "10.17",
+      "start": 4325.861,
+      "end": 4509.141,
+      "title": "Microprogramming as an abstraction layer and ISA translator"
+    },
+    {
+      "id": "10.18",
+      "start": 4509.141,
+      "end": 4933.85,
+      "title": "Advantages, patching, and tradeoffs of microprogrammed control"
+    },
+    {
+      "id": "10.19",
+      "start": 4933.85,
+      "end": 5076.77,
+      "title": "Motivation for pipelining: limited concurrency in multicycle processors"
+    },
+    {
+      "id": "10.20",
+      "start": 5076.77,
+      "end": 5351.41,
+      "title": "Basic pipeline execution and throughput improvement"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+WEBVTT
+
+5.1
+00:00:03.044 --> 00:04:38.564
+Course logistics, recap, and agenda for Verilog
+
+5.2
+00:04:38.564 --> 00:07:23.244
+Motivation: learning fundamentals before relying on automation
+
+5.3
+00:07:23.244 --> 00:13:53.476
+Why hardware description languages are needed
+
+5.4
+00:13:53.476 --> 00:19:26.324
+Hierarchical hardware design: modules, top-down, and bottom-up
+
+5.5
+00:19:26.324 --> 00:25:18.343
+Verilog module definitions, ports, buses, slicing, and syntax
+
+5.6
+00:25:18.343 --> 00:33:19.663
+Structural Verilog and gate-level multiplexer implementation
+
+5.7
+00:33:19.663 --> 00:47:09.183
+Behavioral combinational Verilog: operators, multiplexers, constants, and tri-state buffers
+
+5.8
+00:47:09.183 --> 00:51:06.583
+Synthesis, simulation, and the HDL design mindset
+
+5.9
+00:51:06.583 --> 00:55:39.512
+Break and announcement: Tiny Tapeout chip-design opportunity
+
+5.10
+00:55:39.512 --> 01:04:06.879
+Abstraction tradeoffs, comparators, parameterized modules, timing annotations, and style guidelines
+
+5.11
+01:04:06.879 --> 01:09:23.919
+Sequential Verilog: clocks, always blocks, and D flip-flops
+
+5.12
+01:09:23.919 --> 01:16:57.546
+Reset, enable, and latch descriptions in Verilog
+
+5.13
+01:16:57.546 --> 01:27:29.048
+When always blocks describe combinational versus sequential circuits
+
+5.14
+01:27:29.048 --> 01:34:49.088
+Blocking versus nonblocking assignments and Verilog coding rules

@@ -1,0 +1,139 @@
+{
+  "lecture": 4,
+  "title": "Lecture 4",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "4.1",
+      "start": 2.081,
+      "end": 118.361,
+      "title": "Announcements and plan for sequential logic, labs, and Verilog"
+    },
+    {
+      "id": "4.2",
+      "start": 118.361,
+      "end": 327.681,
+      "title": "Review of latches, registers, and memory arrays"
+    },
+    {
+      "id": "4.3",
+      "start": 327.681,
+      "end": 731.521,
+      "title": "Definition of state using a combination lock"
+    },
+    {
+      "id": "4.4",
+      "start": 731.521,
+      "end": 1011.007,
+      "title": "State diagram for the sequential combination lock"
+    },
+    {
+      "id": "4.5",
+      "start": 1011.007,
+      "end": 1505.383,
+      "title": "Asynchronous versus synchronous state transitions and the clock"
+    },
+    {
+      "id": "4.6",
+      "start": 1505.383,
+      "end": 1713.017,
+      "title": "Clock period, combinational delay, and synchronous design trade-offs"
+    },
+    {
+      "id": "4.7",
+      "start": 1713.017,
+      "end": 2035.297,
+      "title": "Synchronous circuit structures and pipelining"
+    },
+    {
+      "id": "4.8",
+      "start": 2035.297,
+      "end": 2273.177,
+      "title": "Definition and components of a finite state machine"
+    },
+    {
+      "id": "4.9",
+      "start": 2273.177,
+      "end": 2497.417,
+      "title": "Required behavior of an edge-triggered state register"
+    },
+    {
+      "id": "4.10",
+      "start": 2497.417,
+      "end": 2687.017,
+      "title": "Why a gated D latch cannot implement the state register"
+    },
+    {
+      "id": "4.11",
+      "start": 2687.017,
+      "end": 2914.897,
+      "title": "Construction of a rising-edge D flip-flop from two latches"
+    },
+    {
+      "id": "4.12",
+      "start": 2914.897,
+      "end": 3391.537,
+      "title": "Moore and Mealy FSMs and smart traffic light controller design"
+    },
+    {
+      "id": "4.13",
+      "start": 3391.537,
+      "end": 3535.217,
+      "title": "FSM practice example and general FSM design procedure"
+    },
+    {
+      "id": "4.14",
+      "start": 3535.217,
+      "end": 3561.789,
+      "title": "Break and transition to lab and FPGA lecture"
+    },
+    {
+      "id": "4.15",
+      "start": 3561.789,
+      "end": 4017.08,
+      "title": "Lab logistics, grading, reports, partners, and AI policy"
+    },
+    {
+      "id": "4.16",
+      "start": 4017.08,
+      "end": 4108.96,
+      "title": "Learning goals of the labs: processors, HDL, debugging, and trade-offs"
+    },
+    {
+      "id": "4.17",
+      "start": 4108.96,
+      "end": 4246.289,
+      "title": "What FPGAs are and where they fit among processors and ASICs"
+    },
+    {
+      "id": "4.18",
+      "start": 4246.289,
+      "end": 4882.0,
+      "title": "FPGA applications in acceleration, testing, prototyping, and field updates"
+    },
+    {
+      "id": "4.19",
+      "start": 4882.0,
+      "end": 5154.86,
+      "title": "Course FPGA board and overview of the lab sequence"
+    },
+    {
+      "id": "4.20",
+      "start": 5154.86,
+      "end": 5375.44,
+      "title": "FPGA architecture: configurable logic blocks, routing, and connection boxes"
+    },
+    {
+      "id": "4.21",
+      "start": 5375.44,
+      "end": 5602.76,
+      "title": "Lookup tables and modern FPGA resources"
+    },
+    {
+      "id": "4.22",
+      "start": 5602.76,
+      "end": 5791.2,
+      "title": "FPGA advantages, disadvantages, Verilog-to-Vivado flow, and final lab reminders"
+    }
+  ]
+}

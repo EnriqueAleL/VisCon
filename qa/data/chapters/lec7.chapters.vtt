@@ -1,0 +1,77 @@
+WEBVTT
+
+7.1
+00:00:00.921 --> 00:06:11.321
+Announcements and recap: timing analysis and design principles
+
+7.2
+00:06:11.321 --> 00:15:38.921
+Motivation for verification, testing, and robust systems
+
+7.3
+00:15:38.921 --> 00:18:45.281
+Course transition from digital design to ISA and microarchitecture
+
+7.4
+00:18:45.281 --> 00:22:14.521
+Definition of a computer, program, instruction, and instruction set
+
+7.5
+00:22:14.521 --> 00:24:32.161
+Definition of the von Neumann execution model
+
+7.6
+00:24:32.161 --> 00:31:23.881
+Memory organization: address space, addressability, bytes, and words
+
+7.7
+00:31:23.881 --> 00:35:55.441
+Endianness in byte-addressable memory
+
+7.8
+00:35:55.441 --> 00:38:40.481
+Memory reads and writes using MAR and MDR
+
+7.9
+00:38:40.481 --> 00:41:28.761
+Processing unit and ALU operations specified by the ISA
+
+7.10
+00:41:28.761 --> 00:47:37.001
+Registers and the register file as fast temporary storage
+
+7.11
+00:47:37.001 --> 00:48:44.961
+Input, output, and memory-mapped I/O
+
+7.12
+00:48:44.961 --> 00:49:07.881
+Break
+
+7.13
+00:49:07.881 --> 00:54:27.151
+Control unit, instruction register, and program counter
+
+7.14
+00:54:27.151 --> 01:00:54.711
+Stored program and sequential instruction processing
+
+7.15
+01:00:54.711 --> 01:07:03.271
+Instruction storage, fetching, sample program, and instruction formats
+
+7.16
+01:07:03.271 --> 01:13:58.711
+Operate instructions: ADD and AND in LC-3 and MIPS
+
+7.17
+01:13:58.711 --> 01:19:45.311
+Memory operations: load word and base-plus-offset addressing
+
+7.18
+01:19:45.311 --> 01:30:49.991
+Instruction processing cycle: fetch, decode, address, execute, and store result
+
+7.19
+01:30:49.991 --> 01:32:52.751
+Control-flow instructions: jump and changing the PC

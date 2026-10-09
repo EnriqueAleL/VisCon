@@ -1,0 +1,81 @@
+WEBVTT
+
+3.1
+00:00:02.134 --> 00:04:43.734
+Opening remarks and recap of combinational logic
+
+3.2
+00:04:43.734 --> 00:06:39.894
+Review of decoders, multiplexers, and lookup tables
+
+3.3
+00:06:39.894 --> 00:12:53.374
+Derivation of a one-bit full adder from a truth table
+
+3.4
+00:12:53.374 --> 00:19:01.694
+Ripple-carry adder and carry-lookahead adder trade-offs
+
+3.5
+00:19:01.694 --> 00:20:10.214
+Q&A on adder layout conventions and timing sources
+
+3.6
+00:20:10.214 --> 00:25:22.362
+Programmable Logic Array implementation of sum-of-products logic
+
+3.7
+00:25:22.362 --> 00:27:35.614
+Logical completeness of AND/OR/NOT, NAND, and NOR
+
+3.8
+00:27:35.614 --> 00:31:28.974
+Comparator design as an equality checker
+
+3.9
+00:31:28.974 --> 00:40:00.534
+Arithmetic Logic Unit design and modular datapath functions
+
+3.10
+00:40:00.534 --> 00:45:29.654
+Tri-state buffers, shared buses, and multiplexer implementation
+
+3.11
+00:45:29.654 --> 00:46:16.624
+Break and transition to logic simplification
+
+3.12
+00:46:16.624 --> 00:50:33.184
+Boolean simplification and the uniting theorem
+
+3.13
+00:50:33.184 --> 00:55:49.304
+Priority circuit with don't-cares and Karnaugh map mention
+
+3.14
+00:55:49.304 --> 01:00:04.824
+Introduction to sequential logic and the need for memory
+
+3.15
+01:00:04.824 --> 01:05:17.784
+Cross-coupled inverters as a one-bit storage element
+
+3.16
+01:05:17.784 --> 01:05:41.344
+Q&A on storage technologies
+
+3.17
+01:05:41.344 --> 01:11:10.184
+Set-reset latch using cross-coupled NAND gates
+
+3.18
+01:11:10.184 --> 01:15:26.344
+Gated D latch and multi-bit register construction
+
+3.19
+01:15:26.344 --> 01:28:12.704
+Memory array design with decoders and multiplexers
+
+3.20
+01:28:12.704 --> 01:30:19.824
+Implementing logic with memory lookup tables and sequential lock analogy

@@ -1,0 +1,139 @@
+{
+  "lecture": 21,
+  "title": "Lecture 21",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "21.1",
+      "start": 2.128,
+      "end": 301.648,
+      "title": "Motivation: locality, communication cost, and why caches exist"
+    },
+    {
+      "id": "21.2",
+      "start": 301.648,
+      "end": 486.236,
+      "title": "Memory hierarchy beyond one machine: local and remote memory nodes"
+    },
+    {
+      "id": "21.3",
+      "start": 486.236,
+      "end": 806.408,
+      "title": "Direct-mapped, set-associative, and fully associative caches"
+    },
+    {
+      "id": "21.4",
+      "start": 806.408,
+      "end": 1077.408,
+      "title": "Cache block priorities: insertion, promotion, and eviction"
+    },
+    {
+      "id": "21.5",
+      "start": 1077.408,
+      "end": 1334.488,
+      "title": "Replacement policy options: random, FIFO, LRU, frequency, and hybrids"
+    },
+    {
+      "id": "21.6",
+      "start": 1334.488,
+      "end": 1647.288,
+      "title": "Cost of implementing true LRU and common approximations"
+    },
+    {
+      "id": "21.7",
+      "start": 1647.288,
+      "end": 1877.174,
+      "title": "Example: LRU thrashing versus random replacement"
+    },
+    {
+      "id": "21.8",
+      "start": 1877.174,
+      "end": 2105.588,
+      "title": "Belady’s optimal replacement policy and its limitations"
+    },
+    {
+      "id": "21.9",
+      "start": 2105.588,
+      "end": 2858.308,
+      "title": "Write handling: dirty bits, write-through, write-back, and sector caches"
+    },
+    {
+      "id": "21.10",
+      "start": 2858.308,
+      "end": 3069.708,
+      "title": "Instruction versus data caches: unified and split designs"
+    },
+    {
+      "id": "21.11",
+      "start": 3069.708,
+      "end": 3089.64,
+      "title": "Break announcement"
+    },
+    {
+      "id": "21.12",
+      "start": 3089.64,
+      "end": 3417.88,
+      "title": "Multilevel cache management: L1 versus lower-level design constraints"
+    },
+    {
+      "id": "21.13",
+      "start": 3417.88,
+      "end": 3526.12,
+      "title": "Serial versus parallel access across cache levels"
+    },
+    {
+      "id": "21.14",
+      "start": 3526.12,
+      "end": 3827.2,
+      "title": "Real processor cache hierarchies and software-visible cache movement"
+    },
+    {
+      "id": "21.15",
+      "start": 3827.2,
+      "end": 4057.56,
+      "title": "Placement, eviction targets, and inclusive versus exclusive caches"
+    },
+    {
+      "id": "21.16",
+      "start": 4057.56,
+      "end": 4613.64,
+      "title": "Cache performance parameters: size, block size, associativity, and critical word first"
+    },
+    {
+      "id": "21.17",
+      "start": 4613.64,
+      "end": 4735.92,
+      "title": "Non-power-of-two associativity and practical layout choices"
+    },
+    {
+      "id": "21.18",
+      "start": 4735.92,
+      "end": 4802.92,
+      "title": "Q&A: whether modern CPUs can operate without caches"
+    },
+    {
+      "id": "21.19",
+      "start": 4802.92,
+      "end": 5032.0,
+      "title": "Cache miss taxonomy and ways to reduce each miss type"
+    },
+    {
+      "id": "21.20",
+      "start": 5032.0,
+      "end": 5076.2,
+      "title": "Three goals of cache performance optimization"
+    },
+    {
+      "id": "21.21",
+      "start": 5076.2,
+      "end": 5375.64,
+      "title": "Software locality optimization: loop interchange and tiling"
+    },
+    {
+      "id": "21.22",
+      "start": 5375.64,
+      "end": 5562.56,
+      "title": "Data layout optimization: separating hot and cold fields"
+    }
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "lecture": 1,
+  "title": "Lecture 1",
+  "model": "gpt-5.4-mini",
+  "index_model": "gpt-5.5",
+  "overview": "This introductory lecture explains what the course is about: understanding computers from the ground up, from transistors and logic up through processors, memory systems, and specialized accelerators. It motivates computer architecture as the field that designs the hardware-software interface to meet goals like performance, energy efficiency, cost, robustness, security, and sustainability. The lecturer also situates the course in current trends such as AI, GPUs, processing-in-memory, heterogeneous chips, and cross-layer co-design.",
+  "sections": [
+    {
+      "heading": "Course opening: learning, reinforcement, and what this course studies",
+      "chapter_ids": [
+        "1.1"
+      ],
+      "start": 1.2770000000000001,
+      "points": [
+        "The bell story is used as an analogy for reinforcement learning: repeated pairing of a cue and a reward makes behavior predictable.",
+        "The lecturer contrasts reinforcement learning with today’s LLMs, which are built mainly on transformers and neural networks rather than classic reinforcement learning alone.",
+        "The course is Digital Design and Computer Architecture, aimed at understanding how computers work from the transistor level upward.",
+        "Students will eventually see how transistors form circuits for basic operations such as addition, multiplication, and memory access, and how CPUs, GPUs, and ML hardware are built from them."
+      ]
+    },
+    {
+      "heading": "Teaching team and research context",
+      "chapter_ids": [
+        "1.2"
+      ],
+      "start": 300.877,
+      "points": [
+        "The instructor briefly introduces his background at ETH Zürich, Carnegie Mellon, Microsoft Research, UT Austin, Michigan, and industry.",
+        "He introduces the co-instructor and head TAs, emphasizing that they and the rest of the team are available for questions and lab support.",
+        "The research group works on topics such as prefetching, hardware security, homomorphic encryption, and processing-in-memory.",
+        "Students are encouraged to ask about research as well as course logistics, because the group’s work connects directly to the course themes."
+      ]
+    },
+    {
+      "heading": "Why architecture matters: better systems and design metrics",
+      "chapter_ids": [
+        "1.3"
+      ],
+      "start": 702.597,
+      "points": [
+        "The purpose of architecture is to enable fundamentally better computers, not just slightly different ones.",
+        "The MIPS R2000 and simple in-order pipelined processors are given as historical examples of designs that once seemed sufficient but were not the end of progress.",
+        "Important design metrics include performance, energy, cost, robustness, security, reliability, usability, and sustainability.",
+        "For unreliable hardware, a key principle is fail-fast design: detect errors instead of silently returning wrong results; another approach is redundant execution and voting, but that costs extra energy."
+      ]
+    },
+    {
+      "heading": "Transformation hierarchy and the expanded view of computer architecture",
+      "chapter_ids": [
+        "1.4",
+        "1.6",
+        "1.7"
+      ],
+      "start": 1239.757,
+      "points": [
+        "Computing is described as transforming problems into algorithms, then into programming languages, system software, the ISA, microarchitecture, digital logic, devices, and finally electrons governed by physics.",
+        "The lecturer stresses that humans do not directly “speak the language of electrons,” so the hierarchy is needed to bridge from problems to hardware.",
+        "Computer architecture is defined as the science and art of designing computing platforms and the hardware-software interface to meet goals.",
+        "The expanded view goes beyond hardware alone: it includes algorithms, software, microarchitecture, and devices, because design choices at one layer affect the others."
+      ]
+    },
+    {
+      "heading": "What the course aims to teach",
+      "chapter_ids": [
+        "1.5"
+      ],
+      "start": 1758.197,
+      "points": [
+        "Students should learn principles and precedents: what existing systems do, why they work, and what trade-offs they embody.",
+        "The course includes lectures, readings, homework, labs, and exams; labs will involve implementing and debugging a simple microprocessor.",
+        "A major goal is to develop critical thinking and the ability to evaluate design trade-offs rather than memorize isolated facts.",
+        "The lecturer repeatedly advises students to focus on long-term understanding and scholarship, not only exam preparation."
+      ]
+    },
+    {
+      "heading": "Why study architecture now? Top-down and bottom-up innovation",
+      "chapter_ids": [
+        "1.9",
+        "1.10"
+      ],
+      "start": 3069.656,
+      "points": [
+        "Processing-in-memory is used as an example of current co-design trends: putting computation close to or inside memory to improve efficiency and performance.",
+        "Architecture matters because it helps adapt to new workloads and technologies and supports applications like AI and VR.",
+        "Innovation can happen at the top of the stack through better algorithms and software, or at the bottom through new devices, materials, and circuits; both matter.",
+        "Many architectural concepts, such as pipelining, out-of-order execution, and prefetching, are relevant beyond hardware and can also inform software thinking."
+      ]
+    },
+    {
+      "heading": "Course logistics, resources, and extra credit",
+      "chapter_ids": [
+        "1.11"
+      ],
+      "start": 3985.176,
+      "points": [
+        "The course uses Moodle, office hours, the course website, and a large teaching team for support; technical questions should go to Moodle.",
+        "Labs require partner selection and FPGA boards are limited, so students cannot work individually.",
+        "Readings from the textbooks are assigned mainly for the fundamental first half of the course.",
+        "An extra-credit assignment asks students to watch a research talk on RowHammer and reflect on it without using AI tools."
+      ]
+    },
+    {
+      "heading": "Roadmap of the technical material and processor types",
+      "chapter_ids": [
+        "1.12",
+        "1.13"
+      ],
+      "start": 4583.736,
+      "points": [
+        "The core components of a computer are computation, communication, and storage; the course later connects these to von Neumann-style organization.",
+        "The roadmap starts with transistors, then combinational logic, Boolean algebra, sequential logic, HDL design, timing, and verification.",
+        "The course then moves to ISA, assembly, microarchitecture, CPUs, GPUs, and memory systems.",
+        "A major theme is the difference between general-purpose processors and special-purpose accelerators: general-purpose machines are flexible, while special-purpose ones are faster and more efficient for a narrow task.",
+        "Modern SoCs are heterogeneous, containing CPUs, GPUs, neural engines, caches, FPGAs, ASICs, and other accelerators; the labs will build a small microprocessor on an FPGA using Verilog."
+      ]
+    }
+  ],
+  "takeaways": [
+    "Computer architecture is about designing whole computing systems and their interfaces, not just isolated hardware blocks.",
+    "The course’s core mindset is to ask what can be made fundamentally better and to evaluate designs using multiple metrics, especially performance, energy, cost, robustness, security, and sustainability.",
+    "A central organizing idea is the transformation hierarchy from problems and algorithms down to electrons.",
+    "General-purpose and special-purpose hardware are a major trade-off: flexibility versus efficiency.",
+    "The course will focus heavily on transistors, logic, microarchitecture, ISA, and memory, with labs that build a microprocessor on an FPGA.",
+    "Students should prioritize understanding and critical thinking; many lecture concepts are meant to be useful long after the exam."
+  ]
+}

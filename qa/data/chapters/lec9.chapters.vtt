@@ -1,0 +1,93 @@
+WEBVTT
+
+9.1
+00:00:01.118 --> 00:01:33.438
+Announcements and roadmap for microarchitecture lectures
+
+9.2
+00:01:33.438 --> 00:05:56.638
+Definition of microarchitecture and architectural state
+
+9.3
+00:05:56.638 --> 00:08:16.518
+Single-cycle versus microarchitectural intermediate states
+
+9.4
+00:08:16.518 --> 00:12:48.238
+Combinational implementation and critical path of a single-cycle processor
+
+9.5
+00:12:48.238 --> 00:15:26.078
+Comparison of single-cycle and multicycle machines
+
+9.6
+00:15:26.078 --> 00:16:37.438
+Six phases of instruction processing
+
+9.7
+00:16:37.438 --> 00:21:01.198
+Datapath and control logic as processor components
+
+9.8
+00:21:01.198 --> 00:29:20.445
+Processor design space and performance equation
+
+9.9
+00:29:20.445 --> 00:31:59.605
+Q&A on historical single-cycle processors and design tradeoffs
+
+9.10
+00:31:59.605 --> 00:36:49.845
+MIPS state elements: PC, register file, and memories
+
+9.11
+00:36:49.845 --> 00:40:49.565
+Memory-array notation and single-cycle memory assumptions
+
+9.12
+00:40:49.565 --> 00:44:51.045
+Five-stage view and initial single-cycle datapath skeleton
+
+9.13
+00:44:51.045 --> 00:45:41.200
+Break and scope of the simplified MIPS subset
+
+9.14
+00:45:41.200 --> 00:49:30.280
+Datapath support for R-type ALU instructions
+
+9.15
+00:49:30.280 --> 00:53:20.960
+Datapath support for I-type ALU instructions
+
+9.16
+00:53:20.960 --> 00:59:23.840
+Datapath support for load word and store word
+
+9.17
+00:59:23.840 --> 01:05:07.018
+Unconditional jump datapath and target address formation
+
+9.18
+01:05:07.018 --> 01:11:11.088
+Jump-and-link variants and conditional branch datapath
+
+9.19
+01:11:11.088 --> 01:12:17.538
+Delayed branch semantics in MIPS
+
+9.20
+01:12:17.538 --> 01:15:42.978
+Complete single-cycle datapath with branch and jump PC control
+
+9.21
+01:15:42.978 --> 01:25:06.846
+Hardwired control logic and instruction-specific signal settings
+
+9.22
+01:25:06.846 --> 01:29:39.006
+Performance evaluation of the single-cycle microarchitecture
+
+9.23
+01:29:39.006 --> 01:30:13.486
+Closing remarks and Persian New Year announcement

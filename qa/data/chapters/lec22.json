@@ -1,0 +1,163 @@
+{
+  "lecture": 22,
+  "title": "Lecture 22",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "22.1",
+      "start": 1.905,
+      "end": 120.945,
+      "title": "Agenda: advanced caches and prefetching after cache basics"
+    },
+    {
+      "id": "22.2",
+      "start": 120.945,
+      "end": 328.305,
+      "title": "Factors determining cache miss latency and miss cost"
+    },
+    {
+      "id": "22.3",
+      "start": 328.305,
+      "end": 878.145,
+      "title": "Memory-level parallelism and MLP-aware cache replacement"
+    },
+    {
+      "id": "22.4",
+      "start": 878.145,
+      "end": 1149.545,
+      "title": "Predicting off-chip misses to overlap cache lookup and DRAM access"
+    },
+    {
+      "id": "22.5",
+      "start": 1149.545,
+      "end": 1332.505,
+      "title": "Victim caches and transition to multicore cache issues"
+    },
+    {
+      "id": "22.6",
+      "start": 1332.505,
+      "end": 1674.133,
+      "title": "Hardware-friendly cache compression with Base-Delta-Immediate compression"
+    },
+    {
+      "id": "22.7",
+      "start": 1674.133,
+      "end": 1854.465,
+      "title": "Industrial compressed caches in IBM enterprise processors"
+    },
+    {
+      "id": "22.8",
+      "start": 1854.465,
+      "end": 2157.865,
+      "title": "Private versus shared caches and shared-resource trade-offs"
+    },
+    {
+      "id": "22.9",
+      "start": 2157.865,
+      "end": 2340.145,
+      "title": "Cache partitioning for multicore fairness and quality of service"
+    },
+    {
+      "id": "22.10",
+      "start": 2340.145,
+      "end": 2740.305,
+      "title": "Definition and mechanisms of cache coherence"
+    },
+    {
+      "id": "22.11",
+      "start": 2740.305,
+      "end": 2813.745,
+      "title": "Putting memory-system mechanisms together"
+    },
+    {
+      "id": "22.12",
+      "start": 2813.745,
+      "end": 2837.565,
+      "title": "Break and transition to prefetching"
+    },
+    {
+      "id": "22.13",
+      "start": 2837.565,
+      "end": 3166.085,
+      "title": "Definition, motivation, and correctness of prefetching"
+    },
+    {
+      "id": "22.14",
+      "start": 3166.085,
+      "end": 3395.565,
+      "title": "Hardware prefetcher structure and the what/when/where/how questions"
+    },
+    {
+      "id": "22.15",
+      "start": 3395.565,
+      "end": 3560.965,
+      "title": "Examples of predictable cache-block address patterns"
+    },
+    {
+      "id": "22.16",
+      "start": 3560.965,
+      "end": 3905.405,
+      "title": "Timeliness and placement decisions for prefetches"
+    },
+    {
+      "id": "22.17",
+      "start": 3905.405,
+      "end": 4047.725,
+      "title": "Software, hardware, and execution-based prefetching methods"
+    },
+    {
+      "id": "22.18",
+      "start": 4047.725,
+      "end": 4184.205,
+      "title": "ISA prefetch instructions and limitations of compiler prefetching"
+    },
+    {
+      "id": "22.19",
+      "start": 4184.205,
+      "end": 4323.405,
+      "title": "Streaming prefetchers and the increasing cost of cache misses"
+    },
+    {
+      "id": "22.20",
+      "start": 4323.405,
+      "end": 4508.765,
+      "title": "Prefetcher metrics: accuracy, timeliness, coverage, bandwidth, and pollution"
+    },
+    {
+      "id": "22.21",
+      "start": 4508.765,
+      "end": 4717.325,
+      "title": "Efficiency benefits of runahead/Scout prefetching and prefetch throttling"
+    },
+    {
+      "id": "22.22",
+      "start": 4717.325,
+      "end": 4964.005,
+      "title": "Instruction-based and memory-region-based stride prefetchers"
+    },
+    {
+      "id": "22.23",
+      "start": 4964.005,
+      "end": 5083.925,
+      "title": "Delta-correlation and signature-based prefetchers for complex regular patterns"
+    },
+    {
+      "id": "22.24",
+      "start": 5083.925,
+      "end": 5175.245,
+      "title": "Content-directed prefetching for pointer-rich data structures"
+    },
+    {
+      "id": "22.25",
+      "start": 5175.245,
+      "end": 5590.725,
+      "title": "Pythia: reinforcement-learning-based data prefetching"
+    },
+    {
+      "id": "22.26",
+      "start": 5590.725,
+      "end": 5612.165,
+      "title": "Closing: next topics in prefetching and virtual memory"
+    }
+  ]
+}

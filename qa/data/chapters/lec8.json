@@ -1,0 +1,139 @@
+{
+  "lecture": 8,
+  "title": "Lecture 8",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "8.1",
+      "start": 1.327,
+      "end": 70.873,
+      "title": "Announcements and roadmap for ISA and microarchitecture"
+    },
+    {
+      "id": "8.2",
+      "start": 70.873,
+      "end": 391.167,
+      "title": "Review of ISA concepts and the LC-3b instruction processing cycle"
+    },
+    {
+      "id": "8.3",
+      "start": 391.167,
+      "end": 863.927,
+      "title": "Program translation: compiler, assembler, linker, loader, and MIPS memory map"
+    },
+    {
+      "id": "8.4",
+      "start": 863.927,
+      "end": 914.402,
+      "title": "Q&A and poll on assembly programming experience"
+    },
+    {
+      "id": "8.5",
+      "start": 914.402,
+      "end": 1364.562,
+      "title": "ISA trade-off: complex versus simple instructions and the semantic gap"
+    },
+    {
+      "id": "8.6",
+      "start": 1364.562,
+      "end": 1859.322,
+      "title": "Indirection with binary translation and implementation ISAs"
+    },
+    {
+      "id": "8.7",
+      "start": 1859.322,
+      "end": 2126.162,
+      "title": "ISA trade-off: number of architectural registers"
+    },
+    {
+      "id": "8.8",
+      "start": 2126.162,
+      "end": 2333.122,
+      "title": "Questioning the von Neumann execution model"
+    },
+    {
+      "id": "8.9",
+      "start": 2333.122,
+      "end": 2775.242,
+      "title": "Definition of the dataflow execution model"
+    },
+    {
+      "id": "8.10",
+      "start": 2775.242,
+      "end": 2986.322,
+      "title": "Dataflow nodes, tokens, and graphical control constructs"
+    },
+    {
+      "id": "8.11",
+      "start": 2986.322,
+      "end": 3104.322,
+      "title": "Exercise: reverse-engineering a dataflow factorial program"
+    },
+    {
+      "id": "8.12",
+      "start": 3104.322,
+      "end": 3130.075,
+      "title": "Break"
+    },
+    {
+      "id": "8.13",
+      "start": 3130.075,
+      "end": 3452.715,
+      "title": "Solution: tracing the factorial dataflow graph"
+    },
+    {
+      "id": "8.14",
+      "start": 3452.715,
+      "end": 3605.435,
+      "title": "Program counter as an ISA execution-model trade-off"
+    },
+    {
+      "id": "8.15",
+      "start": 3605.435,
+      "end": 3815.995,
+      "title": "Using microarchitecture to hide parallel execution under a sequential ISA"
+    },
+    {
+      "id": "8.16",
+      "start": 3815.995,
+      "end": 3977.155,
+      "title": "Modern processors preserve von Neumann ISAs while violating them internally"
+    },
+    {
+      "id": "8.17",
+      "start": 3977.155,
+      "end": 4183.755,
+      "title": "Definitions of ISA, microarchitecture, and microprocessor"
+    },
+    {
+      "id": "8.18",
+      "start": 4183.755,
+      "end": 4483.755,
+      "title": "Implementing an ISA and the gas-pedal analogy"
+    },
+    {
+      "id": "8.19",
+      "start": 4483.755,
+      "end": 4701.275,
+      "title": "Backward compatibility and what ISA versus microarchitecture specifies"
+    },
+    {
+      "id": "8.20",
+      "start": 4701.275,
+      "end": 4905.075,
+      "title": "Exam practice: classifying ISA and microarchitecture properties"
+    },
+    {
+      "id": "8.21",
+      "start": 4905.075,
+      "end": 5180.755,
+      "title": "Design points and application-driven computer architecture trade-offs"
+    },
+    {
+      "id": "8.22",
+      "start": 5180.755,
+      "end": 5361.515,
+      "title": "Computer architecture as science and art under uncertain futures"
+    }
+  ]
+}

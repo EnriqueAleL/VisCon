@@ -1,0 +1,91 @@
+{
+  "lecture": 5,
+  "title": "Lecture 5",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "5.1",
+      "start": 3.044,
+      "end": 278.564,
+      "title": "Course logistics, recap, and agenda for Verilog"
+    },
+    {
+      "id": "5.2",
+      "start": 278.564,
+      "end": 443.244,
+      "title": "Motivation: learning fundamentals before relying on automation"
+    },
+    {
+      "id": "5.3",
+      "start": 443.244,
+      "end": 833.476,
+      "title": "Why hardware description languages are needed"
+    },
+    {
+      "id": "5.4",
+      "start": 833.476,
+      "end": 1166.324,
+      "title": "Hierarchical hardware design: modules, top-down, and bottom-up"
+    },
+    {
+      "id": "5.5",
+      "start": 1166.324,
+      "end": 1518.343,
+      "title": "Verilog module definitions, ports, buses, slicing, and syntax"
+    },
+    {
+      "id": "5.6",
+      "start": 1518.343,
+      "end": 1999.663,
+      "title": "Structural Verilog and gate-level multiplexer implementation"
+    },
+    {
+      "id": "5.7",
+      "start": 1999.663,
+      "end": 2829.183,
+      "title": "Behavioral combinational Verilog: operators, multiplexers, constants, and tri-state buffers"
+    },
+    {
+      "id": "5.8",
+      "start": 2829.183,
+      "end": 3066.583,
+      "title": "Synthesis, simulation, and the HDL design mindset"
+    },
+    {
+      "id": "5.9",
+      "start": 3066.583,
+      "end": 3339.512,
+      "title": "Break and announcement: Tiny Tapeout chip-design opportunity"
+    },
+    {
+      "id": "5.10",
+      "start": 3339.512,
+      "end": 3846.879,
+      "title": "Abstraction tradeoffs, comparators, parameterized modules, timing annotations, and style guidelines"
+    },
+    {
+      "id": "5.11",
+      "start": 3846.879,
+      "end": 4163.919,
+      "title": "Sequential Verilog: clocks, always blocks, and D flip-flops"
+    },
+    {
+      "id": "5.12",
+      "start": 4163.919,
+      "end": 4617.546,
+      "title": "Reset, enable, and latch descriptions in Verilog"
+    },
+    {
+      "id": "5.13",
+      "start": 4617.546,
+      "end": 5249.048,
+      "title": "When always blocks describe combinational versus sequential circuits"
+    },
+    {
+      "id": "5.14",
+      "start": 5249.048,
+      "end": 5689.088,
+      "title": "Blocking versus nonblocking assignments and Verilog coding rules"
+    }
+  ]
+}

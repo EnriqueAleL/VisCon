@@ -1,0 +1,89 @@
+WEBVTT
+
+17.1
+00:00:01.779 --> 00:02:22.139
+Introduction to SIMD architectures and course logistics
+
+17.2
+00:02:22.139 --> 00:07:39.899
+Flynn’s taxonomy and the role of SIMD
+
+17.3
+00:07:39.899 --> 00:10:46.514
+Definition of data parallelism and comparison with other parallelism
+
+17.4
+00:10:46.514 --> 00:14:40.057
+Time-space duality: array processors versus vector processors
+
+17.5
+00:14:40.057 --> 00:20:11.939
+Example: executing load-add-multiply-store on array and vector processors
+
+17.6
+00:20:11.939 --> 00:26:29.099
+SIMD versus VLIW and basic vector-processor requirements
+
+17.7
+00:26:29.099 --> 00:30:26.339
+Why vector instructions allow deep pipelines
+
+17.8
+00:30:26.339 --> 00:34:57.739
+Advantages and limitations of vector processors
+
+17.9
+00:34:57.739 --> 00:40:30.533
+Amdahl’s law and memory-bandwidth bottlenecks
+
+17.10
+00:40:30.533 --> 00:45:09.299
+Vector control registers, masks, and Cray vector machines
+
+17.11
+00:45:09.299 --> 00:45:34.083
+Break
+
+17.12
+00:45:34.083 --> 00:47:43.883
+Seymour Cray’s oxen-versus-chickens question
+
+17.13
+00:47:43.883 --> 00:51:50.563
+Memory banking for one-element-per-cycle vector loads
+
+17.14
+00:51:50.563 --> 00:57:37.540
+Performance example: scalar loop versus vectorized loop
+
+17.15
+00:57:37.540 --> 01:04:37.466
+Vector chaining and the effect of memory ports
+
+17.16
+01:04:37.466 --> 01:06:01.146
+Q&A: memory banks versus memory ports
+
+17.17
+01:06:01.146 --> 01:11:32.666
+Vector strip mining, gather/scatter, and sparse access
+
+17.18
+01:11:32.666 --> 01:15:01.946
+Masked vector execution for conditional operations
+
+17.19
+01:15:01.946 --> 01:18:57.666
+Stride, bank conflicts, and memory-bank mapping
+
+17.20
+01:18:57.666 --> 01:21:33.586
+Combining array and vector processing with SIMD lanes
+
+17.21
+01:21:33.586 --> 01:24:13.826
+Automatic vectorization and lecture summary
+
+17.22
+01:24:13.826 --> 01:30:32.546
+SIMD extensions in modern ISAs: MMX, SSE, and AVX

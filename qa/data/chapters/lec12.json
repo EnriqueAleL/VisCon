@@ -1,0 +1,133 @@
+{
+  "lecture": 12,
+  "title": "Lecture 12",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "12.1",
+      "start": 2.046,
+      "end": 175.286,
+      "title": "Announcements and lecture roadmap: precise exceptions, interrupts, and pipelining"
+    },
+    {
+      "id": "12.2",
+      "start": 175.286,
+      "end": 542.126,
+      "title": "Problem: variable-latency functional units violate sequential semantics"
+    },
+    {
+      "id": "12.3",
+      "start": 542.126,
+      "end": 822.566,
+      "title": "Exception example: divide by zero, breakpoints, and the need for precise state"
+    },
+    {
+      "id": "12.4",
+      "start": 822.566,
+      "end": 1094.726,
+      "title": "Definitions and examples of exceptions versus interrupts"
+    },
+    {
+      "id": "12.5",
+      "start": 1094.726,
+      "end": 1280.406,
+      "title": "When and how exceptions and interrupts are handled"
+    },
+    {
+      "id": "12.6",
+      "start": 1280.406,
+      "end": 1402.966,
+      "title": "Definition of precise exceptions and precise interrupts"
+    },
+    {
+      "id": "12.7",
+      "start": 1402.966,
+      "end": 1580.406,
+      "title": "Pipeline control actions for servicing an exception"
+    },
+    {
+      "id": "12.8",
+      "start": 1580.406,
+      "end": 2037.926,
+      "title": "Why precise exceptions matter: ISA contract, debugging, restart, and traps"
+    },
+    {
+      "id": "12.9",
+      "start": 2037.926,
+      "end": 2282.805,
+      "title": "Supporting precise exceptions in single-cycle and multi-cycle machines"
+    },
+    {
+      "id": "12.10",
+      "start": 2282.805,
+      "end": 2571.446,
+      "title": "MIPS exception datapath: EPC, Cause register, and MFC0"
+    },
+    {
+      "id": "12.11",
+      "start": 2571.446,
+      "end": 2733.366,
+      "title": "Variable-latency pipelines require hardware beyond simple multi-cycle exception states"
+    },
+    {
+      "id": "12.12",
+      "start": 2733.366,
+      "end": 2970.446,
+      "title": "Concept of the reorder buffer for in-order retirement"
+    },
+    {
+      "id": "12.13",
+      "start": 2970.446,
+      "end": 2992.84,
+      "title": "Break announcement"
+    },
+    {
+      "id": "12.14",
+      "start": 2992.84,
+      "end": 3334.18,
+      "title": "Reorder buffer entry fields and retirement finite-state machine"
+    },
+    {
+      "id": "12.15",
+      "start": 3334.18,
+      "end": 3476.7,
+      "title": "Challenge: reading source operands whose newest values are still in the reorder buffer"
+    },
+    {
+      "id": "12.16",
+      "start": 3476.7,
+      "end": 3657.66,
+      "title": "Content-addressable lookup in the reorder buffer"
+    },
+    {
+      "id": "12.17",
+      "start": 3657.66,
+      "end": 4586.9,
+      "title": "Worked example: ROB search with invalid register-file entries"
+    },
+    {
+      "id": "12.18",
+      "start": 4586.9,
+      "end": 4799.74,
+      "title": "Indirection with ROB tags to avoid content-addressable register-value lookup"
+    },
+    {
+      "id": "12.19",
+      "start": 4799.74,
+      "end": 5207.46,
+      "title": "Worked example: register renaming using ROB tags"
+    },
+    {
+      "id": "12.20",
+      "start": 5207.46,
+      "end": 5477.06,
+      "title": "Real processors and elimination of false dependences"
+    },
+    {
+      "id": "12.21",
+      "start": 5477.06,
+      "end": 5656.5,
+      "title": "Summary of in-order pipeline with ROB, tradeoffs, readings, and closing"
+    }
+  ]
+}

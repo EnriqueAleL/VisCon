@@ -1,0 +1,89 @@
+WEBVTT
+
+8.1
+00:00:01.327 --> 00:01:10.873
+Announcements and roadmap for ISA and microarchitecture
+
+8.2
+00:01:10.873 --> 00:06:31.167
+Review of ISA concepts and the LC-3b instruction processing cycle
+
+8.3
+00:06:31.167 --> 00:14:23.927
+Program translation: compiler, assembler, linker, loader, and MIPS memory map
+
+8.4
+00:14:23.927 --> 00:15:14.402
+Q&A and poll on assembly programming experience
+
+8.5
+00:15:14.402 --> 00:22:44.562
+ISA trade-off: complex versus simple instructions and the semantic gap
+
+8.6
+00:22:44.562 --> 00:30:59.322
+Indirection with binary translation and implementation ISAs
+
+8.7
+00:30:59.322 --> 00:35:26.162
+ISA trade-off: number of architectural registers
+
+8.8
+00:35:26.162 --> 00:38:53.122
+Questioning the von Neumann execution model
+
+8.9
+00:38:53.122 --> 00:46:15.242
+Definition of the dataflow execution model
+
+8.10
+00:46:15.242 --> 00:49:46.322
+Dataflow nodes, tokens, and graphical control constructs
+
+8.11
+00:49:46.322 --> 00:51:44.322
+Exercise: reverse-engineering a dataflow factorial program
+
+8.12
+00:51:44.322 --> 00:52:10.075
+Break
+
+8.13
+00:52:10.075 --> 00:57:32.715
+Solution: tracing the factorial dataflow graph
+
+8.14
+00:57:32.715 --> 01:00:05.435
+Program counter as an ISA execution-model trade-off
+
+8.15
+01:00:05.435 --> 01:03:35.995
+Using microarchitecture to hide parallel execution under a sequential ISA
+
+8.16
+01:03:35.995 --> 01:06:17.155
+Modern processors preserve von Neumann ISAs while violating them internally
+
+8.17
+01:06:17.155 --> 01:09:43.755
+Definitions of ISA, microarchitecture, and microprocessor
+
+8.18
+01:09:43.755 --> 01:14:43.755
+Implementing an ISA and the gas-pedal analogy
+
+8.19
+01:14:43.755 --> 01:18:21.275
+Backward compatibility and what ISA versus microarchitecture specifies
+
+8.20
+01:18:21.275 --> 01:21:45.075
+Exam practice: classifying ISA and microarchitecture properties
+
+8.21
+01:21:45.075 --> 01:26:20.755
+Design points and application-driven computer architecture trade-offs
+
+8.22
+01:26:20.755 --> 01:29:21.515
+Computer architecture as science and art under uncertain futures

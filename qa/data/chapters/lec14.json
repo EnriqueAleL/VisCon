@@ -1,0 +1,151 @@
+{
+  "lecture": 14,
+  "title": "Lecture 14",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "14.1",
+      "start": 1.303,
+      "end": 91.374,
+      "title": "Administrative introduction and lecture roadmap"
+    },
+    {
+      "id": "14.2",
+      "start": 91.374,
+      "end": 273.81,
+      "title": "Recap of mechanisms for out-of-order execution"
+    },
+    {
+      "id": "14.3",
+      "start": 273.81,
+      "end": 474.543,
+      "title": "Precise exceptions with reorder buffers and physical register files"
+    },
+    {
+      "id": "14.4",
+      "start": 474.543,
+      "end": 729.463,
+      "title": "Examples of real out-of-order processors"
+    },
+    {
+      "id": "14.5",
+      "start": 729.463,
+      "end": 986.383,
+      "title": "Why out-of-order execution improves latency tolerance"
+    },
+    {
+      "id": "14.6",
+      "start": 986.383,
+      "end": 1274.383,
+      "title": "Advantages, costs, and performance equation for out-of-order execution"
+    },
+    {
+      "id": "14.7",
+      "start": 1274.383,
+      "end": 1386.863,
+      "title": "Survey of other ways to extract parallelism"
+    },
+    {
+      "id": "14.8",
+      "start": 1386.863,
+      "end": 1521.928,
+      "title": "Definition of dataflow architecture"
+    },
+    {
+      "id": "14.9",
+      "start": 1521.928,
+      "end": 1753.183,
+      "title": "Why ISA-level dataflow struggled historically"
+    },
+    {
+      "id": "14.10",
+      "start": 1753.183,
+      "end": 2070.743,
+      "title": "Advantages and disadvantages of dataflow architectures"
+    },
+    {
+      "id": "14.11",
+      "start": 2070.743,
+      "end": 2276.063,
+      "title": "Definition of N-wide superscalar execution"
+    },
+    {
+      "id": "14.12",
+      "start": 2276.063,
+      "end": 2716.013,
+      "title": "Superscalar design space and in-order superscalar example"
+    },
+    {
+      "id": "14.13",
+      "start": 2716.013,
+      "end": 3072.704,
+      "title": "Superscalar benefits, costs, history, and commit bubbles"
+    },
+    {
+      "id": "14.14",
+      "start": 3072.704,
+      "end": 3099.179,
+      "title": "Break and transition to branch prediction"
+    },
+    {
+      "id": "14.15",
+      "start": 3099.179,
+      "end": 3293.539,
+      "title": "Branch prediction as the next-PC problem"
+    },
+    {
+      "id": "14.16",
+      "start": 3293.539,
+      "end": 3595.059,
+      "title": "Next-PC calculation in fixed-length versus variable-length ISAs"
+    },
+    {
+      "id": "14.17",
+      "start": 3595.059,
+      "end": 3779.87,
+      "title": "Types of branches and their prediction difficulty"
+    },
+    {
+      "id": "14.18",
+      "start": 3779.87,
+      "end": 4049.979,
+      "title": "Possible ways to handle control dependences"
+    },
+    {
+      "id": "14.19",
+      "start": 4049.979,
+      "end": 4158.219,
+      "title": "Why stalling on branches is too expensive"
+    },
+    {
+      "id": "14.20",
+      "start": 4158.219,
+      "end": 5109.271,
+      "title": "Quantitative cost of branch misprediction in a wide pipeline"
+    },
+    {
+      "id": "14.21",
+      "start": 5109.271,
+      "end": 5202.339,
+      "title": "Basic always-not-taken or PC-plus-four prediction"
+    },
+    {
+      "id": "14.22",
+      "start": 5202.339,
+      "end": 5355.979,
+      "title": "Software layout for better fall-through prediction"
+    },
+    {
+      "id": "14.23",
+      "start": 5355.979,
+      "end": 5517.059,
+      "title": "Eliminating branches with predicate combination and predicated execution"
+    },
+    {
+      "id": "14.24",
+      "start": 5517.059,
+      "end": 5804.779,
+      "title": "CPI model for naive branch prediction and preview of dynamic predictors"
+    }
+  ]
+}

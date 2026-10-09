@@ -1,0 +1,73 @@
+WEBVTT
+
+20.1
+00:00:02.340 --> 00:00:52.100
+Opening announcements and lecture plan for memory hierarchy
+
+20.2
+00:00:52.100 --> 00:07:45.300
+Review of ideal memory, memory arrays, SRAM, and DRAM organization
+
+20.3
+00:07:45.300 --> 00:11:14.380
+Comparison of DRAM and SRAM tradeoffs
+
+20.4
+00:11:14.380 --> 00:16:59.620
+Introduction to phase-change memory and Intel Optane
+
+20.5
+00:16:59.620 --> 00:25:45.020
+DRAM versus PCM and charge versus resistive memory
+
+20.6
+00:25:45.020 --> 00:30:12.380
+Why emerging memory technologies and processing-in-memory matter
+
+20.7
+00:30:12.380 --> 00:38:01.940
+Motivation for memory hierarchy and quantitative device tradeoffs
+
+20.8
+00:38:01.940 --> 00:41:19.660
+Definition of hierarchical memory levels and cache capacities
+
+20.9
+00:41:19.660 --> 00:45:13.340
+Principle of temporal and spatial locality in programs
+
+20.10
+00:45:13.340 --> 00:45:34.278
+Break and return from break
+
+20.11
+00:45:34.278 --> 00:50:26.851
+How caches exploit temporal and spatial locality
+
+20.12
+00:50:26.851 --> 00:55:59.251
+Pipeline integration and manual versus automatic cache management
+
+20.13
+00:55:59.251 --> 01:01:09.156
+Historical perspective on memory and modern hierarchy management
+
+20.14
+01:01:09.156 --> 01:11:59.854
+Derivation of cache hierarchy access-time equations and AMAT example
+
+20.15
+01:11:59.854 --> 01:19:47.334
+Cache abstraction, blocks, tag store, and design decisions
+
+20.16
+01:19:47.334 --> 01:25:47.734
+Direct-mapped cache organization and address decomposition
+
+20.17
+01:25:47.734 --> 01:30:02.054
+Set-associative and fully associative caches
+
+20.18
+01:30:02.054 --> 01:30:05.134
+Closing and next lecture preview

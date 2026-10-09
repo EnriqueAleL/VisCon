@@ -1,0 +1,205 @@
+{
+  "lecture": 19,
+  "title": "Lecture 19",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "19.1",
+      "start": 0.423,
+      "end": 115.583,
+      "title": "Announcements: GPU programming lecture, readings, and transition to memory"
+    },
+    {
+      "id": "19.2",
+      "start": 115.583,
+      "end": 293.383,
+      "title": "Review of execution models and processing paradigm trade-offs"
+    },
+    {
+      "id": "19.3",
+      "start": 293.383,
+      "end": 617.703,
+      "title": "Motivation: memory and communication dominate modern systems"
+    },
+    {
+      "id": "19.4",
+      "start": 617.703,
+      "end": 751.183,
+      "title": "Claim that memory remains the system bottleneck despite dominating hardware resources"
+    },
+    {
+      "id": "19.5",
+      "start": 751.183,
+      "end": 819.849,
+      "title": "Course examples where memory latency shaped processor design"
+    },
+    {
+      "id": "19.6",
+      "start": 819.849,
+      "end": 962.783,
+      "title": "Application perspective: data-intensive workloads stress memory capacity, latency, and bandwidth"
+    },
+    {
+      "id": "19.7",
+      "start": 962.783,
+      "end": 1104.263,
+      "title": "Historical performance evidence: “It’s the Memory, Stupid!” and processor stalls"
+    },
+    {
+      "id": "19.8",
+      "start": 1104.263,
+      "end": 1264.676,
+      "title": "Google data-center evidence that processors retire instructions only a small fraction of time"
+    },
+    {
+      "id": "19.9",
+      "start": 1264.676,
+      "end": 1560.383,
+      "title": "Energy cost of data movement versus computation"
+    },
+    {
+      "id": "19.10",
+      "start": 1560.383,
+      "end": 1607.383,
+      "title": "Q&A: relationship between energy consumption and heat"
+    },
+    {
+      "id": "19.11",
+      "start": 1607.383,
+      "end": 1721.903,
+      "title": "Mobile and neural-network studies showing memory dominates system energy"
+    },
+    {
+      "id": "19.12",
+      "start": 1721.903,
+      "end": 1884.903,
+      "title": "Robustness perspective: DRAM scaling and RowHammer"
+    },
+    {
+      "id": "19.13",
+      "start": 1884.903,
+      "end": 2198.802,
+      "title": "Mechanism and implications of RowHammer disturbance errors"
+    },
+    {
+      "id": "19.14",
+      "start": 2198.802,
+      "end": 2265.383,
+      "title": "Memory-centric computing as a research and startup opportunity"
+    },
+    {
+      "id": "19.15",
+      "start": 2265.383,
+      "end": 2408.823,
+      "title": "Programmer view: loads, stores, and virtual memory abstraction"
+    },
+    {
+      "id": "19.16",
+      "start": 2408.823,
+      "end": 2456.943,
+      "title": "Backing store and the extended storage hierarchy"
+    },
+    {
+      "id": "19.17",
+      "start": 2456.943,
+      "end": 2598.743,
+      "title": "Ideal memory and conflicting design goals"
+    },
+    {
+      "id": "19.18",
+      "start": 2598.743,
+      "end": 2815.063,
+      "title": "Memory technologies: flip-flops, SRAM, DRAM, flash, disks, and tape"
+    },
+    {
+      "id": "19.19",
+      "start": 2815.063,
+      "end": 3212.143,
+      "title": "Basic memory array organization with rows, columns, decoders, and multiplexers"
+    },
+    {
+      "id": "19.20",
+      "start": 3212.143,
+      "end": 3235.213,
+      "title": "Break and restart of memory hierarchy discussion"
+    },
+    {
+      "id": "19.21",
+      "start": 3235.213,
+      "end": 3318.293,
+      "title": "Definition of memory banking and interleaving"
+    },
+    {
+      "id": "19.22",
+      "start": 3318.293,
+      "end": 3411.216,
+      "title": "Bus and pin trade-offs in multi-bank memory interfaces"
+    },
+    {
+      "id": "19.23",
+      "start": 3411.216,
+      "end": 3524.293,
+      "title": "Top-down DRAM organization: banks, chips, ranks, modules, channels, and controllers"
+    },
+    {
+      "id": "19.24",
+      "start": 3524.293,
+      "end": 3784.253,
+      "title": "3D-stacked memory and high-bandwidth memory"
+    },
+    {
+      "id": "19.25",
+      "start": 3784.253,
+      "end": 3911.973,
+      "title": "DIMM, rank, chip, and bank hierarchy in a DRAM system"
+    },
+    {
+      "id": "19.26",
+      "start": 3911.973,
+      "end": 3955.733,
+      "title": "Q&A: serial presence detect on a DIMM"
+    },
+    {
+      "id": "19.27",
+      "start": 3955.733,
+      "end": 4138.733,
+      "title": "Ranks and chips as synchronized responders to memory commands"
+    },
+    {
+      "id": "19.28",
+      "start": 4138.733,
+      "end": 4560.566,
+      "title": "DRAM bank operation with row buffers, activate, read, and precharge commands"
+    },
+    {
+      "id": "19.29",
+      "start": 4560.566,
+      "end": 4745.733,
+      "title": "Internal DRAM bank hierarchy with subarrays and mats"
+    },
+    {
+      "id": "19.30",
+      "start": 4745.733,
+      "end": 5151.173,
+      "title": "Sense amplifier and DRAM cell circuit operation"
+    },
+    {
+      "id": "19.31",
+      "start": 5151.173,
+      "end": 5308.173,
+      "title": "Subarray row-buffer cost and chip-level I/O paths"
+    },
+    {
+      "id": "19.32",
+      "start": 5308.173,
+      "end": 5443.133,
+      "title": "Mapping a 64-byte cache block onto DRAM chips and transfers"
+    },
+    {
+      "id": "19.33",
+      "start": 5443.133,
+      "end": 5614.253,
+      "title": "Comparison of DRAM and SRAM technology before moving to caches"
+    }
+  ]
+}

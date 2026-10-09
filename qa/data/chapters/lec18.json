@@ -1,0 +1,121 @@
+{
+  "lecture": 18,
+  "title": "Lecture 18",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "18.1",
+      "start": 2.123,
+      "end": 91.243,
+      "title": "Announcements: remaining lectures on memory and start of GPU architectures"
+    },
+    {
+      "id": "18.2",
+      "start": 91.243,
+      "end": 361.403,
+      "title": "Review of SIMD, Flynn’s taxonomy, array/vector processing, and memory banking"
+    },
+    {
+      "id": "18.3",
+      "start": 361.403,
+      "end": 530.643,
+      "title": "Review of vector lanes, partitioned registers, vector pipelines, and automatic vectorization"
+    },
+    {
+      "id": "18.4",
+      "start": 530.643,
+      "end": 966.643,
+      "title": "Vectorizable loops, graphics parallelism, Amdahl’s law, and SIMD ISA extensions"
+    },
+    {
+      "id": "18.5",
+      "start": 966.643,
+      "end": 1122.375,
+      "title": "Prevalence of SIMD in Cerebras wafer-scale engines and FPGA accelerators"
+    },
+    {
+      "id": "18.6",
+      "start": 1122.375,
+      "end": 1236.598,
+      "title": "Class poll and motivation for GPU success in AI and interconnects"
+    },
+    {
+      "id": "18.7",
+      "start": 1236.598,
+      "end": 1543.083,
+      "title": "GPU cores as SIMD engines with a thread-based programming model"
+    },
+    {
+      "id": "18.8",
+      "start": 1543.083,
+      "end": 1851.123,
+      "title": "Three ways to exploit loop parallelism: sequential, SIMD, and multithreaded SPMD"
+    },
+    {
+      "id": "18.9",
+      "start": 1851.123,
+      "end": 2060.083,
+      "title": "Definition of SIMT: scalar threads dynamically grouped into SIMD-like warps"
+    },
+    {
+      "id": "18.10",
+      "start": 2060.083,
+      "end": 2470.612,
+      "title": "Thread contexts, warps, wavefronts, and dynamic grouping by program counter"
+    },
+    {
+      "id": "18.11",
+      "start": 2470.612,
+      "end": 2747.323,
+      "title": "Fine-grained multiwarping for simple pipelines and latency tolerance"
+    },
+    {
+      "id": "18.12",
+      "start": 2747.323,
+      "end": 2772.283,
+      "title": "Break"
+    },
+    {
+      "id": "18.13",
+      "start": 2772.283,
+      "end": 3447.274,
+      "title": "Clarification: lockstep execution, control overhead amortization, active masks, and memory stalls"
+    },
+    {
+      "id": "18.14",
+      "start": 3447.274,
+      "end": 3910.154,
+      "title": "Mapping vector-machine concepts to GPU warps, memory coalescing, CUDA kernels, blocks, and threads"
+    },
+    {
+      "id": "18.15",
+      "start": 3910.154,
+      "end": 4228.034,
+      "title": "Mapping programmer-visible blocks to warps and streaming multiprocessors"
+    },
+    {
+      "id": "18.16",
+      "start": 4228.034,
+      "end": 4867.034,
+      "title": "Branch divergence, active masks, SIMD utilization, and dynamic warp formation"
+    },
+    {
+      "id": "18.17",
+      "start": 4867.034,
+      "end": 5099.594,
+      "title": "GPU analysis, homework hints, warp scheduling for memory latency, and subwarping"
+    },
+    {
+      "id": "18.18",
+      "start": 5099.594,
+      "end": 5509.954,
+      "title": "Evolution of NVIDIA GPUs: shader cores, Tensor Cores, sparsity support, and low-precision data types"
+    },
+    {
+      "id": "18.19",
+      "start": 5509.954,
+      "end": 5647.234,
+      "title": "Wrap-up: trade-offs among GPUs, systolic arrays, FPGAs, and heterogeneous systems for machine learning"
+    }
+  ]
+}

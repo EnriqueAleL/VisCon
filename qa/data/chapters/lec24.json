@@ -1,0 +1,127 @@
+{
+  "lecture": 24,
+  "title": "Lecture 24",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "24.1",
+      "start": 2.396,
+      "end": 182.676,
+      "title": "Opening and recap of virtual memory address translation"
+    },
+    {
+      "id": "24.2",
+      "start": 182.676,
+      "end": 543.636,
+      "title": "Page replacement with the clock algorithm"
+    },
+    {
+      "id": "24.3",
+      "start": 543.636,
+      "end": 902.636,
+      "title": "Memory protection, sharing, and page-level permissions"
+    },
+    {
+      "id": "24.4",
+      "start": 902.636,
+      "end": 1084.076,
+      "title": "x86 page-table-entry flags and hierarchical permissions"
+    },
+    {
+      "id": "24.5",
+      "start": 1084.076,
+      "end": 1192.156,
+      "title": "Security impact of flipping page-table bits with RowHammer"
+    },
+    {
+      "id": "24.6",
+      "start": 1192.156,
+      "end": 1385.854,
+      "title": "RowHammer mechanism and disturbance kernel"
+    },
+    {
+      "id": "24.7",
+      "start": 1385.854,
+      "end": 1663.956,
+      "title": "Google RowHammer exploit using page-table spraying"
+    },
+    {
+      "id": "24.8",
+      "start": 1663.956,
+      "end": 1888.356,
+      "title": "Hardware support for fast address translation"
+    },
+    {
+      "id": "24.9",
+      "start": 1888.356,
+      "end": 2142.116,
+      "title": "TLB hierarchy and cache-like TLB lookup"
+    },
+    {
+      "id": "24.10",
+      "start": 2142.116,
+      "end": 2387.156,
+      "title": "Hardware-managed versus software-managed TLB misses"
+    },
+    {
+      "id": "24.11",
+      "start": 2387.156,
+      "end": 2731.575,
+      "title": "Multiple page sizes and L1 data TLB lookup"
+    },
+    {
+      "id": "24.12",
+      "start": 2731.575,
+      "end": 3144.018,
+      "title": "L2 TLB support for multiple page sizes with pseudo-associativity"
+    },
+    {
+      "id": "24.13",
+      "start": 3144.018,
+      "end": 3326.566,
+      "title": "Hardware page-table walkers and page-walk caches"
+    },
+    {
+      "id": "24.14",
+      "start": 3326.566,
+      "end": 3611.797,
+      "title": "Virtual versus physical cache access, synonyms, and homonyms"
+    },
+    {
+      "id": "24.15",
+      "start": 3611.797,
+      "end": 4123.736,
+      "title": "Virtual memory overheads, research directions, and summary"
+    },
+    {
+      "id": "24.16",
+      "start": 4123.736,
+      "end": 4312.656,
+      "title": "Course epilogue opening and learning goals"
+    },
+    {
+      "id": "24.17",
+      "start": 4312.656,
+      "end": 4627.216,
+      "title": "Recap of the computer architecture stack and main takeaways"
+    },
+    {
+      "id": "24.18",
+      "start": 4627.216,
+      "end": 4883.456,
+      "title": "Educational philosophy: training the mind and accepting change"
+    },
+    {
+      "id": "24.19",
+      "start": 4883.456,
+      "end": 5222.696,
+      "title": "Future directions in computer architecture and Safari research themes"
+    },
+    {
+      "id": "24.20",
+      "start": 5222.696,
+      "end": 5341.176,
+      "title": "Final conclusion and exam wishes"
+    }
+  ]
+}

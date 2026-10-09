@@ -1,0 +1,127 @@
+{
+  "lecture": 15,
+  "title": "Lecture 15",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "15.1",
+      "start": 2.037,
+      "end": 215.917,
+      "title": "Announcements and setup for branch prediction lecture"
+    },
+    {
+      "id": "15.2",
+      "start": 215.917,
+      "end": 455.157,
+      "title": "Motivation: branch misprediction cost in wide deep pipelines"
+    },
+    {
+      "id": "15.3",
+      "start": 455.157,
+      "end": 939.717,
+      "title": "Branch target buffer and front-end prediction components"
+    },
+    {
+      "id": "15.4",
+      "start": 939.717,
+      "end": 1255.751,
+      "title": "Static branch prediction: always-not-taken, always-taken, and BTFNT"
+    },
+    {
+      "id": "15.5",
+      "start": 1255.751,
+      "end": 1411.477,
+      "title": "Profile-based static branch prediction and representativeness limits"
+    },
+    {
+      "id": "15.6",
+      "start": 1411.477,
+      "end": 1763.677,
+      "title": "Programmer and program-analysis based static prediction"
+    },
+    {
+      "id": "15.7",
+      "start": 1763.677,
+      "end": 1933.149,
+      "title": "Limits of static prediction and role of dynamic compilation"
+    },
+    {
+      "id": "15.8",
+      "start": 1933.149,
+      "end": 2323.663,
+      "title": "Dynamic branch prediction and the last-time predictor"
+    },
+    {
+      "id": "15.9",
+      "start": 2323.663,
+      "end": 2750.183,
+      "title": "Two-bit saturating counters and hysteresis"
+    },
+    {
+      "id": "15.10",
+      "start": 2750.183,
+      "end": 2933.703,
+      "title": "Why simple predictors are not enough"
+    },
+    {
+      "id": "15.11",
+      "start": 2933.703,
+      "end": 2958.066,
+      "title": "Break and restart"
+    },
+    {
+      "id": "15.12",
+      "start": 2958.066,
+      "end": 3434.986,
+      "title": "Global branch correlation with GHR and pattern history table"
+    },
+    {
+      "id": "15.13",
+      "start": 3434.986,
+      "end": 3697.702,
+      "title": "Pentium Pro global predictor and Gshare hashing"
+    },
+    {
+      "id": "15.14",
+      "start": 3697.702,
+      "end": 3969.712,
+      "title": "Local history prediction for per-branch patterns"
+    },
+    {
+      "id": "15.15",
+      "start": 3969.712,
+      "end": 4042.992,
+      "title": "Design space of two-level predictors"
+    },
+    {
+      "id": "15.16",
+      "start": 4042.992,
+      "end": 4326.512,
+      "title": "Hybrid predictors and the Alpha 21264 tournament predictor"
+    },
+    {
+      "id": "15.17",
+      "start": 4326.512,
+      "end": 4644.592,
+      "title": "Biased branches, loop predictors, and remaining hard workloads"
+    },
+    {
+      "id": "15.18",
+      "start": 4644.592,
+      "end": 5127.672,
+      "title": "Perceptron branch prediction as machine learning in hardware"
+    },
+    {
+      "id": "15.19",
+      "start": 5127.672,
+      "end": 5389.512,
+      "title": "TAGE and predictors with multiple geometric history lengths"
+    },
+    {
+      "id": "15.20",
+      "start": 5389.512,
+      "end": 5621.552,
+      "title": "State-of-the-art hybrids and branch confidence estimation"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+WEBVTT
+
+14.1
+00:00:01.303 --> 00:01:31.374
+Administrative introduction and lecture roadmap
+
+14.2
+00:01:31.374 --> 00:04:33.810
+Recap of mechanisms for out-of-order execution
+
+14.3
+00:04:33.810 --> 00:07:54.543
+Precise exceptions with reorder buffers and physical register files
+
+14.4
+00:07:54.543 --> 00:12:09.463
+Examples of real out-of-order processors
+
+14.5
+00:12:09.463 --> 00:16:26.383
+Why out-of-order execution improves latency tolerance
+
+14.6
+00:16:26.383 --> 00:21:14.383
+Advantages, costs, and performance equation for out-of-order execution
+
+14.7
+00:21:14.383 --> 00:23:06.863
+Survey of other ways to extract parallelism
+
+14.8
+00:23:06.863 --> 00:25:21.928
+Definition of dataflow architecture
+
+14.9
+00:25:21.928 --> 00:29:13.183
+Why ISA-level dataflow struggled historically
+
+14.10
+00:29:13.183 --> 00:34:30.743
+Advantages and disadvantages of dataflow architectures
+
+14.11
+00:34:30.743 --> 00:37:56.063
+Definition of N-wide superscalar execution
+
+14.12
+00:37:56.063 --> 00:45:16.013
+Superscalar design space and in-order superscalar example
+
+14.13
+00:45:16.013 --> 00:51:12.704
+Superscalar benefits, costs, history, and commit bubbles
+
+14.14
+00:51:12.704 --> 00:51:39.179
+Break and transition to branch prediction
+
+14.15
+00:51:39.179 --> 00:54:53.539
+Branch prediction as the next-PC problem
+
+14.16
+00:54:53.539 --> 00:59:55.059
+Next-PC calculation in fixed-length versus variable-length ISAs
+
+14.17
+00:59:55.059 --> 01:02:59.870
+Types of branches and their prediction difficulty
+
+14.18
+01:02:59.870 --> 01:07:29.979
+Possible ways to handle control dependences
+
+14.19
+01:07:29.979 --> 01:09:18.219
+Why stalling on branches is too expensive
+
+14.20
+01:09:18.219 --> 01:25:09.271
+Quantitative cost of branch misprediction in a wide pipeline
+
+14.21
+01:25:09.271 --> 01:26:42.339
+Basic always-not-taken or PC-plus-four prediction
+
+14.22
+01:26:42.339 --> 01:29:15.979
+Software layout for better fall-through prediction
+
+14.23
+01:29:15.979 --> 01:31:57.059
+Eliminating branches with predicate combination and predicated execution
+
+14.24
+01:31:57.059 --> 01:36:44.779
+CPI model for naive branch prediction and preview of dynamic predictors

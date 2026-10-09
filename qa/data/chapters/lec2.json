@@ -1,0 +1,121 @@
+{
+  "lecture": 2,
+  "title": "Lecture 2",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "2.1",
+      "start": 1.191,
+      "end": 143.511,
+      "title": "Administrative introduction: agenda, readings, and extra credit rules"
+    },
+    {
+      "id": "2.2",
+      "start": 143.511,
+      "end": 329.711,
+      "title": "Motivation for transistors and transistor-count scaling"
+    },
+    {
+      "id": "2.3",
+      "start": 329.711,
+      "end": 847.991,
+      "title": "MOS transistors as voltage-controlled switches"
+    },
+    {
+      "id": "2.4",
+      "start": 847.991,
+      "end": 1218.551,
+      "title": "CMOS logic gates and the CMOS inverter"
+    },
+    {
+      "id": "2.5",
+      "start": 1218.551,
+      "end": 1765.071,
+      "title": "Construction of NAND, AND, and NOR gates from CMOS transistors"
+    },
+    {
+      "id": "2.6",
+      "start": 1765.071,
+      "end": 2068.391,
+      "title": "General CMOS gate structure, invalid states, and latency"
+    },
+    {
+      "id": "2.7",
+      "start": 2068.391,
+      "end": 2666.071,
+      "title": "Dynamic power, static power, energy, and total design power"
+    },
+    {
+      "id": "2.8",
+      "start": 2666.071,
+      "end": 2944.231,
+      "title": "Common logic gates, Moore’s Law, and semiconductor manufacturing"
+    },
+    {
+      "id": "2.9",
+      "start": 2944.231,
+      "end": 2988.781,
+      "title": "Break and optional Moore paper review"
+    },
+    {
+      "id": "2.10",
+      "start": 2988.781,
+      "end": 3206.681,
+      "title": "Definition of combinational logic circuits and functional specification"
+    },
+    {
+      "id": "2.11",
+      "start": 3206.681,
+      "end": 3771.081,
+      "title": "Boolean algebra axioms, duality, simplification, and De Morgan’s laws"
+    },
+    {
+      "id": "2.12",
+      "start": 3771.081,
+      "end": 4245.281,
+      "title": "Canonical sum-of-products form and minterm notation"
+    },
+    {
+      "id": "2.13",
+      "start": 4245.281,
+      "end": 4604.321,
+      "title": "Product-of-sums form, maxterms, complements, and conversions"
+    },
+    {
+      "id": "2.14",
+      "start": 4604.321,
+      "end": 4907.281,
+      "title": "Combinational blocks and construction of a decoder"
+    },
+    {
+      "id": "2.15",
+      "start": 4907.281,
+      "end": 4997.921,
+      "title": "Applications of decoders in memory addressing and instruction decoding"
+    },
+    {
+      "id": "2.16",
+      "start": 4997.921,
+      "end": 5309.321,
+      "title": "Definition and implementation of multiplexers"
+    },
+    {
+      "id": "2.17",
+      "start": 5309.321,
+      "end": 5584.761,
+      "title": "Using multiplexers as lookup tables in FPGAs"
+    },
+    {
+      "id": "2.18",
+      "start": 5584.761,
+      "end": 5649.162,
+      "title": "Decoder-based logic functions and wrap-up"
+    },
+    {
+      "id": "2.19",
+      "start": 5649.162,
+      "end": 5811.793,
+      "title": "Student announcement: Start Hack hackathon"
+    }
+  ]
+}

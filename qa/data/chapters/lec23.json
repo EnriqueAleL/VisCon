@@ -1,0 +1,121 @@
+{
+  "lecture": 23,
+  "title": "Lecture 23",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "23.1",
+      "start": 3.145,
+      "end": 72.778,
+      "title": "Administrative introduction and lecture roadmap"
+    },
+    {
+      "id": "23.2",
+      "start": 72.778,
+      "end": 274.018,
+      "title": "Recap: definition, purpose, and correctness of prefetching"
+    },
+    {
+      "id": "23.3",
+      "start": 274.018,
+      "end": 513.523,
+      "title": "Predicting complex access patterns with history and reinforcement learning"
+    },
+    {
+      "id": "23.4",
+      "start": 513.523,
+      "end": 846.698,
+      "title": "Multiple prefetchers and multicore prefetch coordination"
+    },
+    {
+      "id": "23.5",
+      "start": 846.698,
+      "end": 915.058,
+      "title": "Usefulness prediction and cache insertion for prefetched blocks"
+    },
+    {
+      "id": "23.6",
+      "start": 915.058,
+      "end": 1174.881,
+      "title": "Definition of execution-based prefetching and thread-based pre-execution"
+    },
+    {
+      "id": "23.7",
+      "start": 1174.881,
+      "end": 1408.35,
+      "title": "Motivation for runahead execution: full-window stalls in out-of-order cores"
+    },
+    {
+      "id": "23.8",
+      "start": 1408.35,
+      "end": 1521.35,
+      "title": "Mechanism of runahead execution with checkpointing and invalid results"
+    },
+    {
+      "id": "23.9",
+      "start": 1521.35,
+      "end": 2041.688,
+      "title": "Example and intuition: overlapping cache misses during runahead"
+    },
+    {
+      "id": "23.10",
+      "start": 2041.688,
+      "end": 2550.448,
+      "title": "Benefits, limitations, performance, and industrial use of runahead"
+    },
+    {
+      "id": "23.11",
+      "start": 2550.448,
+      "end": 2776.313,
+      "title": "Runahead extensions for pointer chasing and thesis-level conclusions"
+    },
+    {
+      "id": "23.12",
+      "start": 2776.313,
+      "end": 2913.538,
+      "title": "Break, advice, and transition from prefetching to virtual memory"
+    },
+    {
+      "id": "23.13",
+      "start": 2913.538,
+      "end": 3060.649,
+      "title": "Introduction to virtual memory and the illusion of ideal memory"
+    },
+    {
+      "id": "23.14",
+      "start": 3060.649,
+      "end": 3337.971,
+      "title": "Namespace isolation example: why programs should not choose physical locations"
+    },
+    {
+      "id": "23.15",
+      "start": 3337.971,
+      "end": 3568.606,
+      "title": "Benefits of virtual memory and drawbacks of direct physical addressing"
+    },
+    {
+      "id": "23.16",
+      "start": 3568.606,
+      "end": 3959.585,
+      "title": "Address translation with pages, frames, page tables, and page faults"
+    },
+    {
+      "id": "23.17",
+      "start": 3959.585,
+      "end": 4484.691,
+      "title": "Worked example: translating virtual addresses using page table entries"
+    },
+    {
+      "id": "23.18",
+      "start": 4484.691,
+      "end": 4957.959,
+      "title": "Challenge of page table size and multilevel page tables"
+    },
+    {
+      "id": "23.19",
+      "start": 4957.959,
+      "end": 5434.522,
+      "title": "Translation overhead, OS responsibilities, page fault handling, and DMA"
+    }
+  ]
+}

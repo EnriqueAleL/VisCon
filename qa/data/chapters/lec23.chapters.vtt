@@ -1,0 +1,77 @@
+WEBVTT
+
+23.1
+00:00:03.145 --> 00:01:12.778
+Administrative introduction and lecture roadmap
+
+23.2
+00:01:12.778 --> 00:04:34.018
+Recap: definition, purpose, and correctness of prefetching
+
+23.3
+00:04:34.018 --> 00:08:33.523
+Predicting complex access patterns with history and reinforcement learning
+
+23.4
+00:08:33.523 --> 00:14:06.698
+Multiple prefetchers and multicore prefetch coordination
+
+23.5
+00:14:06.698 --> 00:15:15.058
+Usefulness prediction and cache insertion for prefetched blocks
+
+23.6
+00:15:15.058 --> 00:19:34.881
+Definition of execution-based prefetching and thread-based pre-execution
+
+23.7
+00:19:34.881 --> 00:23:28.350
+Motivation for runahead execution: full-window stalls in out-of-order cores
+
+23.8
+00:23:28.350 --> 00:25:21.350
+Mechanism of runahead execution with checkpointing and invalid results
+
+23.9
+00:25:21.350 --> 00:34:01.688
+Example and intuition: overlapping cache misses during runahead
+
+23.10
+00:34:01.688 --> 00:42:30.448
+Benefits, limitations, performance, and industrial use of runahead
+
+23.11
+00:42:30.448 --> 00:46:16.313
+Runahead extensions for pointer chasing and thesis-level conclusions
+
+23.12
+00:46:16.313 --> 00:48:33.538
+Break, advice, and transition from prefetching to virtual memory
+
+23.13
+00:48:33.538 --> 00:51:00.649
+Introduction to virtual memory and the illusion of ideal memory
+
+23.14
+00:51:00.649 --> 00:55:37.971
+Namespace isolation example: why programs should not choose physical locations
+
+23.15
+00:55:37.971 --> 00:59:28.606
+Benefits of virtual memory and drawbacks of direct physical addressing
+
+23.16
+00:59:28.606 --> 01:05:59.585
+Address translation with pages, frames, page tables, and page faults
+
+23.17
+01:05:59.585 --> 01:14:44.691
+Worked example: translating virtual addresses using page table entries
+
+23.18
+01:14:44.691 --> 01:22:37.959
+Challenge of page table size and multilevel page tables
+
+23.19
+01:22:37.959 --> 01:30:34.522
+Translation overhead, OS responsibilities, page fault handling, and DMA

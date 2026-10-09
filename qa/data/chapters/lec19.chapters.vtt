@@ -1,0 +1,133 @@
+WEBVTT
+
+19.1
+00:00:00.423 --> 00:01:55.583
+Announcements: GPU programming lecture, readings, and transition to memory
+
+19.2
+00:01:55.583 --> 00:04:53.383
+Review of execution models and processing paradigm trade-offs
+
+19.3
+00:04:53.383 --> 00:10:17.703
+Motivation: memory and communication dominate modern systems
+
+19.4
+00:10:17.703 --> 00:12:31.183
+Claim that memory remains the system bottleneck despite dominating hardware resources
+
+19.5
+00:12:31.183 --> 00:13:39.849
+Course examples where memory latency shaped processor design
+
+19.6
+00:13:39.849 --> 00:16:02.783
+Application perspective: data-intensive workloads stress memory capacity, latency, and bandwidth
+
+19.7
+00:16:02.783 --> 00:18:24.263
+Historical performance evidence: “It’s the Memory, Stupid!” and processor stalls
+
+19.8
+00:18:24.263 --> 00:21:04.676
+Google data-center evidence that processors retire instructions only a small fraction of time
+
+19.9
+00:21:04.676 --> 00:26:00.383
+Energy cost of data movement versus computation
+
+19.10
+00:26:00.383 --> 00:26:47.383
+Q&A: relationship between energy consumption and heat
+
+19.11
+00:26:47.383 --> 00:28:41.903
+Mobile and neural-network studies showing memory dominates system energy
+
+19.12
+00:28:41.903 --> 00:31:24.903
+Robustness perspective: DRAM scaling and RowHammer
+
+19.13
+00:31:24.903 --> 00:36:38.802
+Mechanism and implications of RowHammer disturbance errors
+
+19.14
+00:36:38.802 --> 00:37:45.383
+Memory-centric computing as a research and startup opportunity
+
+19.15
+00:37:45.383 --> 00:40:08.823
+Programmer view: loads, stores, and virtual memory abstraction
+
+19.16
+00:40:08.823 --> 00:40:56.943
+Backing store and the extended storage hierarchy
+
+19.17
+00:40:56.943 --> 00:43:18.743
+Ideal memory and conflicting design goals
+
+19.18
+00:43:18.743 --> 00:46:55.063
+Memory technologies: flip-flops, SRAM, DRAM, flash, disks, and tape
+
+19.19
+00:46:55.063 --> 00:53:32.143
+Basic memory array organization with rows, columns, decoders, and multiplexers
+
+19.20
+00:53:32.143 --> 00:53:55.213
+Break and restart of memory hierarchy discussion
+
+19.21
+00:53:55.213 --> 00:55:18.293
+Definition of memory banking and interleaving
+
+19.22
+00:55:18.293 --> 00:56:51.216
+Bus and pin trade-offs in multi-bank memory interfaces
+
+19.23
+00:56:51.216 --> 00:58:44.293
+Top-down DRAM organization: banks, chips, ranks, modules, channels, and controllers
+
+19.24
+00:58:44.293 --> 01:03:04.253
+3D-stacked memory and high-bandwidth memory
+
+19.25
+01:03:04.253 --> 01:05:11.973
+DIMM, rank, chip, and bank hierarchy in a DRAM system
+
+19.26
+01:05:11.973 --> 01:05:55.733
+Q&A: serial presence detect on a DIMM
+
+19.27
+01:05:55.733 --> 01:08:58.733
+Ranks and chips as synchronized responders to memory commands
+
+19.28
+01:08:58.733 --> 01:16:00.566
+DRAM bank operation with row buffers, activate, read, and precharge commands
+
+19.29
+01:16:00.566 --> 01:19:05.733
+Internal DRAM bank hierarchy with subarrays and mats
+
+19.30
+01:19:05.733 --> 01:25:51.173
+Sense amplifier and DRAM cell circuit operation
+
+19.31
+01:25:51.173 --> 01:28:28.173
+Subarray row-buffer cost and chip-level I/O paths
+
+19.32
+01:28:28.173 --> 01:30:43.133
+Mapping a 64-byte cache block onto DRAM chips and transfers
+
+19.33
+01:30:43.133 --> 01:33:34.253
+Comparison of DRAM and SRAM technology before moving to caches

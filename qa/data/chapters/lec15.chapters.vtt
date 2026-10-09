@@ -1,0 +1,81 @@
+WEBVTT
+
+15.1
+00:00:02.037 --> 00:03:35.917
+Announcements and setup for branch prediction lecture
+
+15.2
+00:03:35.917 --> 00:07:35.157
+Motivation: branch misprediction cost in wide deep pipelines
+
+15.3
+00:07:35.157 --> 00:15:39.717
+Branch target buffer and front-end prediction components
+
+15.4
+00:15:39.717 --> 00:20:55.751
+Static branch prediction: always-not-taken, always-taken, and BTFNT
+
+15.5
+00:20:55.751 --> 00:23:31.477
+Profile-based static branch prediction and representativeness limits
+
+15.6
+00:23:31.477 --> 00:29:23.677
+Programmer and program-analysis based static prediction
+
+15.7
+00:29:23.677 --> 00:32:13.149
+Limits of static prediction and role of dynamic compilation
+
+15.8
+00:32:13.149 --> 00:38:43.663
+Dynamic branch prediction and the last-time predictor
+
+15.9
+00:38:43.663 --> 00:45:50.183
+Two-bit saturating counters and hysteresis
+
+15.10
+00:45:50.183 --> 00:48:53.703
+Why simple predictors are not enough
+
+15.11
+00:48:53.703 --> 00:49:18.066
+Break and restart
+
+15.12
+00:49:18.066 --> 00:57:14.986
+Global branch correlation with GHR and pattern history table
+
+15.13
+00:57:14.986 --> 01:01:37.702
+Pentium Pro global predictor and Gshare hashing
+
+15.14
+01:01:37.702 --> 01:06:09.712
+Local history prediction for per-branch patterns
+
+15.15
+01:06:09.712 --> 01:07:22.992
+Design space of two-level predictors
+
+15.16
+01:07:22.992 --> 01:12:06.512
+Hybrid predictors and the Alpha 21264 tournament predictor
+
+15.17
+01:12:06.512 --> 01:17:24.592
+Biased branches, loop predictors, and remaining hard workloads
+
+15.18
+01:17:24.592 --> 01:25:27.672
+Perceptron branch prediction as machine learning in hardware
+
+15.19
+01:25:27.672 --> 01:29:49.512
+TAGE and predictors with multiple geometric history lengths
+
+15.20
+01:29:49.512 --> 01:33:41.552
+State-of-the-art hybrids and branch confidence estimation

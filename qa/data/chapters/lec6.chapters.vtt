@@ -1,0 +1,81 @@
+WEBVTT
+
+6.1
+00:00:01.490 --> 00:01:31.050
+Announcement: semester speaker feedback channels
+
+6.2
+00:01:31.050 --> 00:03:50.370
+Lecture roadmap: HDL wrap-up before timing and verification
+
+6.3
+00:03:50.370 --> 00:06:33.850
+Finite state machine structure and divide-by-three clock divider design
+
+6.4
+00:06:33.850 --> 00:10:24.922
+Verilog implementation of the divide-by-three FSM
+
+6.5
+00:10:24.922 --> 00:12:54.890
+Q&A: clock division for energy savings and synthesis results
+
+6.6
+00:12:54.890 --> 00:18:16.170
+Example: smiling snail sequence detector FSM for 1101
+
+6.7
+00:18:16.170 --> 00:23:18.890
+Introduction to circuit timing and design trade-offs
+
+6.8
+00:23:18.890 --> 00:30:31.850
+Physical causes of delay and definitions of contamination and propagation delay
+
+6.9
+00:30:31.850 --> 00:35:24.010
+Critical path and shortest path analysis in combinational circuits
+
+6.10
+00:35:24.010 --> 00:44:06.890
+Example: propagation delay of four-to-one multiplexer implementations
+
+6.11
+00:44:06.890 --> 00:45:20.730
+Q&A: overclocking, crashes, and wrong latched values
+
+6.12
+00:45:20.730 --> 00:53:03.410
+Output glitches and Karnaugh-map redundancy fix
+
+6.13
+00:53:03.410 --> 00:53:29.608
+Break announcement before sequential timing
+
+6.14
+00:53:29.608 --> 00:59:31.808
+D flip-flop timing constraints and metastability
+
+6.15
+00:59:31.808 --> 01:11:22.808
+Derivation of setup and hold constraints between registers
+
+6.16
+01:11:22.808 --> 01:16:23.648
+Worked example: sequential timing analysis and hold-time violation repair
+
+6.17
+01:16:23.648 --> 01:23:48.248
+Clock skew effects on setup and hold timing
+
+6.18
+01:23:48.248 --> 01:28:00.968
+Overview of circuit verification and testing challenges
+
+6.19
+01:28:00.968 --> 01:33:17.008
+Functional verification with Verilog test benches
+
+6.20
+01:33:17.008 --> 01:33:46.008
+Closing remarks and next lecture preview

@@ -1,0 +1,115 @@
+{
+  "lecture": 13,
+  "title": "Lecture 13",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "13.1",
+      "start": 5.063,
+      "end": 175.943,
+      "title": "Announcements and guest lecturer introduction after Easter break"
+    },
+    {
+      "id": "13.2",
+      "start": 175.943,
+      "end": 651.183,
+      "title": "Review of precise exceptions, reorder buffers, and register renaming"
+    },
+    {
+      "id": "13.3",
+      "start": 651.183,
+      "end": 973.023,
+      "title": "Problem: in-order dispatch stalls behind unavailable operands"
+    },
+    {
+      "id": "13.4",
+      "start": 973.023,
+      "end": 1084.303,
+      "title": "Motivation for out-of-order dispatch and dataflow execution"
+    },
+    {
+      "id": "13.5",
+      "start": 1084.303,
+      "end": 1472.023,
+      "title": "Alternatives to out-of-order execution: compiler scheduling, value prediction, and fine-grained multithreading"
+    },
+    {
+      "id": "13.6",
+      "start": 1472.023,
+      "end": 1610.486,
+      "title": "Key idea of out-of-order execution: reservation stations"
+    },
+    {
+      "id": "13.7",
+      "start": 1610.486,
+      "end": 1729.895,
+      "title": "Timing example: out-of-order dispatch speedup over in-order dispatch"
+    },
+    {
+      "id": "13.8",
+      "start": 1729.895,
+      "end": 2093.063,
+      "title": "Q&A: register renaming, ROB necessity, and forwarding versus writeback"
+    },
+    {
+      "id": "13.9",
+      "start": 2093.063,
+      "end": 2323.983,
+      "title": "Four requirements for correct out-of-order execution"
+    },
+    {
+      "id": "13.10",
+      "start": 2323.983,
+      "end": 2664.863,
+      "title": "Tomasulo’s algorithm and the scheduler-centered pipeline"
+    },
+    {
+      "id": "13.11",
+      "start": 2664.863,
+      "end": 2970.463,
+      "title": "Mechanics of Tomasulo’s algorithm: rename, wait, broadcast, and wake up"
+    },
+    {
+      "id": "13.12",
+      "start": 2970.463,
+      "end": 2997.34,
+      "title": "Break"
+    },
+    {
+      "id": "13.13",
+      "start": 2997.34,
+      "end": 3493.34,
+      "title": "Setup for cycle-by-cycle Tomasulo simulation"
+    },
+    {
+      "id": "13.14",
+      "start": 3493.34,
+      "end": 4190.86,
+      "title": "Tomasulo simulation: independent instructions issue out of order"
+    },
+    {
+      "id": "13.15",
+      "start": 4190.86,
+      "end": 4951.66,
+      "title": "Tomasulo simulation: common data bus broadcasts, wake-up, and final result"
+    },
+    {
+      "id": "13.16",
+      "start": 4951.66,
+      "end": 5318.02,
+      "title": "Hardware costs and design questions for reservation stations"
+    },
+    {
+      "id": "13.17",
+      "start": 5318.02,
+      "end": 5592.14,
+      "title": "Adding precise exceptions to out-of-order execution with a ROB"
+    },
+    {
+      "id": "13.18",
+      "start": 5592.14,
+      "end": 5720.86,
+      "title": "Physical register file optimization and wrap-up"
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "lecture": 3,
+  "title": "Lecture 3",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "3.1",
+      "start": 2.134,
+      "end": 283.734,
+      "title": "Opening remarks and recap of combinational logic"
+    },
+    {
+      "id": "3.2",
+      "start": 283.734,
+      "end": 399.894,
+      "title": "Review of decoders, multiplexers, and lookup tables"
+    },
+    {
+      "id": "3.3",
+      "start": 399.894,
+      "end": 773.374,
+      "title": "Derivation of a one-bit full adder from a truth table"
+    },
+    {
+      "id": "3.4",
+      "start": 773.374,
+      "end": 1141.694,
+      "title": "Ripple-carry adder and carry-lookahead adder trade-offs"
+    },
+    {
+      "id": "3.5",
+      "start": 1141.694,
+      "end": 1210.214,
+      "title": "Q&A on adder layout conventions and timing sources"
+    },
+    {
+      "id": "3.6",
+      "start": 1210.214,
+      "end": 1522.362,
+      "title": "Programmable Logic Array implementation of sum-of-products logic"
+    },
+    {
+      "id": "3.7",
+      "start": 1522.362,
+      "end": 1655.614,
+      "title": "Logical completeness of AND/OR/NOT, NAND, and NOR"
+    },
+    {
+      "id": "3.8",
+      "start": 1655.614,
+      "end": 1888.974,
+      "title": "Comparator design as an equality checker"
+    },
+    {
+      "id": "3.9",
+      "start": 1888.974,
+      "end": 2400.534,
+      "title": "Arithmetic Logic Unit design and modular datapath functions"
+    },
+    {
+      "id": "3.10",
+      "start": 2400.534,
+      "end": 2729.654,
+      "title": "Tri-state buffers, shared buses, and multiplexer implementation"
+    },
+    {
+      "id": "3.11",
+      "start": 2729.654,
+      "end": 2776.624,
+      "title": "Break and transition to logic simplification"
+    },
+    {
+      "id": "3.12",
+      "start": 2776.624,
+      "end": 3033.184,
+      "title": "Boolean simplification and the uniting theorem"
+    },
+    {
+      "id": "3.13",
+      "start": 3033.184,
+      "end": 3349.304,
+      "title": "Priority circuit with don't-cares and Karnaugh map mention"
+    },
+    {
+      "id": "3.14",
+      "start": 3349.304,
+      "end": 3604.824,
+      "title": "Introduction to sequential logic and the need for memory"
+    },
+    {
+      "id": "3.15",
+      "start": 3604.824,
+      "end": 3917.784,
+      "title": "Cross-coupled inverters as a one-bit storage element"
+    },
+    {
+      "id": "3.16",
+      "start": 3917.784,
+      "end": 3941.344,
+      "title": "Q&A on storage technologies"
+    },
+    {
+      "id": "3.17",
+      "start": 3941.344,
+      "end": 4270.184,
+      "title": "Set-reset latch using cross-coupled NAND gates"
+    },
+    {
+      "id": "3.18",
+      "start": 4270.184,
+      "end": 4526.344,
+      "title": "Gated D latch and multi-bit register construction"
+    },
+    {
+      "id": "3.19",
+      "start": 4526.344,
+      "end": 5292.704,
+      "title": "Memory array design with decoders and multiplexers"
+    },
+    {
+      "id": "3.20",
+      "start": 5292.704,
+      "end": 5419.824,
+      "title": "Implementing logic with memory lookup tables and sequential lock analogy"
+    }
+  ]
+}

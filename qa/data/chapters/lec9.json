@@ -1,0 +1,145 @@
+{
+  "lecture": 9,
+  "title": "Lecture 9",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "9.1",
+      "start": 1.118,
+      "end": 93.438,
+      "title": "Announcements and roadmap for microarchitecture lectures"
+    },
+    {
+      "id": "9.2",
+      "start": 93.438,
+      "end": 356.638,
+      "title": "Definition of microarchitecture and architectural state"
+    },
+    {
+      "id": "9.3",
+      "start": 356.638,
+      "end": 496.518,
+      "title": "Single-cycle versus microarchitectural intermediate states"
+    },
+    {
+      "id": "9.4",
+      "start": 496.518,
+      "end": 768.238,
+      "title": "Combinational implementation and critical path of a single-cycle processor"
+    },
+    {
+      "id": "9.5",
+      "start": 768.238,
+      "end": 926.078,
+      "title": "Comparison of single-cycle and multicycle machines"
+    },
+    {
+      "id": "9.6",
+      "start": 926.078,
+      "end": 997.438,
+      "title": "Six phases of instruction processing"
+    },
+    {
+      "id": "9.7",
+      "start": 997.438,
+      "end": 1261.198,
+      "title": "Datapath and control logic as processor components"
+    },
+    {
+      "id": "9.8",
+      "start": 1261.198,
+      "end": 1760.445,
+      "title": "Processor design space and performance equation"
+    },
+    {
+      "id": "9.9",
+      "start": 1760.445,
+      "end": 1919.605,
+      "title": "Q&A on historical single-cycle processors and design tradeoffs"
+    },
+    {
+      "id": "9.10",
+      "start": 1919.605,
+      "end": 2209.845,
+      "title": "MIPS state elements: PC, register file, and memories"
+    },
+    {
+      "id": "9.11",
+      "start": 2209.845,
+      "end": 2449.565,
+      "title": "Memory-array notation and single-cycle memory assumptions"
+    },
+    {
+      "id": "9.12",
+      "start": 2449.565,
+      "end": 2691.045,
+      "title": "Five-stage view and initial single-cycle datapath skeleton"
+    },
+    {
+      "id": "9.13",
+      "start": 2691.045,
+      "end": 2741.2,
+      "title": "Break and scope of the simplified MIPS subset"
+    },
+    {
+      "id": "9.14",
+      "start": 2741.2,
+      "end": 2970.28,
+      "title": "Datapath support for R-type ALU instructions"
+    },
+    {
+      "id": "9.15",
+      "start": 2970.28,
+      "end": 3200.96,
+      "title": "Datapath support for I-type ALU instructions"
+    },
+    {
+      "id": "9.16",
+      "start": 3200.96,
+      "end": 3563.84,
+      "title": "Datapath support for load word and store word"
+    },
+    {
+      "id": "9.17",
+      "start": 3563.84,
+      "end": 3907.018,
+      "title": "Unconditional jump datapath and target address formation"
+    },
+    {
+      "id": "9.18",
+      "start": 3907.018,
+      "end": 4271.088,
+      "title": "Jump-and-link variants and conditional branch datapath"
+    },
+    {
+      "id": "9.19",
+      "start": 4271.088,
+      "end": 4337.538,
+      "title": "Delayed branch semantics in MIPS"
+    },
+    {
+      "id": "9.20",
+      "start": 4337.538,
+      "end": 4542.978,
+      "title": "Complete single-cycle datapath with branch and jump PC control"
+    },
+    {
+      "id": "9.21",
+      "start": 4542.978,
+      "end": 5106.846,
+      "title": "Hardwired control logic and instruction-specific signal settings"
+    },
+    {
+      "id": "9.22",
+      "start": 5106.846,
+      "end": 5379.006,
+      "title": "Performance evaluation of the single-cycle microarchitecture"
+    },
+    {
+      "id": "9.23",
+      "start": 5379.006,
+      "end": 5413.486,
+      "title": "Closing remarks and Persian New Year announcement"
+    }
+  ]
+}

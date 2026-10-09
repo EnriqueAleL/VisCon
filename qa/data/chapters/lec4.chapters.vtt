@@ -1,0 +1,89 @@
+WEBVTT
+
+4.1
+00:00:02.081 --> 00:01:58.361
+Announcements and plan for sequential logic, labs, and Verilog
+
+4.2
+00:01:58.361 --> 00:05:27.681
+Review of latches, registers, and memory arrays
+
+4.3
+00:05:27.681 --> 00:12:11.521
+Definition of state using a combination lock
+
+4.4
+00:12:11.521 --> 00:16:51.007
+State diagram for the sequential combination lock
+
+4.5
+00:16:51.007 --> 00:25:05.383
+Asynchronous versus synchronous state transitions and the clock
+
+4.6
+00:25:05.383 --> 00:28:33.017
+Clock period, combinational delay, and synchronous design trade-offs
+
+4.7
+00:28:33.017 --> 00:33:55.297
+Synchronous circuit structures and pipelining
+
+4.8
+00:33:55.297 --> 00:37:53.177
+Definition and components of a finite state machine
+
+4.9
+00:37:53.177 --> 00:41:37.417
+Required behavior of an edge-triggered state register
+
+4.10
+00:41:37.417 --> 00:44:47.017
+Why a gated D latch cannot implement the state register
+
+4.11
+00:44:47.017 --> 00:48:34.897
+Construction of a rising-edge D flip-flop from two latches
+
+4.12
+00:48:34.897 --> 00:56:31.537
+Moore and Mealy FSMs and smart traffic light controller design
+
+4.13
+00:56:31.537 --> 00:58:55.217
+FSM practice example and general FSM design procedure
+
+4.14
+00:58:55.217 --> 00:59:21.789
+Break and transition to lab and FPGA lecture
+
+4.15
+00:59:21.789 --> 01:06:57.080
+Lab logistics, grading, reports, partners, and AI policy
+
+4.16
+01:06:57.080 --> 01:08:28.960
+Learning goals of the labs: processors, HDL, debugging, and trade-offs
+
+4.17
+01:08:28.960 --> 01:10:46.289
+What FPGAs are and where they fit among processors and ASICs
+
+4.18
+01:10:46.289 --> 01:21:22.000
+FPGA applications in acceleration, testing, prototyping, and field updates
+
+4.19
+01:21:22.000 --> 01:25:54.860
+Course FPGA board and overview of the lab sequence
+
+4.20
+01:25:54.860 --> 01:29:35.440
+FPGA architecture: configurable logic blocks, routing, and connection boxes
+
+4.21
+01:29:35.440 --> 01:33:22.760
+Lookup tables and modern FPGA resources
+
+4.22
+01:33:22.760 --> 01:36:31.200
+FPGA advantages, disadvantages, Verilog-to-Vivado flow, and final lab reminders

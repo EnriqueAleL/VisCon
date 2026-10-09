@@ -1,0 +1,77 @@
+WEBVTT
+
+11.1
+00:00:02.775 --> 00:02:02.855
+Announcements, readings, and recap of multicycle MIPS
+
+11.2
+00:02:02.855 --> 00:06:15.375
+Basic pipeline throughput and the laundry analogy
+
+11.3
+00:06:15.375 --> 00:10:38.575
+Pipeline bottlenecks, resource replication, and real assembly-line examples
+
+11.4
+00:10:38.575 --> 00:12:35.535
+Definition of an ideal pipeline
+
+11.5
+00:12:35.535 --> 00:17:29.495
+Pipeline performance limits: sequencing overhead and hardware cost
+
+11.6
+00:17:29.495 --> 00:22:56.775
+Five-stage MIPS pipeline partitioning and speedup example
+
+11.7
+00:22:56.775 --> 00:30:21.672
+Adding pipeline registers and carrying data through stages
+
+11.8
+00:30:21.672 --> 00:38:50.910
+Pipeline control signals and propagation through pipeline registers
+
+11.9
+00:38:50.910 --> 00:44:39.946
+Why instruction pipelines are not ideal
+
+11.10
+00:44:39.946 --> 00:44:58.444
+Break
+
+11.11
+00:44:58.444 --> 00:49:35.244
+Pipeline stalls and resource contention
+
+11.12
+00:49:35.244 --> 00:56:14.164
+Types of data dependence: RAW, WAR, and WAW
+
+11.13
+00:56:14.164 --> 01:00:22.924
+Fundamental methods for handling flow dependences
+
+11.14
+01:00:22.924 --> 01:04:57.964
+Stalling, bubbles, interlocking, and the MIPS design philosophy
+
+11.15
+01:04:57.964 --> 01:09:48.964
+Hardware detection of data dependences: scoreboarding vs combinational checks
+
+11.16
+01:09:48.964 --> 01:18:40.044
+Data forwarding and bypassing paths
+
+11.17
+01:18:40.044 --> 01:22:10.741
+Load-use stalls and hardware support for inserting bubbles
+
+11.18
+01:22:10.741 --> 01:25:20.421
+Control dependence and simple branch prediction
+
+11.19
+01:25:20.421 --> 01:30:13.941
+Early branch resolution and more accurate branch prediction

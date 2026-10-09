@@ -1,0 +1,127 @@
+{
+  "lecture": 6,
+  "title": "Lecture 6",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "6.1",
+      "start": 1.49,
+      "end": 91.05,
+      "title": "Announcement: semester speaker feedback channels"
+    },
+    {
+      "id": "6.2",
+      "start": 91.05,
+      "end": 230.37,
+      "title": "Lecture roadmap: HDL wrap-up before timing and verification"
+    },
+    {
+      "id": "6.3",
+      "start": 230.37,
+      "end": 393.85,
+      "title": "Finite state machine structure and divide-by-three clock divider design"
+    },
+    {
+      "id": "6.4",
+      "start": 393.85,
+      "end": 624.922,
+      "title": "Verilog implementation of the divide-by-three FSM"
+    },
+    {
+      "id": "6.5",
+      "start": 624.922,
+      "end": 774.89,
+      "title": "Q&A: clock division for energy savings and synthesis results"
+    },
+    {
+      "id": "6.6",
+      "start": 774.89,
+      "end": 1096.17,
+      "title": "Example: smiling snail sequence detector FSM for 1101"
+    },
+    {
+      "id": "6.7",
+      "start": 1096.17,
+      "end": 1398.89,
+      "title": "Introduction to circuit timing and design trade-offs"
+    },
+    {
+      "id": "6.8",
+      "start": 1398.89,
+      "end": 1831.85,
+      "title": "Physical causes of delay and definitions of contamination and propagation delay"
+    },
+    {
+      "id": "6.9",
+      "start": 1831.85,
+      "end": 2124.01,
+      "title": "Critical path and shortest path analysis in combinational circuits"
+    },
+    {
+      "id": "6.10",
+      "start": 2124.01,
+      "end": 2646.89,
+      "title": "Example: propagation delay of four-to-one multiplexer implementations"
+    },
+    {
+      "id": "6.11",
+      "start": 2646.89,
+      "end": 2720.73,
+      "title": "Q&A: overclocking, crashes, and wrong latched values"
+    },
+    {
+      "id": "6.12",
+      "start": 2720.73,
+      "end": 3183.41,
+      "title": "Output glitches and Karnaugh-map redundancy fix"
+    },
+    {
+      "id": "6.13",
+      "start": 3183.41,
+      "end": 3209.608,
+      "title": "Break announcement before sequential timing"
+    },
+    {
+      "id": "6.14",
+      "start": 3209.608,
+      "end": 3571.808,
+      "title": "D flip-flop timing constraints and metastability"
+    },
+    {
+      "id": "6.15",
+      "start": 3571.808,
+      "end": 4282.808,
+      "title": "Derivation of setup and hold constraints between registers"
+    },
+    {
+      "id": "6.16",
+      "start": 4282.808,
+      "end": 4583.648,
+      "title": "Worked example: sequential timing analysis and hold-time violation repair"
+    },
+    {
+      "id": "6.17",
+      "start": 4583.648,
+      "end": 5028.248,
+      "title": "Clock skew effects on setup and hold timing"
+    },
+    {
+      "id": "6.18",
+      "start": 5028.248,
+      "end": 5280.968,
+      "title": "Overview of circuit verification and testing challenges"
+    },
+    {
+      "id": "6.19",
+      "start": 5280.968,
+      "end": 5597.008,
+      "title": "Functional verification with Verilog test benches"
+    },
+    {
+      "id": "6.20",
+      "start": 5597.008,
+      "end": 5626.008,
+      "title": "Closing remarks and next lecture preview"
+    }
+  ]
+}

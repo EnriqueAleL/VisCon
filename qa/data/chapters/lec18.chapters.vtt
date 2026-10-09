@@ -1,0 +1,77 @@
+WEBVTT
+
+18.1
+00:00:02.123 --> 00:01:31.243
+Announcements: remaining lectures on memory and start of GPU architectures
+
+18.2
+00:01:31.243 --> 00:06:01.403
+Review of SIMD, Flynn’s taxonomy, array/vector processing, and memory banking
+
+18.3
+00:06:01.403 --> 00:08:50.643
+Review of vector lanes, partitioned registers, vector pipelines, and automatic vectorization
+
+18.4
+00:08:50.643 --> 00:16:06.643
+Vectorizable loops, graphics parallelism, Amdahl’s law, and SIMD ISA extensions
+
+18.5
+00:16:06.643 --> 00:18:42.375
+Prevalence of SIMD in Cerebras wafer-scale engines and FPGA accelerators
+
+18.6
+00:18:42.375 --> 00:20:36.598
+Class poll and motivation for GPU success in AI and interconnects
+
+18.7
+00:20:36.598 --> 00:25:43.083
+GPU cores as SIMD engines with a thread-based programming model
+
+18.8
+00:25:43.083 --> 00:30:51.123
+Three ways to exploit loop parallelism: sequential, SIMD, and multithreaded SPMD
+
+18.9
+00:30:51.123 --> 00:34:20.083
+Definition of SIMT: scalar threads dynamically grouped into SIMD-like warps
+
+18.10
+00:34:20.083 --> 00:41:10.612
+Thread contexts, warps, wavefronts, and dynamic grouping by program counter
+
+18.11
+00:41:10.612 --> 00:45:47.323
+Fine-grained multiwarping for simple pipelines and latency tolerance
+
+18.12
+00:45:47.323 --> 00:46:12.283
+Break
+
+18.13
+00:46:12.283 --> 00:57:27.274
+Clarification: lockstep execution, control overhead amortization, active masks, and memory stalls
+
+18.14
+00:57:27.274 --> 01:05:10.154
+Mapping vector-machine concepts to GPU warps, memory coalescing, CUDA kernels, blocks, and threads
+
+18.15
+01:05:10.154 --> 01:10:28.034
+Mapping programmer-visible blocks to warps and streaming multiprocessors
+
+18.16
+01:10:28.034 --> 01:21:07.034
+Branch divergence, active masks, SIMD utilization, and dynamic warp formation
+
+18.17
+01:21:07.034 --> 01:24:59.594
+GPU analysis, homework hints, warp scheduling for memory latency, and subwarping
+
+18.18
+01:24:59.594 --> 01:31:49.954
+Evolution of NVIDIA GPUs: shader cores, Tensor Cores, sparsity support, and low-precision data types
+
+18.19
+01:31:49.954 --> 01:34:07.234
+Wrap-up: trade-offs among GPUs, systolic arrays, FPGAs, and heterogeneous systems for machine learning

@@ -1,0 +1,77 @@
+WEBVTT
+
+2.1
+00:00:01.191 --> 00:02:23.511
+Administrative introduction: agenda, readings, and extra credit rules
+
+2.2
+00:02:23.511 --> 00:05:29.711
+Motivation for transistors and transistor-count scaling
+
+2.3
+00:05:29.711 --> 00:14:07.991
+MOS transistors as voltage-controlled switches
+
+2.4
+00:14:07.991 --> 00:20:18.551
+CMOS logic gates and the CMOS inverter
+
+2.5
+00:20:18.551 --> 00:29:25.071
+Construction of NAND, AND, and NOR gates from CMOS transistors
+
+2.6
+00:29:25.071 --> 00:34:28.391
+General CMOS gate structure, invalid states, and latency
+
+2.7
+00:34:28.391 --> 00:44:26.071
+Dynamic power, static power, energy, and total design power
+
+2.8
+00:44:26.071 --> 00:49:04.231
+Common logic gates, Moore’s Law, and semiconductor manufacturing
+
+2.9
+00:49:04.231 --> 00:49:48.781
+Break and optional Moore paper review
+
+2.10
+00:49:48.781 --> 00:53:26.681
+Definition of combinational logic circuits and functional specification
+
+2.11
+00:53:26.681 --> 01:02:51.081
+Boolean algebra axioms, duality, simplification, and De Morgan’s laws
+
+2.12
+01:02:51.081 --> 01:10:45.281
+Canonical sum-of-products form and minterm notation
+
+2.13
+01:10:45.281 --> 01:16:44.321
+Product-of-sums form, maxterms, complements, and conversions
+
+2.14
+01:16:44.321 --> 01:21:47.281
+Combinational blocks and construction of a decoder
+
+2.15
+01:21:47.281 --> 01:23:17.921
+Applications of decoders in memory addressing and instruction decoding
+
+2.16
+01:23:17.921 --> 01:28:29.321
+Definition and implementation of multiplexers
+
+2.17
+01:28:29.321 --> 01:33:04.761
+Using multiplexers as lookup tables in FPGAs
+
+2.18
+01:33:04.761 --> 01:34:09.162
+Decoder-based logic functions and wrap-up
+
+2.19
+01:34:09.162 --> 01:36:51.793
+Student announcement: Start Hack hackathon

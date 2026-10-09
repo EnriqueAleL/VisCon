@@ -1,0 +1,105 @@
+WEBVTT
+
+22.1
+00:00:01.905 --> 00:02:00.945
+Agenda: advanced caches and prefetching after cache basics
+
+22.2
+00:02:00.945 --> 00:05:28.305
+Factors determining cache miss latency and miss cost
+
+22.3
+00:05:28.305 --> 00:14:38.145
+Memory-level parallelism and MLP-aware cache replacement
+
+22.4
+00:14:38.145 --> 00:19:09.545
+Predicting off-chip misses to overlap cache lookup and DRAM access
+
+22.5
+00:19:09.545 --> 00:22:12.505
+Victim caches and transition to multicore cache issues
+
+22.6
+00:22:12.505 --> 00:27:54.133
+Hardware-friendly cache compression with Base-Delta-Immediate compression
+
+22.7
+00:27:54.133 --> 00:30:54.465
+Industrial compressed caches in IBM enterprise processors
+
+22.8
+00:30:54.465 --> 00:35:57.865
+Private versus shared caches and shared-resource trade-offs
+
+22.9
+00:35:57.865 --> 00:39:00.145
+Cache partitioning for multicore fairness and quality of service
+
+22.10
+00:39:00.145 --> 00:45:40.305
+Definition and mechanisms of cache coherence
+
+22.11
+00:45:40.305 --> 00:46:53.745
+Putting memory-system mechanisms together
+
+22.12
+00:46:53.745 --> 00:47:17.565
+Break and transition to prefetching
+
+22.13
+00:47:17.565 --> 00:52:46.085
+Definition, motivation, and correctness of prefetching
+
+22.14
+00:52:46.085 --> 00:56:35.565
+Hardware prefetcher structure and the what/when/where/how questions
+
+22.15
+00:56:35.565 --> 00:59:20.965
+Examples of predictable cache-block address patterns
+
+22.16
+00:59:20.965 --> 01:05:05.405
+Timeliness and placement decisions for prefetches
+
+22.17
+01:05:05.405 --> 01:07:27.725
+Software, hardware, and execution-based prefetching methods
+
+22.18
+01:07:27.725 --> 01:09:44.205
+ISA prefetch instructions and limitations of compiler prefetching
+
+22.19
+01:09:44.205 --> 01:12:03.405
+Streaming prefetchers and the increasing cost of cache misses
+
+22.20
+01:12:03.405 --> 01:15:08.765
+Prefetcher metrics: accuracy, timeliness, coverage, bandwidth, and pollution
+
+22.21
+01:15:08.765 --> 01:18:37.325
+Efficiency benefits of runahead/Scout prefetching and prefetch throttling
+
+22.22
+01:18:37.325 --> 01:22:44.005
+Instruction-based and memory-region-based stride prefetchers
+
+22.23
+01:22:44.005 --> 01:24:43.925
+Delta-correlation and signature-based prefetchers for complex regular patterns
+
+22.24
+01:24:43.925 --> 01:26:15.245
+Content-directed prefetching for pointer-rich data structures
+
+22.25
+01:26:15.245 --> 01:33:10.725
+Pythia: reinforcement-learning-based data prefetching
+
+22.26
+01:33:10.725 --> 01:33:32.165
+Closing: next topics in prefetching and virtual memory

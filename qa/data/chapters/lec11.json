@@ -1,0 +1,121 @@
+{
+  "lecture": 11,
+  "title": "Lecture 11",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "11.1",
+      "start": 2.775,
+      "end": 122.855,
+      "title": "Announcements, readings, and recap of multicycle MIPS"
+    },
+    {
+      "id": "11.2",
+      "start": 122.855,
+      "end": 375.375,
+      "title": "Basic pipeline throughput and the laundry analogy"
+    },
+    {
+      "id": "11.3",
+      "start": 375.375,
+      "end": 638.575,
+      "title": "Pipeline bottlenecks, resource replication, and real assembly-line examples"
+    },
+    {
+      "id": "11.4",
+      "start": 638.575,
+      "end": 755.535,
+      "title": "Definition of an ideal pipeline"
+    },
+    {
+      "id": "11.5",
+      "start": 755.535,
+      "end": 1049.495,
+      "title": "Pipeline performance limits: sequencing overhead and hardware cost"
+    },
+    {
+      "id": "11.6",
+      "start": 1049.495,
+      "end": 1376.775,
+      "title": "Five-stage MIPS pipeline partitioning and speedup example"
+    },
+    {
+      "id": "11.7",
+      "start": 1376.775,
+      "end": 1821.672,
+      "title": "Adding pipeline registers and carrying data through stages"
+    },
+    {
+      "id": "11.8",
+      "start": 1821.672,
+      "end": 2330.91,
+      "title": "Pipeline control signals and propagation through pipeline registers"
+    },
+    {
+      "id": "11.9",
+      "start": 2330.91,
+      "end": 2679.946,
+      "title": "Why instruction pipelines are not ideal"
+    },
+    {
+      "id": "11.10",
+      "start": 2679.946,
+      "end": 2698.444,
+      "title": "Break"
+    },
+    {
+      "id": "11.11",
+      "start": 2698.444,
+      "end": 2975.244,
+      "title": "Pipeline stalls and resource contention"
+    },
+    {
+      "id": "11.12",
+      "start": 2975.244,
+      "end": 3374.164,
+      "title": "Types of data dependence: RAW, WAR, and WAW"
+    },
+    {
+      "id": "11.13",
+      "start": 3374.164,
+      "end": 3622.924,
+      "title": "Fundamental methods for handling flow dependences"
+    },
+    {
+      "id": "11.14",
+      "start": 3622.924,
+      "end": 3897.964,
+      "title": "Stalling, bubbles, interlocking, and the MIPS design philosophy"
+    },
+    {
+      "id": "11.15",
+      "start": 3897.964,
+      "end": 4188.964,
+      "title": "Hardware detection of data dependences: scoreboarding vs combinational checks"
+    },
+    {
+      "id": "11.16",
+      "start": 4188.964,
+      "end": 4720.044,
+      "title": "Data forwarding and bypassing paths"
+    },
+    {
+      "id": "11.17",
+      "start": 4720.044,
+      "end": 4930.741,
+      "title": "Load-use stalls and hardware support for inserting bubbles"
+    },
+    {
+      "id": "11.18",
+      "start": 4930.741,
+      "end": 5120.421,
+      "title": "Control dependence and simple branch prediction"
+    },
+    {
+      "id": "11.19",
+      "start": 5120.421,
+      "end": 5413.941,
+      "title": "Early branch resolution and more accurate branch prediction"
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "lecture": 17,
+  "title": "Lecture 17",
+  "index_model": "gpt-5.5",
+  "chapters": [
+    {
+      "id": "17.1",
+      "start": 1.779,
+      "end": 142.139,
+      "title": "Introduction to SIMD architectures and course logistics"
+    },
+    {
+      "id": "17.2",
+      "start": 142.139,
+      "end": 459.899,
+      "title": "Flynn’s taxonomy and the role of SIMD"
+    },
+    {
+      "id": "17.3",
+      "start": 459.899,
+      "end": 646.514,
+      "title": "Definition of data parallelism and comparison with other parallelism"
+    },
+    {
+      "id": "17.4",
+      "start": 646.514,
+      "end": 880.057,
+      "title": "Time-space duality: array processors versus vector processors"
+    },
+    {
+      "id": "17.5",
+      "start": 880.057,
+      "end": 1211.939,
+      "title": "Example: executing load-add-multiply-store on array and vector processors"
+    },
+    {
+      "id": "17.6",
+      "start": 1211.939,
+      "end": 1589.099,
+      "title": "SIMD versus VLIW and basic vector-processor requirements"
+    },
+    {
+      "id": "17.7",
+      "start": 1589.099,
+      "end": 1826.339,
+      "title": "Why vector instructions allow deep pipelines"
+    },
+    {
+      "id": "17.8",
+      "start": 1826.339,
+      "end": 2097.739,
+      "title": "Advantages and limitations of vector processors"
+    },
+    {
+      "id": "17.9",
+      "start": 2097.739,
+      "end": 2430.533,
+      "title": "Amdahl’s law and memory-bandwidth bottlenecks"
+    },
+    {
+      "id": "17.10",
+      "start": 2430.533,
+      "end": 2709.299,
+      "title": "Vector control registers, masks, and Cray vector machines"
+    },
+    {
+      "id": "17.11",
+      "start": 2709.299,
+      "end": 2734.083,
+      "title": "Break"
+    },
+    {
+      "id": "17.12",
+      "start": 2734.083,
+      "end": 2863.883,
+      "title": "Seymour Cray’s oxen-versus-chickens question"
+    },
+    {
+      "id": "17.13",
+      "start": 2863.883,
+      "end": 3110.563,
+      "title": "Memory banking for one-element-per-cycle vector loads"
+    },
+    {
+      "id": "17.14",
+      "start": 3110.563,
+      "end": 3457.54,
+      "title": "Performance example: scalar loop versus vectorized loop"
+    },
+    {
+      "id": "17.15",
+      "start": 3457.54,
+      "end": 3877.466,
+      "title": "Vector chaining and the effect of memory ports"
+    },
+    {
+      "id": "17.16",
+      "start": 3877.466,
+      "end": 3961.146,
+      "title": "Q&A: memory banks versus memory ports"
+    },
+    {
+      "id": "17.17",
+      "start": 3961.146,
+      "end": 4292.666,
+      "title": "Vector strip mining, gather/scatter, and sparse access"
+    },
+    {
+      "id": "17.18",
+      "start": 4292.666,
+      "end": 4501.946,
+      "title": "Masked vector execution for conditional operations"
+    },
+    {
+      "id": "17.19",
+      "start": 4501.946,
+      "end": 4737.666,
+      "title": "Stride, bank conflicts, and memory-bank mapping"
+    },
+    {
+      "id": "17.20",
+      "start": 4737.666,
+      "end": 4893.586,
+      "title": "Combining array and vector processing with SIMD lanes"
+    },
+    {
+      "id": "17.21",
+      "start": 4893.586,
+      "end": 5053.826,
+      "title": "Automatic vectorization and lecture summary"
+    },
+    {
+      "id": "17.22",
+      "start": 5053.826,
+      "end": 5432.546,
+      "title": "SIMD extensions in modern ISAs: MMX, SSE, and AVX"
+    }
+  ]
+}
