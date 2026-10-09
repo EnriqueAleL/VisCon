@@ -1,0 +1,3383 @@
+WEBVTT
+
+00:00:04.441 --> 00:00:06.481 
+Welcome to lecture 11.
+
+00:00:06.761 --> 00:00:07.641 
+Good afternoon everyone.
+
+00:00:09.761 --> 00:00:15.484 
+So we're going to continue what we have started last week in designing a process of micro
+
+00:00:15.484 --> 00:00:16.321 
+architecture.
+
+00:00:17.081 --> 00:00:23.161 
+Remember that we started with single cycle data pass and designing also the control logic for that.
+
+00:00:24.321 --> 00:00:30.444 
+We discussed a lot that single cycle essentially is not a good way to go because of the fact that we
+
+00:00:30.444 --> 00:00:31.241 
+need to wait.
+
+00:00:31.641 --> 00:00:37.268 
+Essentially we need to design the database data pass that can handle the longest instruction and all
+
+00:00:37.268 --> 00:00:38.281 
+other instruction.
+
+00:00:38.281 --> 00:00:40.561 
+They also need to wait for the longest instruction.
+
+00:00:43.041 --> 00:00:49.361 
+But essentially it was a good practice, you know, as a instruction to learn how to design this data
+
+00:00:49.361 --> 00:00:49.681 
+pass.
+
+00:00:50.801 --> 00:00:56.597 
+Today we're going to quickly continue our wrap up what we have left off last week and then we're
+
+00:00:56.597 --> 00:01:02.574 
+going to get to multi cycle, multi cycle processor design and hopefully we get to also to pipelined
+
+00:01:02.574 --> 00:01:03.601 
+processor design.
+
+00:01:04.321 --> 00:01:09.937 
+So we actually have a kind of ambitious plan for today and let's see how much we can cover
+
+00:01:09.937 --> 00:01:10.561 
+hopefully.
+
+00:01:11.881 --> 00:01:12.361 
+OK.
+
+00:01:12.481 --> 00:01:19.321 
+So yeah, this is the agenda that we had for kind of last week and today and also tomorrow we're
+
+00:01:19.321 --> 00:01:25.081 
+going to get to hopefully by the to the end of issues in pipelining by tomorrow.
+
+00:01:25.601 --> 00:01:30.401 
+And then next week we're going to get to more in the line of out of order execution hopefully.
+
+00:01:31.881 --> 00:01:32.281 
+OK.
+
+00:01:33.201 --> 00:01:36.801 
+And here are also some readings for multi cycle.
+
+00:01:36.801 --> 00:01:43.961 
+Actually we're going to use a lot from Harris and Harris Chapter 7.4, which actually did a good job.
+
+00:01:44.641 --> 00:01:48.969 
+And we also, I'm going to mention some part of the lecture which is from the pattern, pattern
+
+00:01:48.969 --> 00:01:49.481 
+appendices.
+
+00:01:49.641 --> 00:01:51.841 
+So you can also check that if you're more interested.
+
+00:01:52.281 --> 00:01:56.481 
+And then hopefully tomorrow, today and tomorrow, we're going to also get to pipelining and
+
+00:01:56.481 --> 00:01:57.321 
+pipelining issues.
+
+00:01:58.001 --> 00:02:03.521 
+OK, So this is a single cycle micro architecture that we have built last week.
+
+00:02:04.161 --> 00:02:05.801 
+And just to jog your memory.
+
+00:02:06.321 --> 00:02:09.361 
+And essentially we were analysing the performance of it.
+
+00:02:10.761 --> 00:02:16.317 
+We discussed about, you know, as a toy example, we consider different latencies for different part
+
+00:02:16.317 --> 00:02:17.281 
+of the data pass.
+
+00:02:17.841 --> 00:02:23.032 
+And essentially we discussed that all different instruction, what are the stages in the, in the
+
+00:02:23.032 --> 00:02:25.601 
+architecture that they they need to go through.
+
+00:02:26.961 --> 00:02:32.001 
+So load word instruction is actually the longest instruction that needs to go over all these steps.
+
+00:02:32.361 --> 00:02:37.399 
+And that accounts for the longest delay where there are some instructions like jump instruction,
+
+00:02:37.399 --> 00:02:38.921 
+which is actually quite fast.
+
+00:02:39.561 --> 00:02:42.681 
+But in single cycle architecture, basically we don't have any other choice.
+
+00:02:42.681 --> 00:02:49.641 
+So all the instruction they need to wait for 600 microsecond in this picosecond for this example.
+
+00:02:49.641 --> 00:02:56.202 
+For example, we also discussed through the end of the lecture about the control logic, that control
+
+00:02:56.202 --> 00:03:02.564 
+logic might not be on the critical path more or less, but it can be also the case when we have a
+
+00:03:02.564 --> 00:03:05.481 
+lot of instructions that we want to support.
+
+00:03:06.081 --> 00:03:12.121 
+Control logic can be also very much complex as we also going to see more in out of order execution.
+
+00:03:12.721 --> 00:03:18.036 
+Control logic can be actually very, very complex which can actually cause also longer latency for
+
+00:03:18.036 --> 00:03:18.201 
+us.
+
+00:03:21.521 --> 00:03:27.321 
+OK yeah, essentially this was the part that we we basically left.
+
+00:03:28.481 --> 00:03:32.481 
+So what is the really the slowest instruction to process?
+
+00:03:33.401 --> 00:03:37.481 
+And essentially the in real world memory is slow, not magic.
+
+00:03:37.481 --> 00:03:42.711 
+Remember that we consider, we assume that memory can be accessed by one cycle, which in the
+
+00:03:42.711 --> 00:03:46.161 
+beginning I said that this is not a good assumption to make.
+
+00:03:46.161 --> 00:03:48.681 
+But for simplicity we can consider that.
+
+00:03:49.041 --> 00:03:51.121 
+But in real world actually memory is very slow.
+
+00:03:51.721 --> 00:03:56.161 
+And some of these instructions they need actually multiple memory accesses.
+
+00:03:56.601 --> 00:04:01.361 
+So all instruction, they need at least one memory access because of the fetch operation.
+
+00:04:02.001 --> 00:04:05.881 
+But some instruction might have two memory accesses.
+
+00:04:06.241 --> 00:04:12.852 
+And if your memory is actually quite as slow, which is kind of the case, which can be actually like
+
+00:04:12.852 --> 00:04:19.397 
+100 of nanoseconds to access your memory, then you're going to have a double latency, for example,
+
+00:04:19.397 --> 00:04:21.401 
+for some of your instructions.
+
+00:04:22.241 --> 00:04:27.951 
+So in the end, essentially the question is that does it make sense to have a simple register to
+
+00:04:27.951 --> 00:04:33.241 
+register at or jump to take 150 nanosecond plus all there to perform a memory operation?
+
+00:04:33.841 --> 00:04:38.161 
+So this, for example, is the assumption that memory takes 150 nanosecond.
+
+00:04:39.641 --> 00:04:44.561 
+And basically what if you need to access memory more than once to process an instruction.
+
+00:04:45.241 --> 00:04:48.801 
+So all instruction they need at least one memory access for the fetch.
+
+00:04:49.081 --> 00:04:53.041 
+But for load load instruction we also need to access memory for load.
+
+00:04:53.361 --> 00:04:54.641 
+You can also think of some.
+
+00:04:55.521 --> 00:05:01.196 
+More complex instructions that essentially you access a memory and you read the data and that data
+
+00:05:01.196 --> 00:05:06.755 
+is actually a pointer which you might want to use that pointer to access another location in the
+
+00:05:06.755 --> 00:05:07.161 
+memory.
+
+00:05:07.521 --> 00:05:11.521 
+So there can be actually one instruction that you might have 3 memory accesses for example.
+
+00:05:11.921 --> 00:05:14.681 
+So it can be actually much more longer in the end.
+
+00:05:17.361 --> 00:05:22.222 
+So yeah, so that's why For these reasons, actually single cycle micro architecture is not a good
+
+00:05:22.222 --> 00:05:22.881 
+design to go.
+
+00:05:23.641 --> 00:05:29.566 
+And here actually I'm also going to quickly recap the problems that we have in single cycle micro
+
+00:05:29.566 --> 00:05:30.361 
+architecture.
+
+00:05:31.001 --> 00:05:35.441 
+So basically it's contrived that all instructions run and as slow as the slowest instruction.
+
+00:05:36.041 --> 00:05:41.321 
+And it's actually very inefficient because all instructions run as slow as the slowest instruction.
+
+00:05:41.961 --> 00:05:47.146 
+And it should also must provide worst case combinational resources in parallel as required by any
+
+00:05:47.146 --> 00:05:47.841 
+instructions.
+
+00:05:48.361 --> 00:05:55.698 
+So in single cycle, like if there are multiple units that one instruction need to go through it, you
+
+00:05:55.698 --> 00:06:00.321 
+cannot reuse your essentially your your combinational circuits.
+
+00:06:00.561 --> 00:06:05.201 
+So you need to have them in parallel such that you can access them in a combinational way.
+
+00:06:05.721 --> 00:06:11.125 
+So that's actually one of the big weaknesses of this design and which that needs to replicate
+
+00:06:11.125 --> 00:06:16.763 
+essentially a resource if it is needed more than once by an instruction during different parts of
+
+00:06:16.763 --> 00:06:18.681 
+the instruction processing cycle.
+
+00:06:19.961 --> 00:06:24.121 
+Also a single cycle is not necessarily the simplest way to implement an ISA.
+
+00:06:24.881 --> 00:06:32.133 
+There can be tough some complex instruction that design can be actually close to impossible if you
+
+00:06:32.133 --> 00:06:39.386 
+want to for example, support let's say matrix matrix multiplication or for example, if you want to
+
+00:06:39.386 --> 00:06:44.641 
+do let's say string copy or some indexing in a three-dimensional array.
+
+00:06:44.961 --> 00:06:50.717 
+So some of these instructions that actually today's architecture are supporting them, It's almost
+
+00:06:50.717 --> 00:06:56.058 
+impossible to support them in a single cycle architecture because you need to add a lot of
+
+00:06:56.058 --> 00:06:59.441 
+resources, which very quickly is going to be impractical.
+
+00:07:01.201 --> 00:07:06.147 
+And of course, it's not easy to optimise and improve performance because we don't really have a
+
+00:07:06.147 --> 00:07:10.001 
+degree of freedom in single cycle architecture to improve the performance.
+
+00:07:12.201 --> 00:07:20.241 
+OK, so remember, so here I want to discuss about micro architecture design principles.
+
+00:07:20.801 --> 00:07:25.851 
+And I'm going to define these three principles and then we can discuss how the single cycle micro
+
+00:07:25.851 --> 00:07:26.841 
+architecture works.
+
+00:07:27.161 --> 00:07:27.681 
+Regard them.
+
+00:07:28.641 --> 00:07:34.325 
+So one of the for in order to improve performance, you basically it's good to follow these
+
+00:07:34.325 --> 00:07:37.041 
+principles in designing micro architecture.
+
+00:07:37.681 --> 00:07:43.055 
+One of them is critical pass design, which means that we need to find and decrease the maximum
+
+00:07:43.055 --> 00:07:48.601 
+combinational logic delay and then we can break a pass into multiple cycles if it takes too long.
+
+00:07:49.281 --> 00:07:55.023 
+So in in single cycle market architecture, by definition you can try to decrease the maximum
+
+00:07:55.023 --> 00:08:01.077 
+combinational logic delay as a worst case latency, but then you don't really have this freedom to
+
+00:08:01.077 --> 00:08:06.321 
+break into multiple cycles because by definition you have only one cycle to process.
+
+00:08:07.081 --> 00:08:11.521 
+So essentially single cycle micro architecture is not very good at critical pass design principle.
+
+00:08:12.241 --> 00:08:18.860 
+Another important principle is bread and butter or common case design that we essentially we want to
+
+00:08:18.860 --> 00:08:25.281 
+optimise for, for the operation, which is more common, spend time and resources on where it makes
+
+00:08:25.281 --> 00:08:27.201 
+sense, where it matters most.
+
+00:08:28.721 --> 00:08:34.127 
+So in single cycle, essentially we don't really do anything regardless, even if one instruction
+
+00:08:34.127 --> 00:08:39.761 
+which is very, very slow is happening, just one out of millions of instructions, we need to support
+
+00:08:39.761 --> 00:08:44.201 
+that and all other instruction they need to wait for that longest instruction.
+
+00:08:44.721 --> 00:08:50.468 
+So essentially micro single cycle micro architecture is very bad at this principal design, which is
+
+00:08:50.468 --> 00:08:53.081 
+essentially common case versus uncommon case.
+
+00:08:53.601 --> 00:08:56.841 
+So in single cycle micro architecture, we cannot really do much about it.
+
+00:08:57.441 --> 00:09:02.460 
+And another one is also balanced design, which is balanced instruction and data flow through
+
+00:09:02.460 --> 00:09:07.480 
+hardware components and to design essentially designed to eliminate bottlenecks, balance the
+
+00:09:07.480 --> 00:09:08.681 
+hardware for the work.
+
+00:09:09.241 --> 00:09:14.999 
+However, in single cycle micro architecture, we cannot really do that also because we need to
+
+00:09:14.999 --> 00:09:20.633 
+duplicate or replicate a lot of resources just to make sure that we can essentially execute
+
+00:09:20.633 --> 00:09:22.801 
+instruction in a combinational way.
+
+00:09:24.961 --> 00:09:30.078 
+Remember that for example, we need to for example, we can, we need to we have two memories
+
+00:09:30.078 --> 00:09:30.761 
+essentially.
+
+00:09:30.961 --> 00:09:35.759 
+So for fetching instruction, we we can access, we access the memory which is instruction memory to
+
+00:09:35.759 --> 00:09:36.641 
+fetch instruction.
+
+00:09:37.001 --> 00:09:43.674 
+And also when we want to fetch or write or read or load data to the memory, we have a different
+
+00:09:43.674 --> 00:09:45.641 
+memory which is data memory.
+
+00:09:46.081 --> 00:09:52.641 
+So you cannot really have for example 1 memory to handle both instruction and and data accesses.
+
+00:09:53.361 --> 00:09:54.601 
+So essentially.
+
+00:09:55.721 --> 00:10:00.929 
+Single cycle market market architecture is breaking all these principles and that's why not actually
+
+00:10:00.929 --> 00:10:05.721 
+people that they really want to design a good system, they are not following that principle.
+
+00:10:05.721 --> 00:10:08.801 
+They are not following this kind of single cycle design.
+
+00:10:10.001 --> 00:10:15.693 
+So I kind of did that, but you can also think about some other reasons that single cycle micro
+
+00:10:15.693 --> 00:10:18.721 
+architecture is not very good at these principles.
+
+00:10:21.241 --> 00:10:27.686 
+OK, here also a kind of side about system design principles that essentially I think you have seen
+
+00:10:27.686 --> 00:10:31.041 
+it in some of the earliest lectures in this course.
+
+00:10:31.481 --> 00:10:36.535 
+But essentially when designing computer systems or architecture, it is important to follow good
+
+00:10:36.535 --> 00:10:37.121 
+principles.
+
+00:10:37.481 --> 00:10:43.838 
+And this is actually true for any system design, which can be also the case for real architectures,
+
+00:10:43.838 --> 00:10:49.361 
+building bridges, training stations and also many others things that you can think of.
+
+00:10:50.881 --> 00:10:59.139 
+And yeah, and also there is this famous architect that says that architecture should be based open
+
+00:10:59.139 --> 00:11:01.921 
+principle and not open precedent.
+
+00:11:03.121 --> 00:11:08.873 
+And remember about this design, I don't know if you have seen it in this course or is this the first
+
+00:11:08.873 --> 00:11:09.161 
+time?
+
+00:11:10.041 --> 00:11:15.878 
+So it's kind of a building in a in a nice forest, but this looks actually designed based on
+
+00:11:15.878 --> 00:11:20.561 
+precedent actually, but more principal design can be something like that.
+
+00:11:20.641 --> 00:11:22.201 
+You know that you design.
+
+00:11:22.201 --> 00:11:32.081 
+Do you know what the name of this building is anyone?
+
+00:11:32.441 --> 00:11:34.761 
+Yes, yes, yeah, yeah.
+
+00:11:35.801 --> 00:11:37.161 
+So, yeah.
+
+00:11:37.161 --> 00:11:44.282 
+So it's actually close to somewhere close to also Pittsburgh, which professor Muto was there for
+
+00:11:44.282 --> 00:11:49.401 
+ASPLOS conference and also he was teaching in Pittsburgh in the past.
+
+00:11:49.601 --> 00:11:52.401 
+He was teaching and also professor in Carnegie Mellon University.
+
+00:11:53.601 --> 00:11:56.921 
+So this actually design looks very much in the line of principles.
+
+00:11:57.121 --> 00:12:01.614 
+I'm not going into detail of that, but it's actually like a very organic design architecture, which
+
+00:12:01.614 --> 00:12:03.521 
+you can also read it if you're interested.
+
+00:12:04.761 --> 00:12:10.401 
+So if you compare this and that, basically you can feel about designing open principle or open
+
+00:12:10.401 --> 00:12:11.721 
+precedent essentially.
+
+00:12:14.001 --> 00:12:18.801 
+OK, so yeah, so I'm not going to spend more time on this.
+
+00:12:18.881 --> 00:12:25.729 
+We already discussed, but essentially in this course we will continue to cover key principles and
+
+00:12:25.729 --> 00:12:29.401 
+here also some differences where you can learn more.
+
+00:12:29.761 --> 00:12:35.921 
+I'm going to show something about for the first one, but you can also check other papers if you're
+
+00:12:35.921 --> 00:12:37.241 
+interested in future.
+
+00:12:38.041 --> 00:12:45.435 
+So a key system design principle if I if I want to summarise a lot, is that we should keep it simple
+
+00:12:45.435 --> 00:12:46.841 
+and seeing a cycle.
+
+00:12:46.841 --> 00:12:51.300 
+Micro architecture is not simple, especially when you think about complex instructions, how you
+
+00:12:51.300 --> 00:12:53.601 
+really want to support them is not really simple.
+
+00:12:54.561 --> 00:13:00.611 
+And there is a nice quote that says that everything should be made as simple as possible but no
+
+00:13:00.611 --> 00:13:01.121 
+simpler.
+
+00:13:02.521 --> 00:13:05.241 
+Anyone knows from who this quote is?
+
+00:13:10.691 --> 00:13:11.131 
+Yes.
+
+00:13:13.411 --> 00:13:13.851 
+No.
+
+00:13:19.481 --> 00:13:24.001 
+OK, it's kind of a bit paraphrased, but it's actually from Einstein.
+
+00:13:25.841 --> 00:13:31.841 
+And there is also another basically important principle which is we need to keep it low cost.
+
+00:13:32.401 --> 00:13:38.085 
+And there is also another quote from someone says that an engineer or designer is a person who can
+
+00:13:38.085 --> 00:13:42.841 
+do for a dime what any fool can do for a dollar, essentially like $0.10 and $1.00.
+
+00:13:43.281 --> 00:13:49.224 
+So in the end, simplicity and also low cost, these two are very important when we want to design
+
+00:13:49.224 --> 00:13:50.401 
+micro architecture.
+
+00:13:52.721 --> 00:14:01.510 
+So for more, you can actually also check this writing from Butler Lampson hints for computer system
+
+00:14:01.510 --> 00:14:08.081 
+design, which actually also has a more, let's say updated version in 2021.
+
+00:14:08.081 --> 00:14:10.561 
+So you can access it from this archive if you're interested.
+
+00:14:11.961 --> 00:14:16.881 
+OK, but now we can get to our favorite question.
+
+00:14:16.881 --> 00:14:17.641 
+Can we do better?
+
+00:14:18.001 --> 00:14:20.321 
+Any question from single cycle micro architecture?
+
+00:14:23.081 --> 00:14:23.401 
+Very good.
+
+00:14:25.801 --> 00:14:31.677 
+So we want to get to multi cycle micro architectures and the goal is to let each instruction take
+
+00:14:31.677 --> 00:14:34.161 
+close to only as much as it really needs.
+
+00:14:35.241 --> 00:14:40.680 
+So the idea is that we want to determine clock cycle time independently of instruction processing
+
+00:14:40.680 --> 00:14:40.961 
+time.
+
+00:14:41.241 --> 00:14:45.819 
+In single cycle micro architecture we always need to consider the longest instruction and then the
+
+00:14:45.819 --> 00:14:47.641 
+clock cycle is dependent based on that.
+
+00:14:48.321 --> 00:14:50.961 
+But here in multi cycle is actually independent.
+
+00:14:51.241 --> 00:14:54.601 
+You can think of OK, I want to have a clock cycle time of let's.
+
+00:14:54.681 --> 00:15:01.161 
+Say 1 nanosecond and then you need to make sure that you break execution of instruction in enough
+
+00:15:01.161 --> 00:15:07.241 
+number of stage such that you can accommodate each stage in one one nanosecond essentially.
+
+00:15:07.881 --> 00:15:10.601 
+So that's that's the idea here.
+
+00:15:11.241 --> 00:15:16.538 
+So each instruction takes as many clock cycle as it needs to take and the multiple state transitions
+
+00:15:16.538 --> 00:15:21.041 
+for instruction and the states followed by each instruction is different essentially.
+
+00:15:22.081 --> 00:15:28.145 
+So the idea is that hopefully some instructions like load, they're going to take a lot of states,
+
+00:15:28.145 --> 00:15:34.335 
+but some instructions like jump addition, these are going to take much lower number of fewer number
+
+00:15:34.335 --> 00:15:34.961 
+of states.
+
+00:15:35.401 --> 00:15:39.121 
+And in the end, hopefully your average CPI is actually low.
+
+00:15:40.761 --> 00:15:44.801 
+So also to jog your memory, you remember about this slide.
+
+00:15:44.921 --> 00:15:49.761 
+So essentially we already covered the choice one which is the single cycle micro architecture.
+
+00:15:49.761 --> 00:15:51.281 
+Now we want to get to the choice.
+
+00:15:51.401 --> 00:15:57.386 
+The second choice which we architectural estate is going to break to is going to transition to
+
+00:15:57.386 --> 00:16:00.761 
+architectural estate plus micro architectural estate.
+
+00:16:01.121 --> 00:16:04.601 
+And then that is going to also get to another micro architectural estate and another.
+
+00:16:04.601 --> 00:16:09.768 
+And then in the end we're going to get to the final architectural estate which is visible to the
+
+00:16:09.768 --> 00:16:10.361 
+programmer.
+
+00:16:10.521 --> 00:16:16.281 
+So essentially programmer cannot see all these in between micro architectural estates that we have.
+
+00:16:18.161 --> 00:16:18.441 
+Yeah.
+
+00:16:18.441 --> 00:16:24.279 
+And these are actually you are already aware of that, that we can have multiple steps in between in
+
+00:16:24.279 --> 00:16:28.761 
+order to transition from architectural state to another architectural state.
+
+00:16:30.441 --> 00:16:36.741 
+And this also I think you remember that we build this for LC3 micro architecture kind of FSM that we
+
+00:16:36.741 --> 00:16:37.561 
+went over it.
+
+00:16:38.161 --> 00:16:44.061 
+And here also you remember that this was was the fetch phase that we have this finite state machine
+
+00:16:44.061 --> 00:16:49.903 
+and then the code phase and depending depending on the OP code and what we want to do, essentially
+
+00:16:49.903 --> 00:16:53.241 
+your FSM is branching through different lines of states.
+
+00:16:53.961 --> 00:17:00.414 
+And yeah, so in today in this lecture, we're going to also be something similar, but it bit more
+
+00:17:00.414 --> 00:17:05.321 
+detail for like complete data pass and also hopefully the control design.
+
+00:17:07.601 --> 00:17:07.921 
+OK.
+
+00:17:07.921 --> 00:17:10.161 
+And these are also you've seen that in the past also.
+
+00:17:12.161 --> 00:17:21.401 
+So just I think just to be for some quick summary of multi cycle, the high level idea.
+
+00:17:21.681 --> 00:17:26.121 
+So it provides a lot of benefits, remember about our principle design.
+
+00:17:26.481 --> 00:17:30.848 
+So in critical pass design, actually it provides the fact that we can reduce the critical pass
+
+00:17:30.848 --> 00:17:33.961 
+independently of the worst case processing time of any instruction.
+
+00:17:34.241 --> 00:17:39.481 
+So that's the way that we can optimise for the critical pass design and also bread and butter.
+
+00:17:39.481 --> 00:17:44.792 
+Of course, multi cycle can help with that because you can optimise the number of states it takes to
+
+00:17:44.792 --> 00:17:48.601 
+execute important instructions that make up much of the execution time.
+
+00:17:49.041 --> 00:17:53.953 
+Like for example, you're you, you profile your application and you're going to see that 90% of the
+
+00:17:53.953 --> 00:17:56.761 
+instructions is just addition and multiplication, right?
+
+00:17:57.121 --> 00:18:02.391 
+Then you can actually optimise your data pass and control unit for addition and multiplication,
+
+00:18:02.391 --> 00:18:06.441 
+which can help you get better performance overall for those applications.
+
+00:18:08.481 --> 00:18:13.004 
+And also in balanced design, essentially no need to provide more capability or resources that really
+
+00:18:13.004 --> 00:18:13.321 
+needed.
+
+00:18:13.361 --> 00:18:21.531 
+We're going to see that how we can reuse our our computational unit or also other logics in the in
+
+00:18:21.531 --> 00:18:26.201 
+the in the data pass to do different things essentially.
+
+00:18:28.481 --> 00:18:28.801 
+OK.
+
+00:18:31.201 --> 00:18:34.241 
+But of course, I mean multi cycle design also have some downsides.
+
+00:18:34.721 --> 00:18:38.761 
+One of them is that we need to store the intermediate result at the end of each clock cycle.
+
+00:18:38.961 --> 00:18:44.970 
+So remember that from architectural estate we go to some architectural estate plus some micro, micro
+
+00:18:44.970 --> 00:18:50.738 
+architectural estate so that you need to store and then from that to another micro architectural
+
+00:18:50.738 --> 00:18:52.241 
+estate you need to store.
+
+00:18:52.521 --> 00:18:57.875 
+So there are some steps in between that you need to store and that essentially you need to add
+
+00:18:57.875 --> 00:19:03.401 
+memory logics like you need to add latches registers in the data pass, which will add complexity.
+
+00:19:05.561 --> 00:19:12.361 
+And also remember this register set up and hold overhead like sequencing overhead that we talked
+
+00:19:12.361 --> 00:19:14.841 
+about it in the our timing lecture.
+
+00:19:15.401 --> 00:19:18.441 
+So that is going to be paid multiple times for an instruction.
+
+00:19:19.761 --> 00:19:23.921 
+Another issue is that we have a limited concurrency in multi cycle design.
+
+00:19:23.921 --> 00:19:29.441 
+This can, can be, it's going to be much more clear when we get to the pipeline design because we're
+
+00:19:29.441 --> 00:19:34.961 
+going to start with this problem limited concurrency to motivate our the pipeline processor design.
+
+00:19:35.721 --> 00:19:41.034 
+But just to understand it, limited concurrency is coming from the fact that only a small part of the
+
+00:19:41.034 --> 00:19:43.001 
+machine you use at any point in time.
+
+00:19:43.441 --> 00:19:48.897 
+So a multi cycle when you're basically when you're fetching instructions, there are a lot of other
+
+00:19:48.897 --> 00:19:54.353 
+parts of the data pass that they are kind of ideal and they're not doing anything so you can think
+
+00:19:54.353 --> 00:19:54.521 
+of.
+
+00:19:54.681 --> 00:19:59.563 
+Now we can benefit from that for better concurrency and better performance, but we're going to get
+
+00:19:59.563 --> 00:20:03.201 
+to that hopefully today when we are discussing pipeline processor design.
+
+00:20:04.161 --> 00:20:11.761 
+OK, so here also I want to show that essentially multi cycle here in LC3 data pass we we had to add
+
+00:20:11.761 --> 00:20:18.441 
+some register like instruction register, memory address register, memory data register.
+
+00:20:18.681 --> 00:20:22.641 
+And these are the register that essentially you add when you have a multi cycle data pass.
+
+00:20:23.041 --> 00:20:26.201 
+In single cycle database, we didn't have any of these registers, right?
+
+00:20:26.401 --> 00:20:31.743 
+We had only this register file which is considered as a state register and everything else was just
+
+00:20:31.743 --> 00:20:33.201 
+combinational logic, right.
+
+00:20:34.841 --> 00:20:39.001 
+But in essentially in the multi cycle design you need to add these registers.
+
+00:20:39.641 --> 00:20:44.838 
+And here also remember about this performance analysis that we said that in multi cycle we have two
+
+00:20:44.838 --> 00:20:47.201 
+degrees of freedom to optimise independently.
+
+00:20:47.361 --> 00:20:52.841 
+So we can play with the CPI and also clock cycle time, which is good to improve performance.
+
+00:20:54.921 --> 00:20:58.721 
+But we now we can get to the closer look how we can design multi cycle.
+
+00:20:59.121 --> 00:20:59.761 
+Any question?
+
+00:21:03.801 --> 00:21:14.193 
+OK, so if you're interested, you can I recommend you check this writing from this paper from from
+
+00:21:14.193 --> 00:21:21.801 
+Maurice Wilks, the best way to design an automatic calculating machine.
+
+00:21:21.801 --> 00:21:23.161 
+It's very actually inspiring.
+
+00:21:23.601 --> 00:21:25.561 
+I recommend everyone to read that.
+
+00:21:26.841 --> 00:21:30.881 
+And we're going to also get some part of this lecture and the concept of micro coded and micro
+
+00:21:30.881 --> 00:21:34.921 
+program machines that I don't want to talk about it right now, but we're going to get to that.
+
+00:21:36.601 --> 00:21:36.881 
+OK.
+
+00:21:36.881 --> 00:21:42.704 
+So the key idea here is that one can implement the process instruction step as a final state machine
+
+00:21:42.704 --> 00:21:48.121 
+that sequences between the States and eventually returns back to the fetch instruction state.
+
+00:21:50.121 --> 00:21:53.881 
+So think about FSM that we discussed in the past.
+
+00:21:54.801 --> 00:22:00.329 
+So here a state is defined by the control signals asserted in it and the control signals for the
+
+00:22:00.329 --> 00:22:02.921 
+next state are determining the current state.
+
+00:22:04.361 --> 00:22:10.390 
+So essentially in the, the control logic is going to be a finite state machine that in each state
+
+00:22:10.390 --> 00:22:16.482 
+you set some control signals which going to be used for the next state essentially because we want
+
+00:22:16.482 --> 00:22:17.601 
+to hide latencies.
+
+00:22:18.081 --> 00:22:24.340 
+If if you generate control signals that you need for this state for the current state in the in the
+
+00:22:24.340 --> 00:22:30.221 
+same state, then there's going to actually end links your critical pass latency because these
+
+00:22:30.221 --> 00:22:32.561 
+control signal needs to be generated.
+
+00:22:32.721 --> 00:22:36.241 
+And then you can do computation which are going to add your critical pass latency.
+
+00:22:36.641 --> 00:22:42.248 
+Whereas if you generate control signals that you need one cycle earlier, which we're going to do
+
+00:22:42.248 --> 00:22:47.681 
+here, then actually you don't, you don't increase your critical pass latency for that reason.
+
+00:22:50.361 --> 00:22:57.357 
+OK, so a basic multi cycle architecture, we devise the instruction processing cycle into States and
+
+00:22:57.357 --> 00:23:04.001 
+a multi cycle micro architecture sequences from a state to a state to process and instruction.
+
+00:23:05.241 --> 00:23:11.888 
+And also the behaviour of the entire processor is specified fully by a finite state machine and also
+
+00:23:11.888 --> 00:23:14.681 
+in a state which is a clock cycle control.
+
+00:23:14.681 --> 00:23:16.121 
+Signals control two things.
+
+00:23:16.641 --> 00:23:21.914 
+One of them is how the data pass should process the data and how to generate the control signals for
+
+00:23:21.914 --> 00:23:24.921 
+the next clock cycle, which we're going to also use that.
+
+00:23:26.521 --> 00:23:35.321 
+OK, so we're going to basically design this multi cycle micro architecture.
+
+00:23:35.441 --> 00:23:42.913 
+Remember this single cycle micro architecture from your book Harris and Harris Chapter 7.3, We're
+
+00:23:42.913 --> 00:23:45.841 
+going to also do that for multi cycle.
+
+00:23:45.841 --> 00:23:48.081 
+We're going to also actually follow your book for that.
+
+00:23:49.721 --> 00:23:50.961 
+I don't want to repeat again.
+
+00:23:51.121 --> 00:23:52.721 
+Why do we want multi cycle?
+
+00:23:53.361 --> 00:23:58.054 
+Essentially by now I think we all know that a multi cycle is a better architecture micro
+
+00:23:58.054 --> 00:24:00.081 
+architecture compared to single cycle.
+
+00:24:00.921 --> 00:24:04.401 
+But in single cycle we have low clock frequency and high hardware cost.
+
+00:24:04.521 --> 00:24:07.041 
+In multi cycle we have better clock frequency.
+
+00:24:07.041 --> 00:24:13.480 
+Simpler instructions also take only a few clock cycles which kind of better and bother and we can
+
+00:24:13.480 --> 00:24:19.721 
+reuse expensive hardware across multiple cycle which is more or less a better balanced design.
+
+00:24:20.321 --> 00:24:23.801 
+But there are also some weaknesses that we have discussed about it.
+
+00:24:25.161 --> 00:24:31.238 
+OK, so we can think of what are the optimization that we want to make when we want to when we have a
+
+00:24:31.238 --> 00:24:33.001 
+multi cycle design data pass.
+
+00:24:33.121 --> 00:24:39.469 
+One of them is that in single cycle we have two memories, one for memory storage instruction and one
+
+00:24:39.469 --> 00:24:40.041 
+for data.
+
+00:24:40.681 --> 00:24:45.481 
+So here we can actually have only use a single memory which provides lower cost for us.
+
+00:24:45.561 --> 00:24:52.218 
+We're going to see how, but it's possible also in single cycle market market micro architecture we
+
+00:24:52.218 --> 00:24:53.441 
+need three others.
+
+00:24:53.681 --> 00:24:54.601 
+So essentially we need.
+
+00:24:54.681 --> 00:24:55.721 
+Adders in ALU.
+
+00:24:55.721 --> 00:25:03.013 
+We also need adders for for program counter when we want to do +4 and also we need adders when we
+
+00:25:03.013 --> 00:25:06.321 
+want to calculate the branch target address.
+
+00:25:09.161 --> 00:25:15.921 
+But here for example we we want to use only one ALU for all operations which can be much lower cost.
+
+00:25:17.801 --> 00:25:23.459 
+Also, single cycle micro architecture, each instruction takes only one cycle, but here we want to
+
+00:25:23.459 --> 00:25:28.942 
+essentially determine clock cycle time independently of instruction processing time and divide
+
+00:25:28.942 --> 00:25:33.201 
+instruction into multiple clock cycles, which we already discussed about.
+
+00:25:34.441 --> 00:25:41.597 
+OK, so we're going to start with this instruction load word in our multi cycle pipeline and then see
+
+00:25:41.597 --> 00:25:43.601 
+how we want to implement it.
+
+00:25:43.641 --> 00:25:49.495 
+Remember that we're going to do the same as we did in single cycle micro architecture that we start
+
+00:25:49.495 --> 00:25:55.113 
+with the data pass and then we see how we we need to add the components in order to support all
+
+00:25:55.113 --> 00:25:58.721 
+different instructions like the instruction that we consider.
+
+00:25:59.241 --> 00:26:03.281 
+And then we design the control logic here also is not is completely the same.
+
+00:26:03.281 --> 00:26:04.001 
+It's not magic.
+
+00:26:04.001 --> 00:26:10.037 
+So we start with the with data pass and for different instruction, we go over different units that
+
+00:26:10.037 --> 00:26:10.961 
+we need to add.
+
+00:26:11.361 --> 00:26:14.801 
+And then after that, we're going to get to the essentially the control logic.
+
+00:26:15.841 --> 00:26:18.961 
+So this instruction load word, I'm not going over the semantic of it.
+
+00:26:18.961 --> 00:26:25.856 
+I think you by now you know it, But essentially we add this register to this number to this offset
+
+00:26:25.856 --> 00:26:28.601 
+to calculate the memory access address.
+
+00:26:29.081 --> 00:26:36.445 
+And for that region of the memory, you fetch a word which is 4 bytes of data and then you store it
+
+00:26:36.445 --> 00:26:39.601 
+in this register which here is dollar T 0.
+
+00:26:41.681 --> 00:26:45.001 
+So and it's actually load word is the I type instruction.
+
+00:26:45.001 --> 00:26:46.881 
+And here is the formatting of this instruction.
+
+00:26:46.921 --> 00:26:51.641 
+OK, so the first step is how we want to fetch instruction.
+
+00:26:52.241 --> 00:26:54.441 
+We are we're doing it actually for load word.
+
+00:26:54.441 --> 00:27:00.863 
+But essentially the fetch pipe fetch hardware is going to be the same for other instructions as
+
+00:27:00.863 --> 00:27:01.201 
+well.
+
+00:27:02.721 --> 00:27:09.016 
+So, so this is your program counter and this provides the PC address and you access this memory
+
+00:27:09.016 --> 00:27:15.444 
+which now we call it actually instruction data memory because it can be used for both instruction
+
+00:27:15.444 --> 00:27:16.041 
+and data.
+
+00:27:17.801 --> 00:27:25.392 
+And we essentially we read from this memory, we read instruction and here we added a Register here
+
+00:27:25.392 --> 00:27:28.801 
+which is considered as instruction register.
+
+00:27:28.801 --> 00:27:35.274 
+For example, you need to enable this this register and then you store the instruction that you're
+
+00:27:35.274 --> 00:27:41.881 
+reading to this register and then you have this instruction is stored in your instruction register.
+
+00:27:42.241 --> 00:27:43.441 
+Then you're going to use that.
+
+00:27:43.801 --> 00:27:46.361 
+You need this register for multiple reasons.
+
+00:27:46.361 --> 00:27:52.775 
+One of that is that you want to make sure that your instruction is not changed while you are doing
+
+00:27:52.775 --> 00:27:58.862 
+the executing of this instruction because one instruction is going to be executed in multiple
+
+00:27:58.862 --> 00:27:59.321 
+cycles.
+
+00:27:59.561 --> 00:28:05.041 
+So it's important that we have it saved somewhere to make sure that it's not going to be changed.
+
+00:28:05.401 --> 00:28:08.121 
+Also, this memory can be used for other use cases.
+
+00:28:08.641 --> 00:28:13.841 
+So you need to be careful that you're you're not latching data in your instruction memory.
+
+00:28:13.841 --> 00:28:20.076 
+So there should be some Register here that you can handle, enable it or disable it to make sure that
+
+00:28:20.076 --> 00:28:22.321 
+you're really latching instructions.
+
+00:28:24.641 --> 00:28:29.681 
+So we loaded this instruction and and that's essentially the the fetch pipeline.
+
+00:28:30.961 --> 00:28:38.052 
+Then we get to the decoder step, which is very similar to what we've been doing in a single cycle
+
+00:28:38.052 --> 00:28:39.441 
+micro architecture.
+
+00:28:39.441 --> 00:28:49.375 
+So essentially the instruction that we we loaded beats 25 to 21 is going to be the source, the
+
+00:28:49.375 --> 00:28:50.961 
+source address.
+
+00:28:51.241 --> 00:28:58.103 
+So we need to fed them to the register file and then the output of the register file which is a read
+
+00:28:58.103 --> 00:29:04.690 
+data one, we're going to latch it in another register which give you this this register that you
+
+00:29:04.690 --> 00:29:06.681 
+read from your register file.
+
+00:29:07.601 --> 00:29:16.997 
+Also in parallel, you basically input instruction 0 to to 15 as immediate to the to your sign extent
+
+00:29:16.997 --> 00:29:17.561 
+logic.
+
+00:29:18.281 --> 00:29:25.547 
+You do this sign extending and then for the in the next cycle you can do the calculation like the
+
+00:29:25.547 --> 00:29:32.963 
+addition in your ALU that the output, this register that you latched in the previous cycle is going
+
+00:29:32.963 --> 00:29:34.761 
+to be input to your ALU.
+
+00:29:35.601 --> 00:29:40.361 
+And this sign extended also is going to be input to your ALU as the as the second operand.
+
+00:29:41.561 --> 00:29:46.902 
+And you need to control the ALU operation which for example here we want to do addition and the
+
+00:29:46.902 --> 00:29:49.601 
+output of ALU is going to be again latched here.
+
+00:29:50.681 --> 00:29:51.241 
+Makes sense.
+
+00:29:52.081 --> 00:29:52.361 
+OK.
+
+00:29:54.961 --> 00:29:56.521 
+And then you use this output.
+
+00:29:56.561 --> 00:30:01.503 
+This, this is what we are doing here, which is different from a single cycle market micro micro
+
+00:30:01.503 --> 00:30:06.081 
+architecture because now we have 1 memory which is used for instruction and data memory.
+
+00:30:06.521 --> 00:30:13.341 
+So the output of this register is going to be fed to this multiplexer, which in the end essentially
+
+00:30:13.341 --> 00:30:20.092 
+the address that you want to generate to access this instruction and data memory can be defined by
+
+00:30:20.092 --> 00:30:23.881 
+program counter or the output of ALU at least from now.
+
+00:30:24.521 --> 00:30:27.801 
+And that can be basically help us to.
+
+00:30:27.841 --> 00:30:30.921 
+So we add this multiplexer in order to control that.
+
+00:30:32.161 --> 00:30:38.150 
+So for load word instruction, we control, we need to we add this multiplexer and we control this
+
+00:30:38.150 --> 00:30:43.641 
+multiplexer such that this line is going to be fit to the to the address of this memory.
+
+00:30:44.361 --> 00:30:50.962 
+And then we read from the memory and then we need to latch it as a data kind of a memory data
+
+00:30:50.962 --> 00:30:51.601 
+register.
+
+00:30:51.601 --> 00:30:55.881 
+So we latch it here in a in a different register essentially.
+
+00:30:58.241 --> 00:31:03.135 
+And then again, so this going to be this register memory data register is going to be is going to
+
+00:31:03.135 --> 00:31:07.121 
+fit again to the register file because we want to do this right back operation.
+
+00:31:07.481 --> 00:31:13.421 
+So we as a right data to register file and the address for the right register, which is RT is going
+
+00:31:13.421 --> 00:31:19.361 
+to be actually coming from the instruction that haven't changed at all from from the moment that we
+
+00:31:19.361 --> 00:31:19.721 
+fetch.
+
+00:31:20.401 --> 00:31:24.001 
+So it's going to be instruction 20 to to 16.
+
+00:31:25.081 --> 00:31:32.047 
+So we provide that essentially address and we also apply this Reg write, which is the right enable
+
+00:31:32.047 --> 00:31:38.801 
+of the register file in order to make sure that we write this finish this write back operation.
+
+00:31:39.401 --> 00:31:41.921 
+So that's load word execution.
+
+00:31:42.281 --> 00:31:49.221 
+But we also need to do for increment PC because essentially that also important to have in your in
+
+00:31:49.221 --> 00:31:50.921 
+your micro architecture.
+
+00:31:51.681 --> 00:31:52.881 
+So PC +4.
+
+00:31:52.881 --> 00:31:57.001 
+What we can do here is actually we can reuse our ALU for PC +4.
+
+00:31:58.001 --> 00:32:03.801 
+So the PC which is so coming from here, right?
+
+00:32:03.801 --> 00:32:06.241 
+The the current PC, we need to do PC +4.
+
+00:32:06.601 --> 00:32:12.241 
+So the current PC is coming through this through this line.
+
+00:32:12.241 --> 00:32:20.052 
+And then here we add another multiplexer that we, when we want to do PC +4, we essentially select
+
+00:32:20.052 --> 00:32:24.481 
+the current PC instead of output of this register file.
+
+00:32:24.881 --> 00:32:27.081 
+So we select this the current PC.
+
+00:32:28.201 --> 00:32:31.721 
+And then for the second Oprah and we have another multiplexer.
+
+00:32:31.881 --> 00:32:39.012 
+We're going to use other inputs for later slides you're going to see, but one of the input is going
+
+00:32:39.012 --> 00:32:46.143 
+to be 4, which for this instruction for this PC increment, essentially we select of this line which
+
+00:32:46.143 --> 00:32:48.881 
+is 4 and PC is going to be added by 4.
+
+00:32:49.641 --> 00:32:59.721 
+And the output, the here ALU result is going to be used in order to store in this register.
+
+00:33:00.281 --> 00:33:00.561 
+OK.
+
+00:33:01.121 --> 00:33:07.216 
+And now you know why is important also to have this essentially it's important to have this Register
+
+00:33:07.216 --> 00:33:13.250 
+here as an instruction register because so this your PC actually is going to be incremented for the
+
+00:33:13.250 --> 00:33:19.101 
+next cycle which in the end when we access the instruction memory, we're going to actually fetch
+
+00:33:19.101 --> 00:33:20.321 
+another instruction.
+
+00:33:20.721 --> 00:33:28.084 
+But we make sure that this the right enable of this instruction register is disabled such that we
+
+00:33:28.084 --> 00:33:34.841 
+don't latch the next instruction while we are executing the current instruction question.
+
+00:33:37.441 --> 00:33:37.681 
+OK.
+
+00:33:43.921 --> 00:33:44.241 
+OK.
+
+00:33:44.481 --> 00:33:53.041 
+For the store word, we need to essentially write data in the this temporary register RT to memory.
+
+00:33:53.601 --> 00:33:55.721 
+So what we do here is that.
+
+00:33:56.241 --> 00:33:57.041 
+Let me see.
+
+00:33:58.561 --> 00:33:58.801 
+Yeah.
+
+00:34:00.481 --> 00:34:05.896 
+So again we need to, so we need to provide two sources you set here for a store board to the
+
+00:34:05.896 --> 00:34:06.721 
+register file.
+
+00:34:06.921 --> 00:34:13.486 
+So essentially we add also this line to to another report of the register file which is the
+
+00:34:13.486 --> 00:34:15.001 
+instruction 20 to 16.
+
+00:34:15.681 --> 00:34:17.601 
+And then also we need to provide latch.
+
+00:34:17.601 --> 00:34:24.434 
+So essentially we can latch both output of the register file and this output is going to be used
+
+00:34:24.434 --> 00:34:30.201 
+because this is the this is the data that you want to store in the memory, right?
+
+00:34:30.641 --> 00:34:36.881 
+So this output of this register is going to be fed as the right data to the memory.
+
+00:34:37.681 --> 00:34:42.001 
+But also you need you need the pipeline to generate the address for the memory.
+
+00:34:42.281 --> 00:34:48.408 
+But that can be handled for the sorry, you need the micro architecture sometimes said my pipeline
+
+00:34:48.408 --> 00:34:53.841 
+because I used to say pipeline because most, I mean all the modern processor pipeline.
+
+00:34:53.921 --> 00:34:54.521 
+So that's why.
+
+00:34:55.121 --> 00:35:00.649 
+Sometimes it's a pipeline, but yeah, so in your micro architecture, you need, you already have the
+
+00:35:00.649 --> 00:35:06.121 
+support in order to generate the address of the memory which we've seen in load word instruction.
+
+00:35:06.561 --> 00:35:08.081 
+So that part is not changed.
+
+00:35:08.161 --> 00:35:11.841 
+So you still need to go from this register.
+
+00:35:11.841 --> 00:35:18.381 
+You read it, you read it and then you add it with the sign extend immediate in the Lu and then
+
+00:35:18.381 --> 00:35:24.921 
+provide the address, you latch it to this register and then provide the address to the memory.
+
+00:35:25.281 --> 00:35:26.561 
+So that also needs to be done.
+
+00:35:26.841 --> 00:35:32.391 
+So that's that's a part of the execution of this instruction store word, which you need to control
+
+00:35:32.391 --> 00:35:33.921 
+it through your FSM design.
+
+00:35:34.561 --> 00:35:40.241 
+But the data that you want to write to your memory, you can actually do it through this.
+
+00:35:41.521 --> 00:35:47.412 
+Essentially this addition added pipe, added micro architecture here in your hardware that you read
+
+00:35:47.412 --> 00:35:51.561 
+from your register file and then you write it to the memory question.
+
+00:35:55.241 --> 00:36:02.014 
+OK, so in the end you need to design basically you need to design have a control logic in FSM such
+
+00:36:02.014 --> 00:36:03.881 
+that control the execution.
+
+00:36:04.521 --> 00:36:10.090 
+But so data paths should should provide enough possibility to essentially to execute all these
+
+00:36:10.090 --> 00:36:10.801 
+instruction.
+
+00:36:11.801 --> 00:36:16.938 
+But as long as you design your your control logic correctly, you should be able to support store
+
+00:36:16.938 --> 00:36:19.721 
+word and load word in this architecture for example.
+
+00:36:21.761 --> 00:36:28.041 
+So for our type instruction also there is not much a lot different.
+
+00:36:28.201 --> 00:36:29.561 
+So here is one of the difference.
+
+00:36:29.561 --> 00:36:36.670 
+For example that which you have seen it also in single cycle micro architecture like the destination
+
+00:36:36.670 --> 00:36:43.068 
+register in our type is actually coming from the instruction 15 to 11 whereas in I type is
+
+00:36:43.068 --> 00:36:44.561 
+instruction 20 to 60.
+
+00:36:44.801 --> 00:36:49.601 
+So there should be a multiplexer here that you can basically select The Reg desk.
+
+00:36:50.361 --> 00:36:59.601 
+And also, yeah, the AAU input is actually coming from the the output of these two registers, right?
+
+00:37:00.521 --> 00:37:05.361 
+So you read from this register file and one of them is going to be the one of the Opran for the ALU.
+
+00:37:05.761 --> 00:37:07.761 
+Another one also is should be selected.
+
+00:37:07.761 --> 00:37:14.121 
+So that multiplexer that we added before here is going to be used again for for the second OPRAN.
+
+00:37:14.721 --> 00:37:20.841 
+So you you draw this line and you need to control this, the ALU source B.
+
+00:37:21.921 --> 00:37:28.041 
+And then in ALU you basically based on the function code, you do the operation and the ALU results.
+
+00:37:32.921 --> 00:37:34.121 
+Yeah, exactly a result.
+
+00:37:34.121 --> 00:37:41.330 
+You latch it here and then you provide it to this multiplexer in order to provide the right data to
+
+00:37:41.330 --> 00:37:42.641 
+the register file.
+
+00:37:44.481 --> 00:37:44.881 
+OK.
+
+00:37:46.681 --> 00:37:48.801 
+Yeah, it's not that's really hard.
+
+00:37:48.801 --> 00:37:52.121 
+Just we need to add this register and also multiplexer.
+
+00:37:52.721 --> 00:37:56.161 
+There should be enough hardware to handle all these instructions.
+
+00:37:56.161 --> 00:38:02.584 
+But then it's the matter of sequencing this hardware like how we manage the order of this hardware
+
+00:38:02.584 --> 00:38:06.321 
+in order to make sure that we execute these instructions.
+
+00:38:08.401 --> 00:38:11.321 
+So branch if equal is also interesting.
+
+00:38:11.801 --> 00:38:13.681 
+I'm going to discuss it now quickly.
+
+00:38:14.281 --> 00:38:18.361 
+So in branch if you call you need to essentially do multiple things.
+
+00:38:19.201 --> 00:38:25.241 
+One of them is actually checking if they if we need to do the branch, right.
+
+00:38:25.841 --> 00:38:31.521 
+So for that you essentially need to read these two registers from the register file.
+
+00:38:31.521 --> 00:38:33.121 
+So this part is going to be the same.
+
+00:38:33.601 --> 00:38:37.281 
+And then in the ALU you will do the for example, the subtract operation.
+
+00:38:38.081 --> 00:38:44.241 
+And if the result of the ALU is 0 this, then it's going to this zero signal is going to be asserted.
+
+00:38:45.001 --> 00:38:54.751 
+So if the if you have zero and then the instruction is branch, then you essentially have this
+
+00:38:54.751 --> 00:39:04.710 
+basically the fact that you want to take the branch and for that you can use to generate the PC
+
+00:39:04.710 --> 00:39:07.961 
+enable signal to update the PC.
+
+00:39:08.761 --> 00:39:15.850 
+So how we generate the target address in the for the B branch E free call for the for the target
+
+00:39:15.850 --> 00:39:16.441 
+address.
+
+00:39:16.441 --> 00:39:21.041 
+Also, we essentially this the immediate is going to be sign extended.
+
+00:39:21.441 --> 00:39:24.241 
+And then we need to do this shifting by two.
+
+00:39:24.241 --> 00:39:28.881 
+So we do this shifting and we input it again to this multiplexer, right?
+
+00:39:30.041 --> 00:39:42.108 
+And yeah, and also the the out another output is actually coming from this here from the from the PC
+
+00:39:42.108 --> 00:39:44.281 
+which coming here.
+
+00:39:45.201 --> 00:39:51.150 
+And this is important to consider that this this PC that now I'm inputting here to this area is
+
+00:39:51.150 --> 00:39:52.841 
+actually already PC Plus 4.
+
+00:39:53.441 --> 00:39:54.521 
+Because once we do the.
+
+00:39:55.001 --> 00:39:57.241 
+We also do the process of PC +4.
+
+00:39:57.761 --> 00:40:03.121 
+So this PC for the for the cycle that I want to do this addition is actually already PC +4.
+
+00:40:03.561 --> 00:40:11.275 
+So PC Plus 4 is going to be input this multiplexer and then comes to this ALU going to be added with
+
+00:40:11.275 --> 00:40:17.601 
+this sign extended shifted by two immediate and and then you generate the results.
+
+00:40:18.241 --> 00:40:26.761 
+And for that you can actually, yeah, input it essentially to the to the PC.
+
+00:40:30.441 --> 00:40:30.761 
+OK.
+
+00:40:35.001 --> 00:40:40.990 
+So yeah, if you put all of them together, you're going to get to this complete multi cycle
+
+00:40:40.990 --> 00:40:42.721 
+processor, this data pass.
+
+00:40:44.241 --> 00:40:50.867 
+You can also check your book Harris and Harris Chapter 7.4 for more, you know, maybe for better
+
+00:40:50.867 --> 00:40:52.681 
+understanding if you want.
+
+00:40:52.681 --> 00:40:56.681 
+But essentially the the overall analysis is the same.
+
+00:40:58.601 --> 00:41:04.930 
+OK, So what is clear here is that we need to add extra registers and these registers are not needed
+
+00:41:04.930 --> 00:41:06.401 
+in single cycle design.
+
+00:41:06.401 --> 00:41:07.641 
+But here we need to add them.
+
+00:41:08.161 --> 00:41:15.052 
+But that brings us some basically efficiency like we have only one ALU and other we also have only
+
+00:41:15.052 --> 00:41:16.881 
+one memory, which is good.
+
+00:41:18.521 --> 00:41:22.761 
+But we now we need to construct the multi cycle control logic.
+
+00:41:23.241 --> 00:41:24.481 
+But any question before that?
+
+00:41:30.456 --> 00:41:31.616 
+No, no two registers.
+
+00:41:32.616 --> 00:41:32.896 
+Yeah.
+
+00:41:32.896 --> 00:41:35.736 
+So I I'm not sure if we have this.
+
+00:41:37.616 --> 00:41:37.776 
+Yeah.
+
+00:41:37.776 --> 00:41:41.216 
+So BEQ is always is something like branch.
+
+00:41:41.216 --> 00:41:49.565 
+If you call and then you put two register like beq dollar S $0.00 S 1 and then a label which is a a
+
+00:41:49.565 --> 00:41:50.746 
+branch target.
+
+00:41:51.226 --> 00:41:56.146 
+So you need to subtract these two registers to to see if they are equal or not.
+
+00:41:56.146 --> 00:42:04.456 
+And then afterwards we'll get the new address to which dual branch, Yes, but no, for that you need
+
+00:42:04.456 --> 00:42:10.986 
+to basically calculate it using your immediate address, which is a same time.
+
+00:42:12.746 --> 00:42:15.706 
+No, no, no, It's actually handling in a different state in the FSN.
+
+00:42:15.706 --> 00:42:21.475 
+We're going to see that, but it's going to be so in in someone cycle, actually you generate the
+
+00:42:21.475 --> 00:42:22.386 
+target address.
+
+00:42:22.386 --> 00:42:28.695 
+I think in the beginning, you're going to generate the target address, which is going to be PC Plus
+
+00:42:28.695 --> 00:42:29.906 
+4 coming from here.
+
+00:42:29.906 --> 00:42:33.066 
+And also the sign extended shifted by two to this multiplexer.
+
+00:42:33.066 --> 00:42:34.226 
+And then you do this addition.
+
+00:42:34.386 --> 00:42:35.506 
+So that's the target address.
+
+00:42:35.946 --> 00:42:41.173 
+But then in the in the next cycle also you calculate if you need to do if you need to take the
+
+00:42:41.173 --> 00:42:42.786 
+branch or not and then reset.
+
+00:42:42.786 --> 00:42:50.626 
+Yes, you also first check if the branch will be taken and only then calculate the target address.
+
+00:42:50.626 --> 00:42:51.466 
+You can also do that.
+
+00:42:51.466 --> 00:42:59.786 
+Yes, instructions can take different amount of time depending on the state of the system.
+
+00:42:59.786 --> 00:43:00.226 
+Yeah, exactly.
+
+00:43:00.426 --> 00:43:03.146 
+So essentially you can do vice versa.
+
+00:43:03.146 --> 00:43:08.712 
+You can actually first resolve if you're going to take the branch and if you want to take the
+
+00:43:08.712 --> 00:43:11.466 
+branch, then you calculate the target address.
+
+00:43:11.826 --> 00:43:15.864 
+You can also do the other way around, which your book is doing the other way around, like
+
+00:43:15.864 --> 00:43:19.586 
+calculating the target address and then see if you want to take the branch or not.
+
+00:43:19.746 --> 00:43:20.786 
+Was that your question or?
+
+00:43:20.786 --> 00:43:20.906 
+Yes.
+
+00:43:27.186 --> 00:43:28.906 
+So instructions even can take different amounts of size.
+
+00:43:28.906 --> 00:43:29.466 
+Oh, that's true.
+
+00:43:29.466 --> 00:43:30.346 
+Yes, of course, of course, of course.
+
+00:43:30.346 --> 00:43:37.732 
+And actually this multiplexer here that we added, I forgot actually to explain this multiplexer is,
+
+00:43:37.732 --> 00:43:45.045 
+is for the fact that whether or not we want to take the branch because so with this ALU, so in the
+
+00:43:45.045 --> 00:43:52.432 
+first, in the very, very early first cycle in the fetch, we calculate PC +4, OK, We calculate PC +4
+
+00:43:52.432 --> 00:43:53.626 
+and we latch it.
+
+00:43:54.386 --> 00:43:58.586 
+So we have PC Plus four in this essentially in this register.
+
+00:43:59.066 --> 00:44:05.986 
+And then in the next cycle, we calculate PC Plus 4 + extended immediate shifted by two.
+
+00:44:06.426 --> 00:44:08.306 
+And then we have it here essentially.
+
+00:44:08.986 --> 00:44:09.346 
+OK.
+
+00:44:09.946 --> 00:44:15.399 
+And then based on that, we decide based on this calculation also we can decide whether or not we
+
+00:44:15.399 --> 00:44:16.706 
+want to take which one.
+
+00:44:17.306 --> 00:44:21.586 
+If we take the zero part, it's going to be like meaning that we're going to take the branch.
+
+00:44:22.426 --> 00:44:24.746 
+The one is going to means that we don't want to take the branch.
+
+00:44:25.906 --> 00:44:26.506 
+Makes sense.
+
+00:44:30.831 --> 00:44:31.311 
+Yes.
+
+00:44:33.311 --> 00:44:33.991 
+Yeah, exactly.
+
+00:44:33.991 --> 00:44:35.951 
+So this should be handled by the control logic.
+
+00:44:36.111 --> 00:44:37.431 
+Yeah, yeah.
+
+00:44:37.431 --> 00:44:39.911 
+It's a matter of how we handle the controllers, yeah.
+
+00:44:41.471 --> 00:44:47.291 
+So I should thank actually this question now because now we get to the nice, you know, clean part
+
+00:44:47.291 --> 00:44:52.751 
+that we take the break and we can after the break we can start designing the control logic.
+
+00:44:53.271 --> 00:44:55.591 
+Let's get back at when the ring bells again.
+
+00:44:55.991 --> 00:44:57.271 
+3:15 and we continue.
+
+00:44:59.078 --> 00:45:01.158 
+OK, let's continue.
+
+00:45:04.318 --> 00:45:10.089 
+So before the break, we constructed the data pass for multi cycle design and now we want to see how
+
+00:45:10.089 --> 00:45:11.838 
+we can control that data pass.
+
+00:45:12.398 --> 00:45:18.136 
+And by now you know that this controller is going to be like similar to what you have learnt from
+
+00:45:18.136 --> 00:45:19.438 
+finance state machine.
+
+00:45:19.878 --> 00:45:22.158 
+So essentially we're going to design this FSF.
+
+00:45:22.998 --> 00:45:28.078 
+So our control unit is going to be is going to generate a lot of signals.
+
+00:45:28.118 --> 00:45:31.198 
+Some of them are going to be used as a multiplexer selectors.
+
+00:45:31.798 --> 00:45:37.154 
+Some of them are going to be used as register enables to basically control whether or not we are
+
+00:45:37.154 --> 00:45:38.438 
+allowed to load or not.
+
+00:45:39.158 --> 00:45:45.478 
+And also going to use to generate this the control of the ALU what operation you're going to do.
+
+00:45:45.998 --> 00:45:49.958 
+OK, so we start with the fetch.
+
+00:45:53.118 --> 00:46:00.104 
+So the first state, essentially you have a reset that whenever you reset your control, you're
+
+00:46:00.104 --> 00:46:02.358 
+starting from the fetch state.
+
+00:46:03.198 --> 00:46:12.764 
+And from this state, essentially you need to you have these output for the for the control signals,
+
+00:46:12.764 --> 00:46:19.238 
+like for example this multiplexer, you need to put 0 as a selector.
+
+00:46:19.238 --> 00:46:24.798 
+Essentially you use the PC value as the address for this memory.
+
+00:46:25.038 --> 00:46:29.473 
+So this is going to be 0 and also this mem write needs to be also zero because you don't want to
+
+00:46:29.473 --> 00:46:30.398 
+write to the memory.
+
+00:46:31.078 --> 00:46:31.398 
+Again.
+
+00:46:31.398 --> 00:46:34.078 
+We have this principle that we don't want to harm.
+
+00:46:34.358 --> 00:46:40.378 
+So for those components that we don't want to do anything, especially the storage components, we are
+
+00:46:40.378 --> 00:46:45.918 
+OK with reading from them but we make sure that we don't change the values in those storage.
+
+00:46:45.918 --> 00:46:53.522 
+So we, we always need to make sure that we provide zero to the right enable and then we read from
+
+00:46:53.522 --> 00:47:01.047 
+this memory and this also this register for the instruction memory for the instruction register,
+
+00:47:01.047 --> 00:47:03.478 
+the right enable needs to be 1.
+
+00:47:03.518 --> 00:47:13.798 
+So that's why this instruction right is activated here.
+
+00:47:13.798 --> 00:47:16.758 
+Also we the PC source needs to be 0.
+
+00:47:16.918 --> 00:47:22.678 
+Essentially we calculate the ALU, the PC +4 from this.
+
+00:47:24.878 --> 00:47:25.438 
+Yeah, exactly.
+
+00:47:25.438 --> 00:47:31.638 
+PC Plus 4 is going to be selected and then it's going to be fit to this Register here.
+
+00:47:32.638 --> 00:47:38.999 
+Also the the the PC the enable, the right enable should be 1 because you want to also latch PC Plus
+
+00:47:38.999 --> 00:47:40.478 
+four in the next cycle.
+
+00:47:42.318 --> 00:47:44.918 
+Yeah, so I went over some of these operation.
+
+00:47:44.918 --> 00:47:49.038 
+Also in ALU you need to do addition because you want to do PC +4.
+
+00:47:50.118 --> 00:47:55.318 
+So that's why here we need to select the current PC.
+
+00:47:55.318 --> 00:48:05.118 
+So this multiplexer, for example, needs to be 0, which is a LUSRASRCA, right?
+
+00:48:05.438 --> 00:48:07.158 
+So we put 0 for that.
+
+00:48:08.758 --> 00:48:15.238 
+And then also for the second source of the ARU we need to fit 4 value.
+
+00:48:15.238 --> 00:48:20.278 
+So that's why for the second one, we provide 01 and ALU needs to do addition.
+
+00:48:20.278 --> 00:48:22.918 
+So the code for addition is 010 for example.
+
+00:48:22.918 --> 00:48:30.518 
+And then that's provides the for the the logic to do the addition for the ALU.
+
+00:48:31.998 --> 00:48:33.118 
+So that's more or less the thing.
+
+00:48:33.118 --> 00:48:39.878 
+So for fetch, we essentially have this state that we need to control all these control signals.
+
+00:48:40.198 --> 00:48:47.178 
+And in the next cycle, essentially when we get to this, essentially at the rising edge of the clock,
+
+00:48:47.178 --> 00:48:51.158 
+PC Plus 4 is going to be latched in this program counter.
+
+00:48:51.718 --> 00:48:58.180 
+And also instruction that you have read from the memory is going to be latched in this instruction
+
+00:48:58.180 --> 00:48:59.038 
+register, OK.
+
+00:48:59.918 --> 00:49:02.718 
+And now we need to get to this the code stage.
+
+00:49:03.238 --> 00:49:08.556 
+So in the code stage, essentially your book consider that it's actually state is completely empty
+
+00:49:08.556 --> 00:49:11.518 
+because essentially we don't need to control anything.
+
+00:49:11.678 --> 00:49:18.625 
+So we always read, we always read from the register file and the read addresses from the register
+
+00:49:18.625 --> 00:49:20.918 
+file is actually always similar.
+
+00:49:21.958 --> 00:49:27.302 
+So we read from the register file and these registers which which are the output of the register
+
+00:49:27.302 --> 00:49:28.638 
+file, they always latch.
+
+00:49:28.998 --> 00:49:33.998 
+So we always from the from the register file and we always latch the output.
+
+00:49:34.078 --> 00:49:37.918 
+So there is no, let's say right enable for this register.
+
+00:49:38.358 --> 00:49:44.010 
+And since the register, the instruction register is not changing while we are executing the
+
+00:49:44.010 --> 00:49:48.918 
+instruction, essentially the output of this register is going to be also fixed.
+
+00:49:49.278 --> 00:49:54.209 
+There is no change in that as so your book essentially consider that decoder stage is completely
+
+00:49:54.209 --> 00:49:54.518 
+empty.
+
+00:49:56.358 --> 00:50:01.208 
+It can be different if you change your data pass essentially, but but here in this case, you don't
+
+00:50:01.208 --> 00:50:02.198 
+need to do anything.
+
+00:50:04.678 --> 00:50:09.998 
+And then so you can actually also share states.
+
+00:50:10.478 --> 00:50:14.198 
+You don't need to add for each instruction, you don't need to add different states.
+
+00:50:14.198 --> 00:50:17.478 
+So all the instructions actually need to go through this fetch and decode.
+
+00:50:18.118 --> 00:50:23.786 
+But then after that, you can think of, OK, I'm going to branch over load of states that can be
+
+00:50:23.786 --> 00:50:26.078 
+different from different instructions.
+
+00:50:26.518 --> 00:50:32.038 
+However, some of these instructions, they are still sharing the same sequence more or less.
+
+00:50:32.318 --> 00:50:37.358 
+So you can also share the states in order to reduce the complexity of your control logic.
+
+00:50:37.918 --> 00:50:44.785 
+So for example, here we say that after the decode, if the opcode is load word or a store word, we're
+
+00:50:44.785 --> 00:50:49.318 
+going to get to this, the second state, which is a memory address.
+
+00:50:49.358 --> 00:50:54.336 
+So in this state, essentially we need to generate the address that we want to access the memory and
+
+00:50:54.336 --> 00:50:57.958 
+that address can be used to write to the memory or read from the memory.
+
+00:51:01.358 --> 00:51:02.638 
+And then for the load word.
+
+00:51:03.278 --> 00:51:12.206 
+So after that if your instruction is load word, you need to essentially add another state to control
+
+00:51:12.206 --> 00:51:14.438 
+this instruction or data.
+
+00:51:14.678 --> 00:51:16.318 
+Essentially this multiplexer here.
+
+00:51:16.998 --> 00:51:22.943 
+So remember that we added this multiplexer here in order to make sure that the in order to control
+
+00:51:22.943 --> 00:51:28.889 
+that the address that we want to access the memory is coming from the PC or coming from the coming
+
+00:51:28.889 --> 00:51:31.438 
+from the ALU result, which is the address.
+
+00:51:31.678 --> 00:51:38.758 
+So this instruction or data, yeah, it's going to here, it's going to select this line 1.
+
+00:51:40.278 --> 00:51:48.752 
+And then also so we read from the memory and this data needs to be written also in the register
+
+00:51:48.752 --> 00:51:49.198 
+file.
+
+00:51:49.198 --> 00:51:54.718 
+So for the for the next state, you need to apply these values as well.
+
+00:51:54.798 --> 00:52:05.286 
+Like the control logic needs to provide Regdis need to set regdis to 0, which is yeah, this one
+
+00:52:05.286 --> 00:52:14.118 
+Regdis here needs to be 0 because it's actually a load word instructions I type.
+
+00:52:15.118 --> 00:52:23.779 
+So I type the the memo, the register, the destination register address is actually coming from 16 to
+
+00:52:23.779 --> 00:52:26.118 
+21 part of the instruction.
+
+00:52:26.118 --> 00:52:29.958 
+So that's why 16 to 20, sorry, part of the instruction.
+
+00:52:29.958 --> 00:52:32.638 
+So that's why we are selecting this line.
+
+00:52:33.278 --> 00:52:38.646 
+And then also mem to rate should be 1 because we want to read, we are loading from the memory to the
+
+00:52:38.646 --> 00:52:39.398 
+register file.
+
+00:52:39.918 --> 00:52:46.645 
+And rewrite also needs to be asserted because we want to write to the register file and then we can
+
+00:52:46.645 --> 00:52:51.198 
+finish the load, load word instruction in essentially 5 cycles, OK.
+
+00:52:52.318 --> 00:52:58.724 
+And similarly, if your instruction is store word after state two, you're going to get to another
+
+00:52:58.724 --> 00:53:05.263 
+state which you need to handle the right writing that data that you read from the register file to
+
+00:53:05.263 --> 00:53:05.998 
+the memory.
+
+00:53:06.398 --> 00:53:10.198 
+So you need to apply memwrite essentially such that you write to the memory.
+
+00:53:10.398 --> 00:53:19.046 
+So that's for restore word for our type after the code you essentially you can think of you know how
+
+00:53:19.046 --> 00:53:19.998 
+to execute.
+
+00:53:21.198 --> 00:53:28.040 
+So you need to apply, you need to essentially control the source of this ALU which coming from these
+
+00:53:28.040 --> 00:53:28.998 
+two registers.
+
+00:53:29.238 --> 00:53:36.477 
+So that's why we you're controlling the ALUSRCSRCA&ALUSRCB and the ALU operation also needs to be
+
+00:53:36.477 --> 00:53:40.358 
+defined based on the instruction that you are doing.
+
+00:53:41.638 --> 00:53:44.438 
+And after calculating the result, you need to write it back.
+
+00:53:44.438 --> 00:53:51.398 
+So at the another estate ale you write back, you handle this Reg this mem to Reg and also Reg write.
+
+00:53:51.838 --> 00:53:54.678 
+So with that you can handle R type instructions.
+
+00:53:55.958 --> 00:54:01.638 
+And for for branch if equal essentially you first calculate.
+
+00:54:01.638 --> 00:54:04.918 
+So after fetch this is the fetch.
+
+00:54:04.918 --> 00:54:12.469 
+And in the decode actually here for branch if you call you can actually use this estate to calculate
+
+00:54:12.469 --> 00:54:19.643 
+the branch target address for branch if you call also for branch not equal so you which is good
+
+00:54:19.643 --> 00:54:27.043 
+which this can actually give us some you know the the fact that we have this balance design and we
+
+00:54:27.043 --> 00:54:29.838 
+are trying to utilising our hardware.
+
+00:54:30.238 --> 00:54:37.158 
+So in this state, even though conceptually actually in decoded state, you don't really want to do
+
+00:54:37.158 --> 00:54:39.798 
+operation, you want to decode, right?
+
+00:54:40.198 --> 00:54:47.027 
+But in order to reduce the complexity and in order to in order to avoid adding more resources, you
+
+00:54:47.027 --> 00:54:51.278 
+essentially you can use this state for two different reasons.
+
+00:54:51.278 --> 00:54:54.518 
+1 is that calculating, 1 is decode, another one is.
+
+00:54:54.598 --> 00:54:59.398 
+Is actually also calculating the target memory address, targets branch address.
+
+00:55:00.878 --> 00:55:07.521 
+And yeah, so essentially you calculate the target branch address here and then at this estate you
+
+00:55:07.521 --> 00:55:09.918 
+essentially decide you handle this.
+
+00:55:11.478 --> 00:55:17.245 
+Basically you evaluate the branch whether or not you want to take the branch or not, which is
+
+00:55:17.245 --> 00:55:23.198 
+happening in this estate, which if you look at it is going to be again sourcing the ALU from the
+
+00:55:23.198 --> 00:55:27.478 
+register file and do the operation of subtract because it's a branch.
+
+00:55:27.478 --> 00:55:38.711 
+If you call and use the output of the ALU this 01 in order to see whether or not we want to take the
+
+00:55:38.711 --> 00:55:40.958 
+branch question, OK.
+
+00:55:43.958 --> 00:55:48.078 
+And it's going to be kind of a multi cycle control FSM complete.
+
+00:55:49.518 --> 00:55:55.761 
+They're going to be there are a lot of instructions that I mean, your book also started with subset
+
+00:55:55.761 --> 00:56:01.438 
+of MIPS instructions and control and construct this data pass as well as the control unit.
+
+00:56:02.518 --> 00:56:11.672 
+If you want to, for example, add some other operations like add immediate essentially again, you
+
+00:56:11.672 --> 00:56:15.678 
+can, you know, add different other states.
+
+00:56:15.798 --> 00:56:22.541 
+So if if your current multi cycle FSM cannot support all instructions and you have some instruction
+
+00:56:22.541 --> 00:56:27.718 
+so you don't need to worry you just you just add other states to control it.
+
+00:56:28.118 --> 00:56:37.118 
+And sometimes you need to add basically some more control signals for supporting those instructions.
+
+00:56:37.438 --> 00:56:40.358 
+But it's actually in the sense that this is much more programmable.
+
+00:56:41.038 --> 00:56:46.318 
+You can program your control FSM in order to be able to run different instructions.
+
+00:56:47.078 --> 00:56:48.998 
+So this is for example for AD immediate.
+
+00:56:49.598 --> 00:56:54.478 
+If you want to support jump instruction, for example, our data pass was not enough.
+
+00:56:55.758 --> 00:57:01.358 
+So you can essentially your book also talks about updating the data pass.
+
+00:57:02.118 --> 00:57:09.316 
+So this multiplexer which was selecting previously only for two sources, now it's need to selecting
+
+00:57:09.316 --> 00:57:16.005 
+among three sources which one of the source is actually coming from this for the jump target
+
+00:57:16.005 --> 00:57:19.278 
+address which is in the end is is it's PC +4.
+
+00:57:20.758 --> 00:57:21.318 
+Let me see.
+
+00:57:22.998 --> 00:57:23.238 
+Yeah.
+
+00:57:23.598 --> 00:57:28.878 
+So PC Plus 4 is coming from this line, right?
+
+00:57:29.278 --> 00:57:36.638 
+And then you have this immediate target address which is 20, which is instruction 0 to 25, right.
+
+00:57:37.118 --> 00:57:46.133 
+So this instruction 0 to 25 comes here and you just shifts shifted left by two and then you
+
+00:57:46.133 --> 00:57:54.158 
+concatenate this target 28 bits with the four most significant bits of the PC +4.
+
+00:57:54.758 --> 00:58:00.838 
+And with that you have your PC, your target jump target address and that can go through this.
+
+00:58:01.598 --> 00:58:06.672 
+You know the selector of this multiplexer and can be selected in order to be latched in your program
+
+00:58:06.672 --> 00:58:07.078 
+counter.
+
+00:58:07.598 --> 00:58:14.918 
+So you can update your data pass and with that you also need to basically update your control unit.
+
+00:58:15.158 --> 00:58:21.832 
+Now remember that basically PC source in the past it was only one bit because we had a multiplexer
+
+00:58:21.832 --> 00:58:22.718 
+of two input.
+
+00:58:23.158 --> 00:58:27.558 
+But now that we have 3 inputs, essentially this PCSRC is 2 bits.
+
+00:58:27.878 --> 00:58:35.172 
+So we need to update other states that they were for example on the like they were controlling
+
+00:58:35.172 --> 00:58:35.638 
+PCSRC.
+
+00:58:37.558 --> 00:58:41.678 
+So yeah, so you change that PCSRC here, for example, 00.
+
+00:58:41.678 --> 00:58:47.038 
+And then if the opcode is jump, you just go with the PCSRC 10 and then PC write.
+
+00:58:47.918 --> 00:58:50.198 
+And now you can also support jump address.
+
+00:58:51.478 --> 00:58:53.838 
+So there are also other instructions that you can think of.
+
+00:58:53.838 --> 00:58:59.949 
+You can actually look into it as the as optional homework if you're interested like instruction,
+
+00:58:59.949 --> 00:59:06.252 
+remember about jump register that we discussed a little bit, jump and link, register, jump and link
+
+00:59:06.252 --> 00:59:07.398 
+those instruction.
+
+00:59:07.398 --> 00:59:13.558 
+Also, you can see how we can support in this data pass whether or not we are able to support them.
+
+00:59:13.598 --> 00:59:17.118 
+If not, if, if yes, how we can control it?
+
+00:59:17.238 --> 00:59:22.934 
+And if not, how we can modify the data pass such that we should, then we should be able to control
+
+00:59:22.934 --> 00:59:24.678 
+to support these instructions.
+
+00:59:25.478 --> 00:59:31.037 
+But in the end, it's very programmable and methodical in order to support support for all these
+
+00:59:31.037 --> 00:59:31.798 
+instructions.
+
+00:59:34.758 --> 00:59:35.198 
+Question.
+
+00:59:41.638 --> 00:59:42.078 
+OK.
+
+00:59:43.278 --> 00:59:49.225 
+So yeah, so we more or less actually constructed the multi cycle MIPS micro architecture and this is
+
+00:59:49.225 --> 00:59:54.518 
+actually the single cycle MIPS or micro architecture for a subset of instruction in your.
+
+00:59:54.598 --> 01:00:02.056 
+From your book in chapter 7.0 and also this is the multi cycle mixed micro architecture from your
+
+01:00:02.056 --> 01:00:09.438 
+book in chapter 7.4 which you can also check the book For more information if you're interested.
+
+01:00:11.598 --> 01:00:16.398 
+OK, so one question, what does this design assume about memory?
+
+01:00:22.704 --> 01:00:27.704 
+Yeah, it's kind of a single cycle memory, which in reality that's not the case.
+
+01:00:28.384 --> 01:00:33.944 
+Memory can be actually hundreds of cycles, but in multi cycle actually we can easily handle it.
+
+01:00:34.264 --> 01:00:35.224 
+Remember about.
+
+01:00:36.664 --> 01:00:42.241 
+So essentially if you if you access your memory, so in some state states you need to access the
+
+01:00:42.241 --> 01:00:43.064 
+memory, right?
+
+01:00:43.064 --> 01:00:48.544 
+For example in the fetch or for example in your here for load word and store word, right?
+
+01:00:49.024 --> 01:00:50.304 
+So you're accessing memory.
+
+01:00:50.304 --> 01:00:56.624 
+If your memory is not ready, like your data is not ready, you just stay in that state.
+
+01:00:56.824 --> 01:01:04.304 
+So you can think of, OK, I'm going to just, you know, do this busy waiting until my memory is ready.
+
+01:01:06.304 --> 01:01:12.064 
+So and that essentially is about having this, you know, the kind of a bit memory ready bit is an
+
+01:01:12.064 --> 01:01:15.544 
+input to the control logic that determines the next state.
+
+01:01:16.104 --> 01:01:23.948 
+And you've seen that actually in LC3B in the appendix of your work that we, we had some, some of
+
+01:01:23.948 --> 01:01:31.955 
+these states like here for the fetch, you know, you have this estate that until your memory is not
+
+01:01:31.955 --> 01:01:35.224 
+ready, you state you stay in this state.
+
+01:01:35.384 --> 01:01:36.544 
+Essentially you know, you wait.
+
+01:01:38.064 --> 01:01:42.544 
+So here for memory access, here also for memory access and other memory access.
+
+01:01:42.624 --> 01:01:47.464 
+So there are multiple memory accesses in the execution of instructions.
+
+01:01:48.344 --> 01:01:55.885 
+But in multi cycle design you can easily handle that long latency memory which you can stay in some
+
+01:01:55.885 --> 01:01:57.104 
+of these states.
+
+01:01:57.304 --> 01:01:58.904 
+And that's the beauty of this design.
+
+01:01:58.904 --> 01:02:02.504 
+In single cycle micro architecture, we cannot do anything about it, right.
+
+01:02:03.064 --> 01:02:08.962 
+We always need to wait for the longest memory access instruction, which is like can be hundreds of
+
+01:02:08.962 --> 01:02:09.384 
+cycles.
+
+01:02:09.704 --> 01:02:15.991 
+But here those instructions that they don't need a lot of memory accesses, they can just be faster,
+
+01:02:15.991 --> 01:02:18.024 
+they can go in other way around.
+
+01:02:18.184 --> 01:02:22.064 
+OK, very good.
+
+01:02:25.921 --> 01:02:30.521 
+So for writing to the memory, it depends how much robust you want to be.
+
+01:02:31.161 --> 01:02:37.061 
+Sometimes from the program processor point of view, when you when you're writing to the memory, like
+
+01:02:37.061 --> 01:02:42.607 
+when, when you send the data to the memory, you can think of, OK, I'm done with the write, you
+
+01:02:42.607 --> 01:02:44.201 
+know, and you can continue.
+
+01:02:44.941 --> 01:02:48.261 
+But there are some cases that you really want to make sure that your write is done.
+
+01:02:50.141 --> 01:02:54.061 
+Like think of, think about when you want to have some acknowledgement.
+
+01:02:54.581 --> 01:02:57.341 
+You for example, you're writing for a very important data.
+
+01:02:57.341 --> 01:02:58.501 
+You want to make sure that's done.
+
+01:02:59.741 --> 01:03:04.478 
+But I agree with you in general, loads are much more on the critical path because for load you need
+
+01:03:04.478 --> 01:03:04.861 
+to wait.
+
+01:03:05.141 --> 01:03:10.421 
+But for a store, you can have some, you know, some way to, you know, to work around it.
+
+01:03:10.901 --> 01:03:16.185 
+That's true, But it's not always the case that you can just say that, OK, I'm writing sending the
+
+01:03:16.185 --> 01:03:19.781 
+right to the memory and I'm going to continue others instructions.
+
+01:03:19.821 --> 01:03:24.261 
+There are some cases that you need to be, but it needs more.
+
+01:03:25.021 --> 01:03:26.901 
+Maybe in future lectures we can get to that.
+
+01:03:28.141 --> 01:03:29.541 
+Yeah, very good.
+
+01:03:31.421 --> 01:03:32.381 
+Any other questions?
+
+01:03:32.741 --> 01:03:34.181 
+This one was very good question actually.
+
+01:03:37.701 --> 01:03:38.021 
+OK.
+
+01:03:40.421 --> 01:03:46.941 
+So I want to quickly also discuss this micro programme with multi cycle micro architecture.
+
+01:03:47.461 --> 01:03:51.541 
+This actually is going to be kind of optional for you to check it later.
+
+01:03:51.941 --> 01:03:56.301 
+I'm going to provide also references in in your book in Pat and Patil.
+
+01:03:57.621 --> 01:04:03.671 
+But this is very actually interesting to look into it because most of the modern microprocessor,
+
+01:04:03.671 --> 01:04:08.461 
+they're actually doing this micro programme, multi cycle micro architecture.
+
+01:04:08.461 --> 01:04:10.181 
+So it's very interesting to learn about it.
+
+01:04:10.861 --> 01:04:12.301 
+And the idea is actually very simple.
+
+01:04:12.301 --> 01:04:19.651 
+If I want just want to explain to you why we are designing this control signals, they are the this
+
+01:04:19.651 --> 01:04:20.701 
+control logic.
+
+01:04:20.701 --> 01:04:24.941 
+We are essentially we are programming our micro architecture.
+
+01:04:25.821 --> 01:04:28.261 
+So think about your micro architecture as a.
+
+01:04:28.661 --> 01:04:31.581 
+So basically we have a data pass and there are a lot of.
+
+01:04:31.701 --> 01:04:38.548 
+Control logics and essentially by by controlling logic you are generating control signals and by
+
+01:04:38.548 --> 01:04:45.253 
+setting these control signals step by step or state by state you are actually programming your
+
+01:04:45.253 --> 01:04:47.821 
+datapaths and how you want to do it.
+
+01:04:48.221 --> 01:04:50.781 
+So that actually gives you the concept of programming.
+
+01:04:51.501 --> 01:04:56.844 
+So in micro program multi cycle, you can think of OK, we have a program at the high level which has
+
+01:04:56.844 --> 01:04:59.381 
+instructions, you know, at the programmer view.
+
+01:05:00.101 --> 01:05:06.377 
+And then you can think of OK, at the low level at the hardware, we have micro instructions that
+
+01:05:06.377 --> 01:05:12.720 
+essentially these micro instructions are sequencing through the data pass in order to able us to
+
+01:05:12.720 --> 01:05:14.901 
+execute 1 high level instruction.
+
+01:05:15.981 --> 01:05:21.118 
+So when you know this concept actually, then actually supporting complex instructions are not that
+
+01:05:21.118 --> 01:05:21.381 
+hard.
+
+01:05:22.061 --> 01:05:28.240 
+So for example, you want to have let's say matrix matrix multiplication and you know that this
+
+01:05:28.240 --> 01:05:34.682 
+matrix matrix multiplication is going to be sequence of a lot of instructions, smaller instruction
+
+01:05:34.682 --> 01:05:38.101 
+like addition multiplication and so on and so forth.
+
+01:05:38.421 --> 01:05:43.328 
+So you can actually have them as a micro instructions loaded in some memory which is going to see
+
+01:05:43.328 --> 01:05:43.581 
+that.
+
+01:05:43.781 --> 01:05:48.341 
+And then you can sequence through all these execution of those simple instructions.
+
+01:05:48.781 --> 01:05:53.981 
+You can actually have this sequence of instructions, micro instructions going 1 by 1.
+
+01:05:53.981 --> 01:05:58.759 
+You can do loop in them, you can branch in them, you can do everything and essentially you're
+
+01:05:58.759 --> 01:06:01.021 
+programming your data pass at the low level.
+
+01:06:01.781 --> 01:06:02.141 
+OK.
+
+01:06:02.581 --> 01:06:05.661 
+And that's very actually very exciting topic to go into it.
+
+01:06:05.901 --> 01:06:11.832 
+It's actually coming from this also paper, which I encourage you to check, but I'm not going to
+
+01:06:11.832 --> 01:06:13.581 
+actually cover it in detail.
+
+01:06:13.581 --> 01:06:18.661 
+I'm going to just quickly discuss it and get to the the next topic that we have today.
+
+01:06:19.541 --> 01:06:24.461 
+So in micro program control terminology, control signals associate with the current state.
+
+01:06:24.461 --> 01:06:27.101 
+They are considered they are named as micro instruction.
+
+01:06:27.461 --> 01:06:32.814 
+So all these like think about different FSM that we had and in each in each state we have some sort
+
+01:06:32.814 --> 01:06:34.221 
+of control signals, right?
+
+01:06:34.981 --> 01:06:40.249 
+So you can think of OK, all the control signals that we have in each state is considered as a micro
+
+01:06:40.249 --> 01:06:41.101 
+instruction, OK.
+
+01:06:41.941 --> 01:06:47.479 
+And then act of transitioning from one state to another, which is happening in the FSM here is
+
+01:06:47.479 --> 01:06:51.781 
+determining the next state and the micro instructions for the next state.
+
+01:06:51.981 --> 01:06:55.821 
+Like from 1 micro instruction, we want to go to next micro instructions.
+
+01:06:56.421 --> 01:06:59.261 
+And that is actually considered as micro sequencing.
+
+01:06:59.541 --> 01:07:04.661 
+So this is a terminology that you want to knowing it if you want to get familiar with this topic.
+
+01:07:05.861 --> 01:07:12.381 
+And then you need to have this control store that stores control signals for every possible state.
+
+01:07:12.941 --> 01:07:18.941 
+So essentially I'm going to show you in the picture, it's going to be in in the memory you're going
+
+01:07:18.941 --> 01:07:24.941 
+to store all these control signals like the value of them 101000, don't care, don't care, whatever.
+
+01:07:25.261 --> 01:07:30.595 
+So you have all of them in their memory and one line of it is actually going to be 1 micro
+
+01:07:30.595 --> 01:07:31.781 
+instruction for you.
+
+01:07:32.461 --> 01:07:38.388 
+So you execute this micro instruction and based on that micro instruction, micro sequencing, decide
+
+01:07:38.388 --> 01:07:41.741 
+which going to be the next micro instruction to execute.
+
+01:07:42.141 --> 01:07:46.061 
+And with that going 1 by 1, you should be able to execute your instruction.
+
+01:07:47.301 --> 01:07:52.461 
+So micro sequencer determines which set of control signals will be used in the next clock cycle.
+
+01:07:53.101 --> 01:08:00.124 
+So this actually coming from the high level picture that essentially you have this micro sequencer
+
+01:08:00.124 --> 01:08:05.141 
+and this is a controller store which can be actually very large table.
+
+01:08:05.421 --> 01:08:11.136 
+There are a lot of works that people have tried and actually work on it to compress this controller
+
+01:08:11.136 --> 01:08:16.621 
+store which I'm not going into it, but essentially you need to store all these control signals.
+
+01:08:16.981 --> 01:08:23.431 
+There are ways to reduce the, you know, to reduce the area that you need, but essentially people are
+
+01:08:23.431 --> 01:08:24.141 
+doing that.
+
+01:08:24.981 --> 01:08:29.887 
+And then output of this control is store is going to be your micro instruction which going to be
+
+01:08:29.887 --> 01:08:34.181 
+controlled your data paths in order to execute the instructions that you want to do.
+
+01:08:36.301 --> 01:08:43.569 
+So this is as I said, for your own study, you can check pattern pattern revised Appendix C, which
+
+01:08:43.569 --> 01:08:48.141 
+you can, which have basically discuss this interesting topic.
+
+01:08:49.461 --> 01:08:54.914 
+But I'm going to show something more here about it like what happens in a clock cycle, the control
+
+01:08:54.914 --> 01:08:59.701 
+signals, which is micro instruction for the core in the state they control two things.
+
+01:09:00.141 --> 01:09:05.396 
+One of them is processing the data pass and the other one is generation of control signals, which is
+
+01:09:05.396 --> 01:09:07.341 
+micro instruction for the next cycle.
+
+01:09:07.781 --> 01:09:14.360 
+And that's the, the part that sequencer is actually using micro sequencer is using this micro, the
+
+01:09:14.360 --> 01:09:20.939 
+current micro instruction in order to decide what to do for the next cycle and data pass and micro
+
+01:09:20.939 --> 01:09:23.021 
+sequencer operate concurrently.
+
+01:09:23.861 --> 01:09:28.775 
+And here also we have this question that why not generate control signals for the current cycle
+
+01:09:28.775 --> 01:09:31.621 
+basically in the current cycle like the control signal.
+
+01:09:31.781 --> 01:09:36.878 
+That we need for the current cycle by not generating them at the current cycle which we already also
+
+01:09:36.878 --> 01:09:37.541 
+discussed it.
+
+01:09:37.781 --> 01:09:41.901 
+This can actually lessen the control the clock cycle time.
+
+01:09:44.301 --> 01:09:48.781 
+OK, so this is called the micro programmed controller structure.
+
+01:09:49.021 --> 01:09:53.621 
+There are three components micro instruction, controller store and the micro sequencer.
+
+01:09:54.901 --> 01:10:01.985 
+Micro instruction can be for example all the control signals which can be 26 of them for example,
+
+01:10:01.985 --> 01:10:09.215 
+and help determine the next state can be 9 for example, or many other states depending on your data
+
+01:10:09.215 --> 01:10:09.581 
+pass.
+
+01:10:10.141 --> 01:10:15.850 
+And each micro instruction is stored in a unique location in the controller store which is a special
+
+01:10:15.850 --> 01:10:16.821 
+memory structure.
+
+01:10:16.821 --> 01:10:23.181 
+So there is this unique location which address of the state corresponding to the micro instruction.
+
+01:10:25.181 --> 01:10:30.509 
+So essentially each state in the FSM corresponds to 1 micro instruction and the micro sequencer
+
+01:10:30.509 --> 01:10:35.221 
+determines the address of the next micro instruction, which we already discussed it.
+
+01:10:35.381 --> 01:10:39.901 
+OK, so here also this controller store which I discuss it.
+
+01:10:39.901 --> 01:10:47.052 
+So it's a big large table that essentially you have, you know, all these values for control signals
+
+01:10:47.052 --> 01:10:52.181 
+and some information about what should we do for the for the sequencer.
+
+01:10:52.261 --> 01:10:58.901 
+So after this for example, you know that for the fetch when I do the fetch then I need to decode.
+
+01:10:59.421 --> 01:11:01.581 
+So you can actually have your micro instructions.
+
+01:11:02.061 --> 01:11:09.388 
+But for example in some cases the current micro instructions is currently is handling a branch OK, a
+
+01:11:09.388 --> 01:11:10.781 
+branch instruction.
+
+01:11:11.181 --> 01:11:16.222 
+So based on that micro instructions then whether or not you want to take the branch, you might go to
+
+01:11:16.222 --> 01:11:18.541 
+different micro instruction in this sequencer.
+
+01:11:18.541 --> 01:11:20.181 
+So you can actually jump.
+
+01:11:20.741 --> 01:11:28.101 
+Also, you can branch your micro programmed control and with that you can actually implement loop.
+
+01:11:28.301 --> 01:11:34.587 
+So you can actually think of implementing a low level, you know, code that you can actually have
+
+01:11:34.587 --> 01:11:37.861 
+some loop and do branching in your micro programs.
+
+01:11:40.381 --> 01:11:41.181 
+Is it interesting?
+
+01:11:42.541 --> 01:11:45.941 
+OK, It's very interesting for me at this.
+
+01:11:47.781 --> 01:11:50.141 
+Yeah, OK.
+
+01:11:53.621 --> 01:11:53.781 
+Yeah.
+
+01:11:53.781 --> 01:12:00.793 
+And again, so with this idea, actually a simple datapath can become very powerful because you can
+
+01:12:00.793 --> 01:12:01.661 
+support you.
+
+01:12:01.741 --> 01:12:02.421 
+You have a question?
+
+01:12:02.421 --> 01:12:02.621 
+No.
+
+01:12:02.701 --> 01:12:05.861 
+OK, OK.
+
+01:12:05.861 --> 01:12:10.101 
+And yeah, so you can also check it later if you're interested.
+
+01:12:10.101 --> 01:12:15.701 
+As I said, this topic micro programmed for your own study if you're interested.
+
+01:12:15.701 --> 01:12:18.301 
+I just wanted to give you the high level idea of it.
+
+01:12:20.021 --> 01:12:24.707 
+So this actually bring me back to the power abstraction that the concept of controller store of
+
+01:12:24.707 --> 01:12:29.541 
+micro instruction enables the hardware designer with a new abstraction which is micro programming.
+
+01:12:30.261 --> 01:12:35.421 
+The designer can translate any desired operation to a sequence of micro instructions.
+
+01:12:36.101 --> 01:12:42.147 
+So all the designer needs to provide is the sequence of micro instructions needed to implement the
+
+01:12:42.147 --> 01:12:48.070 
+desired operation and the ability of the control logic to correct the sequence through the micro
+
+01:12:48.070 --> 01:12:53.931 
+instructions like the data pass should be also capable of handling that and any additional data
+
+01:12:53.931 --> 01:12:56.461 
+pass elements and control signals needed.
+
+01:12:57.421 --> 01:13:02.003 
+So the interesting thing is that no need if the operation can be translated into existing control
+
+01:13:02.003 --> 01:13:02.381 
+signals.
+
+01:13:03.141 --> 01:13:10.283 
+So in many, many of you have seen cases that for example, you receive micro program patch, you know,
+
+01:13:10.283 --> 01:13:16.141 
+from companies like Intel or so I don't know if you have done it already sometime.
+
+01:13:16.501 --> 01:13:24.409 
+But essentially as these vendors for at some point they identify some bug on the field, you know
+
+01:13:24.409 --> 01:13:32.399 
+that there are some bugs in executing of some instruction which can cause some security basically
+
+01:13:32.399 --> 01:13:33.141 
+concerns.
+
+01:13:33.181 --> 01:13:40.221 
+So they actually change the micro programmed execution of that instruction and they provide a patch.
+
+01:13:40.701 --> 01:13:45.621 
+And essentially you need to run that patch in some level, for example in BIOS.
+
+01:13:45.981 --> 01:13:49.741 
+And then you change this, the micro programme in the in your CPU.
+
+01:13:50.541 --> 01:13:55.901 
+So that's memory in the CPU which is used for this micro programme is actually programmeable.
+
+01:13:56.621 --> 01:13:58.141 
+You can actually rewrite on it.
+
+01:13:59.021 --> 01:14:02.901 
+I mean, not it's not at the user level most of the time.
+
+01:14:03.181 --> 01:14:05.901 
+In fact, in some cases it's actually the user level, but in.
+
+01:14:05.901 --> 01:14:08.181 
+But it's possible that you can actually do that.
+
+01:14:08.821 --> 01:14:14.050 
+And vendors are using that in order to add instructions on the field, in order to correct some
+
+01:14:14.050 --> 01:14:18.501 
+instructions, execution of some instruction on the field and so on and so forth.
+
+01:14:20.461 --> 01:14:26.948 
+And actually that also again brings us to this semantic gap trade off that we discussed in some
+
+01:14:26.948 --> 01:14:31.661 
+previous lectures that essentially we can have this ISA with complex.
+
+01:14:31.701 --> 01:14:34.421 
+Instructions and data types, types and addressing modes.
+
+01:14:34.701 --> 01:14:40.454 
+And then we can have a low level implementation ISA with simple instruction data types and
+
+01:14:40.454 --> 01:14:41.541 
+addressing modes.
+
+01:14:42.101 --> 01:14:47.021 
+And this is a kind of a hardware translator, which is is exactly our micro sequencer here.
+
+01:14:47.781 --> 01:14:54.353 
+So if you now that you know this topic, you have this is your ISA and this line is actually your
+
+01:14:54.353 --> 01:15:01.130 
+micro instructions and your micro sequencer is actually is in charge in order to translate your ISA
+
+01:15:01.130 --> 01:15:07.702 
+instructions to the sequence of micro instructions that can be executed nicely and negatively on
+
+01:15:07.702 --> 01:15:08.661 
+your hardware.
+
+01:15:09.141 --> 01:15:16.421 
+OK, so now this actually ISA semantic gap makes a lot of sense I guess Question.
+
+01:15:19.421 --> 01:15:23.581 
+OK, so there are a lot of advantages of micro program control.
+
+01:15:24.421 --> 01:15:30.177 
+First of all it allows a very simple design to do powerful computation by controlling the data pass
+
+01:15:30.177 --> 01:15:31.341 
+using the sequencer.
+
+01:15:32.621 --> 01:15:37.141 
+So you can have high level ISA that translated in micro code sequence of instructions.
+
+01:15:37.581 --> 01:15:43.301 
+And this micro code enables A minimal data pass to emulate an ISA.
+
+01:15:46.541 --> 01:15:53.760 
+And also you can think of micro instructions as a user invisible ISA which also consider as UIS so,
+
+01:15:53.760 --> 01:15:58.501 
+so this ISA is not actually visible to the to the user of course.
+
+01:16:00.101 --> 01:16:03.421 
+Also it enables easy extensibility of the ISA.
+
+01:16:03.501 --> 01:16:08.903 
+So we can support a new instruction by changing the micro code and it can support complex
+
+01:16:08.903 --> 01:16:14.670 
+instruction as a sequence of simple micro instructions also enables update of machine behaviour
+
+01:16:14.670 --> 01:16:20.376 
+like a bugging implementation of an instruction can be fixed by changing the micro code in the
+
+01:16:20.376 --> 01:16:20.741 
+field.
+
+01:16:25.061 --> 01:16:30.614 
+So yeah, you're able to update how your machine works like the ability to update and patch micro
+
+01:16:30.614 --> 01:16:35.301 
+code in the field which I already talked about it and you can fix buggy problems.
+
+01:16:35.301 --> 01:16:41.556 
+There are actually historical examples like in IBM 370 model micro code is stored in main memory and
+
+01:16:41.556 --> 01:16:43.621 
+it can be updated after a reboot.
+
+01:16:44.021 --> 01:16:53.441 
+In IBM System Z they call it a mini code in IBNZZ series processor which they have used this
+
+01:16:53.441 --> 01:16:54.261 
+concept.
+
+01:16:56.301 --> 01:17:03.428 
+Also in this machine B 1700 micro code can be updated while the processor is running which is
+
+01:17:03.428 --> 01:17:05.421 
+another level of thinking.
+
+01:17:05.941 --> 01:17:08.661 
+This one is actually user micro programming machine.
+
+01:17:09.261 --> 01:17:15.081 
+So while so like while you're doing programming, like you have a program which is running on your
+
+01:17:15.081 --> 01:17:19.581 
+processor by the same time, you can also try to update your program, right?
+
+01:17:20.941 --> 01:17:27.363 
+But you, you can also think about doing the same thing at the at the processor level, which is you
+
+01:17:27.363 --> 01:17:30.181 
+can update while your processor is running.
+
+01:17:30.381 --> 01:17:37.610 
+You can actually start updating your micro programmed, basically micro programmed table in your
+
+01:17:37.610 --> 01:17:39.741 
+processor at the user level.
+
+01:17:41.461 --> 01:17:43.781 
+So there are a lot of interesting reading here.
+
+01:17:43.781 --> 01:17:50.787 
+If you're interested, you can check For more information and the systems today use microcode patches
+
+01:17:50.787 --> 01:17:54.781 
+to fix hardware bugs and issues, which I discussed about.
+
+01:17:55.421 --> 01:17:59.581 
+If you want to learn more about it, I suggest you'd also check this lecture.
+
+01:17:59.861 --> 01:18:03.421 
+We in the past we we were covering this part actually much more detail.
+
+01:18:03.421 --> 01:18:11.506 
+So you can check some of our previous lectures in Spring 2018 or for example in computer
+
+01:18:11.506 --> 01:18:18.581 
+architecture in 2013 in Carnegie Mellon, actually in the very, very past, OK.
+
+01:18:19.641 --> 01:18:20.041 
+Questo c'è.
+
+01:18:22.281 --> 01:18:22.521 
+Yes.
+
+01:18:26.130 --> 01:18:26.965 
+time vessel?
+
+01:18:26.965 --> 01:18:27.205 
+Yeah.
+
+01:18:27.205 --> 01:18:32.333 
+So that's that's more or less the problem like if you want that low level ISA, if you want to
+
+01:18:32.333 --> 01:18:36.965 
+implement your high level codes with that, it's going to be a hard job for compiler.
+
+01:18:37.885 --> 01:18:42.565 
+And then they cannot really generate, they cannot do easily a lot of optimizations.
+
+01:18:43.285 --> 01:18:52.255 
+The complexity, sorry, like if they are, but that's true that when you have, when you have that
+
+01:18:52.255 --> 01:18:58.205 
+ability, you theoretically you should be able to optimise more.
+
+01:18:58.605 --> 01:19:04.920 
+But the problem is that all these optimisation algorithms, they are actually very complex and time
+
+01:19:04.920 --> 01:19:05.565 
+consuming.
+
+01:19:05.565 --> 01:19:08.965 
+Like there are a lot, some of them, they are not actually, they are not polynomial, right?
+
+01:19:09.165 --> 01:19:10.885 
+So in the end, you are doing a lot of heuristics.
+
+01:19:10.885 --> 01:19:16.445 
+So theoretically, yes, you should be able to optimise more, I agree.
+
+01:19:16.605 --> 01:19:23.288 
+But in reality, it's better to have higher abstraction layer such that you can optimise that bill,
+
+01:19:23.288 --> 01:19:29.085 
+you know, with some ISA and then try to optimise again that level to the lower level.
+
+01:19:29.685 --> 01:19:37.399 
+So think about it that when you want to like, let me give this similar analogy, like when we want to
+
+01:19:37.399 --> 01:19:41.565 
+design data paths, we have a lot of components, right?
+
+01:19:42.245 --> 01:19:47.641 
+So we don't do this, let's say true this true stable for all these Boolean logic for all, everything
+
+01:19:47.641 --> 01:19:51.365 
+we have and then try to simplify the whole data pass together, right?
+
+01:19:51.405 --> 01:19:54.445 
+We don't do that because it's almost impossible, but we do.
+
+01:19:54.445 --> 01:20:00.577 
+We try to have optimised components and try to optimise each component itself and then combine all
+
+01:20:00.577 --> 01:20:04.645 
+these, let's say optimised components to make a bigger data pass.
+
+01:20:05.365 --> 01:20:11.008 
+So yes, what we get the artefact of our design is we cannot say that this is the optimised data pass
+
+01:20:11.008 --> 01:20:15.805 
+that we could get, but this is a kind of a practical design choice that we have made.
+
+01:20:16.165 --> 01:20:19.525 
+Similar stuff is also going going on here with that abstraction.
+
+01:20:22.730 --> 01:20:22.970 
+Yeah.
+
+01:20:22.970 --> 01:20:28.663 
+So when you add translation layer, of course it adds some overhead in between of course, because you
+
+01:20:28.663 --> 01:20:34.299 
+know, you you're playing, you have some overhead of translating and you have less information about
+
+01:20:34.299 --> 01:20:35.210 
+what's going on.
+
+01:20:35.210 --> 01:20:40.872 
+So there are some information hidden to you and that actually limits your capability of optimising
+
+01:20:40.872 --> 01:20:41.450 
+your code.
+
+01:20:42.130 --> 01:20:43.330 
+And that's completely the case.
+
+01:20:43.570 --> 01:20:46.570 
+However, it also provides very good things about it as well.
+
+01:20:46.570 --> 01:20:47.810 
+So in the end, the trade off.
+
+01:20:48.210 --> 01:20:53.810 
+So I agree that we need to have abstraction layers, but we should be careful how many abstraction
+
+01:20:53.810 --> 01:20:55.370 
+layers we are adding to it.
+
+01:20:56.170 --> 01:20:56.530 
+OK.
+
+01:20:56.810 --> 01:21:00.050 
+And sometimes we can actually do have some feedback through it.
+
+01:21:01.330 --> 01:21:04.730 
+It's very similar to just in time compiled, for example, in Java.
+
+01:21:05.610 --> 01:21:08.210 
+Have you have you been programming with Java, for example?
+
+01:21:08.730 --> 01:21:15.100 
+So in just in time actually your your instruction actually high level is translated to some
+
+01:21:15.100 --> 01:21:19.090 
+instruction which can be run with a Java virtual machine.
+
+01:21:19.690 --> 01:21:25.116 
+And that Java virtual machine needs to be translated to a instruction which can be run in your real
+
+01:21:25.116 --> 01:21:25.610 
+hardware.
+
+01:21:26.450 --> 01:21:31.130 
+And that translation actually can be optimised through there in the field.
+
+01:21:31.610 --> 01:21:36.373 
+And then after you get to some optimization, you have it as a just in time compile that you store it
+
+01:21:36.373 --> 01:21:36.850 
+somewhere.
+
+01:21:37.730 --> 01:21:40.690 
+Next time that you want to transition, you don't do the transition again.
+
+01:21:40.690 --> 01:21:43.370 
+You just fetch it from what you have done in the past.
+
+01:21:44.130 --> 01:21:48.850 
+So you can actually optimise with the feedback you are getting in the field in order to optimise it.
+
+01:21:49.410 --> 01:21:50.370 
+So it's, yeah.
+
+01:21:50.370 --> 01:21:55.680 
+So with that feedback, actually you can also overcome some of the limitations of this abstraction
+
+01:21:55.680 --> 01:21:59.130 
+layer, but we can discuss more also later if you're interested.
+
+01:22:00.450 --> 01:22:05.570 
+But very good question because you're thinking quite deep in that line, which which is good.
+
+01:22:07.010 --> 01:22:07.370 
+OK.
+
+01:22:10.010 --> 01:22:13.010 
+So let me start also with this favorite question again.
+
+01:22:13.010 --> 01:22:13.850 
+Can we do better?
+
+01:22:13.850 --> 01:22:19.116 
+And of course we are not able to finish it today and we're going to see a lot more tomorrow, but
+
+01:22:19.116 --> 01:22:21.530 
+it's good to start with the high level idea.
+
+01:22:21.730 --> 01:22:26.090 
+So this is a multi cycle MIPS processor that we design.
+
+01:22:26.090 --> 01:22:31.410 
+And also we discussed that we can easily handle multi cycle memory access in this.
+
+01:22:32.090 --> 01:22:36.804 
+But we know that this in multi cycle design there are some limitation and one of them was that
+
+01:22:36.804 --> 01:22:41.570 
+limited concurrency which we discussed in the beginning that some hardware resources are ideal.
+
+01:22:41.650 --> 01:22:47.913 
+During different phases of instruction processing cycle like fetch logic is idle when an instruction
+
+01:22:47.913 --> 01:22:49.730 
+is being decoded or executed.
+
+01:22:52.890 --> 01:22:58.930 
+So so most of the data path is idle when a memory access is happening.
+
+01:23:00.490 --> 01:23:04.770 
+So there these are these basically the problems of limited concurrence.
+
+01:23:04.770 --> 01:23:09.410 
+So we want to have a higher concurrency in the end in order to provide better performance.
+
+01:23:10.730 --> 01:23:15.444 
+So the the idea, the the key question that we're going to ask here is that can we use the idle
+
+01:23:15.444 --> 01:23:17.050 
+hardware to improve concurrency?
+
+01:23:17.650 --> 01:23:21.930 
+And the goal is to provide more concurrency, which is higher instruction throughput.
+
+01:23:22.410 --> 01:23:28.650 
+So essentially we want to do more work completed, more work completed in one cycle.
+
+01:23:30.330 --> 01:23:35.688 
+So the the idea is that when an instruction using some resources in its processing phase, we can
+
+01:23:35.688 --> 01:23:40.210 
+process other instructions on either resources not needed by by that instruction.
+
+01:23:40.970 --> 01:23:47.377 
+Like 1 when I fetch 1 instruction and then when I get to the decoder stage, so the fetch logic is
+
+01:23:47.377 --> 01:23:48.170 
+now is idle.
+
+01:23:48.530 --> 01:23:53.330 
+So I can use that fetch to fetch logic to fetch another instruction.
+
+01:23:53.810 --> 01:23:59.048 
+And while I'm while I'm executing 1 instruction, I can decode other instruction and that decode when
+
+01:23:59.048 --> 01:24:02.610 
+I'm decoding that instruction, I can also fetch another instruction.
+
+01:24:03.050 --> 01:24:09.121 
+So you can actually apply this idea and this can actually provide much better performance for us
+
+01:24:09.121 --> 01:24:10.450 
+better come currency.
+
+01:24:11.490 --> 01:24:12.770 
+But of course we should be careful.
+
+01:24:12.770 --> 01:24:17.980 
+We're going to get to a lot of issues when we want to do that and it's going to be a lot the topic
+
+01:24:17.980 --> 01:24:21.170 
+of tomorrow how we're going to handle with all these issues.
+
+01:24:24.650 --> 01:24:28.050 
+So in the end, yeah, that's what we discuss about it.
+
+01:24:28.250 --> 01:24:35.364 
+And essentially we want to do different instructions in different steps of pipe in our micro
+
+01:24:35.364 --> 01:24:36.370 
+architecture.
+
+01:24:36.770 --> 01:24:38.970 
+And of course, we need to be more careful than this.
+
+01:24:38.970 --> 01:24:47.797 
+It's not just, you know, basically putting some barriers in your design and then this idea can be
+
+01:24:47.797 --> 01:24:48.890 
+implemented.
+
+01:24:49.290 --> 01:24:53.650 
+You're there are going to be a lot of issues that we're going to solve tomorrow.
+
+01:24:54.530 --> 01:25:00.663 
+So that brings me to this idea of pipelining which the basic idea is actually we want to pipeline
+
+01:25:00.663 --> 01:25:03.130 
+the execution of multiple instructions.
+
+01:25:04.010 --> 01:25:10.790 
+And you can have an analogy of assembly line processing of an instruction like in factories, the
+
+01:25:10.790 --> 01:25:17.570 
+assembly line that they are, they have constructed for example car for automobile assembly line.
+
+01:25:17.570 --> 01:25:20.970 
+You can also think of having the same for instructions.
+
+01:25:21.330 --> 01:25:27.967 
+So we have different steps and the one each instruction is going through all these steps and while
+
+01:25:27.967 --> 01:25:34.130 
+when the previous steps are empty, we can feed another instruction and then we can have it.
+
+01:25:34.610 --> 01:25:38.050 
+And that can provide essentially a lot more throughput.
+
+01:25:39.810 --> 01:25:45.450 
+I'm going to show you a picture which can actually illustrate a very good this idea.
+
+01:25:46.410 --> 01:25:52.601 
+So we divide the instruction processing cycle into distinct stages of processing and we ensure there
+
+01:25:52.601 --> 01:25:58.360 
+are enough hardware resources to process 1 instruction in each stage and we process different
+
+01:25:58.360 --> 01:25:59.970 
+instruction in each stage.
+
+01:26:01.170 --> 01:26:06.490 
+So instructions consecutive in program order or process in the consecutive stages essentially.
+
+01:26:08.170 --> 01:26:16.930 
+And that benefits is actually it provides us higher instruction per cycle which is so essentially.
+
+01:26:20.290 --> 01:26:26.225 
+So your throughput is increasing essentially you are so in your hardware in each cycle because one
+
+01:26:26.225 --> 01:26:32.160 
+cycle your fetch logic is active, your decode logic is active, execute logic is active, right back
+
+01:26:32.160 --> 01:26:37.490 
+is also active, all of them are active and you're actually doing other instruction then.
+
+01:26:37.490 --> 01:26:42.250 
+So essentially in each instruction you're executing multiple instructions.
+
+01:26:42.730 --> 01:26:51.290 
+So that's provide for us higher instruction per cycle, which means that it can the other way around.
+
+01:26:52.010 --> 01:26:57.690 
+The average clock that you spent to execute one instruction, your CPI is going to be lower.
+
+01:26:58.570 --> 01:27:02.730 
+So that's the idea which we want to get to that with concurrency.
+
+01:27:04.290 --> 01:27:06.810 
+But there are a lot of downsides that we're going to see a lot.
+
+01:27:06.930 --> 01:27:09.170 
+And it's good to start thinking about it as well.
+
+01:27:09.610 --> 01:27:12.130 
+You can also think about it, but we're going to see a lot tomorrow.
+
+01:27:12.730 --> 01:27:18.838 
+So with this picture I can actually quickly illustrate like in multi cycle, assuming that we have
+
+01:27:18.838 --> 01:27:21.610 
+this fetch the code, execute and write back.
+
+01:27:22.730 --> 01:27:25.290 
+So in multi cycle we have 4 cycles for instruction.
+
+01:27:25.290 --> 01:27:29.730 
+So you do fetch the code, execute and write back and then you go to the next instruction.
+
+01:27:29.730 --> 01:27:33.810 
+You're essentially serialising the execution of all these instructions.
+
+01:27:34.410 --> 01:27:41.106 
+So if you have 4, let's say these instruction, you're going to have 4 * 4 cycles, which is 16
+
+01:27:41.106 --> 01:27:41.610 
+cycles.
+
+01:27:45.010 --> 01:27:51.950 
+In pipeline the first instruction when you're in decode, you can actually start fetching the the the
+
+01:27:51.950 --> 01:27:53.130 
+next instruction.
+
+01:27:54.050 --> 01:27:58.807 
+And when for example, the first instruction you're in the execute, you can decode in the next
+
+01:27:58.807 --> 01:28:01.570 
+instruction and you can fetching the next instruction.
+
+01:28:02.250 --> 01:28:07.117 
+The next, next instruction, when you're in the right back, you can execute the next instruction, you
+
+01:28:07.117 --> 01:28:11.450 
+can decode the next, next instruction and you can fetch the next, next, next instruction.
+
+01:28:12.010 --> 01:28:18.873 
+And when your pipeline is full, essentially when you're in a steady state in in one cycle,
+
+01:28:18.873 --> 01:28:26.194 
+essentially you are all the steps, stages of the Python are active and that provide actually the
+
+01:28:26.194 --> 01:28:30.770 
+illusion that we have one instruction completed every cycle.
+
+01:28:32.090 --> 01:28:37.570 
+So when your pipeline full every cycle you're going to finish one instruction.
+
+01:28:38.130 --> 01:28:41.090 
+That's a steady state throughput that we're going to get.
+
+01:28:41.290 --> 01:28:47.591 
+So here for this code, because we have only four instructions it it will take some time to you know
+
+01:28:47.591 --> 01:28:53.130 
+to have your pipeline full and then it will also take some time to finish the pipeline.
+
+01:28:53.570 --> 01:29:01.410 
+So it's going to be overall 4567 cycles, which is a very good improvement compared to 16 cycles.
+
+01:29:02.210 --> 01:29:02.650 
+OK.
+
+01:29:02.690 --> 01:29:09.222 
+So here I will stop and I will start from the next slide tomorrow and then going to get to issues of
+
+01:29:09.222 --> 01:29:09.810 
+pipeline.
+
+01:29:10.610 --> 01:29:11.410 
+Have a nice evening.
+

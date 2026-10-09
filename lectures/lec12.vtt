@@ -1,0 +1,4724 @@
+WEBVTT
+
+00:00:02.046 --> 00:00:04.966 
+OK, I guess it's time to get started.
+
+00:00:06.046 --> 00:00:07.166 
+This sounds a bit weird.
+
+00:00:08.326 --> 00:00:08.966 
+Is it OK?
+
+00:00:10.486 --> 00:00:11.726 
+Can people hear me in the back?
+
+00:00:13.126 --> 00:00:18.486 
+OK, I don't know why it sounded weird, but it's good that say it again.
+
+00:00:19.886 --> 00:00:23.806 
+See, maybe it sounds a bit loud, but OK, let's see.
+
+00:00:24.526 --> 00:00:27.326 
+So reduce the how about now, Is it better?
+
+00:00:27.926 --> 00:00:29.926 
+OK, let's find both ways.
+
+00:00:29.926 --> 00:00:33.246 
+OK, Depends on the sensitivity of the input device that you guys have.
+
+00:00:33.526 --> 00:00:37.766 
+You know, my input device may be a bit more sensitive.
+
+00:00:37.966 --> 00:00:38.406 
+I don't know.
+
+00:00:39.326 --> 00:00:41.366 
+Or less, depending on the situation.
+
+00:00:42.166 --> 00:00:43.966 
+OK, it's good to see you all here.
+
+00:00:45.046 --> 00:00:50.686 
+Looks like this is the fraction of people who decided not to go on an early break.
+
+00:00:51.366 --> 00:00:51.966 
+Is that true?
+
+00:00:53.086 --> 00:00:56.446 
+OK, since you'll have a long break soon, starting tomorrow.
+
+00:00:56.446 --> 00:00:56.766 
+Tomorrow.
+
+00:00:56.766 --> 00:00:58.926 
+We don't have lecture, as you know.
+
+00:00:59.766 --> 00:01:02.606 
+So today we're going to cover precise exceptions and interrupts.
+
+00:01:03.086 --> 00:01:06.126 
+You covered a lot when I was at a conference last week.
+
+00:01:06.926 --> 00:01:11.655 
+You covered how to design the micro architecture, basically principles, single cycle micro
+
+00:01:11.655 --> 00:01:14.126 
+architectures, multi cycle micro architectures.
+
+00:01:14.606 --> 00:01:19.732 
+Today we're going to talk about pipelining and today we're going to talk about how to make
+
+00:01:19.732 --> 00:01:23.606 
+pipelining essentially work using precise exceptions and interrupts.
+
+00:01:24.206 --> 00:01:29.392 
+And building on this next week, not next week, but after the break, we're going to start out of
+
+00:01:29.392 --> 00:01:34.689 
+order execution, which is really how to execute instructions out of their original program order,
+
+00:01:34.689 --> 00:01:39.985 
+which is going to build on this lecture because this lecture is going to build the foundations of
+
+00:01:39.985 --> 00:01:42.606 
+what we need for out of order execution engines.
+
+00:01:42.606 --> 00:01:45.886 
+So this lecture is really important actually for multiple reasons.
+
+00:01:46.846 --> 00:01:54.895 
+1 is how do we enable a machine to be more easily debugable and also communicate with outside
+
+00:01:54.895 --> 00:02:01.646 
+devices and also higher performance while preserving the sequential semantics.
+
+00:02:02.966 --> 00:02:06.486 
+OK, so I hope you guys are excited to learn about precise exceptions and interrupts.
+
+00:02:06.766 --> 00:02:08.326 
+Has anybody learned about these before?
+
+00:02:09.366 --> 00:02:10.446 
+OK, in what?
+
+00:02:10.446 --> 00:02:13.646 
+Lecture at another university?
+
+00:02:13.646 --> 00:02:16.606 
+OK, yeah, doesn't count, but it's good.
+
+00:02:16.606 --> 00:02:19.126 
+Hopefully maybe you can ask questions.
+
+00:02:19.766 --> 00:02:24.126 
+OK, so this is what I said prior to last week and last week.
+
+00:02:24.326 --> 00:02:29.302 
+Well, today, today, we're actually still covering pipelining, but really transitioning from
+
+00:02:29.302 --> 00:02:31.326 
+pipelining to out of order execution.
+
+00:02:31.806 --> 00:02:34.646 
+As you will see, I don't intend to get out of order execution today.
+
+00:02:34.926 --> 00:02:39.846 
+If you have time, I will cover some other things than reorder buffer, but let's see how it goes.
+
+00:02:40.766 --> 00:02:42.006 
+And these are your readings.
+
+00:02:43.166 --> 00:02:46.646 
+You have some readings about out of order execution going into the future.
+
+00:02:46.806 --> 00:02:52.715 
+And this nice paper by Smith and Sohey covers the micro architecture of superscalar and out of order
+
+00:02:52.715 --> 00:02:53.366 
+processors.
+
+00:02:53.806 --> 00:02:55.206 
+So you can take a look at this.
+
+00:02:55.286 --> 00:03:00.286 
+There is no good book, let's say that covers that, at least in the detail that we want.
+
+00:03:01.126 --> 00:03:06.549 
+So that paper would be a good reading material if you're interested, but I'm going to give a
+
+00:03:06.549 --> 00:03:07.846 
+different perspective.
+
+00:03:08.286 --> 00:03:13.438 
+So basically this lecture is about preserving sequential semantics and sequential semantics is
+
+00:03:13.438 --> 00:03:15.686 
+dictated by the von Neumann model, right?
+
+00:03:16.406 --> 00:03:21.722 
+So in multi cycle execution, which is what we do when we have multi cycle processors or pipeline
+
+00:03:21.722 --> 00:03:27.206 
+processors, not all instructions take the same amount of time in the execute state of the pipeline.
+
+00:03:27.886 --> 00:03:33.486 
+And the idea, one idea is to have multiple functional units that take different number of cycles.
+
+00:03:33.486 --> 00:03:36.366 
+So we're extending the pipelining idea right now a little bit.
+
+00:03:37.726 --> 00:03:39.766 
+So your pipeline looks kind of like this.
+
+00:03:39.766 --> 00:03:43.366 
+Now you can have a fetch and a decode stage.
+
+00:03:43.406 --> 00:03:49.210 
+And then based on the type of the instruction, you have different types of execution or functional
+
+00:03:49.210 --> 00:03:49.566 
+units.
+
+00:03:50.126 --> 00:03:53.166 
+And these functional units may have may take different amounts of time, for example.
+
+00:03:53.166 --> 00:03:56.926 
+In addition, may take only one cycle and multiplication may take 4 cycles in this picture.
+
+00:03:57.446 --> 00:04:02.443 
+And a floating point multiplication, which is another data type that's much more expensive to
+
+00:04:02.443 --> 00:04:06.366 
+operate on may take 8 cycles and a load store may take 100 cycles, right?
+
+00:04:06.366 --> 00:04:07.566 
+And you can keep expanding this.
+
+00:04:07.566 --> 00:04:10.766 
+A matrix multiplication for example may take 100 cycles also.
+
+00:04:10.766 --> 00:04:11.206 
+Who knows.
+
+00:04:12.166 --> 00:04:15.566 
+So this could these execution units can be pipelined or not pipelined.
+
+00:04:15.566 --> 00:04:16.726 
+That's not that important here.
+
+00:04:16.726 --> 00:04:22.057 
+The key is they take different number of cycles from each other and we will run into a problem if
+
+00:04:22.057 --> 00:04:24.366 
+they do take a different number of cycles.
+
+00:04:26.246 --> 00:04:32.536 
+Basically this pipeline structure can start independent instructions in different functional units
+
+00:04:32.536 --> 00:04:36.966 
+before a previous long latency instruction finishes execution, right?
+
+00:04:37.086 --> 00:04:42.174 
+For example, you have a, you have AFP multiply instruction that goes here and then the next
+
+00:04:42.174 --> 00:04:42.846 
+instruction.
+
+00:04:42.966 --> 00:04:46.846 
+Doesn't need the result, so it goes to the integer multiply unit, assuming it's integer multiply,
+
+00:04:46.846 --> 00:04:50.686 
+and then the next instruction doesn't is independent of all of those, it could go to the integer
+
+00:04:50.686 --> 00:04:51.766 
+addition unit, for example.
+
+00:04:51.886 --> 00:04:56.798 
+So you can actually have multiple instructions concurrently executing because later instructions
+
+00:04:56.798 --> 00:04:59.766 
+don't need the data produced by the previous instructions.
+
+00:05:00.566 --> 00:05:07.326 
+And this enables higher throughput of course, and so it is a reasonable design to do.
+
+00:05:07.326 --> 00:05:11.655 
+And this is essentially the extended version of the pipelining that you saw before with a multiple
+
+00:05:11.655 --> 00:05:12.406 
+functional units.
+
+00:05:12.726 --> 00:05:17.086 
+It's a more reasonable type of pipeline, if you will, as opposed to having a single ALU for example.
+
+00:05:17.846 --> 00:05:20.886 
+OK, so the question is what happens at the end, right?
+
+00:05:21.406 --> 00:05:26.573 
+Well, not just what happens at the end, we're going to cover other issues, but also, but that's one
+
+00:05:26.573 --> 00:05:29.966 
+issue basically who writes its result to the register file first?
+
+00:05:30.446 --> 00:05:33.086 
+That's one of the thing key things that we're going to discuss today.
+
+00:05:33.686 --> 00:05:36.126 
+So basically, let's take a look at this example.
+
+00:05:36.126 --> 00:05:39.446 
+Instructions can take different number of cycles to execute in this execute stage.
+
+00:05:41.006 --> 00:05:46.942 
+For example, we're comparing here integer ads which take 4 cycles total, but in the execute stage
+
+00:05:46.942 --> 00:05:48.166 
+they take one cycle.
+
+00:05:48.726 --> 00:05:54.041 
+And then integer divide operations, which luckily take 8 cycles here, but they may take actually
+
+00:05:54.041 --> 00:05:58.526 
+much longer in real life because divide is a very expensive operation in general.
+
+00:05:59.126 --> 00:06:02.566 
+But my slide is not that long, so I I take 8 cycles over here.
+
+00:06:03.326 --> 00:06:07.649 
+So if you look at this program, you're executing a divide and an ads and then a bunch of other ads
+
+00:06:07.649 --> 00:06:10.606 
+and then another divide and then ads and then a bunch of other ads.
+
+00:06:11.006 --> 00:06:12.846 
+So assume that these are independent of each other.
+
+00:06:13.006 --> 00:06:15.246 
+If they're depend on each other, we're going to handle that later on.
+
+00:06:15.246 --> 00:06:21.947 
+Actually a little bit today, but really next week after the after the Easter break, that's going to
+
+00:06:21.947 --> 00:06:23.166 
+be important also.
+
+00:06:23.166 --> 00:06:24.886 
+But assume that these are independent right now.
+
+00:06:26.366 --> 00:06:30.446 
+And I give you this picture, this is a timeline.
+
+00:06:30.446 --> 00:06:31.966 
+In clock cycle one, this is fetched.
+
+00:06:31.966 --> 00:06:35.826 
+In clock cycle two, the first one is fetched, the second one is the first one is decoded, the second
+
+00:06:35.826 --> 00:06:36.406 
+one is fetched.
+
+00:06:36.846 --> 00:06:39.246 
+And you can see you're used to these timelines by now, right?
+
+00:06:40.486 --> 00:06:48.941 
+And if I ask you what is wrong with this picture in one moment architecture, what would you say,
+
+00:06:48.941 --> 00:06:49.646 
+anybody?
+
+00:06:50.646 --> 00:06:51.446 
+Or is everything good?
+
+00:06:52.286 --> 00:06:54.086 
+This is how we should be building our machines.
+
+00:06:55.086 --> 00:06:56.126 
+W is right back.
+
+00:06:56.326 --> 00:06:57.166 
+That's my hint for you.
+
+00:06:57.846 --> 00:07:00.246 
+The instruction writes back its results of the register file.
+
+00:07:02.926 --> 00:07:03.486 
+Anybody.
+
+00:07:03.486 --> 00:07:13.686 
+Otherwise, I'm going to answer going once, twice, Last chance that is wrong.
+
+00:07:15.726 --> 00:07:22.022 
+Basically, this instruction writes its result into R3 before the previous instruction writes its
+
+00:07:22.022 --> 00:07:23.006 
+result into R4.
+
+00:07:24.366 --> 00:07:28.046 
+Remember, it's von Neumann architecture says we have a sequential execution model.
+
+00:07:28.046 --> 00:07:33.046 
+An instruction should finish before the next instruction starts.
+
+00:07:33.126 --> 00:07:38.185 
+Right now, forget about writing its result into the register file before the next instruction
+
+00:07:38.185 --> 00:07:38.566 
+starts.
+
+00:07:39.006 --> 00:07:40.006 
+Here, we start things.
+
+00:07:40.006 --> 00:07:45.661 
+We violate things because we pipeline things, but we violate things even worse because now the
+
+00:07:45.661 --> 00:07:47.406 
+result is visible to someone.
+
+00:07:47.446 --> 00:07:48.526 
+It's in the register file.
+
+00:07:48.566 --> 00:07:54.110 
+If someone goes and inspects that register file, they will see some out of order execution
+
+00:07:54.110 --> 00:07:54.726 
+happening.
+
+00:07:54.726 --> 00:07:58.086 
+Whereas von Neumann said everything should be sequential, right?
+
+00:07:59.406 --> 00:08:00.526 
+So there are other things that are wrong.
+
+00:08:00.526 --> 00:08:01.486 
+This is wrong also.
+
+00:08:01.726 --> 00:08:07.214 
+This is wrong also because all those results are written to the register file before the previous
+
+00:08:07.214 --> 00:08:10.326 
+execution, before the previous divide wrote its result.
+
+00:08:10.366 --> 00:08:11.286 
+And this is wrong also.
+
+00:08:11.286 --> 00:08:12.246 
+And this is wrong also.
+
+00:08:13.006 --> 00:08:13.366 
+Yes.
+
+00:08:13.966 --> 00:08:19.526 
+Will the first divide instructions even be correctly stored to R4?
+
+00:08:19.526 --> 00:08:24.446 
+Or will this be written because took over and so now there are four and it's lost?
+
+00:08:25.326 --> 00:08:28.046 
+So, yeah, well, it's, it's assuming it's correct.
+
+00:08:28.046 --> 00:08:29.126 
+They executed R4.
+
+00:08:29.126 --> 00:08:31.966 
+These are writing to different registers, like completely independent basically.
+
+00:08:32.486 --> 00:08:34.966 
+So the other instruction should not affect R4.
+
+00:08:38.406 --> 00:08:40.846 
+Well, if you design things correctly, no, it should not.
+
+00:08:41.486 --> 00:08:44.966 
+So we're assuming that you design things correctly so that they don't overtake.
+
+00:08:45.206 --> 00:08:46.366 
+There are no dependencies.
+
+00:08:46.886 --> 00:08:48.926 
+OK, OK.
+
+00:08:49.006 --> 00:08:53.366 
+So basically you should not write results to the architectural state out of order.
+
+00:08:53.446 --> 00:08:54.966 
+That's what we're violating here.
+
+00:08:56.246 --> 00:08:57.446 
+You can say, why is this important?
+
+00:08:57.446 --> 00:08:59.086 
+Everything is independent of each other over here.
+
+00:08:59.286 --> 00:09:01.766 
+If you go into dependencies, things become even more messy.
+
+00:09:02.126 --> 00:09:07.176 
+But this is important because, well, I, that's basically, I said sequential semantics is not
+
+00:09:07.176 --> 00:09:07.726 
+preserved.
+
+00:09:07.726 --> 00:09:09.686 
+Basically, we're breaking a huge principle here.
+
+00:09:10.246 --> 00:09:11.286 
+That's why it's important.
+
+00:09:11.286 --> 00:09:14.446 
+And whenever you break a principle, you run into problems.
+
+00:09:15.606 --> 00:09:20.542 
+Meaning, I thought you were going to ask this question actually, which is, what if Dwight actually
+
+00:09:20.542 --> 00:09:23.766 
+doesn't finish because there's a problem with the Dwight, right?
+
+00:09:24.526 --> 00:09:25.806 
+What if it incurs an exception?
+
+00:09:25.806 --> 00:09:30.126 
+Meaning divide is not possible to execute by the machine for whatever reason.
+
+00:09:30.206 --> 00:09:36.526 
+For example, divide by zero and the machine determines that R2 is 0 and it throws an exception.
+
+00:09:36.566 --> 00:09:38.246 
+This is an unknown number right?
+
+00:09:39.686 --> 00:09:40.366 
+Now, what do you do?
+
+00:09:40.446 --> 00:09:40.686 
+Right?
+
+00:09:40.766 --> 00:09:42.206 
+You've written some results.
+
+00:09:43.206 --> 00:09:48.191 
+That you're not supposed to write based on the sequential semantics and this divide through an
+
+00:09:48.191 --> 00:09:50.366 
+exception and someone needs to handle it.
+
+00:09:51.966 --> 00:09:54.046 
+How many people dealt with exceptions in programs?
+
+00:09:54.966 --> 00:09:55.166 
+Yeah.
+
+00:09:55.166 --> 00:09:58.166 
+How many people wrote try catch blocks, for example, in Java, Right.
+
+00:09:58.566 --> 00:09:59.966 
+This is that sort of thing.
+
+00:10:00.126 --> 00:10:04.126 
+You're trying to do something, an instruction at the lower level, of course, right?
+
+00:10:04.526 --> 00:10:09.243 
+At the programming language level, you try to do something and if there's some problem, you throw an
+
+00:10:09.243 --> 00:10:10.046 
+exception, right?
+
+00:10:10.126 --> 00:10:15.806 
+And that gets implemented with what we're going to discuss actually later in this lecture.
+
+00:10:16.606 --> 00:10:19.046 
+So it's the same thing that's happening at a lower level.
+
+00:10:19.286 --> 00:10:25.585 
+You should not have written to that register because, OK, if this, this divide threw an exception,
+
+00:10:25.585 --> 00:10:28.606 
+that means something is wrong with the program.
+
+00:10:29.206 --> 00:10:31.566 
+The programmer may want to inspect what's going on, right?
+
+00:10:32.086 --> 00:10:36.846 
+And you should allow the programmer to inspect in a way that they can debug their program, right?
+
+00:10:38.286 --> 00:10:42.604 
+And if things are written out of order, the programmer has no idea what may have happened because
+
+00:10:42.604 --> 00:10:45.766 
+that depends on the micro architectural state right now of the program.
+
+00:10:46.446 --> 00:10:49.086 
+That's why preserving A precise state is going to be very important.
+
+00:10:49.246 --> 00:10:50.326 
+I'm going to get back to that again.
+
+00:10:50.726 --> 00:10:56.006 
+Basically, this is an exception causing instruction, and it basically should stop at that point.
+
+00:10:56.246 --> 00:11:00.963 
+No other instruction should have retired or finished or updated the architectural state, and all
+
+00:11:00.963 --> 00:11:03.126 
+previous instructions should have completed.
+
+00:11:03.126 --> 00:11:07.905 
+Also, even though I didn't show anything over there, all previous instructions should have completed
+
+00:11:07.905 --> 00:11:10.486 
+so that the programmer has a clean slate, clean point.
+
+00:11:11.046 --> 00:11:14.446 
+So this happens not just with an exception, but how many people have debug programs?
+
+00:11:15.406 --> 00:11:15.846 
+A lot of you.
+
+00:11:15.846 --> 00:11:18.686 
+How many people have set break points in a debugger?
+
+00:11:19.126 --> 00:11:19.726 
+Same thing.
+
+00:11:20.086 --> 00:11:24.566 
+When you set a break point, you're really causing an exception with that instruction.
+
+00:11:24.566 --> 00:11:28.996 
+You set a break point at a particular point in a program that gets associated with a particular
+
+00:11:28.996 --> 00:11:33.566 
+instruction and that instruction calls an exception in hardware so that you can inspect the state.
+
+00:11:34.326 --> 00:11:39.726 
+And the state that you expect when you set a break point is the sequential execution state.
+
+00:11:40.486 --> 00:11:45.196 
+If it's not sequential, if these other instructions that come after the break point, let's say you
+
+00:11:45.196 --> 00:11:49.954 
+set the break point at that device, have updated the architectural state, you will go crazy because
+
+00:11:49.954 --> 00:11:52.406 
+you don't know which instructions have written you.
+
+00:11:52.446 --> 00:11:56.794 
+You have, you know exactly what should have happened if the instructions executed in the sequential
+
+00:11:56.794 --> 00:11:57.366 
+order, right?
+
+00:11:58.086 --> 00:12:03.526 
+But if something happens underneath some other instructions complete, you don't expect that, right?
+
+00:12:04.326 --> 00:12:08.206 
+OK, this problem becomes worse as we will see with all of order execution later on.
+
+00:12:08.846 --> 00:12:11.166 
+OK, this is my one of my favourite exceptions.
+
+00:12:11.166 --> 00:12:14.966 
+So you guys probably have taken trams at some point in your lives.
+
+00:12:15.486 --> 00:12:16.926 
+This tram had an exception.
+
+00:12:17.686 --> 00:12:22.446 
+It shouldn't have stopped over there, but you can see the timeline also at 12:55.
+
+00:12:22.446 --> 00:12:23.246 
+It had an exception.
+
+00:12:24.286 --> 00:12:30.157 
+It's an exception causing instruction and this other instruction gets delayed due to that exception
+
+00:12:30.157 --> 00:12:31.166 
+basically, right?
+
+00:12:32.086 --> 00:12:33.846 
+And there are other instructions that get delayed.
+
+00:12:35.286 --> 00:12:38.046 
+And you can see that this is stopped in a weird place.
+
+00:12:38.046 --> 00:12:39.926 
+As you can see, that's why it's exceptional, right?
+
+00:12:41.126 --> 00:12:45.086 
+So, OK, so time goes on.
+
+00:12:45.126 --> 00:12:47.526 
+I keep walking good that I didn't wait.
+
+00:12:48.806 --> 00:12:53.326 
+And you can see the exception causing instruction over there still causing the exception.
+
+00:12:54.126 --> 00:13:01.206 
+So it gets delayed at some point, exception gets handled and resolved and the exception causing
+
+00:13:01.206 --> 00:13:02.846 
+instruction continues.
+
+00:13:05.686 --> 00:13:09.406 
+Now you see what happened, Somebody fixed that exception causing instruction, right?
+
+00:13:10.006 --> 00:13:10.806 
+It could be.
+
+00:13:10.926 --> 00:13:13.806 
+And we're going to see how things may be fixed over here.
+
+00:13:13.806 --> 00:13:18.061 
+If you set a break point, for example, you go to an exception routine where the programmer can
+
+00:13:18.061 --> 00:13:21.366 
+inspect things and then eventually return to the next instruction, right?
+
+00:13:21.366 --> 00:13:23.526 
+You actually execute the instruction, go to the next instruction.
+
+00:13:24.046 --> 00:13:27.606 
+If it is divide by zero, you go to a routine that says handle divide by zero.
+
+00:13:27.606 --> 00:13:28.846 
+Programmer can supply that.
+
+00:13:29.406 --> 00:13:33.883 
+For example, programmer says if get it, if I get a zero in the divide by zero, I'm going to replace
+
+00:13:33.883 --> 00:13:35.286 
+it with one or whatever, right?
+
+00:13:35.486 --> 00:13:37.806 
+You can actually patch the program in some way, right?
+
+00:13:38.086 --> 00:13:41.406 
+You can actually do a lot of these tricks in with exceptions.
+
+00:13:42.566 --> 00:13:46.486 
+OK, so I, I would like to distinguish between exceptions and interrupts.
+
+00:13:47.566 --> 00:13:52.494 
+Unfortunately, not all IS as distinguish between these nicely, but they're fundamentally different
+
+00:13:52.494 --> 00:13:52.846 
+things.
+
+00:13:52.846 --> 00:13:55.286 
+So so far I talked about exception causing instruction.
+
+00:13:55.286 --> 00:13:58.846 
+Exception is something internal to the running program, right?
+
+00:13:59.366 --> 00:14:00.966 
+That's that tram that's going, right?
+
+00:14:01.686 --> 00:14:03.686 
+If something was external, that's interrupt.
+
+00:14:04.486 --> 00:14:08.726 
+For example, if someone goes in front of the tram and the tram decides to stop, that would be good,
+
+00:14:08.726 --> 00:14:09.326 
+good actually.
+
+00:14:09.846 --> 00:14:10.766 
+Then that's an interrupt.
+
+00:14:10.766 --> 00:14:13.766 
+Basically, the tram's execution is interrupted at some point, right?
+
+00:14:14.286 --> 00:14:16.246 
+It's similar in terms of what happens.
+
+00:14:16.246 --> 00:14:21.931 
+Probably the resolutions may be different, but basically these are two different things, internal
+
+00:14:21.931 --> 00:14:27.206 
+versus external, but they're both unplanned changes or interruptions in program execution.
+
+00:14:27.886 --> 00:14:32.486 
+So exceptions are due to internal problems in the execution of the program.
+
+00:14:32.966 --> 00:14:37.333 
+We're going to call these exceptions, and if they're due to external events that need to be handled
+
+00:14:37.333 --> 00:14:38.966 
+by the processor, they're interrupts.
+
+00:14:39.566 --> 00:14:42.886 
+For example, an external event, maybe somebody's inputting.
+
+00:14:42.966 --> 00:14:44.206 
+Something into the keyboard, right?
+
+00:14:44.846 --> 00:14:46.926 
+And that is actually I could actually interrupt the processor.
+
+00:14:46.926 --> 00:14:48.886 
+The processor may actually pull what's happening.
+
+00:14:49.566 --> 00:14:54.323 
+The processor may actually go into a state, stop executing the existing programme, go into a state
+
+00:14:54.323 --> 00:14:58.886 
+where actually it figures out what people what that person inputs, right, That's an interrupt.
+
+00:14:58.886 --> 00:15:00.726 
+Another interrupt is power failure.
+
+00:15:00.726 --> 00:15:08.183 
+For example, the power is not enough, so the program gets interrupted and the system and the
+
+00:15:08.183 --> 00:15:12.966 
+processor takes some action to handle power failure, right?
+
+00:15:13.566 --> 00:15:15.326 
+Low battery, for example, could be an interrupt.
+
+00:15:15.326 --> 00:15:21.288 
+Also, these external events are interrupts, but both of them in the end require stopping the current
+
+00:15:21.288 --> 00:15:21.766 
+program.
+
+00:15:22.606 --> 00:15:26.751 
+Assuming various if you have a single processor at this point, if you have multiple processors,
+
+00:15:26.751 --> 00:15:29.326 
+interrupts can be handled in some other processor actually.
+
+00:15:29.726 --> 00:15:33.806 
+So that's a one another difference over here because it's internal versus external, right?
+
+00:15:34.606 --> 00:15:37.246 
+But assume that you have a single processor which we've assumed so far.
+
+00:15:37.246 --> 00:15:41.400 
+You stop the current program, you save the architectural state and hopefully you guys remember what
+
+00:15:41.400 --> 00:15:42.366 
+architectural state is.
+
+00:15:42.366 --> 00:15:48.668 
+Program counter registers memory and you handle the exception interrupt by switching to some
+
+00:15:48.668 --> 00:15:54.766 
+software which is part of the operating system called the exception or interrupt handler.
+
+00:15:55.806 --> 00:16:00.886 
+And if possible and makes sense, you return back to program execution.
+
+00:16:01.126 --> 00:16:03.206 
+This depends on the nature of the exception.
+
+00:16:03.486 --> 00:16:10.308 
+If it's divide by zero and and the programmer doesn't supply anything, basically halt the program,
+
+00:16:10.308 --> 00:16:10.726 
+right?
+
+00:16:11.126 --> 00:16:13.206 
+The program in so you don't go back.
+
+00:16:15.286 --> 00:16:21.006 
+If if for example, you have a null pointer dereference that causes an X axis protection exception
+
+00:16:21.006 --> 00:16:26.727 
+again, if the system didn't get supplied with a handler that does something special, in that case
+
+00:16:26.727 --> 00:16:29.086 
+you don't go back to the program, right?
+
+00:16:29.846 --> 00:16:30.726 
+So it really depends.
+
+00:16:30.806 --> 00:16:33.726 
+That's why this is if it if it's possible and it makes sense.
+
+00:16:34.806 --> 00:16:36.686 
+OK, let's take a look at some of these examples.
+
+00:16:36.686 --> 00:16:42.056 
+I've given you some, but exception can be divide by zero, overflow, undefined instruction, undefined
+
+00:16:42.056 --> 00:16:42.486 
+op code.
+
+00:16:43.246 --> 00:16:48.606 
+You may actually, the program counter may point to some values that are not OP codes, right?
+
+00:16:49.046 --> 00:16:54.301 
+For whatever reason, maybe there's a bug in your program, maybe somebody corrupt your memory, who
+
+00:16:54.301 --> 00:16:55.006 
+knows, right?
+
+00:16:55.006 --> 00:16:56.486 
+It's, it's going to happen.
+
+00:16:56.486 --> 00:17:00.684 
+General protection or access protection page faults, which we will see in Lecture 25 and Lecture 26
+
+00:17:00.684 --> 00:17:02.126 
+when we talk about virtual memory.
+
+00:17:02.926 --> 00:17:06.886 
+These are all exceptions that are internal to the program interrupt examples.
+
+00:17:06.886 --> 00:17:08.326 
+IO device may need service.
+
+00:17:10.046 --> 00:17:11.606 
+There may be system timer.
+
+00:17:11.606 --> 00:17:15.846 
+For example, periodically system may actually want to do something.
+
+00:17:16.606 --> 00:17:19.646 
+This operating system actually does that for maintenance functions of the system.
+
+00:17:19.926 --> 00:17:25.926 
+It may basically interrupt the program, Kick It Out and do some maintenance and then bring it back.
+
+00:17:26.206 --> 00:17:27.446 
+Decide which program to schedule.
+
+00:17:27.446 --> 00:17:32.307 
+For example, operating systems usually have timers to decide, oh, this program is executed enough,
+
+00:17:32.307 --> 00:17:35.086 
+now it's time for the other program to execute fairness.
+
+00:17:35.086 --> 00:17:37.566 
+For example, how do you do fair scheduling across different programs?
+
+00:17:38.046 --> 00:17:41.806 
+Or this program is interacting with the user right now, so it should be scheduled right away, right?
+
+00:17:42.766 --> 00:17:47.369 
+There could be power failure, machine check, machine check is usually some exceptional condition
+
+00:17:47.369 --> 00:17:51.686 
+where you actually get an error, for example, in the machine, in some part of the machine.
+
+00:17:52.286 --> 00:17:56.293 
+So you interrupt the running program because it's not safe for the running program to continue
+
+00:17:56.293 --> 00:17:58.766 
+executing because the memory detect an error, for example.
+
+00:17:59.166 --> 00:18:04.206 
+Then the program machine goes into a state where you try to figure out what the error is.
+
+00:18:04.486 --> 00:18:05.646 
+Can it, can you correct it?
+
+00:18:05.806 --> 00:18:08.326 
+Does it, does it affect the existing program?
+
+00:18:08.686 --> 00:18:09.206 
+Etcetera.
+
+00:18:09.286 --> 00:18:09.446 
+Right.
+
+00:18:10.326 --> 00:18:13.166 
+So these are all external to the program as you can see, right.
+
+00:18:14.446 --> 00:18:14.726 
+OK.
+
+00:18:14.726 --> 00:18:19.307 
+A little bit more about the exceptions where syntrops cause is clearly difference between them
+
+00:18:19.307 --> 00:18:20.526 
+internal versus external.
+
+00:18:20.526 --> 00:18:25.147 
+We've handle, we've harped on that when to handle them because of the cause, because of the
+
+00:18:25.147 --> 00:18:28.246 
+difference in cause when to handle them actually varies also.
+
+00:18:29.126 --> 00:18:32.926 
+So exceptions, you need to handle them when they're detected.
+
+00:18:33.366 --> 00:18:38.962 
+And if the exception is known to be non speculative, you talked about branch prediction, for
+
+00:18:38.962 --> 00:18:44.863 
+example, there may be some speculative exceptions that are not at the head of the instruction are
+
+00:18:44.863 --> 00:18:47.966 
+not due to all this instruction in the machine yet.
+
+00:18:47.966 --> 00:18:52.396 
+So you don't want to handle the instruction that may have caused an exception in the fetch stage
+
+00:18:52.396 --> 00:18:54.566 
+because that instruction may be flushed, right?
+
+00:18:55.046 --> 00:19:00.267 
+You really want to handle when you detect the exception and you, you know that it's non speculative
+
+00:19:00.267 --> 00:19:02.166 
+basically almost immediately, right?
+
+00:19:03.246 --> 00:19:07.966 
+Interrupts can on the other hand can be handled when there, when it's convenient for the machine.
+
+00:19:07.966 --> 00:19:14.091 
+Because for example, if the interrupt is due to an IO device needing some service, there's some
+
+00:19:14.091 --> 00:19:19.766 
+slack IO device can wait it for a long time, maybe it can wait a little bit more, right?
+
+00:19:20.486 --> 00:19:25.542 
+Or if it's a system timer expiration, you don't need to be perfectly exact in in terms of nanosecond
+
+00:19:25.542 --> 00:19:25.846 
+level.
+
+00:19:26.326 --> 00:19:30.355 
+So you can wait a little bit, you can actually finish the program in a nice state and then handle
+
+00:19:30.355 --> 00:19:30.646 
+things.
+
+00:19:30.766 --> 00:19:34.366 
+Whereas power failure may, you may not need it, you may not want to wait basically.
+
+00:19:34.886 --> 00:19:39.261 
+So when convenient, except for very high priority ones like power failure or machine check, these
+
+00:19:39.261 --> 00:19:40.886 
+are really high priority interrupts.
+
+00:19:41.526 --> 00:19:42.886 
+They kick out the program that's running.
+
+00:19:42.966 --> 00:19:48.303 
+In the processor so that the system can take action regarding power failure, like to save the state
+
+00:19:48.303 --> 00:19:51.646 
+somewhere so that you can restart things in a much better way.
+
+00:19:52.886 --> 00:19:54.806 
+There's also the priority concept of priority.
+
+00:19:54.806 --> 00:20:01.011 
+I will not go into this a lot of detail, but everything in the system has a priority and the
+
+00:20:01.011 --> 00:20:07.486 
+priority of when to the exception is depend on the process because it's internal to the process.
+
+00:20:07.846 --> 00:20:11.526 
+Whereas priority of the interrupt depends on the type of the interrupt.
+
+00:20:12.086 --> 00:20:16.366 
+Essentially, right, Because exception is internal.
+
+00:20:16.846 --> 00:20:22.248 
+Everything related to the exception is really related to the process or the program that's running
+
+00:20:22.248 --> 00:20:23.406 
+OK, handling context.
+
+00:20:23.606 --> 00:20:25.286 
+It's essentially related to priority.
+
+00:20:25.286 --> 00:20:27.966 
+I'm not going to talk about that, but essentially who handles things?
+
+00:20:28.406 --> 00:20:31.326 
+Exception is handled based on the context of the process.
+
+00:20:31.526 --> 00:20:35.806 
+So the programmer can actually affect this, whereas interrupted handle based on the system.
+
+00:20:36.166 --> 00:20:41.165 
+So there's a system programmer that wrote how to handle the interrupt that comes from a device, for
+
+00:20:41.165 --> 00:20:45.206 
+example, a microphone, for example, or something else that comes outside, right?
+
+00:20:46.686 --> 00:20:48.446 
+OK, interrupts are actually really important.
+
+00:20:48.446 --> 00:20:53.129 
+Like if you have systems that are interacting with the environment, they're actually taking in a lot
+
+00:20:53.129 --> 00:20:53.926 
+of inputs, right?
+
+00:20:54.126 --> 00:20:56.846 
+And they could be processed using interrupts essentially.
+
+00:20:57.206 --> 00:21:02.006 
+So interrupts, interrupt handling, how quickly you actually handle those interrupts so that you can
+
+00:21:02.006 --> 00:21:06.613 
+communicate with the world is becoming much, much more important with robotics, cyber, physical
+
+00:21:06.613 --> 00:21:07.486 
+systems, etcetera.
+
+00:21:08.206 --> 00:21:10.526 
+So it's good to think about this going into the future.
+
+00:21:11.126 --> 00:21:16.046 
+Some of the system design decisions are not necessarily designed for handling these things fast.
+
+00:21:17.406 --> 00:21:17.726 
+OK.
+
+00:21:18.406 --> 00:21:20.406 
+So OK, any questions so far?
+
+00:21:20.406 --> 00:21:24.966 
+We're going to talk about architectural state a lot.
+
+00:21:24.966 --> 00:21:27.206 
+That's why I put this architectural state again over here.
+
+00:21:27.286 --> 00:21:29.606 
+This is based on your prior lectures.
+
+00:21:29.966 --> 00:21:34.646 
+Essentially, architectural state is memory registers and program counter, right?
+
+00:21:35.006 --> 00:21:40.389 
+And instructions specify how to transform the values of this architectural or programmer visible
+
+00:21:40.389 --> 00:21:40.726 
+state.
+
+00:21:40.926 --> 00:21:44.686 
+And you've seen how to implement instructions in very different ways so far.
+
+00:21:45.286 --> 00:21:46.646 
+So what does precise mean?
+
+00:21:46.646 --> 00:21:47.966 
+That's the title of this lecture, right?
+
+00:21:48.406 --> 00:21:53.315 
+So precise exceptions or interrupts means that the architectural state should be consistent or
+
+00:21:53.315 --> 00:21:56.606 
+precise when the exception or interrupt is ready to be handled.
+
+00:21:57.446 --> 00:22:01.646 
+Essentially, there's a concept in von Neumann model doesn't exist in data flow model.
+
+00:22:01.886 --> 00:22:07.290 
+It's good to think about that later on, but it's a concept and one moment model because 1 moment a
+
+00:22:07.290 --> 00:22:09.606 
+model has a sequential execution paradigm.
+
+00:22:10.326 --> 00:22:11.566 
+You need to make sure that all.
+
+00:22:11.846 --> 00:22:15.086 
+So basically to ensure a precise state, you need to ensure 2 things.
+
+00:22:15.646 --> 00:22:21.403 
+All previous instructions should be completely retired for before the exception causing instruction
+
+00:22:21.403 --> 00:22:26.986 
+or before the instruction at which point you want to handle an interrupt that's coming in and no
+
+00:22:26.986 --> 00:22:32.162 
+later instruction should be retired, meaning no later instruction should have updated the
+
+00:22:32.162 --> 00:22:33.326 
+architectural state.
+
+00:22:34.566 --> 00:22:38.766 
+Architectural state includes PC program, counter, memory registers, right?
+
+00:22:38.766 --> 00:22:39.526 
+That's it basically.
+
+00:22:40.086 --> 00:22:44.458 
+Basically retire means commit, finish, execution and update architectural state if you don't
+
+00:22:44.458 --> 00:22:44.886 
+remember.
+
+00:22:45.646 --> 00:22:50.846 
+So if the divide calls an exception, this is the the precise state basically.
+
+00:22:51.606 --> 00:22:55.126 
+Or in this particular case, I guess I just show it an example precise state.
+
+00:22:55.126 --> 00:22:57.606 
+If the white caused an exception, the line should be actually higher.
+
+00:22:58.046 --> 00:23:01.166 
+But in this case, maybe add caused an exception or something else happens in between, right?
+
+00:23:01.806 --> 00:23:03.846 
+So basically this is an example of a precise state.
+
+00:23:03.846 --> 00:23:05.726 
+It's a clean separation of sequential instruction.
+
+00:23:05.726 --> 00:23:10.446 
+It could be anywhere, but you'd better have it when you cause the exception.
+
+00:23:10.606 --> 00:23:12.606 
+All previous instructions are retired.
+
+00:23:13.326 --> 00:23:16.046 
+All instructions after that did not retire.
+
+00:23:16.366 --> 00:23:17.606 
+OK, that's the idea.
+
+00:23:18.406 --> 00:23:20.406 
+The question is how do we actually support this, right.
+
+00:23:20.966 --> 00:23:22.486 
+It's easier said than done.
+
+00:23:22.966 --> 00:23:29.256 
+If you start, if you start doing multi cycle execution, supporting this becomes not so easy and we
+
+00:23:29.256 --> 00:23:31.246 
+will see ways of supporting it.
+
+00:23:31.766 --> 00:23:32.246 
+Sounds good.
+
+00:23:33.046 --> 00:23:38.833 
+OK, so before we go into supporting it, at least the structure that I'm going to introduce, let's
+
+00:23:38.833 --> 00:23:43.846 
+talk a little bit about what you do when you actually handle exceptions in pipeline.
+
+00:23:43.846 --> 00:23:44.926 
+When do you check for this?
+
+00:23:45.326 --> 00:23:51.560 
+Essentially, as I said, you don't want to handle exceptions speculatively, meaning before you know
+
+00:23:51.560 --> 00:23:53.406 
+that you have to handle them.
+
+00:23:53.846 --> 00:23:59.647 
+So when the oldest instruction is ready to be retired, you check whether it have it has caused an
+
+00:23:59.647 --> 00:24:00.246 
+exception.
+
+00:24:01.366 --> 00:24:04.766 
+When the oldest, for example the divide instruction, you check whether there's an exception.
+
+00:24:04.886 --> 00:24:07.246 
+And hardware actually has signals related to this.
+
+00:24:07.246 --> 00:24:11.010 
+We will see that you know that there should there could be a divide by zero signal, for example,
+
+00:24:11.010 --> 00:24:11.246 
+right?
+
+00:24:12.606 --> 00:24:19.670 
+And once the if it's detected that it has caused some exception, what the the control logic needs to
+
+00:24:19.670 --> 00:24:21.366 
+take some actions first.
+
+00:24:21.366 --> 00:24:23.086 
+It ensures architectural state is precise.
+
+00:24:23.446 --> 00:24:25.726 
+Hopefully you built that control logic to be that way.
+
+00:24:26.526 --> 00:24:33.069 
+It flushes and then you need to handle, you need to prepare the machine for the exception handling
+
+00:24:33.069 --> 00:24:35.406 
+routine to come and execute, right?
+
+00:24:35.966 --> 00:24:36.686 
+What does that mean?
+
+00:24:37.006 --> 00:24:39.606 
+That means existing program should not continue to run, right?
+
+00:24:39.606 --> 00:24:40.646 
+Because it's caused an exception.
+
+00:24:40.646 --> 00:24:42.006 
+Something needs to happen, right?
+
+00:24:42.446 --> 00:24:42.886 
+So what do you?
+
+00:24:42.966 --> 00:24:47.690 
+Do with the remaining instructions that come after the exception causing instruction, you flush the
+
+00:24:47.690 --> 00:24:51.126 
+pipeline, you get rid of them because you don't need them anyway, right?
+
+00:24:51.166 --> 00:24:52.966 
+You need to handle the exception, they're useless for you.
+
+00:24:54.326 --> 00:24:59.097 
+You save, meaning the control logic that handles the exception saves the program counter and the
+
+00:24:59.097 --> 00:25:03.969 
+registers as specified by the ISA and all IS as have ways of specifying things as to what needs to
+
+00:25:03.969 --> 00:25:06.206 
+be saved, where should it be saved, etcetera.
+
+00:25:06.206 --> 00:25:10.086 
+We're not going to go into that, but I'm going to give you some examples from MIPS, for example.
+
+00:25:11.646 --> 00:25:16.840 
+And this control logic redirects the fetch engine, meaning the program counter to the appropriate
+
+00:25:16.840 --> 00:25:18.286 
+exception handling routine.
+
+00:25:18.406 --> 00:25:25.286 
+So a program counter is changed to some address where the exception handling routine starts.
+
+00:25:25.926 --> 00:25:29.046 
+And that exception handling routine determines what kind of exception is it.
+
+00:25:29.046 --> 00:25:29.526 
+It is.
+
+00:25:29.886 --> 00:25:33.846 
+And then it determines what else needs to be done to handle that exception.
+
+00:25:34.646 --> 00:25:35.326 
+Makes sense, right?
+
+00:25:35.886 --> 00:25:41.629 
+And that exception handling routine at some point can say, oh, I cleaned up the exception so I can
+
+00:25:41.629 --> 00:25:44.326 
+now go back to the program that was executing.
+
+00:25:44.726 --> 00:25:46.606 
+And how does it know how to go back?
+
+00:25:46.606 --> 00:25:53.577 
+Because this control logic saved the program counter of the exception causing instruction and also
+
+00:25:53.577 --> 00:25:57.846 
+the register state of the program that caused the exception.
+
+00:25:58.366 --> 00:26:04.160 
+So all of those get loaded back to the processor by the exception handling routine using some
+
+00:26:04.160 --> 00:26:08.646 
+special instructions, and then you can go back to executing the program.
+
+00:26:09.686 --> 00:26:13.556 
+It's not as if nothing happened, but essentially something got interrupted in between exception
+
+00:26:13.556 --> 00:26:16.246 
+handling between got executed and then you go back to the program.
+
+00:26:17.046 --> 00:26:17.726 
+Makes sense, right?
+
+00:26:18.566 --> 00:26:20.366 
+So that's how you service an exception.
+
+00:26:20.406 --> 00:26:24.966 
+Interrupts are essentially the same, except they're caused externally, not internally.
+
+00:26:26.086 --> 00:26:26.726 
+Sounds good, right?
+
+00:26:27.326 --> 00:26:32.752 
+OK, so this is X86 actually is one of the in my opinion, it's one of the most complex IS as, but
+
+00:26:32.752 --> 00:26:37.726 
+it's one of the beautiful IS as that gets a lot of things right in terms of description.
+
+00:26:38.046 --> 00:26:44.612 
+Some IS as I say, they don't even they say they call everything interrupts, which is a bit odd to
+
+00:26:44.612 --> 00:26:46.846 
+me, but X86 gets it gets it nice.
+
+00:26:47.526 --> 00:26:49.286 
+So here, for example, I'm going to read this.
+
+00:26:49.526 --> 00:26:51.206 
+You can read the rest over here.
+
+00:26:51.646 --> 00:26:55.588 
+When an interrupt is received or an exception is detected, the currently running procedure or task
+
+00:26:55.588 --> 00:26:58.646 
+is suspended while the processor executes an interrupt or exception handler.
+
+00:26:58.926 --> 00:27:02.824 
+When the execute, when execution of the handler is complete, the processor resumes execution of the
+
+00:27:02.824 --> 00:27:04.006 
+interrupted procedure or task.
+
+00:27:04.366 --> 00:27:08.519 
+The resumption of the uninterrupt interrupted procedure or task happens without loss of program
+
+00:27:08.519 --> 00:27:12.803 
+continuity unless recovery from an exception was not possible or an interrupt caused the currently
+
+00:27:12.803 --> 00:27:14.246 
+earning program to be terminated.
+
+00:27:15.166 --> 00:27:18.606 
+So this is a nice summary of what happens at a very high level.
+
+00:27:19.086 --> 00:27:20.846 
+The question is how do you support this?
+
+00:27:20.846 --> 00:27:24.726 
+And we're going to talk about that, but ISA manuals are very nice to read.
+
+00:27:26.366 --> 00:27:30.566 
+OK, so before we go into how do we support that, I want to actually talk about this.
+
+00:27:30.806 --> 00:27:34.926 
+Why do we want precise exceptions a little bit more because this is actually quite important.
+
+00:27:35.686 --> 00:27:40.282 
+And if you remember the data flow lecture, I said that one of the beauties of the von Neumann
+
+00:27:40.282 --> 00:27:42.606 
+machine is you know exactly what your state is.
+
+00:27:43.006 --> 00:27:46.086 
+Whereas data flow, it's very difficult to have this precise state.
+
+00:27:46.166 --> 00:27:47.606 
+Where do you do over the precise line?
+
+00:27:48.046 --> 00:27:50.446 
+Program counter doesn't exist in data flow, right?
+
+00:27:50.886 --> 00:27:54.086 
+So this is one of the difficulties of building a data flow machine.
+
+00:27:54.726 --> 00:28:00.960 
+So first of all, because the semantics of the von Neumann model ISA specifies it, you got to obey
+
+00:28:00.960 --> 00:28:02.246 
+it, that's for sure.
+
+00:28:02.286 --> 00:28:02.806 
+Yes, True.
+
+00:28:03.246 --> 00:28:05.206 
+Otherwise you're violating the contract.
+
+00:28:05.206 --> 00:28:08.366 
+And as a result, somebody may not be able to write a program.
+
+00:28:08.366 --> 00:28:09.606 
+That's correct, Right.
+
+00:28:10.526 --> 00:28:10.806 
+OK.
+
+00:28:11.886 --> 00:28:17.375 
+The other reason is even if I say it was not von Neumann, for some reason, let's say software
+
+00:28:17.375 --> 00:28:17.966 
+debugging.
+
+00:28:18.166 --> 00:28:22.417 
+Basically, if you want to debug software that you wrote, you have some bugging your program, you're
+
+00:28:22.417 --> 00:28:24.006 
+trying to figure out what's going on.
+
+00:28:24.446 --> 00:28:25.566 
+You basically set breakpoints.
+
+00:28:25.566 --> 00:28:28.886 
+For example, you need to go line by line or some in some in some way.
+
+00:28:28.886 --> 00:28:32.566 
+You will need to understand how state transitions happen.
+
+00:28:33.206 --> 00:28:39.022 
+And you need to make sense of those state transitions such that you can say after this state I
+
+00:28:39.022 --> 00:28:40.446 
+should have this value.
+
+00:28:40.446 --> 00:28:42.526 
+After the state I should have this value, right?
+
+00:28:42.926 --> 00:28:49.786 
+If you have precise exceptions, you can clearly identify a point at which you can reason about the
+
+00:28:49.786 --> 00:28:50.206 
+state.
+
+00:28:50.486 --> 00:28:56.734 
+This, these are my, these are my, these should be my register values at this point in time, assuming
+
+00:28:56.734 --> 00:28:59.046 
+everything is correct in the program.
+
+00:28:59.606 --> 00:29:01.246 
+This is how you can debug the program, right?
+
+00:29:01.246 --> 00:29:03.406 
+Even if you don't have the sequential model for whatever reason.
+
+00:29:03.406 --> 00:29:04.806 
+Think about it, right?
+
+00:29:04.806 --> 00:29:11.081 
+And this software debugging is very difficult if some values get updated in a manner where you
+
+00:29:11.081 --> 00:29:14.086 
+cannot reason about state transitions, right?
+
+00:29:14.846 --> 00:29:18.046 
+So of course, sequential execution makes the state transitions much nicer.
+
+00:29:18.726 --> 00:29:24.030 
+You know that everything previous to this instruction that caused the that you're trying to debug at
+
+00:29:24.030 --> 00:29:28.486 
+the point at that point of the instruction has retired and nothing else has retired.
+
+00:29:28.926 --> 00:29:31.326 
+So you know exactly what the state should be at that point.
+
+00:29:31.326 --> 00:29:33.806 
+And this makes debugging really, really easy.
+
+00:29:34.966 --> 00:29:39.811 
+OK, if you don't believe this, try debugging something where a lot of values get updated in an out
+
+00:29:39.811 --> 00:29:42.926 
+of order manner and you're going to see out of order execution.
+
+00:29:42.966 --> 00:29:43.566 
+It's very difficult.
+
+00:29:43.566 --> 00:29:49.239 
+In fact, people have tried IBM, for example, the first, one of the first most popular out of order
+
+00:29:49.239 --> 00:29:54.738 
+execution machines that we're going to study after, after the break, Thomas Saul's machine, IBM
+
+00:29:54.738 --> 00:29:55.086 
+36091.
+
+00:29:55.646 --> 00:29:57.486 
+It did not support precise exceptions.
+
+00:29:58.086 --> 00:30:05.006 
+It was, it was one of the most powerful machines of its time, supercomputer of its time in 1960s.
+
+00:30:05.006 --> 00:30:06.406 
+We're talking about it.
+
+00:30:06.406 --> 00:30:12.289 
+It did not support precise exceptions and as a result, nobody wanted to use it, nobody except for a
+
+00:30:12.289 --> 00:30:18.173 
+few people who who could basically sit down and debug their programs in the presence of this out of
+
+00:30:18.173 --> 00:30:19.006 
+order updates.
+
+00:30:19.246 --> 00:30:19.366 
+Yeah.
+
+00:30:20.126 --> 00:30:25.486 
+So software debugging is probably the most important reason why we want precise exceptions.
+
+00:30:26.046 --> 00:30:31.200 
+Now, if you don't have precise exceptions, you can still debug your programs, but you got to be at a
+
+00:30:31.200 --> 00:30:33.726 
+level where you can reason about a lot of things.
+
+00:30:33.726 --> 00:30:35.246 
+And you may go crazy while doing that.
+
+00:30:36.086 --> 00:30:40.286 
+And we know that most of the world is not going to debug programs that way, right?
+
+00:30:41.126 --> 00:30:42.966 
+OK, OK.
+
+00:30:43.126 --> 00:30:46.446 
+The other benefit is enable the easy recovery from exceptions.
+
+00:30:46.446 --> 00:30:49.966 
+If the state is clear, you can go back to that state immediately.
+
+00:30:49.966 --> 00:30:51.846 
+You don't need to undo a lot of things.
+
+00:30:52.126 --> 00:30:55.806 
+For example, it enables easily restartable processes.
+
+00:30:55.806 --> 00:31:00.728 
+So if you actually have a clean state, you can easily restart the process by saying, I go back to
+
+00:31:00.728 --> 00:31:03.926 
+this program counter and here are the register values up there.
+
+00:31:04.246 --> 00:31:05.486 
+You just basically update those.
+
+00:31:05.486 --> 00:31:05.926 
+That's it.
+
+00:31:07.726 --> 00:31:13.726 
+And this is something that's important we didn't discuss at all, but it enables traps into software.
+
+00:31:13.806 --> 00:31:14.846 
+So this is actually nice.
+
+00:31:15.606 --> 00:31:19.126 
+For example, you did not implement.
+
+00:31:19.486 --> 00:31:25.206 
+Let's assume that you designed an ISA and you made a mistake, meaning or maybe you, you made it, you
+
+00:31:25.206 --> 00:31:29.326 
+made it, you made a design choice, let's say, not necessarily a mistake.
+
+00:31:29.686 --> 00:31:33.914 
+It could be a design choice or a mistake, depending on the frequency of the occurrence of the
+
+00:31:33.914 --> 00:31:36.006 
+instruction that you decided not to implement.
+
+00:31:36.006 --> 00:31:36.286 
+Right?
+
+00:31:36.606 --> 00:31:41.086 
+For example, you designed that ISA and you did not add a multiply instruction to your ISA.
+
+00:31:41.486 --> 00:31:46.764 
+OK, ISA does not have a multiply instruction, which was actually true for MIPS originally, And we're
+
+00:31:46.764 --> 00:31:50.406 
+going to talk about that also later on because that was a philosophy.
+
+00:31:50.766 --> 00:31:53.006 
+We don't want complicated instructions in the ISA.
+
+00:31:53.006 --> 00:31:54.246 
+We want to make the hardware simple.
+
+00:31:54.446 --> 00:32:01.564 
+OK, but you can still and but but people want multiply instructions from you and you cannot change
+
+00:32:01.564 --> 00:32:03.526 
+the hardware at this point.
+
+00:32:03.766 --> 00:32:06.566 
+So how do you add a multiply instruction into the programs?
+
+00:32:07.166 --> 00:32:12.086 
+One way of doing it is actually add the multiply instruction somehow into the programs.
+
+00:32:13.406 --> 00:32:19.154 
+And when that multiply instruction, when you get, when the, when the system gets to that multiply
+
+00:32:19.154 --> 00:32:24.843 
+instruction, it calls an exception, undefined opcode exception because the hardware doesn't have
+
+00:32:24.843 --> 00:32:27.806 
+that hardware calls an undefined opcode exception.
+
+00:32:28.566 --> 00:32:33.966 
+You go into the exception handler and this exception handler checks the value and quoted value.
+
+00:32:33.966 --> 00:32:40.174 
+Oh, there's a multiply instruction and somebody writes a multiply routine in software that uses the
+
+00:32:40.174 --> 00:32:46.256 
+instructions of the hardware that you already have, like shifts and adds to actually execute that
+
+00:32:46.256 --> 00:32:48.326 
+multiply instruction in software.
+
+00:32:49.566 --> 00:32:54.651 
+And then you go back to the program after that multiply instruction finishes, patch the register
+
+00:32:54.651 --> 00:32:55.446 
+file, etcetera.
+
+00:32:55.966 --> 00:32:59.486 
+So that's how you can actually implement a software defined opcode.
+
+00:33:00.366 --> 00:33:02.926 
+And when you heard hear about software defined opcode, that's what it is.
+
+00:33:03.406 --> 00:33:04.166 
+It is not.
+
+00:33:05.606 --> 00:33:11.000 
+I'm not going to say it's not possible, but it's not easily doable if you don't have precise
+
+00:33:11.000 --> 00:33:15.926 
+exceptions or interrupts because this requires again, your state to be clean, right?
+
+00:33:16.446 --> 00:33:22.288 
+Otherwise, you need to actually, you need to actually store a lot of States and maybe undo or redo
+
+00:33:22.288 --> 00:33:25.806 
+some execution while you're also doing the multiply, right?
+
+00:33:26.966 --> 00:33:27.806 
+So it's good to think about it.
+
+00:33:27.806 --> 00:33:33.366 
+So this precise exception concept enables a lot of things and this is one of them as we will see.
+
+00:33:33.366 --> 00:33:37.406 
+It also enables virtual memory, but I'm going to leave that to lecture 25 or 26.
+
+00:33:39.006 --> 00:33:39.326 
+OK?
+
+00:33:39.406 --> 00:33:40.086 
+Any questions?
+
+00:33:42.926 --> 00:33:49.931 
+OK, So this is another concept where the importance it it simplifies it, it complicates the hardware
+
+00:33:49.931 --> 00:33:56.726 
+a little bit, but it simplifies programmers life a lot easier to make it to make it a lot easier.
+
+00:33:57.926 --> 00:34:00.166 
+OK, so how do we ensure precise exceptions?
+
+00:34:00.166 --> 00:34:01.526 
+I'm going to cover some machines.
+
+00:34:01.926 --> 00:34:05.658 
+Essentially this is easy to do in single cycle and multi cycle machines, multi cycles a little bit
+
+00:34:05.658 --> 00:34:07.486 
+more, a little bit harder, but we will see that.
+
+00:34:07.526 --> 00:34:13.286 
+And your book section 7.7 has a nice treatment in multi cycle architect micro architecture.
+
+00:34:13.286 --> 00:34:17.504 
+I'm going to show in a single cycle machine that's not a problem because instruction boundary is
+
+00:34:17.504 --> 00:34:19.086 
+really the same as a cycle boundary.
+
+00:34:20.246 --> 00:34:24.429 
+An instruction is guaranteed to be finished in one cycle, so there's no possibility of violating
+
+00:34:24.429 --> 00:34:26.086 
+sequential execution semantics, right?
+
+00:34:26.526 --> 00:34:30.521 
+So if an instruction calls an exception, you handle it right away because you have a single cycle,
+
+00:34:30.521 --> 00:34:30.766 
+right?
+
+00:34:31.486 --> 00:34:35.046 
+And but we know that single cycle machines are not realistic, so I'm not going to harp on that.
+
+00:34:35.366 --> 00:34:36.366 
+Multi cycle machines.
+
+00:34:36.366 --> 00:34:42.846 
+Much more realistic, although low performance to support interrupts.
+
+00:34:42.966 --> 00:34:43.486 
+And exceptions.
+
+00:34:43.486 --> 00:34:47.006 
+We need to add special states in the control finite state machine.
+
+00:34:47.366 --> 00:34:50.326 
+And you've seen those finite state machines in the last lectures.
+
+00:34:51.046 --> 00:34:54.646 
+These states lead to exceptional or interrupt handlers.
+
+00:34:54.646 --> 00:35:00.646 
+I'm going to show you some states for undefined up code, for example, or for overflow.
+
+00:35:01.646 --> 00:35:03.086 
+Divide by zero is very similar actually.
+
+00:35:04.206 --> 00:35:10.226 
+And the finite state machine is designed such that you switch to the handler only at a precise
+
+00:35:10.226 --> 00:35:14.006 
+state, meaning before fetching the next instruction, right?
+
+00:35:14.726 --> 00:35:19.679 
+As long as you handle the exception or interrupt before fetching the next instruction, you're
+
+00:35:19.679 --> 00:35:24.686 
+guaranteeing that all previous instructions have retired and no later instruction has retired.
+
+00:35:25.246 --> 00:35:30.526 
+OK, so maybe I'll start with the finite state machine over here very quickly.
+
+00:35:30.526 --> 00:35:36.187 
+But this is a multi cycle finite state machine that we kind of developed actually in late last
+
+00:35:36.187 --> 00:35:41.006 
+lectures, MIPS version, but it's appended with some additional states over here.
+
+00:35:41.886 --> 00:35:45.206 
+For example, it supports overflow and undefined instruction.
+
+00:35:45.686 --> 00:35:49.286 
+So you amend the finite state machine with a state.
+
+00:35:49.286 --> 00:35:53.806 
+So this is an R type operation, which is which could be an AD for example.
+
+00:35:54.086 --> 00:35:58.777 
+Overflow means the value that you generate as a result of the operation cannot be represented with
+
+00:35:58.777 --> 00:36:00.166 
+number of bits that you have.
+
+00:36:00.446 --> 00:36:01.606 
+So you've overflown.
+
+00:36:01.886 --> 00:36:07.566 
+Basically, you increment the register value by 1 and then you cannot represent that value, right?
+
+00:36:09.366 --> 00:36:14.561 
+So if, and this needs to be detected by hardware, so hardware has a bit, says overflow, ALU has a
+
+00:36:14.561 --> 00:36:15.526 
+bit says overflow.
+
+00:36:15.526 --> 00:36:21.341 
+And if that overflow bit is set, the next state after executing the instruction is a special state
+
+00:36:21.341 --> 00:36:24.486 
+where you prepare the machine for exception handling.
+
+00:36:24.766 --> 00:36:26.406 
+We're going to see what those things are.
+
+00:36:27.006 --> 00:36:30.726 
+If there's no overflow, you basically write to the destination register, right?
+
+00:36:30.966 --> 00:36:35.426 
+Basically, you change the state machine such that if there's an exceptional condition, you don't
+
+00:36:35.426 --> 00:36:37.006 
+write to the destination register.
+
+00:36:37.006 --> 00:36:39.206 
+There's no Reg dest equal 1 over here, for example.
+
+00:36:39.646 --> 00:36:44.062 
+But you actually prepare some special registers in the machine such that you can jump to the
+
+00:36:44.062 --> 00:36:47.566 
+exception handler and we're going to see what those special register are.
+
+00:36:47.886 --> 00:36:51.246 
+For example, what is the, what is the cause of the interrupt or exception?
+
+00:36:53.566 --> 00:36:59.486 
+And you you also store the exception causing program counter, for example, in in the in the PC.
+
+00:36:59.726 --> 00:37:01.526 
+I'm going to show you the data path in a little bit.
+
+00:37:02.046 --> 00:37:05.686 
+This is another exception over here that's added at the finite state machine.
+
+00:37:06.806 --> 00:37:09.086 
+This is the decode stage.
+
+00:37:09.286 --> 00:37:15.286 
+You can see the decode stage based on this multi way jump in the finite state machine.
+
+00:37:15.806 --> 00:37:22.226 
+If the OP is not recognised, if the OP is not our type or this or this or this or this or this, it
+
+00:37:22.226 --> 00:37:23.406 
+must be undefined.
+
+00:37:24.086 --> 00:37:30.641 
+So you go to a state where you prepare the machine for a different cause exception with a different
+
+00:37:30.641 --> 00:37:33.886 
+cause, in this case undefined instruction, right?
+
+00:37:34.686 --> 00:37:39.100 
+And you change, you also store the exception causing program counter and you write to the program
+
+00:37:39.100 --> 00:37:42.286 
+counter such that you go to the right place in the exception handling.
+
+00:37:42.726 --> 00:37:43.086 
+OK.
+
+00:37:43.486 --> 00:37:46.806 
+And then you go back to the fetch state as you can see over here.
+
+00:37:47.366 --> 00:37:49.366 
+OK, so I'm going to get to this later on.
+
+00:37:49.526 --> 00:37:54.825 
+It's not as important, but basically you need to change the finite state machines such that you can
+
+00:37:54.825 --> 00:37:56.806 
+jump into different States and avoid.
+
+00:37:57.326 --> 00:38:02.805 
+Writing to the destination register when an exception happens, you also need to whenever you need to
+
+00:38:02.805 --> 00:38:07.846 
+add states to the data path, you may need to add clearly add states to finite state machine.
+
+00:38:08.006 --> 00:38:13.526 
+You may need to add circuitry in the data path also to support what you're trying to do, right.
+
+00:38:13.926 --> 00:38:15.526 
+So we're trying to handle the exceptions.
+
+00:38:16.686 --> 00:38:21.782 
+In this particular case, we add, for example, an EPC register that holds the exception causing PC
+
+00:38:21.782 --> 00:38:26.827 
+program counter, because we're going to store that somewhere there's a cause register that holds
+
+00:38:26.827 --> 00:38:28.246 
+the cause of the exception.
+
+00:38:28.486 --> 00:38:32.385 
+It could be in this particular case, only two things, but this could be actually 100 different
+
+00:38:32.385 --> 00:38:32.966 
+things, right?
+
+00:38:32.966 --> 00:38:33.806 
+In a real machine.
+
+00:38:34.726 --> 00:38:38.726 
+But you can see that it's another register over here, this EPC register, this is a cause register.
+
+00:38:39.086 --> 00:38:45.322 
+And then exception handler starts at some address specified by the MIPS ISA, and that particular
+
+00:38:45.322 --> 00:38:47.726 
+address is specified by the MIPS ISA.
+
+00:38:48.566 --> 00:38:53.638 
+And essentially you need to have a way of setting these registers, for example, and also jumping to
+
+00:38:53.638 --> 00:38:54.766 
+the exception handler.
+
+00:38:55.366 --> 00:39:01.446 
+For example, there's there's an overflow of signal over here that comes out of the ALU and that
+
+00:39:01.446 --> 00:39:03.366 
+signal is tested by the state.
+
+00:39:05.526 --> 00:39:09.900 
+Undefined instruction doesn't need a state because you're eliminating based on all the other
+
+00:39:09.900 --> 00:39:10.566 
+possibilities.
+
+00:39:10.686 --> 00:39:13.846 
+If the op OP code is something else, then you'd go into a different state.
+
+00:39:13.846 --> 00:39:19.851 
+So that's handled in the state machine and you can see that the control signals are whether you're
+
+00:39:19.851 --> 00:39:25.796 
+right to the exception causing program counter register, whether you're right to the cause of the
+
+00:39:25.796 --> 00:39:27.206 
+exception or interrupt.
+
+00:39:27.566 --> 00:39:31.046 
+And then there is a multiplexer that's added to decide what is the cause.
+
+00:39:31.166 --> 00:39:36.396 
+Basically there needs to be a value associated with each cause of exception or interrupt, as you can
+
+00:39:36.396 --> 00:39:36.606 
+see.
+
+00:39:36.966 --> 00:39:41.509 
+And then you'll need to change the data path such that you can jump to the exception handler, which
+
+00:39:41.509 --> 00:39:42.886 
+is the this address over here.
+
+00:39:42.966 --> 00:39:48.846 
+Here and there should be a path provided to update the program counter with that exception handler
+
+00:39:48.846 --> 00:39:49.566 
+routine, OK.
+
+00:39:50.486 --> 00:39:58.459 
+And you can see that if we detect an overflow, we set PC source to 11 and we set PC right such that
+
+00:39:58.459 --> 00:40:02.326 
+this value goes into the program counter, right?
+
+00:40:02.526 --> 00:40:10.125 
+So you go into the exception routine, Oh something happened and interrupt calls is set to 0 which
+
+00:40:10.125 --> 00:40:17.333 
+happens to be that encoding for overflow and you write the cause and you wrote the exception
+
+00:40:17.333 --> 00:40:19.606 
+causing program counter also.
+
+00:40:20.206 --> 00:40:26.206 
+OK, so this is the support, a minimal type of support that you add in a multi cycle machine.
+
+00:40:27.086 --> 00:40:31.046 
+There's also this MFC-0 instruction which has a terrible name.
+
+00:40:31.646 --> 00:40:35.886 
+I think it's move from Co processor 0 instruction they say.
+
+00:40:36.046 --> 00:40:40.900 
+So MIPS when it was designed it was thinking of this exception handling part as a Co processor that
+
+00:40:40.900 --> 00:40:42.126 
+helps the main processor.
+
+00:40:42.126 --> 00:40:45.006 
+That's why it's called move from Co processor zero.
+
+00:40:45.006 --> 00:40:48.126 
+There are other Co processors also Co processor 1234, etcetera.
+
+00:40:48.806 --> 00:40:53.726 
+Basically you use this instruction to copy the exception cause into a general purpose register and
+
+00:40:53.726 --> 00:40:56.086 
+this is used by the exception handling routine.
+
+00:40:58.326 --> 00:41:01.366 
+So essentially there needs to be support for this MFC-0 instruction.
+
+00:41:01.366 --> 00:41:07.348 
+Also, the goal is to move the cause into a general purpose register so that you can inspect it,
+
+00:41:07.348 --> 00:41:07.726 
+right?
+
+00:41:08.086 --> 00:41:10.326 
+Because you don't operate on these registers over here.
+
+00:41:10.326 --> 00:41:11.606 
+These are very special purpose.
+
+00:41:11.966 --> 00:41:13.206 
+This becomes general purpose.
+
+00:41:14.086 --> 00:41:15.566 
+And then there's also some other function.
+
+00:41:15.566 --> 00:41:16.726 
+I'll just read it over here.
+
+00:41:16.766 --> 00:41:20.737 
+I won't go into a lot of detail, but essentially in summary, an exception causes the processor to
+
+00:41:20.737 --> 00:41:21.966 
+jump to the exception handler.
+
+00:41:22.126 --> 00:41:25.606 
+We knew that the exception handler saves registers on the stack.
+
+00:41:25.726 --> 00:41:28.286 
+So there's some instructions that go through every single register.
+
+00:41:28.526 --> 00:41:32.086 
+Put it on memory so that you can return to it later on as we discussed.
+
+00:41:32.846 --> 00:41:36.606 
+Then uses MFC-0 to look at the cost and respond accordingly.
+
+00:41:37.406 --> 00:41:46.279 
+Basically use MFC-0 to move that cost into a general purpose register and check when the handler is
+
+00:41:46.279 --> 00:41:47.086 
+finished.
+
+00:41:47.246 --> 00:41:51.407 
+It restores the registers from the stack it knew, it knows where it wrote the registers and it
+
+00:41:51.407 --> 00:41:53.886 
+restores them back to the general purpose register file.
+
+00:41:54.206 --> 00:41:58.846 
+Copies the return address from EPC to K0 which is a register in MIPS.
+
+00:41:59.086 --> 00:42:06.186 
+So you basically take this EPC exception causing program counter, put it into a general purpose
+
+00:42:06.186 --> 00:42:13.584 
+register called K0, and then do a jump register to K0, meaning set the PC to the value in K0, which
+
+00:42:13.584 --> 00:42:16.126 
+is the exception causing register.
+
+00:42:16.686 --> 00:42:19.166 
+This is to make things more general purpose.
+
+00:42:21.126 --> 00:42:25.054 
+Otherwise you could have connected this EPC directly over here and that's why they think of this as
+
+00:42:25.054 --> 00:42:26.046 
+a Co processor, etcetera.
+
+00:42:26.046 --> 00:42:29.006 
+You don't need to know about that, but essentially this is how things are handled.
+
+00:42:29.006 --> 00:42:31.646 
+This is how what I described is implemented.
+
+00:42:31.806 --> 00:42:36.114 
+You can jump into an exception routine and you can jump out of an exception routine and you can
+
+00:42:36.114 --> 00:42:36.886 
+write an handler.
+
+00:42:37.926 --> 00:42:38.526 
+Makes sense, right?
+
+00:42:38.526 --> 00:42:39.606 
+There's no magic basically.
+
+00:42:40.806 --> 00:42:42.486 
+So who who provides the exception handlers?
+
+00:42:42.486 --> 00:42:46.886 
+It's basically there could be default exception handlers in the operating system.
+
+00:42:47.086 --> 00:42:50.686 
+Programmer may be able to write them also or overwrite them.
+
+00:42:51.446 --> 00:42:55.826 
+For interrupt handlers, it's usually the operating system that provides the interrupt handling
+
+00:42:55.826 --> 00:42:56.246 
+routines.
+
+00:42:57.806 --> 00:43:00.446 
+OK, so this was multi cycle.
+
+00:43:01.406 --> 00:43:02.126 
+Sounds good right?
+
+00:43:05.366 --> 00:43:11.539 
+Unfortunately, there are more complications this, so this was a multi cycle machine, sorry, multi
+
+00:43:11.539 --> 00:43:16.886 
+cycle data path with multi cycle execute as we learned there are more complications.
+
+00:43:16.886 --> 00:43:21.667 
+Basically instructions can take different number of cycles in the execute stage and this complicates
+
+00:43:21.667 --> 00:43:23.006 
+exception and drop handling.
+
+00:43:23.366 --> 00:43:25.606 
+Basically you cannot do exactly what I said, right?
+
+00:43:26.606 --> 00:43:31.086 
+Because now we don't do 1 instruction at a time.
+
+00:43:31.246 --> 00:43:36.406 
+We're actually doing multiple instructions concurrently at this point, right?
+
+00:43:38.086 --> 00:43:40.886 
+So how do we actually fix the problem?
+
+00:43:41.766 --> 00:43:45.286 
+We're writing to some registers out of order.
+
+00:43:45.326 --> 00:43:48.606 
+One way of fixing the problem is don't do that, right?
+
+00:43:48.886 --> 00:43:50.126 
+That's always the easiest way.
+
+00:43:50.646 --> 00:43:51.446 
+You banned that.
+
+00:43:51.806 --> 00:43:53.726 
+Unfortunately, bans don't necessarily work.
+
+00:43:54.646 --> 00:43:55.486 
+You could do this.
+
+00:43:56.486 --> 00:43:59.046 
+Basically make each operation take the same amount of time.
+
+00:44:00.006 --> 00:44:05.766 
+Divide takes 8 cycles, so I'll make add 8 take 8 cycles also so that I don't run into this problem.
+
+00:44:06.006 --> 00:44:07.846 
+Well, what if it load takes 500 cycles?
+
+00:44:08.366 --> 00:44:10.406 
+Well, I'll make add take 500 cycles also.
+
+00:44:10.966 --> 00:44:17.966 
+But if the load takes 2000 cycles, I'll make load to take 2000 cycle add to take 2000 cycles also.
+
+00:44:18.166 --> 00:44:19.246 
+So hopefully you get the point.
+
+00:44:20.326 --> 00:44:23.446 
+Worst case instruction latency determines all instructions latency.
+
+00:44:23.966 --> 00:44:28.686 
+And we know based on the design principles that this is not a good design, right?
+
+00:44:28.686 --> 00:44:30.326 
+You should not optimise for the worst case.
+
+00:44:30.326 --> 00:44:32.046 
+You should really optimise for the common case.
+
+00:44:32.366 --> 00:44:36.491 
+In this particular case, the worst case is actually terrible potential memory operations, as we
+
+00:44:36.491 --> 00:44:36.926 
+discussed.
+
+00:44:37.446 --> 00:44:40.286 
+Does each functional unit take the worst case number of cycles?
+
+00:44:40.606 --> 00:44:41.726 
+Unfortunately, that's not good.
+
+00:44:41.926 --> 00:44:42.886 
+Yeah, so that's why.
+
+00:44:43.006 --> 00:44:45.366 
+It's not a, it's a non solution to the problem.
+
+00:44:46.166 --> 00:44:48.046 
+So we're going to talk about solutions to the problem.
+
+00:44:49.446 --> 00:44:54.856 
+And all of these solutions that are written over here are implementing modern processors with some
+
+00:44:54.856 --> 00:44:59.935 
+combination history Buffer is depends on what kind of processor, but reorder buffer, feature
+
+00:44:59.935 --> 00:45:02.806 
+register file and checkpointing are all implemented.
+
+00:45:03.486 --> 00:45:09.216 
+I'm going to talk about the reorder buffer and I'm going to give you some examples of this, but this
+
+00:45:09.216 --> 00:45:11.566 
+paper actually covers this in a nice way.
+
+00:45:11.686 --> 00:45:16.966 
+And the Smith and Sohey paper that is a more overview paper covers in a more general way.
+
+00:45:17.486 --> 00:45:21.585 
+So basically, how do we support precise exceptions in the presence of instructions completing out of
+
+00:45:21.585 --> 00:45:22.446 
+out of program order?
+
+00:45:23.126 --> 00:45:29.849 
+I'll give you the concept of reorder buffer and leave these for you to study unless we have time,
+
+00:45:29.849 --> 00:45:32.206 
+which is very unlikely at the end.
+
+00:45:33.366 --> 00:45:38.646 
+But we have some lecture video from a long time ago that talks about these solutions that goes into
+
+00:45:38.646 --> 00:45:39.286 
+the details.
+
+00:45:39.686 --> 00:45:41.366 
+And also there are backup slides if you're interested.
+
+00:45:41.366 --> 00:45:44.086 
+But let me give you the idea of the reorder buffer.
+
+00:45:44.086 --> 00:45:49.646 
+Essentially, it's a very simple idea, although it will complicate our machine, unfortunately.
+
+00:45:51.446 --> 00:45:58.254 
+Idea is to complete the instructions are out of order, like this picture, but we're not going to
+
+00:45:58.254 --> 00:46:01.446 
+exact this picture, Complete it out of order.
+
+00:46:01.446 --> 00:46:03.406 
+Don't do this like bad design.
+
+00:46:04.246 --> 00:46:10.142 
+Do a good design, but reorder them before updating the register file, meaning before making the
+
+00:46:10.142 --> 00:46:13.246 
+results visible to the architectural state, right?
+
+00:46:13.686 --> 00:46:17.166 
+So that no one can see that you completed them out of order, right?
+
+00:46:18.046 --> 00:46:18.566 
+That's the idea.
+
+00:46:18.566 --> 00:46:21.446 
+Basically, That's a very simple idea, very powerful idea.
+
+00:46:22.366 --> 00:46:26.086 
+What we have here is at the end of the functional unit.
+
+00:46:26.606 --> 00:46:30.206 
+When the instruction finishes, it writes its results into the reorder buffer.
+
+00:46:31.486 --> 00:46:36.049 
+And when the instruction is the oldest instruction in the machine and it doesn't have exceptions and
+
+00:46:36.049 --> 00:46:38.286 
+there are no interrupts to be handled, it writes.
+
+00:46:38.326 --> 00:46:41.206 
+It takes its result from the reorder buffer and puts it into the register file.
+
+00:46:42.126 --> 00:46:46.682 
+So only when the instruction is the oldest instruction in the machine, the result moves from the
+
+00:46:46.682 --> 00:46:48.486 
+reorder buffer into the register file.
+
+00:46:48.566 --> 00:46:54.286 
+Register file is not written with values that are completed in an out of order way.
+
+00:46:54.286 --> 00:46:58.286 
+Register file is written with values that are completed in an in order manner.
+
+00:46:58.606 --> 00:46:59.566 
+That's the idea basically.
+
+00:47:00.326 --> 00:47:04.809 
+Let me quickly go over like what happens in a machine when an instruction is decoded, which is over
+
+00:47:04.809 --> 00:47:08.886 
+here, it reserves the next sequential entry in a special buffer called the reorder buffer.
+
+00:47:08.966 --> 00:47:10.566 
+So reorder buffer is a very special buffer.
+
+00:47:10.806 --> 00:47:13.166 
+It keeps track of the ordering of operations.
+
+00:47:13.806 --> 00:47:17.046 
+Every instruction goes through it when it's decoded, decoding has happened sequentially.
+
+00:47:17.046 --> 00:47:19.206 
+Remember, I fetched the instruction sequentially.
+
+00:47:19.606 --> 00:47:21.206 
+I decode it sequentially, right?
+
+00:47:22.606 --> 00:47:25.046 
+So it reserves the next sequential entry in a special buffer.
+
+00:47:25.486 --> 00:47:31.523 
+How to design this reorder buffer is going to be our challenge after the break, not after the longer
+
+00:47:31.523 --> 00:47:31.886 
+break.
+
+00:47:31.886 --> 00:47:37.859 
+After the short lecture break, you know OK, when an instruction completes, it writes its results
+
+00:47:37.859 --> 00:47:39.726 
+into the reorder buffer entry.
+
+00:47:39.726 --> 00:47:43.806 
+As I said, when an instruction is the oldest in the reorder buffer.
+
+00:47:43.926 --> 00:47:47.982 
+So you need to have a oldest instruction pointer to the reorder buffer as well as the youngest
+
+00:47:47.982 --> 00:47:48.846 
+instruction pointer.
+
+00:47:50.486 --> 00:47:55.217 
+But when the instruction is the oldest in the reorder buffer and it has completed without
+
+00:47:55.217 --> 00:47:58.566 
+exceptions, its result is moved to the register file or memory.
+
+00:47:59.326 --> 00:48:00.486 
+I'm not going to talk about memory here.
+
+00:48:00.486 --> 00:48:03.966 
+Memory makes things much more complicated, as we will see later on.
+
+00:48:04.206 --> 00:48:08.126 
+We're going to talk about registers still, but you still need to consider memory also, right?
+
+00:48:08.406 --> 00:48:10.766 
+Because you don't want to update memory out of order either.
+
+00:48:10.766 --> 00:48:17.107 
+If you have a store that comes later in the program, you don't want to update the memory because
+
+00:48:17.107 --> 00:48:17.966 
+that's hurts.
+
+00:48:19.686 --> 00:48:21.526 
+Again, all of these things, precise exceptions.
+
+00:48:22.006 --> 00:48:26.635 
+So this is a hardware structure that keeps information about all instructions that are decoded but
+
+00:48:26.635 --> 00:48:28.006 
+not yet retired or committed.
+
+00:48:28.686 --> 00:48:31.966 
+So it's really a circular buffer in hardware, circular queue.
+
+00:48:31.966 --> 00:48:36.206 
+You probably implemented circular queues in data structures or algorithms.
+
+00:48:36.846 --> 00:48:41.004 
+You can implement anything that you implement in software in hardware as well, except hardware
+
+00:48:41.004 --> 00:48:42.686 
+becomes a little bit more complicated.
+
+00:48:43.126 --> 00:48:44.406 
+So it's a circular queue.
+
+00:48:44.406 --> 00:48:48.533 
+There's an oldest instruction pointer pointer to the reorder buffer entry that contains information
+
+00:48:48.533 --> 00:48:50.326 
+about all this instructions in the machine.
+
+00:48:50.326 --> 00:48:55.573 
+There's a youngest instruction pointer that you allocate at the decode stage into OK, As I said,
+
+00:48:55.573 --> 00:48:57.486 
+it's a circular queue and hardware.
+
+00:48:58.006 --> 00:49:03.126 
+It has a lot of things that are inside it, and we're going to get to that after the break.
+
+00:49:03.126 --> 00:49:08.541 
+But whether the entry is valid, meaning whether there's an instruction in this ordering buffer
+
+00:49:08.541 --> 00:49:10.846 
+that's associated with it, What is this?
+
+00:49:10.846 --> 00:49:13.766 
+What is that instruction writing to destination register ID?
+
+00:49:14.526 --> 00:49:19.769 
+What is the value it has written if it has written that value at this point, because it may not have
+
+00:49:19.769 --> 00:49:24.646 
+written that value yet because there is a long execution pipeline or number of cycles, right?
+
+00:49:24.766 --> 00:49:25.406 
+That may happen.
+
+00:49:26.006 --> 00:49:28.926 
+So we're going to get to all of these in a little bit.
+
+00:49:28.926 --> 00:49:30.366 
+Let's, I think let's take a break.
+
+00:49:30.446 --> 00:49:34.046 
+There's a good picture to remember, I think.
+
+00:49:34.206 --> 00:49:39.803 
+Let's come back at, I hope that we can end the lecture early because I have a meeting at the end of
+
+00:49:39.803 --> 00:49:40.086 
+this.
+
+00:49:41.086 --> 00:49:42.886 
+So let's come back at 15.
+
+00:49:42.966 --> 00:49:47.846 
+15 when the bell rings and we're going to go over how this reorder buffer operates.
+
+00:49:52.840 --> 00:49:56.400 
+Just to jog your memory, this is the structure that we're looking at.
+
+00:49:57.000 --> 00:50:04.282 
+We're going to use the structure to reorder instructions, meaning it'll hold all the instructions
+
+00:50:04.282 --> 00:50:07.060 
+that are decoded but not yet retired.
+
+00:50:07.580 --> 00:50:08.820 
+The results may be here.
+
+00:50:09.140 --> 00:50:14.300 
+So every entry corresponds to a single instruction, and there's an ordering.
+
+00:50:14.700 --> 00:50:21.241 
+There's an old oldest pointer, and there's a youngest pointer, and each entry has a valid bit saying
+
+00:50:21.241 --> 00:50:25.820 
+whether an instruction has been assigned to that reorder buffer entry.
+
+00:50:28.220 --> 00:50:32.860 
+Each entry has a destination register ID if the instruction is writing to a register.
+
+00:50:33.220 --> 00:50:39.170 
+For instruction that writes to registers, each entry has a bit that says whether the destination
+
+00:50:39.170 --> 00:50:45.306 
+register is written to, meaning the instruction has completed and stored its value into the reorder
+
+00:50:45.306 --> 00:50:45.740 
+buffer.
+
+00:50:45.860 --> 00:50:52.510 
+And if that bit is set, then the value corresponding to that entry is the value that the instruction
+
+00:50:52.510 --> 00:50:58.628 
+has produced, and it will be written into the register file when the instruction becomes the
+
+00:50:58.628 --> 00:51:02.020 
+oldest, assuming there are no exceptions, etcetera.
+
+00:51:02.740 --> 00:51:03.420 
+Makes sense, right?
+
+00:51:03.420 --> 00:51:09.460 
+So that's the bare bones entry we have for keeping track of what happened to the instruction.
+
+00:51:10.620 --> 00:51:11.780 
+But that's not enough actually.
+
+00:51:11.900 --> 00:51:12.900 
+There needs to be more.
+
+00:51:13.300 --> 00:51:14.540 
+I will go through some.
+
+00:51:15.220 --> 00:51:19.180 
+This is a valid bit of the reorder buffer entry.
+
+00:51:19.180 --> 00:51:20.500 
+This is the destination register ID.
+
+00:51:20.500 --> 00:51:21.980 
+This is the destination register value.
+
+00:51:23.860 --> 00:51:29.222 
+If it's a store instruction, which we're not going to talk a lot about, you need a store address and
+
+00:51:29.222 --> 00:51:34.424 
+the data value that you're going to write, because if it's a store instruction, you don't want to
+
+00:51:34.424 --> 00:51:36.140 
+actually finish it out of order.
+
+00:51:36.140 --> 00:51:42.476 
+Also, you want to whenever the store instruction completes, it writes its address and data into the
+
+00:51:42.476 --> 00:51:43.820 
+reorder buffer entry.
+
+00:51:44.100 --> 00:51:50.054 
+And whenever it becomes the oldest instruction in the machine, if it doesn't cause any exceptions,
+
+00:51:50.054 --> 00:51:55.340 
+it basically takes that data value and writes it into the memory at that store address.
+
+00:51:55.980 --> 00:51:57.060 
+Hopefully that makes sense, right?
+
+00:51:58.660 --> 00:51:58.940 
+OK.
+
+00:52:00.420 --> 00:52:05.141 
+The program counter is also needed because this is a program counter of the instruction that was
+
+00:52:05.141 --> 00:52:07.060 
+written into the reorder bar for entry.
+
+00:52:07.580 --> 00:52:11.180 
+If there's an exception, you will need that program counter, right?
+
+00:52:11.820 --> 00:52:17.942 
+That will be your exception causing program counter, and that will be needed so that you can store
+
+00:52:17.942 --> 00:52:22.940 
+that and eventually return to the program if it's possible and desirable, right?
+
+00:52:24.460 --> 00:52:26.100 
+And this is the exception?
+
+00:52:26.100 --> 00:52:28.660 
+It's a bit, a single bit saying is there an exception?
+
+00:52:29.380 --> 00:52:32.500 
+And there should be something related to what kind of exception also, right?
+
+00:52:32.500 --> 00:52:37.298 
+So there's a lot of a lot of bookkeeping information that needs to be kept inside the reorder
+
+00:52:37.298 --> 00:52:37.660 
+buffer.
+
+00:52:37.940 --> 00:52:42.395 
+I don't actually individually enumerate these, but there should be valid bits for whether the
+
+00:52:42.395 --> 00:52:47.137 
+destination register is written to, whether the store address is written to, whether the store data
+
+00:52:47.137 --> 00:52:50.060 
+is written to, for example, and some other control bits like.
+
+00:52:50.060 --> 00:52:51.980 
+What kind of exception does this cost?
+
+00:52:52.660 --> 00:53:00.160 
+So you can think of this as a bookkeeping entry for a given instruction that's in the machine that's
+
+00:53:00.160 --> 00:53:02.260 
+decoded but not yet retired.
+
+00:53:02.540 --> 00:53:05.740 
+Now you have an order of these instructions, OK?
+
+00:53:05.740 --> 00:53:09.730 
+Basically, you need everything that's required to correctly reorder the instructions back into the
+
+00:53:09.730 --> 00:53:10.300 
+program order.
+
+00:53:11.180 --> 00:53:18.078 
+You kind of have that with the valid bits and also oldest instruction pointer and the youngest
+
+00:53:18.078 --> 00:53:20.060 
+instruction pointer, right?
+
+00:53:20.620 --> 00:53:24.787 
+Update the architectural state with the instructions result if the instruction can retire without
+
+00:53:24.787 --> 00:53:25.260 
+any issues.
+
+00:53:25.900 --> 00:53:31.020 
+That's why you have the register ID, store addresses, register values, store data, etcetera.
+
+00:53:31.620 --> 00:53:36.350 
+And also you need everything that you need that is required to handle an exception and interrupt
+
+00:53:36.350 --> 00:53:41.180 
+precisely if an exception or interrupt needs to be handled before retiring the instruction, right?
+
+00:53:41.900 --> 00:53:44.500 
+That's why you have this program counter exception?
+
+00:53:44.500 --> 00:53:48.540 
+And type of exception bits, you could have other things also.
+
+00:53:48.540 --> 00:53:53.060 
+We may expand this later on when we talk about out of order execution, but these are the basics.
+
+00:53:53.300 --> 00:53:55.780 
+So this actually could be a large structure in your machine.
+
+00:53:57.940 --> 00:54:02.206 
+As I said, you need valve bits to keep track of the readiness of the results and find out if the
+
+00:54:02.206 --> 00:54:03.940 
+instruction has complete the execution.
+
+00:54:04.180 --> 00:54:06.260 
+That's really important and we're going to use them soon.
+
+00:54:07.980 --> 00:54:12.660 
+So with every order buffer, this is the behaviour that we want from the machine.
+
+00:54:14.820 --> 00:54:21.593 
+When the instruction completes, the result is first written to the reorder buffer entry associated
+
+00:54:21.593 --> 00:54:26.500 
+with that instruction, and the result is taken from the reorder buffer.
+
+00:54:26.980 --> 00:54:32.440 
+And written to the register file only when that instruction is supposed to update the architectural
+
+00:54:32.440 --> 00:54:34.260 
+state in sequential order, right?
+
+00:54:34.740 --> 00:54:35.340 
+So what now?
+
+00:54:35.540 --> 00:54:41.130 
+Now we've coupled, we've decoupled writing it to the register file from producing the result and
+
+00:54:41.130 --> 00:54:43.460 
+writing it to the reorder buffer, right?
+
+00:54:43.460 --> 00:54:47.918 
+Every instruction, when it's completes, it writes its result into the register, sorry, reorder
+
+00:54:47.918 --> 00:54:48.820 
+buffer immediately.
+
+00:54:50.020 --> 00:54:51.940 
+And then there's some logic.
+
+00:54:53.060 --> 00:54:58.213 
+It's actually a small finite state machine that checks the reorder buffer and checks if the head of
+
+00:54:58.213 --> 00:55:03.366 
+the reorder buffer, meaning the oldest instruction reorder buffer is ready, meaning has written its
+
+00:55:03.366 --> 00:55:08.260 
+result and it hasn't caused any exception and there are no interrupts to handle at this point.
+
+00:55:08.700 --> 00:55:14.319 
+At that point, that finite state machine moves the result from the reorder buffer into the register
+
+00:55:14.319 --> 00:55:19.939 
+file and book updates the bookkeeping information such that the oldest instruction pointer moves to
+
+00:55:19.939 --> 00:55:22.380 
+the next instruction in the circular queue.
+
+00:55:23.220 --> 00:55:24.300 
+Hopefully that makes sense, right?
+
+00:55:25.100 --> 00:55:30.220 
+Basically, you need a separate finite state machine to manage what's going on in the reorder buffer.
+
+00:55:30.980 --> 00:55:32.980 
+But this fixes our problem.
+
+00:55:34.180 --> 00:55:34.860 
+Sounds good, right?
+
+00:55:35.780 --> 00:55:36.140 
+Beautiful.
+
+00:55:36.140 --> 00:55:40.860 
+We added, we threw more hardware at the problem to make sure the von Neumann model is satisfied.
+
+00:55:42.180 --> 00:55:45.540 
+Now, unfortunately, well, there are some other issues.
+
+00:55:46.540 --> 00:55:52.304 
+Basically, yes, we have put the result somewhere, but the question is what if a later instruction
+
+00:55:52.304 --> 00:55:54.860 
+needs a value that's in the reorder buffer?
+
+00:55:55.260 --> 00:55:57.060 
+In our example, everything was independent.
+
+00:55:57.820 --> 00:56:05.140 
+But what if this instruction, for example to execute needed the value of this instruction?
+
+00:56:07.580 --> 00:56:11.340 
+It's cannot get it from the register file because the register file is not written yet.
+
+00:56:12.100 --> 00:56:13.220 
+But the value is somewhere.
+
+00:56:13.220 --> 00:56:16.700 
+It's cannot get it from the bypass or forwarding pass because the previous instruction is done.
+
+00:56:19.540 --> 00:56:21.940 
+The value is there in the reorder buffer, right?
+
+00:56:23.020 --> 00:56:28.302 
+You can get it, but you need to do some more work to get that value and that's what we're going to
+
+00:56:28.302 --> 00:56:29.380 
+deal with right now.
+
+00:56:29.380 --> 00:56:33.940 
+And this is going to be really important for building auto board execution machines later on.
+
+00:56:35.740 --> 00:56:36.740 
+Hopefully that makes sense, right?
+
+00:56:37.740 --> 00:56:38.020 
+OK.
+
+00:56:38.300 --> 00:56:39.980 
+So one option is not get the value.
+
+00:56:40.780 --> 00:56:47.303 
+The value is present over here and you want to read it at this point, but it's not in the register
+
+00:56:47.303 --> 00:56:49.500 
+file, it's in the reorder buffer.
+
+00:56:49.500 --> 00:56:50.940 
+It's not in the bypass pass, etcetera.
+
+00:56:51.460 --> 00:56:52.300 
+Stall the pipeline.
+
+00:56:53.100 --> 00:56:55.300 
+And we've seen that that's a bad idea in the past, right?
+
+00:56:55.500 --> 00:57:02.597 
+Storing the pipeline, even though the values produced gets rid of a lot of the benefits of
+
+00:57:02.597 --> 00:57:03.780 
+pipelining, OK?
+
+00:57:05.460 --> 00:57:09.784 
+The better option is read the value from the reorder buffer because the value is there, you just
+
+00:57:09.784 --> 00:57:10.460 
+need to get it.
+
+00:57:11.380 --> 00:57:14.140 
+Now the problem becomes how do you get it?
+
+00:57:16.220 --> 00:57:16.420 
+OK.
+
+00:57:18.180 --> 00:57:21.300 
+So essentially how do we access the reorder buffer, right?
+
+00:57:22.340 --> 00:57:28.164 
+More generally, a register value that you're trying to read can be in the register file, can be in
+
+00:57:28.164 --> 00:57:33.809 
+the reorder buffer or can come from the bypass pass if the instruction is still in the pipeline
+
+00:57:33.809 --> 00:57:34.820 
+executing, right?
+
+00:57:35.300 --> 00:57:37.620 
+So all of these can happen.
+
+00:57:37.620 --> 00:57:43.340 
+And you saw you saw the Maxis to enable data coming from the register file versus the bypass pass.
+
+00:57:43.340 --> 00:57:48.058 
+Now we're going to add the reorder buffer also here as a potential place where the register value
+
+00:57:48.058 --> 00:57:51.220 
+that you need, source register value that you need can come from.
+
+00:57:51.940 --> 00:57:53.380 
+But this is going to complicate our life.
+
+00:57:54.300 --> 00:57:56.220 
+It's not as easy as the register file.
+
+00:57:56.700 --> 00:58:01.352 
+And we're going to talk about this because it's a very important concept in actually how to design
+
+00:58:01.352 --> 00:58:01.780 
+memories.
+
+00:58:03.020 --> 00:58:09.586 
+OK, so register file, we have seen this, you have some number of registers, R0 through R7, for
+
+00:58:09.586 --> 00:58:12.660 
+example, right in LC3R0 through R31 in MIPS.
+
+00:58:14.060 --> 00:58:15.740 
+This is called random access memory.
+
+00:58:17.060 --> 00:58:21.220 
+You index the register file with the register ID and that's your address, right?
+
+00:58:21.260 --> 00:58:23.260 
+We've seen we've built these memories before.
+
+00:58:23.420 --> 00:58:26.620 
+All of the memories that we've built so far are random access memories, right?
+
+00:58:27.740 --> 00:58:28.620 
+Relatively easy.
+
+00:58:29.620 --> 00:58:31.380 
+Register ID is the address of an entry.
+
+00:58:32.220 --> 00:58:37.780 
+Now, reorder buffer is a different kind of structure, right?
+
+00:58:38.820 --> 00:58:43.500 
+You want to read register 7, but reorder buffer is not organised that way.
+
+00:58:44.580 --> 00:58:49.500 
+How do you figure out where is register 7 in the reorder buffer, assuming that it's there?
+
+00:58:49.500 --> 00:58:51.180 
+Well, you need to search it basically, right?
+
+00:58:52.060 --> 00:58:54.020 
+You don't know whether it's there or not yet.
+
+00:58:54.020 --> 00:58:59.153 
+But you need to have a mechanism to index the reorder buffer somehow to get the value of register
+
+00:58:59.153 --> 00:59:00.900 
+seven that you're trying to read.
+
+00:59:02.100 --> 00:59:07.020 
+But you cannot index reorder buffer with just the address of the register register ID, right?
+
+00:59:07.020 --> 00:59:10.420 
+Because register 7 means nothing for the reorder buffer.
+
+00:59:10.420 --> 00:59:11.940 
+As I said, it's a circular buffer.
+
+00:59:12.620 --> 00:59:13.660 
+It has actually.
+
+00:59:13.820 --> 00:59:15.180 
+Let's go back to how it looks.
+
+00:59:16.740 --> 00:59:18.460 
+It has 16 entries.
+
+00:59:19.300 --> 00:59:22.660 
+Could be more than the number of registers, less than the number of registers.
+
+00:59:22.660 --> 00:59:24.260 
+Has nothing to do with the number of registers.
+
+00:59:25.100 --> 00:59:26.900 
+Entry ID has nothing to.
+
+00:59:26.980 --> 00:59:28.380 
+To do with the number of registers, right?
+
+00:59:29.220 --> 00:59:33.180 
+So the address random access address is nothing to do with the registers.
+
+00:59:33.180 --> 00:59:35.460 
+The register ID is actually inside the reorder buffer.
+
+00:59:35.980 --> 00:59:37.580 
+You can see that destination register ID.
+
+00:59:38.580 --> 00:59:41.340 
+There could be multiple instructions writing to register 7.
+
+00:59:41.340 --> 00:59:41.820 
+Let's say.
+
+00:59:41.820 --> 00:59:46.504 
+We will see that especially in the out of order execution lecture and you need to find which entry
+
+00:59:46.504 --> 00:59:47.700 
+is writing to register 7.
+
+00:59:48.620 --> 00:59:54.730 
+So in order to find out whether someone is writing to register 7 and whether that someone has
+
+00:59:54.730 --> 01:00:00.775 
+produced someone, meaning some instruction, whether that instruction has produced the value,
+
+01:00:00.775 --> 01:00:06.820 
+meaning that bit is set, you need to search the reorder buffer in a content addressable way.
+
+01:00:08.060 --> 01:00:10.100 
+So this is the notion of content reducible memory.
+
+01:00:10.620 --> 01:00:17.434 
+You essentially search every single entry with the ID of the register and ID of the register is part
+
+01:00:17.434 --> 01:00:19.820 
+of the content of the entry, right?
+
+01:00:21.540 --> 01:00:22.260 
+Does that make sense?
+
+01:00:22.980 --> 01:00:23.700 
+So that's the idea.
+
+01:00:23.700 --> 01:00:25.580 
+Basically, we're going to build a content addressable memory.
+
+01:00:25.580 --> 01:00:28.020 
+How many people have seen content addressable memories before?
+
+01:00:28.420 --> 01:00:31.060 
+OK, a few people, maybe less than a few.
+
+01:00:31.980 --> 01:00:32.460 
+That's good.
+
+01:00:32.900 --> 01:00:37.780 
+Now you're going to learn this is implementing essentially many, many processors.
+
+01:00:37.780 --> 01:00:40.700 
+It's an expensive type of memory and we're going to get rid of it.
+
+01:00:41.580 --> 01:00:47.140 
+But it's important for you to learn it first to understand why we want to get rid of it.
+
+01:00:47.500 --> 01:00:50.420 
+You cannot always get rid of it, but in this particular case, we're going to get rid of it.
+
+01:00:50.700 --> 01:00:52.780 
+But we're going to have a lot of content, addressable memories.
+
+01:00:53.020 --> 01:00:56.620 
+When we build an out of order execution machine, the same concept will come back.
+
+01:00:57.660 --> 01:01:03.780 
+OK, so we're going to do this example where we run a magical program.
+
+01:01:04.060 --> 01:01:06.300 
+So I'm going to use that in a little bit.
+
+01:01:07.900 --> 01:01:09.260 
+You have a register file.
+
+01:01:09.780 --> 01:01:11.580 
+I'm going to let me set up the stage over here.
+
+01:01:12.020 --> 01:01:16.405 
+You have a register file and you have a value associated with the register file, and you address the
+
+01:01:16.405 --> 01:01:17.940 
+register file with the register ID.
+
+01:01:18.300 --> 01:01:23.783 
+We're going to add a valid bit to the register file also saying that this value in the register is
+
+01:01:23.783 --> 01:01:29.100 
+correct and you can trust it and you can read it, meaning that is the real value that you want.
+
+01:01:30.100 --> 01:01:31.940 
+It's not going to be updated by someone else.
+
+01:01:32.140 --> 01:01:34.740 
+OK, reorder buffer.
+
+01:01:34.740 --> 01:01:39.088 
+We're going to look at anti valid, a destination register ID, destination register value and whether
+
+01:01:39.088 --> 01:01:41.220 
+the destination register has been written, right?
+
+01:01:41.940 --> 01:01:45.140 
+So we're going to execute some code with some assumptions.
+
+01:01:45.220 --> 01:01:53.374 
+We're going to do and we're going to see for example, how this how this multiply can look for a
+
+01:01:53.374 --> 01:01:56.980 
+value that's in the reorder buffer, right?
+
+01:01:58.100 --> 01:01:58.740 
+Can you switch?
+
+01:01:58.740 --> 01:02:00.780 
+Right now I don't have the animation.
+
+01:02:00.780 --> 01:02:05.380 
+If someone wants to do this animation, we can pay you to do a nice animation.
+
+01:02:09.740 --> 01:02:10.660 
+You have a better animation.
+
+01:02:10.660 --> 01:02:11.860 
+The out of order execution lecture.
+
+01:02:11.860 --> 01:02:13.020 
+But we forgot to do this one.
+
+01:02:14.580 --> 01:02:15.540 
+Although this is also nice.
+
+01:02:16.220 --> 01:02:18.460 
+I always say something different when I write this.
+
+01:02:21.620 --> 01:02:22.940 
+OK, before I guess maybe.
+
+01:02:23.700 --> 01:02:23.900 
+Yeah.
+
+01:02:25.340 --> 01:02:25.780 
+Is it good?
+
+01:02:26.100 --> 01:02:26.460 
+Oh, OK.
+
+01:02:26.860 --> 01:02:27.540 
+Can you guys see it?
+
+01:02:28.660 --> 01:02:29.180 
+Looks nice.
+
+01:02:31.500 --> 01:02:34.780 
+OK, so before I go through the example, I should say that.
+
+01:02:36.060 --> 01:02:37.540 
+So register ID, right?
+
+01:02:37.780 --> 01:02:39.220 
+Let's say register ID is 3.
+
+01:02:40.780 --> 01:02:41.500 
+You can see it, right?
+
+01:02:41.940 --> 01:02:46.980 
+If it's three, then you directly index using an address decoder and you get the value out.
+
+01:02:47.420 --> 01:02:47.980 
+That's easy.
+
+01:02:48.740 --> 01:02:55.382 
+Now, if our register ID is 3, how do you actually figure out whether register ID 3 exists in the
+
+01:02:55.382 --> 01:02:56.420 
+reorder buffer?
+
+01:02:57.340 --> 01:03:01.462 
+The hardware structure for this is not a decoder in a Max, which I'm not going to draw over here,
+
+01:03:01.462 --> 01:03:02.780 
+which was random access memory.
+
+01:03:03.180 --> 01:03:06.980 
+The hardware structure for this is you're going to take the destination register ID.
+
+01:03:06.980 --> 01:03:12.620 
+Basically, you're going to check whether destination register ID matches register ID 3.
+
+01:03:14.300 --> 01:03:17.060 
+It's an equality checker, whether they're equal.
+
+01:03:17.060 --> 01:03:18.620 
+And you've seen those equality checkers, right?
+
+01:03:18.900 --> 01:03:24.820 
+X NOR gates and for every entry you have an equality checker.
+
+01:03:26.620 --> 01:03:28.060 
+So register ID is input.
+
+01:03:28.220 --> 01:03:29.100 
+Let's assume it's three.
+
+01:03:29.860 --> 01:03:33.500 
+You check and then whether it's true or false, right?
+
+01:03:34.180 --> 01:03:35.700 
+And then another one true or false.
+
+01:03:36.220 --> 01:03:42.860 
+I could keep doing this forever and we can waste our nice lecture time true or false.
+
+01:03:42.860 --> 01:03:44.420 
+But you can see the complexity now, right?
+
+01:03:45.300 --> 01:03:50.488 
+So I'm going to do a few more times so that you can appreciate the complexity of this content
+
+01:03:50.488 --> 01:03:51.660 
+addressable memory...
+
+01:03:51.660 --> 01:03:53.420 
+dot dot you have 16 of these.
+
+01:03:53.540 --> 01:03:54.780 
+Let me do it for the next one.
+
+01:03:54.780 --> 01:03:57.580 
+Also, why not...
+
+01:03:57.580 --> 01:04:00.980 
+dot to be complete true or false?
+
+01:04:01.540 --> 01:04:06.340 
+OK, so basically you need to, this is the content of this full memory.
+
+01:04:06.340 --> 01:04:11.086 
+You're searching for a register ID and you need to check whether that register ID matches a register
+
+01:04:11.086 --> 01:04:12.700 
+ID that's stored in the structure.
+
+01:04:13.140 --> 01:04:18.300 
+So you need 16 comparators, equality checkers, actually comparators, that's actually the same thing.
+
+01:04:20.540 --> 01:04:23.340 
+And this comparator size grows with the number of entries you have.
+
+01:04:23.900 --> 01:04:26.340 
+Number of linearly grows with the number of entries you have.
+
+01:04:26.980 --> 01:04:32.620 
+Also grows the hardware complex grows with the idea of the destination register you have right now.
+
+01:04:32.620 --> 01:04:36.820 
+It's not that easy actually, as we will see in the execution of this program.
+
+01:04:37.620 --> 01:04:39.300 
+You don't want all the values, right?
+
+01:04:39.820 --> 01:04:43.860 
+What if there are, let's say, 4 entries that match register 3?
+
+01:04:46.540 --> 01:04:47.420 
+Which one do you want?
+
+01:04:47.660 --> 01:04:52.700 
+Clearly you don't want all the values that are written by all of the instruction.
+
+01:04:52.700 --> 01:05:00.061 
+You want the youngest instruction, meaning the instruction that wrote to register 3 just before you,
+
+01:05:00.061 --> 01:05:01.460 
+not the older ones.
+
+01:05:01.980 --> 01:05:06.180 
+So it's not just a search that looks like this, it's also an age based search.
+
+01:05:06.460 --> 01:05:10.861 
+You actually need to compare the ages, which I'm not going to draw over there, but it's actually a
+
+01:05:10.861 --> 01:05:11.940 
+more complicated search.
+
+01:05:12.900 --> 01:05:13.380 
+Not that.
+
+01:05:13.380 --> 01:05:15.900 
+Also you need to also keep track of the pointers, right?
+
+01:05:16.220 --> 01:05:20.020 
+You want only things that are here, right?
+
+01:05:20.820 --> 01:05:23.860 
+You don't care about things that are not inside the reorder buffer.
+
+01:05:24.460 --> 01:05:26.380 
+They may be values, but you don't want to match them, right?
+
+01:05:27.060 --> 01:05:33.253 
+So it's a content adjustable search that's age based that needs to be applied to all the
+
+01:05:33.253 --> 01:05:38.180 
+instructions that are between oldest and youngest in a circular queue.
+
+01:05:38.980 --> 01:05:44.265 
+This queue is circular, meaning at some point oldest may become this and the oldest, youngest may
+
+01:05:44.265 --> 01:05:45.900 
+stay here, for example, right?
+
+01:05:45.900 --> 01:05:50.356 
+And then the queue is not basically, this is the oldest instruction and these are the sequential
+
+01:05:50.356 --> 01:05:52.260 
+instructions that come after that, right?
+
+01:05:53.580 --> 01:05:56.220 
+So this is the complexity of the hardware, and we're going to get rid of that.
+
+01:05:56.220 --> 01:06:01.500 
+But let me go over this example a little bit to see what we do.
+
+01:06:02.180 --> 01:06:07.860 
+So initially, let me actually give more detail on why this matters.
+
+01:06:07.860 --> 01:06:10.660 
+So initially, all of the registers are valid.
+
+01:06:10.900 --> 01:06:12.260 
+Well, I started with the wrong value.
+
+01:06:12.340 --> 01:06:12.980 
+Let me fix it.
+
+01:06:15.380 --> 01:06:16.300 
+Redundancy helps.
+
+01:06:16.820 --> 01:06:18.260 
+Error correction, as you can see, right?
+
+01:06:18.900 --> 01:06:21.460 
+That's a very generic method for dependable.
+
+01:06:22.260 --> 01:06:25.300 
+OK, Register 0 is valid initially.
+
+01:06:25.300 --> 01:06:26.580 
+All of the registers are valid.
+
+01:06:26.700 --> 01:06:28.060 
+That's at the beginning of the program.
+
+01:06:28.540 --> 01:06:32.500 
+Reorder buffer is empty, meaning all the Stein youngest instruction pointers are the same.
+
+01:06:33.260 --> 01:06:33.900 
+Let's do that.
+
+01:06:34.060 --> 01:06:34.460 
+Why not?
+
+01:06:34.460 --> 01:06:34.780 
+Right?
+
+01:06:35.260 --> 01:06:36.620 
+And there's nothing in the reorder buffer.
+
+01:06:36.620 --> 01:06:38.100 
+And all of these are 0000.
+
+01:06:38.100 --> 01:06:39.540 
+I'm not going to write the zeros over there.
+
+01:06:40.460 --> 01:06:42.860 
+If you have other pins, that could be useful also at some point.
+
+01:06:43.340 --> 01:06:44.660 
+Yeah, we do have other pins.
+
+01:06:45.340 --> 01:06:48.980 
+And let's assume that register file looks like the 0123.
+
+01:06:48.980 --> 01:06:52.860 
+These are the values 4I cannot write six.
+
+01:06:53.740 --> 01:06:55.580 
+Hopefully AI can write for me at some point.
+
+01:06:56.340 --> 01:07:03.375 
+OK, so basically let's assume that we're fetched and we're decoding this instruction, Multiply R1R
+
+01:07:03.375 --> 01:07:04.740 
+2R3 decode process.
+
+01:07:04.740 --> 01:07:06.980 
+What it does is it reads the source registers, right?
+
+01:07:07.220 --> 01:07:08.380 
+What do you do?
+
+01:07:08.420 --> 01:07:11.420 
+So one source registers R1R1 is valid.
+
+01:07:11.420 --> 01:07:12.740 
+So the value here is good.
+
+01:07:13.380 --> 01:07:17.700 
+So multiply is sourcing one that's good.
+
+01:07:17.700 --> 01:07:18.620 
+So this will be 1.
+
+01:07:18.780 --> 01:07:19.940 
+Multiply reads the register.
+
+01:07:19.940 --> 01:07:20.980 
+It's going to multiply later on.
+
+01:07:22.020 --> 01:07:27.940 
+It checks this one R2 is valid also, that's good, and reads 2.
+
+01:07:28.140 --> 01:07:30.220 
+The value over there is 2, so this is 2.
+
+01:07:30.220 --> 01:07:33.140 
+So multiply can execute because its values are ready.
+
+01:07:33.820 --> 01:07:34.700 
+But we're not done yet.
+
+01:07:35.220 --> 01:07:37.020 
+We just fetched and decoded multiply.
+
+01:07:37.180 --> 01:07:38.900 
+We got the source registers.
+
+01:07:38.940 --> 01:07:43.458 
+We need to deal with the destination register and also the reorder buffer, right destination
+
+01:07:43.458 --> 01:07:43.900 
+register.
+
+01:07:44.100 --> 01:07:46.100 
+Now multiply did not produce its result yet.
+
+01:07:46.100 --> 01:07:51.520 
+So what it does at the decode stage is it sets the valid bit of the R3, which is destination
+
+01:07:51.520 --> 01:07:54.820 
+register to 0, meaning I'm going to write to this value.
+
+01:07:54.820 --> 01:07:59.620 
+So it's not going to be 3 anymore, or you'll be lucky if it's three anymore and it's not going to be
+
+01:07:59.620 --> 01:08:00.820 
+3 based on these numbers.
+
+01:08:01.860 --> 01:08:04.340 
+Basically, I'm not going to it's not going to be 3 anymore.
+
+01:08:04.340 --> 01:08:05.460 
+Don't trust this result.
+
+01:08:05.460 --> 01:08:07.100 
+This result is going to be somewhere else.
+
+01:08:07.300 --> 01:08:11.700 
+OK And Multiply also allocates A reorder buffer entry entry 0.
+
+01:08:11.700 --> 01:08:16.500 
+On this particular case, it sets the entry 0 valve bit.
+
+01:08:16.580 --> 01:08:20.500 
+It sets destination register ID to three destination register value.
+
+01:08:20.500 --> 01:08:21.140 
+We don't know yet.
+
+01:08:21.140 --> 01:08:23.060 
+Destination register is not written yet.
+
+01:08:23.420 --> 01:08:23.700 
+Zero.
+
+01:08:23.740 --> 01:08:24.220 
+OK.
+
+01:08:25.540 --> 01:08:26.900 
+And then there are some other things over there.
+
+01:08:26.900 --> 01:08:31.462 
+And then youngest instruction pointer is incremented so that the next instructor gets allocated to
+
+01:08:31.462 --> 01:08:32.300 
+the next location.
+
+01:08:32.540 --> 01:08:38.420 
+OK, So that's what happens in the decode stage for this multiply sounds good right?
+
+01:08:39.940 --> 01:08:41.820 
+Now this is OK, interesting.
+
+01:08:41.820 --> 01:08:43.620 
+But what happens here is more interesting.
+
+01:08:45.220 --> 01:08:48.420 
+So the second multiply the source registers R3.
+
+01:08:50.140 --> 01:08:53.940 
+The source register is R3RT is not trusted, right?
+
+01:08:55.260 --> 01:08:56.460 
+So R3 is not here.
+
+01:08:56.620 --> 01:08:58.620 
+So I cannot trust this three value.
+
+01:08:59.060 --> 01:09:00.060 
+So what do I do with that?
+
+01:09:00.100 --> 01:09:00.780 
+Let's ignore that.
+
+01:09:00.780 --> 01:09:02.180 
+Let's do the R4R4 is easy.
+
+01:09:02.180 --> 01:09:03.420 
+R4 is trusted over here.
+
+01:09:03.900 --> 01:09:05.260 
+So I get the value 4 over here.
+
+01:09:05.260 --> 01:09:10.900 
+Right now R3 is not here and it's not in the bypass path.
+
+01:09:10.900 --> 01:09:12.700 
+Let's say this.
+
+01:09:12.940 --> 01:09:15.420 
+This multiply needs to search the reorder buffer.
+
+01:09:16.140 --> 01:09:20.969 
+And let's assume for the sake of this that at some point I'll have a better example that there's a
+
+01:09:20.969 --> 01:09:22.300 
+huge distance between them.
+
+01:09:22.500 --> 01:09:25.500 
+This multiply may have produced its result for example OK.
+
+01:09:28.460 --> 01:09:30.340 
+I'm going to violate something, but it's OK, I guess.
+
+01:09:30.540 --> 01:09:33.220 
+This multiply gets allocated to this entry over here.
+
+01:09:33.220 --> 01:09:36.100 
+The second one, it's writing to R11.
+
+01:09:36.580 --> 01:09:37.780 
+The value is not ready yet.
+
+01:09:38.180 --> 01:09:38.500 
+Yeah.
+
+01:09:38.860 --> 01:09:46.460 
+And you increment the youngest instruction counter now to check whether R3 is in the reorder buffer.
+
+01:09:46.980 --> 01:09:53.260 
+This R3 gets searched everywhere, right?
+
+01:09:54.100 --> 01:09:57.140 
+With the structure that I built over here that I'm not going to be able to get.
+
+01:09:57.860 --> 01:10:01.340 
+So this R3 gets input and every entry is searched.
+
+01:10:01.940 --> 01:10:04.780 
+And guess what?
+
+01:10:04.780 --> 01:10:07.860 
+You get a match in entry 0, right?
+
+01:10:08.540 --> 01:10:09.380 
+This becomes true.
+
+01:10:10.020 --> 01:10:13.780 
+This is your own entry, so you can search for it fine, but you don't get a match.
+
+01:10:14.580 --> 01:10:19.676 
+You should not get a match because it should be the older instruction and you should discard
+
+01:10:19.676 --> 01:10:25.161 
+whatever results are coming from the comparators over here because all of these entries have 0 eval
+
+01:10:25.161 --> 01:10:26.380 
+bits over here, right?
+
+01:10:27.140 --> 01:10:34.246 
+So this multiply should get its results from this entry when it's produced, but it's not produced
+
+01:10:34.246 --> 01:10:34.540 
+yet.
+
+01:10:35.060 --> 01:10:39.620 
+OK, because it's not produced yet, this multiply is going to stall the pipeline.
+
+01:10:40.780 --> 01:10:45.820 
+Now, in the next lecture, you will see methods where this multiply is going to be moved somewhere.
+
+01:10:46.620 --> 01:10:51.020 
+It's going to wait over there for out of order execution, and then the next add will come.
+
+01:10:52.340 --> 01:10:53.380 
+Let's assume that it's there.
+
+01:10:53.540 --> 01:10:53.940 
+Fine.
+
+01:10:54.220 --> 01:10:56.500 
+The purpose is to demonstrate the reorder buffer right now.
+
+01:10:58.260 --> 01:11:01.020 
+Oh, we forgot something really important with this multiply.
+
+01:11:01.260 --> 01:11:06.780 
+It sets our 11, well bits to 0, right?
+
+01:11:07.500 --> 01:11:10.620 
+And basically this 11 is kind of useless at that point.
+
+01:11:11.580 --> 01:11:16.485 
+OK, so when you decode the instruction, you set the valve between the register file 0A register file
+
+01:11:16.485 --> 01:11:21.195 
+for the destination register zero, you allocate an entry in the reorder buffer and basically you
+
+01:11:21.195 --> 01:11:24.580 
+set up the reorder buffer with the destination register ID, etcetera.
+
+01:11:24.780 --> 01:11:28.140 
+OK, now this add R5 and R6R3.
+
+01:11:28.140 --> 01:11:30.860 
+Let's take a look at it because there's something interesting that's going to happen over here.
+
+01:11:32.140 --> 01:11:32.980 
+What should I use?
+
+01:11:33.300 --> 01:11:33.700 
+Purple.
+
+01:11:33.780 --> 01:11:34.140 
+Why not?
+
+01:11:34.780 --> 01:11:35.580 
+This add is purple.
+
+01:11:35.580 --> 01:11:38.620 
+I don't know why I used a green for the other multiplies.
+
+01:11:39.140 --> 01:11:40.260 
+Why should I use different colours?
+
+01:11:40.700 --> 01:11:44.460 
+OK, this add R5R6R5 is valid.
+
+01:11:44.460 --> 01:11:44.980 
+That's good.
+
+01:11:44.980 --> 01:11:45.860 
+R6 is valid.
+
+01:11:45.860 --> 01:11:47.580 
+So it's going to add 5 + 6.
+
+01:11:47.860 --> 01:11:48.420 
+That's good.
+
+01:11:48.980 --> 01:11:51.780 
+It's going to write to R3R3.
+
+01:11:52.340 --> 01:11:53.420 
+It's not going to read.
+
+01:11:53.420 --> 01:11:54.300 
+It's already invalid.
+
+01:11:54.300 --> 01:12:00.060 
+So it keeps the invalid bit over there as you, but it's going to go into entry two over here.
+
+01:12:00.620 --> 01:12:02.060 
+It's going to write to R3 again.
+
+01:12:04.740 --> 01:12:08.340 
+OK, And then you're going to increment the youngest instruction pointer.
+
+01:12:08.820 --> 01:12:13.260 
+OK, now you know, you see why you get multiple R threes over here, right?
+
+01:12:15.660 --> 01:12:16.660 
+This other ad.
+
+01:12:17.260 --> 01:12:18.020 
+OK, let's do.
+
+01:12:18.420 --> 01:12:19.420 
+Let's do that ad also.
+
+01:12:19.500 --> 01:12:22.780 
+OK, I forgot something with the don't forget, don't ever forget updating that.
+
+01:12:22.820 --> 01:12:23.260 
+Oh, we did.
+
+01:12:23.260 --> 01:12:24.740 
+We did update, so it's also zero.
+
+01:12:24.740 --> 01:12:31.180 
+OK, so now this next ad comes, this next ad is doing something interesting.
+
+01:12:31.180 --> 01:12:35.020 
+For the purpose of this example, it's reading from R3, right?
+
+01:12:35.500 --> 01:12:36.540 
+Let's ignore that for now.
+
+01:12:37.140 --> 01:12:39.660 
+It's reads from R8, so R8 is easy.
+
+01:12:40.260 --> 01:12:42.260 
+What's going on with these pencils, pens.
+
+01:12:43.020 --> 01:12:47.700 
+Maybe we're stuck with the green one, I guess.
+
+01:12:48.060 --> 01:12:49.740 
+OK, you need to push them a bit.
+
+01:12:50.660 --> 01:12:58.060 
+OK, 18 so this reads 8R12, it's going to write to R12.
+
+01:12:59.700 --> 01:13:01.780 
+It sets the valid of R12 to 0.
+
+01:13:02.020 --> 01:13:03.060 
+Hopefully you can see it.
+
+01:13:04.980 --> 01:13:12.420 
+And when it reads R3, it knows that R3 is not valid over here.
+
+01:13:12.420 --> 01:13:13.380 
+This is not trustworthy.
+
+01:13:13.460 --> 01:13:15.380 
+But now it needs to do search again, right?
+
+01:13:16.460 --> 01:13:17.620 
+And what is that search?
+
+01:13:17.940 --> 01:13:22.700 
+That search will need to again go back over here.
+
+01:13:22.940 --> 01:13:28.380 
+Maybe I'll replicate this over here like this is 3, this is 3, this is 11.
+
+01:13:29.060 --> 01:13:34.619 
+Basically, both of these will match, but you should get the result that's going to be written over
+
+01:13:34.619 --> 01:13:35.300 
+here, right?
+
+01:13:35.620 --> 01:13:43.877 
+Not this result, meaning this instruction should get the value produced by this ad and not this
+
+01:13:43.877 --> 01:13:44.660 
+multiply.
+
+01:13:46.260 --> 01:13:51.494 
+So we have an interesting thing over here, which is by searching the reorder buffer, you can figure
+
+01:13:51.494 --> 01:13:56.359 
+out which instruction produced your result because we have enough information in the reorder
+
+01:13:56.359 --> 01:13:57.100 
+buffer, right?
+
+01:13:57.820 --> 01:14:02.100 
+This is, this is called really tag search and we will see that even more detail later on.
+
+01:14:02.220 --> 01:14:06.140 
+Yes, in the version where it just installed, Yes.
+
+01:14:06.140 --> 01:14:10.740 
+How do you wake up the the right one?
+
+01:14:10.740 --> 01:14:11.740 
+How do you wake up which is which?
+
+01:14:11.740 --> 01:14:12.580 
+Which one is the right one?
+
+01:14:12.580 --> 01:14:15.380 
+What's the first one?
+
+01:14:15.380 --> 01:14:17.140 
+Yeah, we're going to talk about that next lecture.
+
+01:14:17.180 --> 01:14:17.540 
+Yes.
+
+01:14:18.020 --> 01:14:21.340 
+I just want to show the operation of how you search in the reorder buffer right now.
+
+01:14:21.540 --> 01:14:24.420 
+Wake up will come after the break.
+
+01:14:25.140 --> 01:14:26.740 
+There will be specialised logic for that.
+
+01:14:27.220 --> 01:14:28.860 
+And we're going to complete the whole picture.
+
+01:14:30.180 --> 01:14:50.140 
+Very good question basically, yes, very good.
+
+01:14:51.580 --> 01:14:57.808 
+So you have, you have a very good point basically whether an instruction we're going to fix that
+
+01:14:57.808 --> 01:14:59.820 
+problem also keep that for now.
+
+01:15:01.260 --> 01:15:02.940 
+So I didn't really build the full picture.
+
+01:15:02.940 --> 01:15:09.220 
+The goal was to really show the I'm going to fix that problem in a little bit.
+
+01:15:09.220 --> 01:15:10.860 
+OK, bear with me.
+
+01:15:11.380 --> 01:15:13.460 
+But very good, you have identified something.
+
+01:15:13.860 --> 01:15:20.697 
+Basically, if this instruction now finishes, it should not write this value over here because that
+
+01:15:20.697 --> 01:15:22.860 
+would not be the correct value.
+
+01:15:23.180 --> 01:15:28.500 
+OK, OK, very good.
+
+01:15:28.500 --> 01:15:29.260 
+You guys are thinking.
+
+01:15:29.340 --> 01:15:29.860 
+I like it.
+
+01:15:30.980 --> 01:15:37.920 
+So the purpose of this example was to demonstrate that when you actually decode the instructions you
+
+01:15:37.920 --> 01:15:43.820 
+need to read from the register file and the valid values, you can get invalid values.
+
+01:15:44.100 --> 01:15:45.940 
+You have to consult something else, right?
+
+01:15:49.060 --> 01:15:52.897 
+But when the reorder buffer finishes, there should be something else over here that decides whether
+
+01:15:52.897 --> 01:15:55.300 
+or not you write, and we're going to see that in a little bit.
+
+01:15:55.300 --> 01:15:56.980 
+OK, that sounds good.
+
+01:15:58.100 --> 01:15:59.780 
+OK, we're going to, we're going to fix that right away.
+
+01:16:00.020 --> 01:16:00.620 
+OK, go ahead.
+
+01:16:04.580 --> 01:16:07.500 
+Yeah, OK, forget about that for now.
+
+01:16:07.500 --> 01:16:08.660 
+We're going to get to that.
+
+01:16:08.940 --> 01:16:13.576 
+But yes, it could lengthen your clock cycle, all of these operations, but you could also break it
+
+01:16:13.576 --> 01:16:14.580 
+into multiple stages.
+
+01:16:15.220 --> 01:16:19.740 
+So all of the decodes can happen in one clock cycle depending on your clock cycle.
+
+01:16:20.740 --> 01:16:23.660 
+Yeah, we're going to talk about performance analysis later on a little bit more.
+
+01:16:24.260 --> 01:16:24.780 
+Good questions.
+
+01:16:24.780 --> 01:16:26.020 
+OK, maybe you can switch right now.
+
+01:16:26.900 --> 01:16:31.059 
+I'm going to fix the problem that you mentioned, and also I'm going to get rid of this content
+
+01:16:31.059 --> 01:16:31.900 
+addressable memory.
+
+01:16:33.060 --> 01:16:33.420 
+Maybe.
+
+01:16:34.260 --> 01:16:37.300 
+OK, maybe, I guess she switched already.
+
+01:16:38.140 --> 01:16:40.060 
+OK, maybe, maybe I'll handle it in the other one.
+
+01:16:40.100 --> 01:16:41.020 
+I'll handle it in the other one.
+
+01:16:41.020 --> 01:16:41.380 
+Go ahead.
+
+01:16:43.340 --> 01:16:46.757 
+I wanted to introduce concept, but let's fix the problem that you have because it's going to bug
+
+01:16:46.757 --> 01:16:46.900 
+you.
+
+01:16:54.110 --> 01:16:56.030 
+You're going to switch again, so maybe you can stay here.
+
+01:17:00.980 --> 01:17:05.100 
+OK, so we handled this so simplifying reorder buffer access.
+
+01:17:05.140 --> 01:17:09.820 
+The the problem is reorder buffer access is very complicated, right?
+
+01:17:10.300 --> 01:17:11.820 
+How do we simplify this access?
+
+01:17:12.540 --> 01:17:18.848 
+We want to turn from a content addressable memory to random access memory for the purpose of
+
+01:17:18.848 --> 01:17:20.220 
+accessing registers.
+
+01:17:21.460 --> 01:17:22.300 
+How do we do that?
+
+01:17:22.860 --> 01:17:28.728 
+Well, using direction basically a lot of problems can in in computing can be solved within
+
+01:17:28.728 --> 01:17:29.380 
+direction.
+
+01:17:29.380 --> 01:17:35.972 
+If you remember that quote, the idea is to access the register file first, check if the register is
+
+01:17:35.972 --> 01:17:40.500 
+valid and then access reorder buffer Next, don't do it concurrently.
+
+01:17:40.900 --> 01:17:48.140 
+Right now reorder buffer does not need to be content reducible, but you need to add some metadata.
+
+01:17:49.020 --> 01:17:51.300 
+That metadata is essentially what we will call A tag.
+
+01:17:52.020 --> 01:17:56.607 
+If the register is not valid, the register file stores the ID of the reorder buffer entry that
+
+01:17:56.607 --> 01:17:59.340 
+contains or that will contain the value of the register.
+
+01:18:00.620 --> 01:18:02.980 
+So that's called the tag or reorder buffer entry ID.
+
+01:18:04.980 --> 01:18:10.085 
+This is going to solve your problem because now the tag contains the reorder buffer entry ID that's
+
+01:18:10.085 --> 01:18:15.140 
+going to write to the register, and only that reorder buffer entry ID will write to that register.
+
+01:18:15.540 --> 01:18:18.540 
+No one else can write to that register, even if it's the oldest.
+
+01:18:18.740 --> 01:18:20.260 
+And if it's, there's no exceptions.
+
+01:18:20.700 --> 01:18:21.460 
+Solved your problem.
+
+01:18:21.940 --> 01:18:22.420 
+OK, good.
+
+01:18:23.700 --> 01:18:27.260 
+So this also introduces something that's really fundamental and important.
+
+01:18:27.580 --> 01:18:31.300 
+Now we're really mapping the register to a reorder buffer entry.
+
+01:18:32.820 --> 01:18:36.882 
+This enables a lot of optimisations that we're going to see in out of order execution and this is a
+
+01:18:36.882 --> 01:18:37.580 
+powerful concept.
+
+01:18:37.580 --> 01:18:42.161 
+Register file maps to register to a reorder buffer entry if there's an in flight instruction writing
+
+01:18:42.161 --> 01:18:42.940 
+to that register.
+
+01:18:43.780 --> 01:18:47.460 
+Now remember ISA lectures we had limited number of registers, right?
+
+01:18:47.860 --> 01:18:51.100 
+I have only three bits, 4 encoding registers in LC3.
+
+01:18:51.260 --> 01:18:53.180 
+I have only 5 in MIPS.
+
+01:18:54.140 --> 01:18:57.900 
+This limits the locality that we can exploit in the register file.
+
+01:18:59.020 --> 01:19:05.305 
+Now if I have a bigger structure that I can design, which is reorder buffer that contains all of the
+
+01:19:05.305 --> 01:19:07.380 
+values, that's why I can make it.
+
+01:19:07.620 --> 01:19:11.085 
+And the reason, one of the reasons why we cannot increase the register file size is the encoding,
+
+01:19:11.085 --> 01:19:11.300 
+right?
+
+01:19:11.620 --> 01:19:18.140 
+If you actually have 1000 registers, for example, you need 10 bits to encode those registers, right?
+
+01:19:18.740 --> 01:19:21.740 
+1024 and 10 bit, 10 bit, 10 bit.
+
+01:19:21.740 --> 01:19:26.700 
+You have a 30 bit encoding for registers just for registers in your instruction encoding.
+
+01:19:28.060 --> 01:19:32.668 
+Here, what we're doing is we we can build a larger structure called reorder buffer that can have
+
+01:19:32.668 --> 01:19:35.020 
+thousands of registers in existing architectures.
+
+01:19:35.020 --> 01:19:38.420 
+It's actually 5500 or 1500, somewhere in between.
+
+01:19:39.620 --> 01:19:43.140 
+And you can have a very small architectural register file, 8 of them.
+
+01:19:44.020 --> 01:19:49.140 
+But you can actually keep pointing to new definitions of the registers, right?
+
+01:19:49.700 --> 01:19:51.500 
+OK, this is going to become more clear.
+
+01:19:52.620 --> 01:19:54.060 
+OK, this is called register renaming.
+
+01:19:54.140 --> 01:19:57.740 
+Basically, we're going to rename the register to the reorder buffer entry.
+
+01:19:58.260 --> 01:19:59.180 
+OK, now it's your turn.
+
+01:19:59.740 --> 01:20:03.060 
+We're going to do the, I guess, same example with the tag, right?
+
+01:20:03.060 --> 01:20:16.050 
+Now we're going to go more quickly, I guess, because now you're familiar with what's going on.
+
+01:20:17.090 --> 01:20:22.210 
+OK, so it's the same example, but now let's do, let's execute this.
+
+01:20:22.210 --> 01:20:24.530 
+Multiply R1R 2R3.
+
+01:20:25.940 --> 01:20:28.140 
+I guess I'll populate these again.
+
+01:20:30.060 --> 01:20:37.620 
+And initially there's 01234567 and then there's A tag.
+
+01:20:37.620 --> 01:20:39.700 
+These tags, we don't care initially because they're all valid.
+
+01:20:39.940 --> 01:20:43.100 
+OK, so multiply R1R 2R3.
+
+01:20:43.300 --> 01:20:46.780 
+I read the source entries, R1 is ready.
+
+01:20:47.220 --> 01:20:48.340 
+The value is to be trusted.
+
+01:20:48.340 --> 01:20:49.300 
+So that's going to be two.
+
+01:20:50.180 --> 01:20:50.700 
+Oh, did that happen?
+
+01:20:50.700 --> 01:20:51.540 
+No, there's going to be 1.
+
+01:20:51.540 --> 01:20:54.220 
+Sorry, I, I looked at the wrong 1R2 is ready.
+
+01:20:54.540 --> 01:20:55.420 
+The value is trusted.
+
+01:20:55.420 --> 01:20:56.900 
+So we're going to multiply 1 and 2.
+
+01:20:57.420 --> 01:20:59.220 
+We're going to write the result into R3.
+
+01:21:00.020 --> 01:21:04.980 
+So I'm going to allocate an entry in the reorder buffer for this multiply.
+
+01:21:05.500 --> 01:21:07.780 
+It's going to write into R3 register three.
+
+01:21:09.180 --> 01:21:10.260 
+We don't know the value.
+
+01:21:10.340 --> 01:21:11.220 
+It's not ready yet.
+
+01:21:12.500 --> 01:21:18.976 
+And I'm going to point make R3 invalid because the value in the register file is not correct
+
+01:21:18.976 --> 01:21:19.540 
+anymore.
+
+01:21:19.540 --> 01:21:22.620 
+It's going to be updated by what's whatever is produced by this multiply.
+
+01:21:23.620 --> 01:21:25.980 
+And I'm going to put as tag.
+
+01:21:26.980 --> 01:21:30.820 
+Let's to be very clear, I guess Rob 0 reorder buffer entry 0.
+
+01:21:31.700 --> 01:21:37.700 
+Now this is a pointer to this entry zero saying that R3 is going to be produced.
+
+01:21:37.740 --> 01:21:38.860 
+R3 is not valid.
+
+01:21:39.060 --> 01:21:40.140 
+Don't trust this value.
+
+01:21:40.740 --> 01:21:43.940 
+R3 is going to be produced by reorder buffer entry 0.
+
+01:21:45.940 --> 01:21:48.980 
+So whenever that we order buffer entry zero, produce it, get it.
+
+01:21:48.980 --> 01:21:52.420 
+We're going to talk about how that's getting it will happen later on.
+
+01:21:52.660 --> 01:21:57.540 
+But now what we've done is we've eliminated the content address for search over here, right?
+
+01:21:57.860 --> 01:22:03.980 
+So let's take a look at what happens to this other multiply that's going to read R3R4.
+
+01:22:05.700 --> 01:22:07.380 
+Let's read R4R4 is easy.
+
+01:22:07.380 --> 01:22:09.620 
+As we've discussed, it gets 4R3.
+
+01:22:10.060 --> 01:22:15.186 
+Now this multiply knows directly that R3 will come from ROB 0 just by accessing the register file,
+
+01:22:15.186 --> 01:22:15.500 
+right?
+
+01:22:16.380 --> 01:22:20.180 
+So this is going to come from ROB 0 reorderable for entry zero.
+
+01:22:20.180 --> 01:22:22.460 
+And R11 right now will be invalid.
+
+01:22:22.500 --> 01:22:25.180 
+Oh, that's a big R11.
+
+01:22:27.300 --> 01:22:30.940 
+This is not trusted and we have a OK to make it easier to read.
+
+01:22:30.940 --> 01:22:37.804 
+I'm going to make this ROB one because it's going to be allocated ROB one right now what whoever
+
+01:22:37.804 --> 01:22:41.380 
+sources R11 will get the value from Rob one right?
+
+01:22:41.380 --> 01:22:44.580 
+And it doesn't need to do a counter intensivable search here at least.
+
+01:22:44.980 --> 01:22:48.660 
+OK, let's take a look at the other R3 because it's going to make it more interesting right now.
+
+01:22:48.940 --> 01:22:50.100 
+It's going to solve your problem.
+
+01:22:50.100 --> 01:22:53.420 
+Also, as we discussed R5R6, these are easy fives and six.
+
+01:22:54.060 --> 01:22:56.100 
+Well, it's basically this is ready.
+
+01:22:56.220 --> 01:23:07.213 
+R3 is 0 this when this arc ad gets decoded, the tag gets changed to rob 2 because this add is
+
+01:23:07.213 --> 01:23:14.660 
+allocated an entry in reorder buffer entry 2 makes sense right?
+
+01:23:15.820 --> 01:23:24.328 
+So what happened was there is a new definition of R3R3 was defined by this multiply and it's value
+
+01:23:24.328 --> 01:23:27.020 
+was pointed to buy to rob zero.
+
+01:23:27.700 --> 01:23:33.259 
+And every instruction that came after this multiply knows that the value is going to come from
+
+01:23:33.259 --> 01:23:34.620 
+reorder buffer entry 0.
+
+01:23:34.980 --> 01:23:39.420 
+So we kind of linked this definition of R3 to all of the instructions that are sourcing it.
+
+01:23:39.900 --> 01:23:45.980 
+Later someone else wrote into R3 change that definition to reorder buffer NT 1.
+
+01:23:47.380 --> 01:23:52.100 
+So every instruction that comes after this AD will look at reorder buffer NT1.
+
+01:23:53.820 --> 01:23:55.540 
+No, sorry, reorder buffer entry two.
+
+01:23:55.780 --> 01:23:56.860 
+Yeah, I should say 2.
+
+01:23:58.180 --> 01:24:02.940 
+So every instruction that comes after this at we'll look at reorder buffer entry 2.
+
+01:24:03.340 --> 01:24:09.091 
+Now, if there's another definition of R3 at some point, let's assume that this is R3 somehow, it's
+
+01:24:09.091 --> 01:24:09.620 
+not here.
+
+01:24:09.620 --> 01:24:17.204 
+Of course, that instruction will change the pointer, meaning the tag to that entry number 34, in
+
+01:24:17.204 --> 01:24:19.100 
+this case 5 for up five.
+
+01:24:20.020 --> 01:24:26.260 
+Basically what we're doing is we're really renaming the register ID to the reorder buffer entry ID.
+
+01:24:27.020 --> 01:24:34.389 
+Such that later instructions that source that particular value of the register is going to source
+
+01:24:34.389 --> 01:24:38.340 
+the right place, get the value from the right place.
+
+01:24:38.580 --> 01:24:43.733 
+This is called register renaming, and we accomplished multiple things by adding this tag over here,
+
+01:24:43.733 --> 01:24:48.731 
+actually renaming what's happening in the older version also, but here we're more explicit right
+
+01:24:48.731 --> 01:24:48.940 
+now.
+
+01:24:49.500 --> 01:24:55.655 
+Basically we're renaming register 3 to wrap zero, and when that register 3 gets written again at the
+
+01:24:55.655 --> 01:24:59.780 
+decode stage, an instruction is going to write to register 3 again.
+
+01:25:00.060 --> 01:25:02.820 
+It gets renamed to whatever reorder bar for entry.
+
+01:25:02.900 --> 01:25:09.270 
+It's going to be allocated OK, And we know exactly where to look for no content addressable memory,
+
+01:25:09.270 --> 01:25:10.300 
+read it anymore.
+
+01:25:10.980 --> 01:25:11.540 
+Makes sense, right?
+
+01:25:11.540 --> 01:25:11.660 
+Yes.
+
+01:25:11.660 --> 01:25:17.780 
+And previous instructions we'll use then the text from previous times.
+
+01:25:17.780 --> 01:25:18.180 
+Exactly.
+
+01:25:18.180 --> 01:25:20.100 
+Yes, exactly.
+
+01:25:20.100 --> 01:25:20.380 
+Yes.
+
+01:25:20.820 --> 01:25:25.470 
+I haven't connected the final thing yet because we're going to do that in the lecture in out of
+
+01:25:25.470 --> 01:25:30.071 
+order execution because there needs to be also a mechanism to actually get the value when it's
+
+01:25:30.071 --> 01:25:31.980 
+available, like waking up instructions.
+
+01:25:31.980 --> 01:25:33.500 
+But hold that off for now.
+
+01:25:33.940 --> 01:25:36.700 
+We are still reordering instructions, but I'm extending the concept.
+
+01:25:36.700 --> 01:25:40.700 
+The reorder buffer concept is actually more powerful than just reordering instructions, right?
+
+01:25:41.140 --> 01:25:48.780 
+It's also enabling us to actually map a register to many other potential places in the register.
+
+01:25:48.780 --> 01:25:50.980 
+And these R3's have nothing to do with each other.
+
+01:25:50.980 --> 01:25:55.620 
+Remember in the last lecture, we, this is a right to R3, This is another right.
+
+01:25:55.620 --> 01:25:56.940 
+This is a right after right dependence.
+
+01:25:56.940 --> 01:25:58.140 
+It's a force dependence, right?
+
+01:26:00.380 --> 01:26:02.260 
+And we said that we can eliminate force dependence.
+
+01:26:02.260 --> 01:26:03.860 
+This is how we eliminate force dependences.
+
+01:26:04.380 --> 01:26:07.220 
+These R3, the 1st R3 is here.
+
+01:26:07.660 --> 01:26:09.060 
+The 2nd R3 is here.
+
+01:26:09.620 --> 01:26:11.860 
+The second definition of R3, the third definition is here.
+
+01:26:11.860 --> 01:26:15.140 
+And there could be other definitions of R3 by other instructions.
+
+01:26:15.140 --> 01:26:15.260 
+Right?
+
+01:26:15.260 --> 01:26:15.980 
+Right to R3.
+
+01:26:16.580 --> 01:26:18.740 
+Basically these R3's have nothing to do with each other.
+
+01:26:18.900 --> 01:26:24.052 
+The reason this instruction is right to R3 and this other instruction also writes to R3 is because
+
+01:26:24.052 --> 01:26:26.260 
+we don't have enough registers in the ISA.
+
+01:26:27.220 --> 01:26:32.260 
+If we had enough registers, there's no reason to reuse the registers in the ISA.
+
+01:26:32.500 --> 01:26:38.996 
+And the fact that we have enabled created a lot of space over here for more registers that are not
+
+01:26:38.996 --> 01:26:45.558 
+visible to the ISA, enabled us to actually have those registers without informing the programmer or
+
+01:26:45.558 --> 01:26:46.420 
+the software.
+
+01:26:46.500 --> 01:26:47.460 
+And that's the beauty of it.
+
+01:26:47.460 --> 01:26:49.060 
+This is the beauty of the micro architecture.
+
+01:26:49.380 --> 01:26:53.220 
+In the micro architecture, we can have a lot of registers even though the architecture limits us.
+
+01:26:54.580 --> 01:26:56.100 
+OK, maybe we can switch.
+
+01:26:56.980 --> 01:26:57.500 
+Thanks.
+
+01:26:59.140 --> 01:27:01.260 
+Any questions while switching happens?
+
+01:27:01.500 --> 01:27:02.420 
+Context switch overhead.
+
+01:27:02.420 --> 01:27:07.660 
+So many, like you said, 1500.
+
+01:27:07.940 --> 01:27:13.764 
+And yeah, you'll see in the next lecture, because you want to have a lot of instructions to tolerate
+
+01:27:13.764 --> 01:27:15.220 
+latencies in the machine.
+
+01:27:15.700 --> 01:27:21.848 
+If your memory latency is like 500 cycles and if you have one instruction that's waiting for memory
+
+01:27:21.848 --> 01:27:27.500 
+at the top, if you don't want to stall the machine, you want to keep fetching instructions.
+
+01:27:27.500 --> 01:27:29.940 
+You need to have actually lots of entries in the machine.
+
+01:27:34.260 --> 01:27:38.060 
+Some of them may be completed, some of them may be still executing, some of them may be waiting.
+
+01:27:38.060 --> 01:27:39.700 
+Yes, exactly.
+
+01:27:39.700 --> 01:27:40.300 
+Overall, yes.
+
+01:27:41.220 --> 01:27:44.100 
+But we're going to be more careful in that definition soon.
+
+01:27:44.380 --> 01:27:46.380 
+OK, so these things are implemented in real life.
+
+01:27:46.380 --> 01:27:52.801 
+Pentium 3 which was the first out of order machine which we will see later on had essentially this
+
+01:27:52.801 --> 01:27:57.060 
+is the register file, although everything is a pointer over here.
+
+01:27:57.180 --> 01:28:00.900 
+So they went to the next step which out which we will discuss in the next lecture.
+
+01:28:01.780 --> 01:28:03.700 
+Register is called the register alias table.
+
+01:28:03.700 --> 01:28:07.180 
+There they have 8 registers in X86 and everything is a pointer.
+
+01:28:08.460 --> 01:28:13.260 
+Some pointers go to the reorder buffer, some pointers go to the actual register file.
+
+01:28:13.700 --> 01:28:17.020 
+So they've they've gone one more step than what I have done over here.
+
+01:28:17.020 --> 01:28:23.580 
+If you can see this, instead of having these over here, they remove the valve bits.
+
+01:28:23.660 --> 01:28:29.380 
+They put these somewhere over here and all they have is the tax.
+
+01:28:30.900 --> 01:28:35.740 
+Basically when an instruction comes, it checks where where it's value is at.
+
+01:28:36.100 --> 01:28:40.020 
+It could be in the reorder buffer, it could be in the register file, right?
+
+01:28:40.540 --> 01:28:42.100 
+So all you need is pointers basically.
+
+01:28:42.260 --> 01:28:43.380 
+You don't even need a valve bit.
+
+01:28:43.620 --> 01:28:44.420 
+It's beautiful, right?
+
+01:28:45.340 --> 01:28:45.700 
+OK.
+
+01:28:45.780 --> 01:28:47.620 
+And we're going to talk more about that later on.
+
+01:28:47.860 --> 01:28:49.180 
+And this is Intel Pentium Pro.
+
+01:28:49.460 --> 01:28:52.020 
+It was the most successful out of order machine.
+
+01:28:52.380 --> 01:28:53.500 
+First out of order machine.
+
+01:28:53.540 --> 01:28:56.260 
+Let's say it's not the first, it's the most successful first.
+
+01:28:56.940 --> 01:29:03.100 
+OK, So basically what we've done is eliminated output and anti dependence.
+
+01:29:03.100 --> 01:29:04.900 
+And we discussed that they're not true depends.
+
+01:29:04.900 --> 01:29:09.545 
+So I have shown you output dependence, but anti dependence, they're also eliminated this way because
+
+01:29:09.545 --> 01:29:12.380 
+you're actually you're actually not bothered by them anymore.
+
+01:29:12.660 --> 01:29:15.980 
+These, the same registry refers to values that have nothing to do with each other.
+
+01:29:16.300 --> 01:29:19.020 
+These exist due to lack of register IDs in the ISA.
+
+01:29:19.780 --> 01:29:23.802 
+Now what we've done is that we renamed the register to the reorder buffer entry that will hold the
+
+01:29:23.802 --> 01:29:24.500 
+register's value.
+
+01:29:25.260 --> 01:29:26.900 
+Register ID gets mapped to reorder buffer.
+
+01:29:26.980 --> 01:29:32.025 
+For entry, we will later change this to architectural register ID gets mapped to physical register
+
+01:29:32.025 --> 01:29:32.180 
+ID.
+
+01:29:32.180 --> 01:29:37.945 
+So we're going to actually expand this concept and after renaming, we order buffer entry ID is used
+
+01:29:37.945 --> 01:29:43.594 
+to refer to the register and this is going to be how we communicate values inside an out of order
+
+01:29:43.594 --> 01:29:44.060 
+machine.
+
+01:29:44.220 --> 01:29:48.163 
+Whenever we talk about the register, we're not going to talk about the architectural register
+
+01:29:48.163 --> 01:29:48.460 
+number.
+
+01:29:48.460 --> 01:29:52.260 
+We're going to talk about the physical register ID or tag associated with it.
+
+01:29:53.340 --> 01:29:59.132 
+And instructions get linked to each other because one instruction that reads the tag from the
+
+01:29:59.132 --> 01:30:05.174 
+register file, just like we did, knows that if someone actually produces that tag and sends it to
+
+01:30:05.174 --> 01:30:10.220 
+you, this is A tag I'm looking for because that's the tag I'm waiting for, right?
+
+01:30:10.500 --> 01:30:12.460 
+So that's how instructions will get linked to each other.
+
+01:30:13.460 --> 01:30:13.660 
+OK.
+
+01:30:13.660 --> 01:30:16.380 
+This will eliminate anti and output dependences completely.
+
+01:30:16.420 --> 01:30:19.260 
+We don't need to worry about them, which is beautiful.
+
+01:30:20.020 --> 01:30:24.780 
+We don't change the ISA and it gives the illusion that there are actually a lot of registers and the
+
+01:30:24.780 --> 01:30:29.206 
+illusion is actually real because there's, these are called physical registers in the reorder
+
+01:30:29.206 --> 01:30:29.540 
+buffer.
+
+01:30:29.860 --> 01:30:31.340 
+These are the values of the registers.
+
+01:30:31.700 --> 01:30:36.746 
+You may have 1500 R threes over here if your program actually writes to R3 all the time for whatever
+
+01:30:36.746 --> 01:30:37.100 
+reason.
+
+01:30:37.580 --> 01:30:42.604 
+Not a good program probably, but it's possible, you know, OK, so remember these are the flow
+
+01:30:42.604 --> 01:30:43.260 
+dependences.
+
+01:30:43.300 --> 01:30:44.540 
+This is anti dependence.
+
+01:30:46.260 --> 01:30:48.460 
+So this does not become a problem anymore.
+
+01:30:48.540 --> 01:30:50.060 
+This does not become a problem anymore.
+
+01:30:50.460 --> 01:30:52.860 
+The only issue is really true dependences right now.
+
+01:30:53.620 --> 01:30:56.020 
+So we still need to maintain true dependences.
+
+01:30:56.020 --> 01:31:04.428 
+But by assigning A tag to this R3 and by assigning by enabling the instruction that sources that tag
+
+01:31:04.428 --> 01:31:07.540 
+that that sources this version of R3.
+
+01:31:07.540 --> 01:31:13.628 
+To get that tag, you can link the instruction that produces that version of R3 to the instruction
+
+01:31:13.628 --> 01:31:15.700 
+that consumes that version of R3.
+
+01:31:17.060 --> 01:31:21.860 
+OK, so this is going to be on your own, I think, because we don't have a lot of time.
+
+01:31:22.260 --> 01:31:27.016 
+But essentially this is something to do where you look at the latest definition of R3 for each
+
+01:31:27.016 --> 01:31:28.940 
+instruction below in sequential order.
+
+01:31:29.100 --> 01:31:35.340 
+We're going to do more of these after the break, and you can simulate this yourself if you want.
+
+01:31:35.340 --> 01:31:37.180 
+It's going to be fun.
+
+01:31:38.860 --> 01:31:41.780 
+Let me conclude the INGO order pipeline with the order buffer.
+
+01:31:42.660 --> 01:31:47.877 
+So in order pipeline means you have in order dispatch and in order execution dispatch means here
+
+01:31:47.877 --> 01:31:49.780 
+you're dispatching things in order.
+
+01:31:50.380 --> 01:31:53.580 
+You do out of order completion of operations and in order retirements.
+
+01:31:53.940 --> 01:31:55.140 
+And this was our reorder buffer.
+
+01:31:55.140 --> 01:31:57.340 
+Reorder buffer is implemented as a circular queuing hardware.
+
+01:31:57.820 --> 01:32:02.389 
+So whenever you're decoding, you also access the reorder buffer, right, either sequentially or
+
+01:32:02.389 --> 01:32:04.140 
+concurrently with the register file.
+
+01:32:04.460 --> 01:32:08.187 
+So on decode, we access the register file and reorder buffer, allocate entry in the reorder buffer,
+
+01:32:08.187 --> 01:32:09.580 
+check if the instruction can execute.
+
+01:32:09.580 --> 01:32:15.300 
+If so, we can dispatch the instruction on execute instructions can complete out of order completion.
+
+01:32:15.300 --> 01:32:18.740 
+Rewrite the results into the reorder buffer retirements.
+
+01:32:18.740 --> 01:32:21.820 
+We already discussed all of these, but check all this instruction for exceptions.
+
+01:32:22.140 --> 01:32:27.085 
+If no exceptions, write the results into the architecture register file or memory assuming tag
+
+01:32:27.085 --> 01:32:27.980 
+matches remember.
+
+01:32:28.420 --> 01:32:30.980 
+Otherwise, flush the pipeline and start from the exception handler.
+
+01:32:31.660 --> 01:32:35.300 
+OK, so their advance and disadvance to reorder buffer.
+
+01:32:36.020 --> 01:32:39.800 
+Conceptually this is really simple, but you can see that the implementation has become very complex,
+
+01:32:39.800 --> 01:32:41.540 
+but it's going to enable us to do other stuff.
+
+01:32:42.500 --> 01:32:47.067 
+It can eliminate false dependency, so it enables renaming of registers, gives the illusion of a lot
+
+01:32:47.067 --> 01:32:48.820 
+of registers as we will see next time.
+
+01:32:48.820 --> 01:32:53.693 
+Also, the disadvantage is reorder buffer needs to be accessed to get the results that are yet to be
+
+01:32:53.693 --> 01:32:55.220 
+written into the register file.
+
+01:32:55.420 --> 01:33:01.368 
+This requires either a content addressable memory, which we didn't want, or some sort of
+
+01:33:01.368 --> 01:33:02.180 
+indirection.
+
+01:33:02.660 --> 01:33:07.260 
+Either way, it's going to increase our latency, complexity or both, right?
+
+01:33:07.740 --> 01:33:12.580 
+So indirection also increase our latency rate and also complexity, but not as bad as content
+
+01:33:12.580 --> 01:33:13.580 
+addressable memory.
+
+01:33:14.620 --> 01:33:17.380 
+So there are other solutions to this problem which I'm not going to cover.
+
+01:33:17.380 --> 01:33:22.691 
+As I said, history buffer, future file checkpointing, we're going to cover the future file kind of
+
+01:33:22.691 --> 01:33:27.948 
+when we talk about out of order execution because modern processors actually use a combination of
+
+01:33:27.948 --> 01:33:33.259 
+future file checkpointing and reorder buffer to actually handle this complicated state maintenance
+
+01:33:33.259 --> 01:33:34.940 
+issues to maximise performance.
+
+01:33:35.900 --> 01:33:41.260 
+But if you're interested, you can take a look at these lectures or ask questions.
+
+01:33:42.580 --> 01:33:43.940 
+So these are some interesting readings.
+
+01:33:43.940 --> 01:33:49.887 
+This is a reading that I suggest, but these precise interrupts in pipeline processors, it's a
+
+01:33:49.887 --> 01:33:53.980 
+Seminole paper that talks about how to do all of these actually.
+
+01:33:54.460 --> 01:33:58.380 
+And then checkpointing was introduced in this paper for out of order execution machines.
+
+01:33:58.420 --> 01:34:03.940 
+These may be better to read when you actually learn about out of order execution after the break.
+
+01:34:05.300 --> 01:34:06.220 
+That brings us to the end.
+
+01:34:06.700 --> 01:34:07.820 
+Any burning questions?
+
+01:34:10.260 --> 01:34:10.860 
+Guess not.
+
+01:34:11.580 --> 01:34:12.620 
+OK, have a great break.
+
+01:34:13.300 --> 01:34:16.500 
+I'll see you all after the break then hopefully you'll come refreshed.
+

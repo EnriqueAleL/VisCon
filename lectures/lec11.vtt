@@ -1,0 +1,3590 @@
+WEBVTT
+
+00:00:02.775 --> 00:00:05.055 
+OK, let's get us started.
+
+00:00:06.095 --> 00:00:06.775 
+Good afternoon.
+
+00:00:06.775 --> 00:00:10.895 
+Welcome back to another lecture in digital design, computer Architecture.
+
+00:00:12.815 --> 00:00:19.830 
+Today we're going to continue what we have started about pipelining yesterday and hopefully we're
+
+00:00:19.830 --> 00:00:26.918 
+going to be able to finish pipelining today, next week on Thursday, we're going to continue in the
+
+00:00:26.918 --> 00:00:34.006 
+some other topics related to pipelining and also out of order execution which we're going to see I
+
+00:00:34.006 --> 00:00:35.815 
+guess after Easter break.
+
+00:00:36.375 --> 00:00:42.755 
+So essentially we will try to finish pipelining and issues in pipelining mostly the control and data
+
+00:00:42.755 --> 00:00:44.415 
+dependence handling today.
+
+00:00:45.255 --> 00:00:50.772 
+And regarding state maintenance and recovery which is the topic of precise exception, we're going to
+
+00:00:50.772 --> 00:00:55.903 
+see much more next week and hopefully after Easter break we're going to also see out of order
+
+00:00:55.903 --> 00:00:56.455 
+execution.
+
+00:00:58.335 --> 00:01:03.975 
+So here are our readings which we have used them for last week and also today.
+
+00:01:05.175 --> 00:01:06.415 
+So you can also check them.
+
+00:01:06.735 --> 00:01:14.655 
+Actually H&H is a very good, there are a lot of good chapters related to these topics.
+
+00:01:14.895 --> 00:01:20.535 
+So for multi cycle, I would really recommend you check HNH and the pattern pattern.
+
+00:01:20.535 --> 00:01:27.068 
+Also I showed some of the slides related to that, especially about the micro micro program
+
+00:01:27.068 --> 00:01:28.375 
+controller design.
+
+00:01:29.895 --> 00:01:37.895 
+OK, So we've seen single cycle micro architecture and also we build a better architecture more let's
+
+00:01:37.895 --> 00:01:39.575 
+say principle design.
+
+00:01:39.815 --> 00:01:46.896 
+We build multi cycle MIPS processor and then we actually mentioned that in the multi cycle MIPS
+
+00:01:46.896 --> 00:01:51.295 
+processor we can easily handle multi cycle memory accesses.
+
+00:01:51.575 --> 00:01:57.764 
+We essentially wait in some of the states until we get to the until the memory is ready and then we
+
+00:01:57.764 --> 00:02:00.015 
+ask this question, can we do better?
+
+00:02:00.015 --> 00:02:01.615 
+And then we get to this pipelining.
+
+00:02:02.855 --> 00:02:09.712 
+This was the slide that we were kind of through the end of the lecture yesterday and we were showing
+
+00:02:09.712 --> 00:02:14.375 
+some example about four independent additions like add instructions.
+
+00:02:15.095 --> 00:02:19.615 
+So in multi cycle this addition will take 4 cycles per instruction.
+
+00:02:19.935 --> 00:02:24.730 
+So you you fetch the code, execute and do write back and then after that you go to the next
+
+00:02:24.730 --> 00:02:26.575 
+instruction, the next and the next.
+
+00:02:27.015 --> 00:02:31.807 
+But in the pipeline design, you actually while you are decoding the first instruction, you can fetch
+
+00:02:31.807 --> 00:02:32.335 
+the second.
+
+00:02:32.815 --> 00:02:37.355 
+And while you are executing the first instruction, you can decode the second instruction and fetch
+
+00:02:37.355 --> 00:02:38.375 
+the third instruction.
+
+00:02:38.935 --> 00:02:44.785 
+And after some time when your pipeline is full, you can actually have this throughput of 1
+
+00:02:44.785 --> 00:02:46.215 
+instruction per cycle.
+
+00:02:47.375 --> 00:02:53.170 
+So in the city state, which means the, the, the position that your pipeline is full, are you going
+
+00:02:53.170 --> 00:02:57.015 
+to have the throughput of 1 instruction completed everyone cycle?
+
+00:02:57.935 --> 00:03:03.844 
+But essentially we need to ask this question that is life always this beautiful, which we're going
+
+00:03:03.844 --> 00:03:09.633 
+to see that in pipelining, there are a lot of heats which cause us not getting to this beautiful
+
+00:03:09.633 --> 00:03:09.935 
+life.
+
+00:03:09.935 --> 00:03:14.455 
+And we need to design techniques how to, to overcome these are these limitations.
+
+00:03:15.655 --> 00:03:22.336 
+I'm going to quickly also go over this laundry analogy, which might be interesting also for you in
+
+00:03:22.336 --> 00:03:28.881 
+the pipelining, because actually pipelining is a topic that we are observing it in our real life
+
+00:03:28.881 --> 00:03:29.495 
+everyday.
+
+00:03:30.135 --> 00:03:35.321 
+So in a laundry analogy, for example, you need to you have some clothes, dirty clothes and you want
+
+00:03:35.321 --> 00:03:38.255 
+to wash them and then you need to put them in the dryer.
+
+00:03:38.255 --> 00:03:45.375 
+And then you basically fold your clothes and then put your put the clothes in the in the clothes.
+
+00:03:46.175 --> 00:03:53.095 
+So in kind of a multi cycle, let's say laundry, you essentially so you don't overlap things, right?
+
+00:03:53.415 --> 00:04:00.295 
+You wash and dry fold and then put the closet and then go to the next load of your clothes.
+
+00:04:01.815 --> 00:04:10.082 
+So in this example, we know that steps to do a load in this case like dirty load for laundry, like
+
+00:04:10.082 --> 00:04:14.975 
+laundry load, they are sequentially essentially dependent.
+
+00:04:15.455 --> 00:04:17.895 
+However, no dependence between different loads.
+
+00:04:18.255 --> 00:04:26.404 
+So these loads that we have for example for the B sequence in task order is actually independent of
+
+00:04:26.404 --> 00:04:28.215 
+the of the task order.
+
+00:04:28.215 --> 00:04:32.095 
+A also different steps do not require the same resources.
+
+00:04:32.095 --> 00:04:35.415 
+So when you do washing, you don't need to do anything with the dryer essentially.
+
+00:04:35.415 --> 00:04:39.822 
+So these are very important thing about this analogy which we're going to see also later on when we
+
+00:04:39.822 --> 00:04:40.935 
+are designing pipelining.
+
+00:04:42.815 --> 00:04:52.243 
+So you can actually pipeline this design by that once you are doing the washing for the for the
+
+00:04:52.243 --> 00:04:53.335 
+first task.
+
+00:04:53.855 --> 00:05:00.155 
+A, you can actually also do the, sorry, when you're drawing task order A, you can wash the start
+
+00:05:00.155 --> 00:05:03.175 
+washing task or task B and so on and so forth.
+
+00:05:03.175 --> 00:05:06.215 
+So with that, you can actually provide better throughput.
+
+00:05:06.335 --> 00:05:12.295 
+So now we can have 4 loads of laundry in parallel in a steady state when the pipeline is full.
+
+00:05:13.135 --> 00:05:16.895 
+And essentially our throughput increased by 4 times if you check the timing as well.
+
+00:05:20.135 --> 00:05:23.655 
+However, I should also mention that latency per load is the same.
+
+00:05:23.655 --> 00:05:30.329 
+Actually this was the case also in our previous example here that each single instruction would
+
+00:05:30.329 --> 00:05:31.735 
+still take 4 cycles.
+
+00:05:31.735 --> 00:05:36.455 
+Here actually cycle time can be different from pipeline design and multi cycle.
+
+00:05:36.575 --> 00:05:39.015 
+So we did with that in mind.
+
+00:05:39.015 --> 00:05:44.478 
+And actually this cycle time might be might not be too off, but they are also different when you
+
+00:05:44.478 --> 00:05:49.942 
+have a pipeline processor and multi cycle processor, but also, but the number of cycles is still
+
+00:05:49.942 --> 00:05:50.455 
+the same.
+
+00:05:50.455 --> 00:05:56.485 
+So for the every single instruction, so every single instruction you need to spend 4 cycles to
+
+00:05:56.485 --> 00:05:56.935 
+finish.
+
+00:05:57.415 --> 00:06:03.841 
+But overall your throughput is going to be better because you're because you're benefiting from this
+
+00:06:03.841 --> 00:06:08.855 
+concurrency that in the steady state you can finish one instruction per cycle.
+
+00:06:11.095 --> 00:06:11.415 
+OK.
+
+00:06:11.415 --> 00:06:14.775 
+So yeah.
+
+00:06:15.375 --> 00:06:23.312 
+But so in a more realistic pipelining in for laundry load your dryer, which I think you guys can
+
+00:06:23.312 --> 00:06:31.166 
+agree also because the dryer always takes longer time is is that's the case actually also in my
+
+00:06:31.166 --> 00:06:32.655 
+apartment as well.
+
+00:06:33.295 --> 00:06:37.935 
+So essentially that would limit the throughput of your pipeline design.
+
+00:06:38.415 --> 00:06:45.927 
+So here in in a non pipeline design you can finish one load every 150 minutes because of the slow
+
+00:06:45.927 --> 00:06:49.335 
+dryer when you want to actually pipeline it.
+
+00:06:50.215 --> 00:06:59.041 
+So this slow dryer would not let you to start actually the basically you need to wait until this
+
+00:06:59.041 --> 00:07:07.868 
+slow so you can start washing the, the task B, but you cannot do the drying of that because this
+
+00:07:07.868 --> 00:07:10.535 
+dryer would take longer time.
+
+00:07:10.535 --> 00:07:12.095 
+So you need to essentially wait longer.
+
+00:07:12.535 --> 00:07:17.794 
+So if you calculate the timing, you're going to see that this is going to be 1 load every 60 minutes
+
+00:07:17.794 --> 00:07:19.215 
+because of this slow dryer.
+
+00:07:19.655 --> 00:07:25.015 
+So the slowest step, which in this example is a dryer actually decides the throughput for us.
+
+00:07:26.695 --> 00:07:28.535 
+So how can we overcome that?
+
+00:07:28.655 --> 00:07:32.295 
+There are multiple ways of it in this example in this context as well.
+
+00:07:32.815 --> 00:07:36.335 
+One way would be that we we buy a second dryer.
+
+00:07:37.335 --> 00:07:44.024 
+When you are doing this task order for task A, you use the dryer A, when you want to do this task B,
+
+00:07:44.024 --> 00:07:45.095 
+you use dryer B.
+
+00:07:45.415 --> 00:07:52.575 
+And essentially you alternate between A&B in order to essentially finish your pipeline faster.
+
+00:07:52.975 --> 00:07:59.233 
+So with this example, you can finish essentially you can have one load every 30 minutes, which
+
+00:07:59.233 --> 00:08:03.095 
+again, we can get back to our 4/4 times higher throughput.
+
+00:08:05.015 --> 00:08:09.975 
+You can also think of some techniques to have to have faster dryers as well.
+
+00:08:09.975 --> 00:08:15.775 
+So I mean, I'm, I'm using this analogy to give you also some concept concepts in also designing
+
+00:08:15.775 --> 00:08:16.935 
+micro architecture.
+
+00:08:17.255 --> 00:08:24.615 
+So whenever we have some slow, let's say units, like for example, multiplayer for us is much slower.
+
+00:08:24.895 --> 00:08:30.603 
+You can think of, I would add several multipliers in this in in the ALU for example, or you can
+
+00:08:30.603 --> 00:08:36.491 
+think of using some algorithms in order to make multiplayer faster and that can provide you better
+
+00:08:36.491 --> 00:08:38.775 
+throughput in your pipeline in design.
+
+00:08:40.175 --> 00:08:43.815 
+Here is also another analogy just for fun.
+
+00:08:44.415 --> 00:08:51.115 
+This actually a real life pipeline automobile assembly which there was a actually interesting unit
+
+00:08:51.115 --> 00:08:52.415 
+has been developed.
+
+00:08:53.015 --> 00:09:01.246 
+This Magneto which has been used for provide the energy for ignition in basically for Ford
+
+00:09:01.246 --> 00:09:07.375 
+automobile and in in the I mean you can actually clearly read that.
+
+00:09:07.455 --> 00:09:15.586 
+But so before actually having the pipeline assembly there you have this on average that worker could
+
+00:09:15.586 --> 00:09:22.255 
+assemble 35 of these Magneto in a nine hour shift or roughly one every 15 minutes.
+
+00:09:22.655 --> 00:09:28.616 
+And then then essentially after some time for the transmission to moving assembly lines, which
+
+00:09:28.616 --> 00:09:29.695 
+happened in 1913.
+
+00:09:30.215 --> 00:09:39.496 
+So then they get to this essentially the throughput of assembly time from about 15 minutes to 5 S 3
+
+00:09:39.496 --> 00:09:45.215 
+times faster basically speed up in generation of this magnet.
+
+00:09:46.135 --> 00:09:53.133 
+Also, if you want to, if you're if you're familiar with this X-Men, you can also you might know
+
+00:09:53.133 --> 00:09:53.575 
+about.
+
+00:09:53.735 --> 00:09:55.215 
+Magneto in that context as well.
+
+00:09:55.535 --> 00:10:02.012 
+So you can also check if you're interested and think about the analogy between that Magneto and also
+
+00:10:02.012 --> 00:10:02.855 
+Ford Magneto.
+
+00:10:03.735 --> 00:10:11.031 
+And this is actually much more modern automobile assembly that we have today, which is important in
+
+00:10:11.031 --> 00:10:13.095 
+order to provide throughput.
+
+00:10:13.895 --> 00:10:21.318 
+And pipeline is actually very old topic and this is actually one of the an old pipeline computer in
+
+00:10:21.318 --> 00:10:28.366 
+IBM stretch, which actually you can see that it's kind of quite huge, like the weight of it is
+
+00:10:28.366 --> 00:10:34.815 
+actually 35 tones, something like that, which is quite heavy and also quite expensive.
+
+00:10:35.255 --> 00:10:38.575 
+But this idea of pipelining has been used for a long time.
+
+00:10:38.575 --> 00:10:44.115 
+So essentially I want to say that pipelining is actually a real technique and people have been using
+
+00:10:44.115 --> 00:10:47.495 
+it for in different contexts, not only in micro architecture.
+
+00:10:48.055 --> 00:10:53.775 
+And so, so now let's get to some definition of ideal pipeline.
+
+00:10:53.775 --> 00:10:59.814 
+So our goal is to increase increase the throughput with little increase in cost, which that cost can
+
+00:10:59.814 --> 00:11:02.895 
+be hardware cost in case of instruction processing.
+
+00:11:03.735 --> 00:11:10.575 
+And in order to get that we want to we, we need some assumptions or let's say some requirements.
+
+00:11:11.215 --> 00:11:14.095 
+First of all, we need the repetition of identical operations.
+
+00:11:14.135 --> 00:11:18.375 
+So we want to have same operation is repeated on a large number of different inputs.
+
+00:11:19.015 --> 00:11:25.054 
+So in our example, all laundry loads go through the same steps like washing dryer and folding and
+
+00:11:25.054 --> 00:11:26.735 
+also putting to the closet.
+
+00:11:27.175 --> 00:11:33.319 
+If you have some instructions or some operations that may not go over all these steps, then you have
+
+00:11:33.319 --> 00:11:35.655 
+some problems in your pipeline design.
+
+00:11:37.615 --> 00:11:40.935 
+Also reputation of independent operation is also important.
+
+00:11:41.415 --> 00:11:43.735 
+So we want these operations be independent of.
+
+00:11:43.735 --> 00:11:49.619 
+So in our laundry example, different loads are completely independent so they don't need to wait for
+
+00:11:49.619 --> 00:11:50.855 
+each other to finish.
+
+00:11:51.295 --> 00:11:53.935 
+So no dependences between repeated operations.
+
+00:11:53.935 --> 00:11:56.775 
+Is also very important to have have an ideal pipeline.
+
+00:11:57.695 --> 00:12:04.951 
+Also we want to have uniformly partitionable sub operations, so processing can be evenly divided
+
+00:12:04.951 --> 00:12:07.975 
+into uniform latency sub sub operations.
+
+00:12:08.455 --> 00:12:12.695 
+So in our laundry example, for example, we've seen that a dryer can take longer time.
+
+00:12:12.695 --> 00:12:20.555 
+So if that's the case, then you don't really have this uniformly distributed uniformly partitionable
+
+00:12:20.555 --> 00:12:21.735 
+sub operations.
+
+00:12:22.015 --> 00:12:28.699 
+So that's also very important such that you can break your latency into same latencies, which which
+
+00:12:28.699 --> 00:12:31.535 
+is important for better pipelining design.
+
+00:12:32.215 --> 00:12:34.735 
+We're going to see examples about that also very soon.
+
+00:12:35.535 --> 00:12:42.377 
+OK, so automobile assembly line or doing laundry is actually a very good fitting example, but we
+
+00:12:42.377 --> 00:12:47.295 
+want to see this context is actually an instruction processing cycle.
+
+00:12:48.615 --> 00:12:54.518 
+So this is for, you know, kind of a design that you can think of is actually you can think of as a
+
+00:12:54.518 --> 00:13:00.180 
+single cycle design because you have some registers and then you need to do some combinational
+
+00:13:00.180 --> 00:13:06.144 
+logic in your combinational logic can be actually all these fetch, decode, execute memory and write
+
+00:13:06.144 --> 00:13:08.855 
+back, which going to take like T picoseconds.
+
+00:13:09.255 --> 00:13:13.807 
+And then the output, you're going to write it back to the to some registers, you know, so that
+
+00:13:13.807 --> 00:13:17.295 
+register can be the same register as here or can be different registers.
+
+00:13:18.055 --> 00:13:23.771 
+So once you have this kind of a design, your throughput is actually 1 / t This is the throughput
+
+00:13:23.771 --> 00:13:25.975 
+that you're getting from this system.
+
+00:13:27.815 --> 00:13:33.722 
+So you can actually break this combination logic into two and then add another state register in
+
+00:13:33.722 --> 00:13:34.215 
+between.
+
+00:13:34.855 --> 00:13:41.561 
+So with that you can actually have a throughput of 2 / t So you you can hopefully expect that you
+
+00:13:41.561 --> 00:13:45.295 
+are maximum you're increasing throughput by two by 2X.
+
+00:13:47.335 --> 00:13:52.015 
+You can also break it to three and then potentially you can increase the throughput by 3X.
+
+00:13:52.495 --> 00:13:58.641 
+But this is actually we are assuming here that this T picosecond is actually partitionable in two
+
+00:13:58.641 --> 00:14:04.535 
+perfectly and then you can perfectly partition this T to three stages and so on and so forth.
+
+00:14:04.655 --> 00:14:10.509 
+So that's actually one of the assumption here in this example that we are getting to this ideal
+
+00:14:10.509 --> 00:14:16.424 
+pipeline, a more realistic pipeline throughput is that you essentially you need to also consider
+
+00:14:16.424 --> 00:14:22.155 
+this sequencing delay which you know from our timing lecture whenever we want to write to the
+
+00:14:22.155 --> 00:14:28.194 
+registers, we need to deal with the whole time and set up time, right, which we discussed about it
+
+00:14:28.194 --> 00:14:29.735 
+as a sequencing overhead.
+
+00:14:30.255 --> 00:14:37.715 
+So the throughput of this system which is kind of a single cycle design is actually 1 / T + S and T
+
+00:14:37.715 --> 00:14:44.496 
+is a combination of delay and S is actually the delay we need to spend for this sequencing
+
+00:14:44.496 --> 00:14:45.175 
+overhead.
+
+00:14:46.375 --> 00:14:52.337 
+So once you actually have your pipeline with KS stage, assuming that you can actually perfectly
+
+00:14:52.337 --> 00:14:53.655 
+partition your tasks.
+
+00:14:54.095 --> 00:14:55.415 
+Into K stages.
+
+00:14:56.255 --> 00:15:03.123 
+So your latency of combinational logic is actually coming t / K, but then you still need to pay the
+
+00:15:03.123 --> 00:15:04.095 
+overhead of S.
+
+00:15:04.655 --> 00:15:09.615 
+So the throughput is going to be 1 / t / K + s.
+
+00:15:10.575 --> 00:15:16.401 
+So when, when K actually goes to Infinity, this t / K is going to be 0 or for example, let's say 1
+
+00:15:16.401 --> 00:15:17.055 
+gate delay.
+
+00:15:17.735 --> 00:15:23.073 
+And then you're going to have this sequencing overhead, which that's going to be your essentially
+
+00:15:23.073 --> 00:15:25.055 
+your limiting throughput in the end.
+
+00:15:25.415 --> 00:15:31.830 
+So in the end, as the more you increase your stages, at some point, the the useful operation that
+
+00:15:31.830 --> 00:15:35.535 
+you're doing per stage is going to be very, very little.
+
+00:15:35.775 --> 00:15:43.141 
+And then you are just paying the overhead only for sequencing the for the registers, which is not a
+
+00:15:43.141 --> 00:15:45.895 
+very good and wise thoughtful design.
+
+00:15:46.335 --> 00:15:51.744 
+So theoretically if you don't have that sequencing overhead, you really want to increase the the
+
+00:15:51.744 --> 00:15:57.097 
+number of stages, but that sequencing overhead at some point comes to play and that would limit
+
+00:15:57.097 --> 00:15:58.055 
+your performance.
+
+00:15:58.335 --> 00:16:04.028 
+There are also many other reasons that we're going to also see today that we don't we, we may not
+
+00:16:04.028 --> 00:16:09.604 
+be, we may not prefer to increase the the number of stage stages of the pipeline to to infinite
+
+00:16:09.604 --> 00:16:10.015 
+number.
+
+00:16:10.015 --> 00:16:12.655 
+So there should be actually control on that.
+
+00:16:12.655 --> 00:16:14.175 
+Also we're going to see a bit more.
+
+00:16:15.655 --> 00:16:16.015 
+OK.
+
+00:16:16.575 --> 00:16:21.575 
+So register delay reduces throughput which is sequencing overhead between the stages.
+
+00:16:23.615 --> 00:16:29.088 
+And still this picture assumes perfect division of work between the stages which we are already
+
+00:16:29.088 --> 00:16:29.895 
+discussed, OK.
+
+00:16:30.175 --> 00:16:37.435 
+Also regarding the cost, so here for example, you have G gates in your single cycle design and also
+
+00:16:37.435 --> 00:16:41.175 
+you have this the cost for the register which is R.
+
+00:16:41.375 --> 00:16:49.515 
+So in in this design is G + R Once you have it, the K stage pipeline, then again assuming that you
+
+00:16:49.515 --> 00:16:57.738 
+can perfectly partition in each of your combinational circuit, you're going to have G / K gates and
+
+00:16:57.738 --> 00:17:00.895 
+then you have essentially K registers.
+
+00:17:01.055 --> 00:17:04.095 
+So the the cost is going to be again G+ RK.
+
+00:17:04.695 --> 00:17:11.308 
+So then at some point actually by increasing the number of stages, this G is not going to change,
+
+00:17:11.308 --> 00:17:13.695 
+which in reality would also change.
+
+00:17:13.855 --> 00:17:18.935 
+But then you're going to the cost is going to increase because of adding registers.
+
+00:17:19.415 --> 00:17:21.775 
+So in the end register increase the hardware costs.
+
+00:17:21.895 --> 00:17:27.495 
+So that should be also considered to not have too many, let's say, pipeline stages.
+
+00:17:29.495 --> 00:17:30.335 
+OK, any question?
+
+00:17:33.535 --> 00:17:40.781 
+OK, so now let's get to see how we can do this pipeline instruction processing for our fetch,
+
+00:17:40.781 --> 00:17:45.535 
+decode, evaluate, address, fetch operands, execute and store.
+
+00:17:45.775 --> 00:17:51.824 
+So remember that we had these steps instruction fetch, instruction decode and register for access,
+
+00:17:51.824 --> 00:17:55.775 
+execute and address generation memory and also write back steps.
+
+00:17:56.775 --> 00:18:00.135 
+So we started with a single cycle micro architecture.
+
+00:18:00.335 --> 00:18:06.533 
+And we actually this one of the reason that we started a single cycle actually was that to say that
+
+00:18:06.533 --> 00:18:07.535 
+it's a bad idea.
+
+00:18:07.735 --> 00:18:09.135 
+So it's good to actually.
+
+00:18:09.935 --> 00:18:16.655 
+Show also bad ideas that people have developed for for the for educational perspective.
+
+00:18:17.295 --> 00:18:22.695 
+But single cycle micro architecture is actually also useful when you want to design pipeline design.
+
+00:18:23.295 --> 00:18:29.688 
+So you can come up with a single cycle micro architecture and then you can add pipeline registers in
+
+00:18:29.688 --> 00:18:31.095 
+between of the stages.
+
+00:18:31.375 --> 00:18:37.775 
+And that can actually can be a very nice shortcut when you want to design A pipeline system.
+
+00:18:38.255 --> 00:18:42.335 
+So that's why now we are getting back to our single cycle micro micro architecture.
+
+00:18:43.015 --> 00:18:48.975 
+And so this actually part of the data pass in our single cycle micro architecture is not complete.
+
+00:18:49.135 --> 00:18:55.135 
+But overall we get to this design when we are designing single cycle micro architecture.
+
+00:18:55.695 --> 00:19:01.055 
+And then you you can have different latencies for these stages.
+
+00:19:01.655 --> 00:19:07.820 
+So assuming that instruction fetch is 200 picosecond, decode is 100 picosecond, execute is also 200,
+
+00:19:07.820 --> 00:19:11.335 
+memory is also 200 and then write back is 100 picosecond.
+
+00:19:12.215 --> 00:19:17.055 
+And you need to somehow add some registers in between of these stages to make a pipeline.
+
+00:19:17.415 --> 00:19:22.559 
+But we want to say first get to this some analysis how much performance we are getting from such
+
+00:19:22.559 --> 00:19:22.935 
+system.
+
+00:19:24.695 --> 00:19:30.574 
+And also there are some, you know feedback that essentially these wires are going back to some of
+
+00:19:30.574 --> 00:19:36.029 
+the earlier stages and there's going to be actually problematic when we want to design the
+
+00:19:36.029 --> 00:19:36.575 
+pipeline.
+
+00:19:36.815 --> 00:19:40.095 
+We're going to get to that also later, but ignore for now for simplicity.
+
+00:19:41.295 --> 00:19:44.815 
+OK, so one question is that is this the correct partitioning?
+
+00:19:45.855 --> 00:19:51.933 
+So of course we can see that there are some stages that essentially the the latency is much lower
+
+00:19:51.933 --> 00:19:53.375 
+than 200 because again.
+
+00:19:53.735 --> 00:19:54.175 
+Half of it.
+
+00:19:54.935 --> 00:20:00.817 
+So that actually can rings the bell here that it may not be the perfect partitioning because in the
+
+00:20:00.817 --> 00:20:05.215 
+perfect partitioning we want to have equally latencies for all the stages.
+
+00:20:05.615 --> 00:20:07.775 
+But at some point also it's not easy to do that.
+
+00:20:07.815 --> 00:20:12.335 
+So we should also consider that life is not that beautiful all the time.
+
+00:20:12.335 --> 00:20:17.855 
+And so in the end, we might get to some pipeline that we have different latencies among the stages.
+
+00:20:18.535 --> 00:20:23.892 
+Hopefully we're going to have, we should try to have balance latency as much as possible like in
+
+00:20:23.892 --> 00:20:27.855 
+some order, but it might not be the case that they are perfectly equal.
+
+00:20:28.215 --> 00:20:28.895 
+So that's one thing.
+
+00:20:29.535 --> 00:20:37.317 
+But then also people can ask why not four or six stages because here we have 5 stages and this can
+
+00:20:37.317 --> 00:20:40.335 
+be actually with different evaluation.
+
+00:20:40.335 --> 00:20:45.877 
+So in the end, how many stages we need to come up and how we need to how we're going to break the
+
+00:20:45.877 --> 00:20:47.535 
+pipeline to different stages.
+
+00:20:47.935 --> 00:20:54.334 
+That's actually is a is a big design decisions which needs actually a lot of evaluation in the end
+
+00:20:54.334 --> 00:21:00.015 
+by adding some stages, because by adding a stages, you might have a better clock cycle.
+
+00:21:00.375 --> 00:21:05.712 
+But then there are some drawbacks of the pipelining, which can actually cause more issues when you
+
+00:21:05.712 --> 00:21:07.455 
+when you have a deeper pipeline.
+
+00:21:07.895 --> 00:21:11.695 
+So we're going to see that some of them in the later part of this lecture.
+
+00:21:11.695 --> 00:21:17.489 
+But just note that this actually is not a easy question to answer and a lot of design decision in
+
+00:21:17.489 --> 00:21:20.895 
+going on when we are when people are designing pipelines.
+
+00:21:22.535 --> 00:21:29.797 
+OK, so in this essentially example, assuming you have load word instructions, so in a single cycle
+
+00:21:29.797 --> 00:21:36.615 
+way, you need to do instruction fetch, register access, ALU data access and then write back.
+
+00:21:37.295 --> 00:21:41.820 
+So this going to take 800 picosecond and then after that, we're going to get to the next
+
+00:21:41.820 --> 00:21:43.055 
+instruction, next index.
+
+00:21:43.535 --> 00:21:48.495 
+But in our pipeline design, we can do instruction fetch for 200 picosecond.
+
+00:21:48.975 --> 00:21:54.737 
+And then this state actually even though register can be accessed in 100 picosecond, but we cannot
+
+00:21:54.737 --> 00:21:56.855 
+have a different clock cycle, right?
+
+00:21:56.895 --> 00:22:04.239 
+So you need to actually wait for 200 picosecond for register, for register file access, and also for
+
+00:22:04.239 --> 00:22:05.415 
+this write back.
+
+00:22:05.535 --> 00:22:10.855 
+Even though you can do it in 100 picosecond, you still need to wait for 200 picoseconds.
+
+00:22:11.495 --> 00:22:16.983 
+So in the steady state, assuming that you're going to execute all, I mean load words for the
+
+00:22:16.983 --> 00:22:18.415 
+infinite amount of time.
+
+00:22:18.775 --> 00:22:24.548 
+So this pipeline is going to be full at some point and then you're going to have one instruction
+
+00:22:24.548 --> 00:22:27.375 
+meaning that one load per every 200 picosecond.
+
+00:22:27.735 --> 00:22:29.615 
+So you're going to get to the speed up of four.
+
+00:22:30.655 --> 00:22:32.255 
+So it's 5A stage of speed up.
+
+00:22:33.695 --> 00:22:38.255 
+Basically five stage pipeline gives us speed up 4 which is not 5.
+
+00:22:38.255 --> 00:22:44.853 
+So that you can see that when your pipeline is not perfectly partitioned, you may not get to that
+
+00:22:44.853 --> 00:22:47.575 
+ideal speed up that you were looking at.
+
+00:22:47.855 --> 00:22:51.655 
+But actually 4 is pretty good speed up for this five stage pipeline as well.
+
+00:22:53.815 --> 00:22:54.175 
+OK.
+
+00:22:56.775 --> 00:23:01.975 
+So when we when we want to enable pipeline processing, we need to apply add pipeline registers.
+
+00:23:02.055 --> 00:23:07.055 
+So in this example, essentially we need to add some registers here.
+
+00:23:07.575 --> 00:23:11.655 
+This one is used for let's say instruction fetch and decode.
+
+00:23:13.055 --> 00:23:19.815 
+So essentially the instruction that you're fetching here, you need to store it in this pipeline
+
+00:23:19.815 --> 00:23:25.295 
+register and then you feed it to the next cycle to the for the decoded state.
+
+00:23:25.535 --> 00:23:30.311 
+And there are going to be also another Register here pipeline, which is for instruction decode and
+
+00:23:30.311 --> 00:23:34.015 
+execute and another pipeline Register here, which is for execute and memory.
+
+00:23:34.295 --> 00:23:40.484 
+So output of the previous stage and input of the the next stage and also another pipeline register
+
+00:23:40.484 --> 00:23:42.695 
+which is for memory and write back.
+
+00:23:43.615 --> 00:23:50.031 
+So here I think there is something important that we need to think about it as of now that different
+
+00:23:50.031 --> 00:23:53.175 
+instructions are actually running in this design.
+
+00:23:53.695 --> 00:23:54.855 
+So in this pipeline design.
+
+00:23:54.855 --> 00:24:00.945 
+So once you fetch 1 instruction and then you when you get to this decoding of this instruction in
+
+00:24:00.945 --> 00:24:06.095 
+this state, actually there is another instruction here which doing fetch for that.
+
+00:24:06.655 --> 00:24:10.959 
+And when you are doing execute of 1 instruction, there is another instruction here which you are
+
+00:24:10.959 --> 00:24:14.815 
+doing decoding of it and also another instruction here that you are doing fetch order.
+
+00:24:15.255 --> 00:24:21.650 
+So this is actually very important and that's help is important that how we design these registers
+
+00:24:21.650 --> 00:24:25.175 
+and how we control our control signals in this design.
+
+00:24:25.615 --> 00:24:33.941 
+So we're going to see that, OK, So for example, PCPC plus 4 you generate in this stage and then you
+
+00:24:33.941 --> 00:24:38.735 
+also provide the instruction from the instruction memory.
+
+00:24:38.735 --> 00:24:43.695 
+So you put it in this pipeline register such that you can move it to the to the next stage.
+
+00:24:44.015 --> 00:24:50.980 
+And also PC +4 that you calculated here you also need to put it in this register and to move it to
+
+00:24:50.980 --> 00:24:52.615 
+the next stage because.
+
+00:24:53.735 --> 00:24:57.535 
+The PC Plus 4, which going to be in the next cycle is actually different.
+
+00:24:57.815 --> 00:25:00.895 
+So you cannot always in a single cycle design.
+
+00:25:01.295 --> 00:25:05.695 
+You have your PC +4 and you can use it for all the stages, right?
+
+00:25:06.095 --> 00:25:12.541 
+But in pipeline, the PC +4 that you generate for this instruction A, you need to move it to your
+
+00:25:12.541 --> 00:25:19.055 
+pipeline such that in the later stages while you're executing instruction A, you have your PC +4.
+
+00:25:19.455 --> 00:25:19.815 
+Yes.
+
+00:25:23.632 --> 00:25:24.152 
+Exactly.
+
+00:25:25.072 --> 00:25:25.512 
+Yeah, yeah.
+
+00:25:25.992 --> 00:25:30.032 
+So, yeah, you're look, you're actually thinking a bit ahead of time which is very good.
+
+00:25:30.112 --> 00:25:35.491 
+And that's actually called control dependence which we're going to see later today how we handle
+
+00:25:35.491 --> 00:25:41.038 
+essentially we need to you need to have some technique to flush the pipeline for those instructions
+
+00:25:41.038 --> 00:25:43.392 
+that you have fetched wrongly essentially.
+
+00:25:43.392 --> 00:25:44.632 
+So we're going to see that.
+
+00:25:44.752 --> 00:25:50.580 
+But very good thing that you're actually, it's good to think about the problems of how when we
+
+00:25:50.580 --> 00:25:56.347 
+design pipelines, at some point you are not able to actually move all these instructions also
+
+00:25:56.347 --> 00:26:00.192 
+back-to-back because some of these instructions are dependent.
+
+00:26:00.792 --> 00:26:05.632 
+Like for example, there might be some instructions that while you're accessing the register file.
+
+00:26:06.472 --> 00:26:12.242 
+So the the read register that this instruction is, is actually going to be updated by a older
+
+00:26:12.242 --> 00:26:14.352 
+instruction which is already here.
+
+00:26:15.392 --> 00:26:20.482 
+So you don't have the updated value essentially your register file because that's going to be happen
+
+00:26:20.482 --> 00:26:21.552 
+after the write back.
+
+00:26:22.512 --> 00:26:28.952 
+So that younger instruction may actually fetch an absolute value of that register.
+
+00:26:28.952 --> 00:26:34.037 
+So these are actually very important things to think about it here and we're going to see how we can
+
+00:26:34.037 --> 00:26:35.512 
+handle that in such a design.
+
+00:26:38.392 --> 00:26:44.267 
+OK, so that's essentially you need to add this pipeline registers and everything needed for the
+
+00:26:44.267 --> 00:26:47.792 
+later stages you need to actually put in these registers.
+
+00:26:48.152 --> 00:26:54.040 
+So we need actually PC Plus 4 here as well because in your in order to calculate the the target
+
+00:26:54.040 --> 00:26:57.512 
+address for branch instructions, you need to have PC +4.
+
+00:26:58.912 --> 00:27:02.072 
+So essentially and you're doing it in this stage.
+
+00:27:02.432 --> 00:27:08.688 
+So you need to actually also pass PC +4 to the next stage and then to the next here such that you
+
+00:27:08.688 --> 00:27:09.592 
+can calculate.
+
+00:27:10.112 --> 00:27:16.305 
+And after here when we calculate the new PC, we again need to put it in the pipeline register which
+
+00:27:16.305 --> 00:27:18.432 
+going to be used to update the PC.
+
+00:27:19.552 --> 00:27:21.512 
+So that's about the data values.
+
+00:27:25.992 --> 00:27:32.192 
+Another thing in this kind of a pipeline design, which is a kind of a linear traditional pipeline.
+
+00:27:32.672 --> 00:27:37.952 
+So all instruction classes must follow the same paths and timing through the pipeline stages.
+
+00:27:38.552 --> 00:27:44.152 
+So load word essentially is a good example because load word actually needs to go over all these
+
+00:27:44.152 --> 00:27:49.753 
+stages like fetch, decode, execute for address generation and then accessing the memory and then
+
+00:27:49.753 --> 00:27:50.512 
+writing back.
+
+00:27:51.152 --> 00:27:59.110 
+However, another instruction you can think of subtract which you fit to the pipeline after the load
+
+00:27:59.110 --> 00:27:59.512 
+word.
+
+00:28:00.192 --> 00:28:06.250 
+So this subtract also needs to go over all these stages even though subtract has nothing to do in
+
+00:28:06.250 --> 00:28:07.312 
+the memory stage.
+
+00:28:07.672 --> 00:28:12.842 
+But for this way of designing pipeline, which is a kind of very traditional way of pipeline design
+
+00:28:12.842 --> 00:28:16.272 
+that subtract instruction also needs to go over all these stages.
+
+00:28:17.192 --> 00:28:24.278 
+We're going to see later in other pipeline design in also in other order execution that that doesn't
+
+00:28:24.278 --> 00:28:26.192 
+need to be always the case.
+
+00:28:26.592 --> 00:28:28.392 
+So you can actually have a different design.
+
+00:28:28.392 --> 00:28:34.570 
+But in this linear pipeline essentially you consider that all the instructions actually will go
+
+00:28:34.570 --> 00:28:38.472 
+through all these steps, which makes the design much easier.
+
+00:28:41.312 --> 00:28:41.672 
+OK.
+
+00:28:42.312 --> 00:28:48.239 
+So again, we are asking this that his life always is beautiful, which actually here we are
+
+00:28:48.239 --> 00:28:54.495 
+considering that this subtract, you know, all the registers that this subtract is using to load
+
+00:28:54.495 --> 00:29:00.752 
+this dollar register 2 and register three, they are not, they are not changed by the load work.
+
+00:29:01.192 --> 00:29:08.479 
+But for example, if this subtract has to read register 10, then you had to have you have a problem
+
+00:29:08.479 --> 00:29:11.752 
+which we're going to see how about it later.
+
+00:29:13.752 --> 00:29:20.672 
+So in operation view, you can also have it in this kind of a chart.
+
+00:29:20.672 --> 00:29:25.374 
+Whenever you want to judge about the performance of the pipeline design, you have different
+
+00:29:25.374 --> 00:29:28.992 
+instruction and they need to go over this fresh decode execute memory.
+
+00:29:29.072 --> 00:29:34.858 
+And right back and at some point your pipeline is full and assuming that you have, let's say too
+
+00:29:34.858 --> 00:29:40.584 
+many of these instructions, your pipeline will stay full for some time and then you're going to
+
+00:29:40.584 --> 00:29:42.272 
+have a very good throughput.
+
+00:29:43.672 --> 00:29:50.084 
+You can also think of as it in a resource view in this kind of a table which you have different
+
+00:29:50.084 --> 00:29:53.392 
+stages of the pipeline and also different cycles.
+
+00:29:54.032 --> 00:29:59.816 
+So in this table you can see how these instructions are moving through the through these steps
+
+00:29:59.816 --> 00:30:02.832 
+stages of the pipeline and also different cycles.
+
+00:30:03.392 --> 00:30:10.592 
+So after some time the steady state every cycle you are doing full useful works essentially.
+
+00:30:13.072 --> 00:30:17.792 
+OK, so now we know about datapaths in the pipeline design.
+
+00:30:17.792 --> 00:30:21.272 
+What should we do for the control in the pipeline design?
+
+00:30:21.672 --> 00:30:29.023 
+So the good thing here is that the control signals, they are actually identical set of control as we
+
+00:30:29.023 --> 00:30:32.552 
+designed in the single cycle micro architecture.
+
+00:30:33.152 --> 00:30:38.037 
+So all the control signals that we have had in the single cycle micro architecture, they're going to
+
+00:30:38.037 --> 00:30:39.992 
+be also here useful for pipeline design.
+
+00:30:40.392 --> 00:30:46.039 
+There is only one difference here that in single cycle you fetch the instruction and then you
+
+00:30:46.039 --> 00:30:51.747 
+generate the control signals and all these control signals going to be used at the same cycle,
+
+00:30:51.747 --> 00:30:52.112 
+right.
+
+00:30:52.432 --> 00:30:56.952 
+However, in the pipeline design, these control signals are going to be used in different cycles.
+
+00:30:57.552 --> 00:31:03.048 
+So still we have the same set of let's say control signals which you're going to use, but then it's
+
+00:31:03.048 --> 00:31:07.712 
+going to be different because at the different cycles they're going to be different.
+
+00:31:09.392 --> 00:31:12.632 
+So control signal require different cycle depending on the stage.
+
+00:31:12.712 --> 00:31:15.592 
+So we have two options how we want to deal with that.
+
+00:31:15.872 --> 00:31:21.072 
+One option is that now we decode once using the same logic as a single cycle micro architecture.
+
+00:31:21.072 --> 00:31:27.452 
+So once you fetch your instruction, you decode the instruction, you generate the control signals,
+
+00:31:27.452 --> 00:31:31.992 
+and then you essentially buffer these control signals until consumed.
+
+00:31:32.672 --> 00:31:34.912 
+So which is actually depicted in this picture.
+
+00:31:34.912 --> 00:31:39.872 
+So you generate the control signals and then you need to make your pipeline resistors bigger.
+
+00:31:40.952 --> 00:31:46.832 
+So the control signals that they need to be used for later stages, you essentially send it to this
+
+00:31:46.832 --> 00:31:47.912 
+pipeline register.
+
+00:31:47.912 --> 00:31:52.996 
+So you pipeline them and then send it back to the send it to the next stage and the next stage until
+
+00:31:52.996 --> 00:31:53.912 
+they are consumed.
+
+00:31:54.592 --> 00:31:58.832 
+So essentially here, which is the execute stage.
+
+00:31:59.272 --> 00:32:04.422 
+So this control signals that they are used for the executed stage are going to be consumed and then
+
+00:32:04.422 --> 00:32:07.232 
+that's why you don't feed it to the to the next stage.
+
+00:32:07.712 --> 00:32:13.006 
+However, the the control signals for the memory stage are going to actually just sent to the next
+
+00:32:13.006 --> 00:32:18.245 
+stage and then in this stage they're going to be consumed and then you're done and you only have
+
+00:32:18.245 --> 00:32:19.992 
+your write back control signals.
+
+00:32:20.312 --> 00:32:24.792 
+So that's one way of designing control in a pipeline design.
+
+00:32:25.112 --> 00:32:29.312 
+Another option is that we carry relevant instruction board or field.
+
+00:32:29.312 --> 00:32:34.405 
+So part of the instruction that they're relevant for generating control signal, you can actually
+
+00:32:34.405 --> 00:32:36.952 
+carry that down the pipeline and decode locally.
+
+00:32:36.952 --> 00:32:43.480 
+So then you're going to actually have a distributed decoding logic which so essentially in every
+
+00:32:43.480 --> 00:32:45.792 
+step you do some decoding locally.
+
+00:32:46.472 --> 00:32:52.904 
+So of course here there is a trade off and different design have used different part of this
+
+00:32:52.904 --> 00:32:54.512 
+actually these options.
+
+00:32:55.032 --> 00:33:00.752 
+But in this course actually we're going to consider the option one in this lecture at least.
+
+00:33:02.992 --> 00:33:09.246 
+So, yeah, so essentially here you can see that in this picture as well in our pipeline design that
+
+00:33:09.246 --> 00:33:11.352 
+these are the pipeline registers.
+
+00:33:11.672 --> 00:33:19.280 
+And then we also add the some to these register in order to have these control signals pipelined
+
+00:33:19.280 --> 00:33:20.232 
+essentially.
+
+00:33:23.872 --> 00:33:24.232 
+OK.
+
+00:33:24.952 --> 00:33:32.024 
+So yeah, so essentially the the right back control is going to be used at the at the very, very
+
+00:33:32.024 --> 00:33:35.152 
+last, this Reg right register file enable.
+
+00:33:35.432 --> 00:33:38.872 
+So that's why you need to carry it to all the stages.
+
+00:33:39.152 --> 00:33:40.872 
+And then in the end, you're going to use it.
+
+00:33:43.072 --> 00:33:43.432 
+OK.
+
+00:33:44.512 --> 00:33:49.952 
+And here is also the pipeline design in your book, which actually they did a pretty good job.
+
+00:33:49.952 --> 00:33:55.066 
+So I, I recommend everyone also check the book for for better understanding, even though in this
+
+00:33:55.066 --> 00:34:00.234 
+lecture we're going to actually explain all the important topics about it, but you can also check
+
+00:34:00.234 --> 00:34:02.472 
+For more information if you're interested.
+
+00:34:03.592 --> 00:34:12.161 
+So, so here in this example of the book, saying that essentially the the value that you want to
+
+00:34:12.161 --> 00:34:17.032 
+write to the register file is generated in this stage.
+
+00:34:17.832 --> 00:34:23.192 
+And then we moved this, sorry, the, the, the address.
+
+00:34:23.192 --> 00:34:28.672 
+This is the address, yes the destination register, which you want to write in the register file.
+
+00:34:29.592 --> 00:34:36.577 
+Is generated here and then we are moving it to the through this, you know, feedback to the register
+
+00:34:36.577 --> 00:34:40.952 
+for and actually the your book is asking that is this correct?
+
+00:34:41.672 --> 00:34:44.672 
+Which I think you can say quickly, is this correct?
+
+00:34:44.672 --> 00:34:50.962 
+Yes, yes.
+
+00:34:50.962 --> 00:34:51.162 
+And why?
+
+00:34:53.242 --> 00:35:00.282 
+Because at that point we're trying to write the register, but that instruction hasn't finished
+
+00:35:00.282 --> 00:35:00.882 
+exactly.
+
+00:35:01.552 --> 00:35:03.632 
+And actually there is another instruction.
+
+00:35:05.472 --> 00:35:08.672 
+There is actually another instruction here which is completely different.
+
+00:35:08.672 --> 00:35:14.928 
+So you, you need to exactly, you need to 1st finish that instruction and then in the right back mode
+
+00:35:14.928 --> 00:35:19.872 
+when you really have your data ready and then you need to provide that address.
+
+00:35:20.392 --> 00:35:24.831 
+So that's why in your book also say that yeah, essentially you need to send this address to the next
+
+00:35:24.831 --> 00:35:28.072 
+stage of the pipeline and then move it to the next stage of the pipeline.
+
+00:35:28.072 --> 00:35:32.352 
+And in the right backstage you essentially provide this address to the register file.
+
+00:35:33.152 --> 00:35:39.108 
+So yeah, that's more or less what we need to think about it when we are designing the pipeline
+
+00:35:39.108 --> 00:35:39.552 
+system.
+
+00:35:40.992 --> 00:35:41.592 
+Any question?
+
+00:35:44.190 --> 00:35:45.910 
+machine we built last time?
+
+00:35:45.910 --> 00:35:51.190 
+Well, in in multi cycle for example machine, we consider that we have a instruction data memory.
+
+00:35:51.950 --> 00:35:56.770 
+Remember that in order to reduce the cost, we say that we can have one memory which is used for
+
+00:35:56.770 --> 00:35:58.750 
+instruction fetch and also data memory.
+
+00:35:59.430 --> 00:36:04.838 
+But here, for example, in order to avoid resource dependence, like for example, when, when, when one
+
+00:36:04.838 --> 00:36:09.921 
+instruction is fetching is getting fetched, there might be some other instructions that we are
+
+00:36:09.921 --> 00:36:12.950 
+accessing the memory and they are writing to the memory.
+
+00:36:13.390 --> 00:36:16.790 
+So then you need to actually have different memory for a better pipeline design.
+
+00:36:17.070 --> 00:36:21.683 
+So that's why actually this architecture is more or less similar to the single cycle micro
+
+00:36:21.683 --> 00:36:22.350 
+architecture.
+
+00:36:22.710 --> 00:36:27.753 
+You know, if you just remove these pipeline registers, you're going to see that it's actually very
+
+00:36:27.753 --> 00:36:30.430 
+much similar to the single cycle micro architecture.
+
+00:36:31.270 --> 00:36:32.390 
+But the idea is the same.
+
+00:36:32.390 --> 00:36:38.333 
+Still we are doing in multi cycle, but multi cycle in a in a sense that every cycle there are
+
+00:36:38.333 --> 00:36:43.190 
+multiple instructions in the in the in the pipeline that they are executing.
+
+00:36:43.790 --> 00:36:49.165 
+So in each cycle you are executing part of the instruction, which is similar in that sense with a
+
+00:36:49.165 --> 00:36:53.710 
+multi cycle design, but there are multiple instructions in this, in this case now.
+
+00:36:53.710 --> 00:36:53.830 
+Yeah.
+
+00:36:53.830 --> 00:36:59.670 
+Can we somehow combine this pipeline with multi cycles?
+
+00:37:00.510 --> 00:37:01.950 
+Yes, it is possible.
+
+00:37:01.950 --> 00:37:04.270 
+And we're going to see actually there is a nice combination.
+
+00:37:04.790 --> 00:37:09.870 
+We're going to see it later I guess maybe next week or maybe after Easter break.
+
+00:37:09.910 --> 00:37:14.350 
+Yeah, this is a very good question actually.
+
+00:37:15.270 --> 00:37:16.030 
+Any other question?
+
+00:37:18.710 --> 00:37:29.220 
+OK, so and it's actually also another example of pipeline control that you can see that this control
+
+00:37:29.220 --> 00:37:33.740 
+unit generates control signals and then we.
+
+00:37:34.670 --> 00:37:38.030 
+Essentially move them to to this pipeline resistors.
+
+00:37:39.550 --> 00:37:45.282 
+OK, so when we want to design A pipeline processor, it's also not much different from the single
+
+00:37:45.282 --> 00:37:47.910 
+cycle or multi cycle the way that we design.
+
+00:37:47.910 --> 00:37:52.990 
+So we first come up with the data pass and then we need to design the control logic.
+
+00:37:53.390 --> 00:37:59.314 
+However, basically what we discussed here is that in a pipeline data pass design, you can actually
+
+00:37:59.314 --> 00:38:04.150 
+start with a single cycle data pass and decide how to break it down into stages.
+
+00:38:04.630 --> 00:38:08.350 
+And then we add pipeline registers to separate stages from each other.
+
+00:38:08.870 --> 00:38:15.547 
+We propagate data signals to stages where they are needed and we make sure correct action is done in
+
+00:38:15.547 --> 00:38:16.950 
+in the correct stage.
+
+00:38:18.070 --> 00:38:25.205 
+So those wires that they cross stages need to be handled carefully like some of these control
+
+00:38:25.205 --> 00:38:31.190 
+signals, some of these like also the the address for the destination register.
+
+00:38:31.190 --> 00:38:36.390 
+So these are actually problematic wires which you need to handle it carefully.
+
+00:38:37.070 --> 00:38:42.350 
+Also for the pipeline control logic, we start with the single cycle control signals and control
+
+00:38:42.350 --> 00:38:46.630 
+logic and then we propagate each control signal to stages where it is needed.
+
+00:38:47.390 --> 00:38:50.150 
+OK, so that's a summary of what we have done so far.
+
+00:38:50.910 --> 00:38:53.550 
+But now the question is that is this sufficient?
+
+00:38:53.950 --> 00:38:59.630 
+And we're going to see a lot now in that line like how do we handle dependent instructions?
+
+00:39:00.070 --> 00:39:05.755 
+As also I showed you quickly, some of these instructions that they are moving back-to-back, they
+
+00:39:05.755 --> 00:39:07.710 
+might be dependent on each other.
+
+00:39:07.710 --> 00:39:09.950 
+So you cannot really keep executing them.
+
+00:39:09.950 --> 00:39:13.590 
+So we're going to see that and how do we handle multi cycle memory access?
+
+00:39:13.870 --> 00:39:14.910 
+So there might be some.
+
+00:39:15.150 --> 00:39:18.830 
+So in your load instruction you might be stuck in your memory.
+
+00:39:18.990 --> 00:39:19.550 
+For a long time.
+
+00:39:19.790 --> 00:39:21.990 
+So how are you going to handle it essentially?
+
+00:39:22.470 --> 00:39:27.159 
+And also one of your colleagues actually talked about branch instructions which can actually cause a
+
+00:39:27.159 --> 00:39:27.910 
+lot of problems.
+
+00:39:28.070 --> 00:39:34.224 
+We're going to hopefully get to that as so remember an ideal pipeline that we discussed, we want to
+
+00:39:34.224 --> 00:39:40.005 
+have a repetition of identical operations, repetition of independent operation and uniformly,
+
+00:39:40.005 --> 00:39:42.430 
+uniformly partitionable sub operations.
+
+00:39:42.790 --> 00:39:48.978 
+So now let's look at essentially our instruction pipeline and unfortunately none of them is actually
+
+00:39:48.978 --> 00:39:49.350 
+there.
+
+00:39:49.710 --> 00:39:54.470 
+So it's very hard to get ideal pipeline when we are designing microprocessor.
+
+00:39:55.590 --> 00:40:01.199 
+So first of all, identical operations, clearly no, because we have different instructions that not
+
+00:40:01.199 --> 00:40:02.630 
+all need the same stages.
+
+00:40:03.230 --> 00:40:09.098 
+So that basically we, we are forcing all instructions to go through the same pipeline stages which
+
+00:40:09.098 --> 00:40:13.710 
+might not be really good for performance reasons and also for energy reasons.
+
+00:40:15.470 --> 00:40:17.910 
+So that's actually called external fragmentation.
+
+00:40:17.910 --> 00:40:21.310 
+So some pipeline stages idle for some instructions.
+
+00:40:22.030 --> 00:40:26.870 
+Another problem is that we we don't have uniform sub sub operations.
+
+00:40:28.070 --> 00:40:33.833 
+So different pipeline stations, they do not have the same latencies which is called internal
+
+00:40:33.833 --> 00:40:34.710 
+fragmentation.
+
+00:40:35.950 --> 00:40:40.750 
+And another problem is that we have we don't, we might not not have independent operations.
+
+00:40:40.750 --> 00:40:46.030 
+So instructions are in reality they might be independent, might be actually dependent on each other.
+
+00:40:46.870 --> 00:40:50.790 
+Some of these instructions are actually are kind of a producer and consumer.
+
+00:40:51.110 --> 00:40:56.512 
+So your, your instruction, your early instructions are producing some value and this value needs to
+
+00:40:56.512 --> 00:40:58.750 
+be consumed by later, later instructions.
+
+00:40:59.110 --> 00:41:03.950 
+So clearly you have the data dependence here, which you need to handle it somehow.
+
+00:41:04.190 --> 00:41:07.510 
+And also you have control dependence because of branch instructions.
+
+00:41:07.750 --> 00:41:09.310 
+So these are actually very important.
+
+00:41:09.430 --> 00:41:14.365 
+And we, we, you need to actually handle them, handle them nicely in order to have a correct
+
+00:41:14.365 --> 00:41:15.830 
+execution in your pipeline.
+
+00:41:16.430 --> 00:41:22.373 
+So now the question actually in the end is that how we design A correct pipeline that can handle all
+
+00:41:22.373 --> 00:41:26.950 
+these dependencies and problems while you're actually maximising performance.
+
+00:41:26.950 --> 00:41:30.750 
+So in the end that's the designer, you know the goal to achieve.
+
+00:41:30.870 --> 00:41:34.470 
+So we are not going to design A pipeline which is not correct.
+
+00:41:34.670 --> 00:41:37.950 
+So that's of course the the important, the most important thing.
+
+00:41:37.950 --> 00:41:42.430 
+But we also want to have a high performance pipeline as we optimise the system.
+
+00:41:43.670 --> 00:41:49.251 
+So essentially for this independent for dependence of the operation, we need to detect and resolve
+
+00:41:49.251 --> 00:41:53.750 
+inter instruction dependencies to ensure the pipeline provides correct results.
+
+00:41:54.110 --> 00:41:57.630 
+So detecting of them and resolving is very important.
+
+00:42:00.590 --> 00:42:05.470 
+So one important concept here is actually pipeline stalls.
+
+00:42:05.470 --> 00:42:10.474 
+So at some point you cannot keep moving your pipeline and you need to stall your pipeline in order
+
+00:42:10.474 --> 00:42:12.670 
+to make sure that your pipeline is correct.
+
+00:42:12.790 --> 00:42:14.430 
+So we're going to get to that also very soon.
+
+00:42:15.790 --> 00:42:19.390 
+So in pipeline, actually balancing working pipeline stages is very hard.
+
+00:42:19.430 --> 00:42:25.068 
+And this has been a problem and still also I mean it's very hard thing to do like how many stages
+
+00:42:25.068 --> 00:42:26.870 
+and what is done in each stage.
+
+00:42:27.110 --> 00:42:32.516 
+So today's processor actually if you check they have very different number of stages, some of them
+
+00:42:32.516 --> 00:42:35.110 
+they have 10s they some of them they have 1520.
+
+00:42:35.110 --> 00:42:37.110 
+So there are many different number of stages.
+
+00:42:37.430 --> 00:42:43.112 
+There are also some specialised processor that they might have much deeper pipeline like 10s of
+
+00:42:43.112 --> 00:42:44.070 
+pipeline stages.
+
+00:42:45.270 --> 00:42:52.823 
+But essentially this is very important and one of the hard decision making for one of the hardest,
+
+00:42:52.823 --> 00:42:55.830 
+hardest decision for the the designers.
+
+00:42:56.910 --> 00:43:02.310 
+Another important is that basically we keeping the pipeline correct, moving and full.
+
+00:43:02.670 --> 00:43:04.790 
+So correct of course is important.
+
+00:43:05.110 --> 00:43:10.717 
+However, moving and full is also very important in order to provide performance improvement in the
+
+00:43:10.717 --> 00:43:13.350 
+presence of events that disrupt pipeline flow.
+
+00:43:13.790 --> 00:43:18.503 
+So there are different reasons handling dependencies, data dependencies and also control
+
+00:43:18.503 --> 00:43:22.950 
+dependencies, which you're going to see that and also handling resource contention.
+
+00:43:22.950 --> 00:43:27.550 
+So sometimes in different stages, like think about memory.
+
+00:43:27.550 --> 00:43:31.550 
+So here actually we considered we have two different memory instruction, memory and data memory.
+
+00:43:31.830 --> 00:43:36.638 
+But if you have only one memory, then when you're fetching, you cannot write to that memory, for
+
+00:43:36.638 --> 00:43:37.390 
+example, right?
+
+00:43:37.710 --> 00:43:39.430 
+Or you cannot read from memory.
+
+00:43:39.870 --> 00:43:44.990 
+For a load word instruction, you need to load the from that memory, but another instruction also
+
+00:43:44.990 --> 00:43:46.910 
+need to be fetched from that memory.
+
+00:43:46.910 --> 00:43:52.002 
+So that memory is actually kind of a resource contention, which we consider that there is no there
+
+00:43:52.002 --> 00:43:53.510 
+because we have two memories.
+
+00:43:54.350 --> 00:43:57.190 
+There are also other resource contention that you can think of.
+
+00:43:57.190 --> 00:43:59.070 
+We're going to see actually one example very soon.
+
+00:43:59.670 --> 00:44:06.423 
+But essentially for resource contention, if you are rich enough you can just increase your resources
+
+00:44:06.423 --> 00:44:13.110 
+but that would come at the price of essentially higher area power consumption and also higher cost.
+
+00:44:15.190 --> 00:44:18.910 
+Also how to handle long latency multi cycle operations for memory?
+
+00:44:18.990 --> 00:44:24.783 
+Instruction, for example, you have long latency, how we can handle exception and interrupts, which
+
+00:44:24.783 --> 00:44:28.390 
+going to be actually the topic for the next week on Thursday.
+
+00:44:28.790 --> 00:44:32.110 
+For example, when you're executing your instruction, you have division by zero.
+
+00:44:32.110 --> 00:44:33.350 
+So how are we going to handle it?
+
+00:44:33.350 --> 00:44:39.946 
+So that's going to be the topic for the late and how are we going to improve pipeline throughput,
+
+00:44:39.946 --> 00:44:42.870 
+essentially how to minimise the stalls, OK.
+
+00:44:43.430 --> 00:44:45.150 
+So I think it's a perfect place to stop.
+
+00:44:45.630 --> 00:44:49.510 
+Let's be back at 3:15 and we will continue with this topic.
+
+00:44:54.404 --> 00:44:55.644 
+OK, let's continue.
+
+00:44:58.444 --> 00:45:05.229 
+So we so there are different 'cause that provide makes the pipeline to stall and we kind of into
+
+00:45:05.229 --> 00:45:08.764 
+define the stall actually in the before the break.
+
+00:45:09.164 --> 00:45:13.404 
+But more formally start is a condition when the pipeline stops moving.
+
+00:45:13.644 --> 00:45:18.364 
+And there are different reason like resource contention dependences and long latency operations.
+
+00:45:19.964 --> 00:45:22.324 
+These are called the dependency.
+
+00:45:22.324 --> 00:45:28.124 
+Also, your book actually call it hazard, which is which.
+
+00:45:28.484 --> 00:45:34.684 
+We don't like that terminology much because in the end hazard is so alarming, you know, terminology.
+
+00:45:35.084 --> 00:45:40.895 
+In the end, these are dependencies and in order to do a good work, in order to do a good reasonable,
+
+00:45:40.895 --> 00:45:44.324 
+let's say operation, you have some dependencies in the end.
+
+00:45:45.204 --> 00:45:50.138 
+So you need to just understand the dependencies and you know, design your pipeline to deal with them
+
+00:45:50.138 --> 00:45:50.484 
+nicely.
+
+00:45:53.204 --> 00:45:59.475 
+Also, resource contention is sometimes called resource dependence as well, which but this is this
+
+00:45:59.475 --> 00:46:04.324 
+resource contention is not fundamental to the to the programmer in the end.
+
+00:46:04.324 --> 00:46:07.444 
+So it's not fun dictated by program semantics.
+
+00:46:07.724 --> 00:46:13.444 
+Whereas the data dependence and control dependence are actually dictated by the program semantics.
+
+00:46:14.204 --> 00:46:17.964 
+So that's why we'll treat resource contention separately.
+
+00:46:17.964 --> 00:46:20.204 
+And in fact, we're going to start with that first.
+
+00:46:20.884 --> 00:46:25.564 
+So this happens when instructions in two pipeline stages need the same resource.
+
+00:46:26.084 --> 00:46:29.524 
+SO1 solution is that we just eliminate the cause of contention.
+
+00:46:29.524 --> 00:46:33.564 
+So we duplicate the resource or increase the throughput of that.
+
+00:46:34.124 --> 00:46:40.512 
+So remember in laundry machine for example, we just in laundry load, we just increase the number of
+
+00:46:40.512 --> 00:46:40.964 
+dryers.
+
+00:46:43.564 --> 00:46:50.239 
+One example would be we use separate instruction and data memory, which we already done caches
+
+00:46:50.239 --> 00:46:53.364 
+you're going to see later in later lectures.
+
+00:46:54.604 --> 00:46:58.044 
+Another example is that we can use multiple ports for memory structures.
+
+00:46:58.044 --> 00:47:02.496 
+So you can have multiple read ports, multiple write ports for your memory structure in order to do
+
+00:47:02.496 --> 00:47:02.724 
+that.
+
+00:47:03.484 --> 00:47:08.595 
+Another solution is that we detect the resource contention and then install one of the contending
+
+00:47:08.595 --> 00:47:08.964 
+stages.
+
+00:47:09.124 --> 00:47:11.764 
+So that's the way you need to handle it.
+
+00:47:11.764 --> 00:47:14.644 
+If you don't, if you only care about the correctness in the end.
+
+00:47:14.644 --> 00:47:21.462 
+So just detect it and you need to stall the one of them that they are contending for the for that
+
+00:47:21.462 --> 00:47:21.884 
+stage.
+
+00:47:23.804 --> 00:47:27.044 
+Then actually the question is that which which stage do you install?
+
+00:47:27.044 --> 00:47:31.124 
+And So what if you had a single read and write port for the register file?
+
+00:47:31.924 --> 00:47:34.004 
+So here is actually an example for your book.
+
+00:47:35.644 --> 00:47:37.724 
+That's you.
+
+00:47:38.044 --> 00:47:44.844 
+So this instruction load word here when it finishes, when it wants to do the write back at cycle 5.
+
+00:47:45.564 --> 00:47:54.216 
+There is another instruction here that needs to that's needs to read some registers from the
+
+00:47:54.216 --> 00:47:56.004 
+register file here.
+
+00:47:56.924 --> 00:48:02.231 
+So if your register file for example has only one read and write port or for example, if your
+
+00:48:02.231 --> 00:48:07.653 
+register file, if you're if you need to load the same register, right In this example, actually
+
+00:48:07.653 --> 00:48:10.964 
+you're not loading the same register for this instruction.
+
+00:48:11.284 --> 00:48:16.204 
+So this is T5 and T6, while in this load word you're writing to S2.
+
+00:48:17.764 --> 00:48:23.541 
+So in that sense, actually you can have a this with a careful design of the register file, you can
+
+00:48:23.541 --> 00:48:29.260 
+be you should be able to write in the first half of cycle and then read from the register file in
+
+00:48:29.260 --> 00:48:31.324 
+the second-half of your your cycle.
+
+00:48:31.724 --> 00:48:38.804 
+So your cycle time is long enough which accommodate for writing in the first half of cycle and then
+
+00:48:38.804 --> 00:48:41.164 
+you can read for the second-half.
+
+00:48:41.604 --> 00:48:46.284 
+So how you can implement it fully in the in the register file?
+
+00:48:46.724 --> 00:48:52.724 
+This kind of abstraction for for us now I mean in this in this course, but it's possible.
+
+00:48:53.044 --> 00:48:58.676 
+So you can, you can write, write takes place during the first half of the cycle and then reads takes
+
+00:48:58.676 --> 00:49:02.844 
+place during the second-half of the cycle, which causes no problem for us.
+
+00:49:03.084 --> 00:49:09.435 
+So with that, you can actually handle this read and write from or to the register file that has only
+
+00:49:09.435 --> 00:49:11.404 
+half a clock cycle to complete.
+
+00:49:11.844 --> 00:49:18.910 
+So if you consider that you can essentially handle this resource contention, that might be the case
+
+00:49:18.910 --> 00:49:20.124 
+in register file.
+
+00:49:20.124 --> 00:49:24.791 
+So you hear you write in the first half and then you read from the register file in the second-half
+
+00:49:24.791 --> 00:49:25.404 
+of the cycle.
+
+00:49:27.124 --> 00:49:27.844 
+We're going to see that.
+
+00:49:27.844 --> 00:49:32.404 
+We call it actually as a kind of a internal register file for wording.
+
+00:49:32.404 --> 00:49:34.244 
+We're going to see it see it later as well.
+
+00:49:35.244 --> 00:49:37.724 
+So there are different data dependencies.
+
+00:49:38.324 --> 00:49:39.724 
+Now we're going to see a lot in.
+
+00:49:39.844 --> 00:49:45.513 
+Data dependencies and some of them are actually flow dependence which we call it true data
+
+00:49:45.513 --> 00:49:47.844 
+dependence which is read after write.
+
+00:49:47.844 --> 00:49:53.096 
+Essentially there are some instructions that they are producing some value and then you need to
+
+00:49:53.096 --> 00:49:58.460 
+consume these values and that's a data dependence that you need to deal with it even in a control
+
+00:49:58.460 --> 00:49:59.124 
+flow design.
+
+00:49:59.124 --> 00:50:05.895 
+Remember that in in data flow, in data flow design, which actually you relax a lot of dependencies,
+
+00:50:05.895 --> 00:50:12.256 
+but there is this dependency that you you still need to care when you design that that of low
+
+00:50:12.256 --> 00:50:12.804 
+machine.
+
+00:50:13.604 --> 00:50:19.654 
+You essentially you have this producer and consumer model in most of the applications which you need
+
+00:50:19.654 --> 00:50:20.804 
+to take care of it.
+
+00:50:21.324 --> 00:50:27.776 
+There are also some other dependencies like anti dependence which writing after read we're going to
+
+00:50:27.776 --> 00:50:32.404 
+see with example and also output dependence that you write after write.
+
+00:50:34.764 --> 00:50:40.044 
+So basically for all of them, we need to ensure semantics of the program is correct.
+
+00:50:40.644 --> 00:50:46.475 
+And also flow dependences always need to be obeyed because they constitute true dependence on a
+
+00:50:46.475 --> 00:50:46.844 
+value.
+
+00:50:47.324 --> 00:50:52.579 
+However, this anti and output dependence they are actually exist due to the limited number of
+
+00:50:52.579 --> 00:50:57.044 
+architecture registers we're going to see with the example there later as well.
+
+00:50:58.884 --> 00:51:05.195 
+So in the end these anti and output dependencies are they are dependence on a name, not a value,
+
+00:51:05.195 --> 00:51:11.637 
+just the register name that you have and we will see how we can deal with it actually later in our
+
+00:51:11.637 --> 00:51:13.084 
+other voter execution.
+
+00:51:13.684 --> 00:51:16.804 
+But in this example actually you can see these pictorially.
+
+00:51:17.164 --> 00:51:23.632 
+So in flow dependence you here you're reading from register tree when you want to actually update it
+
+00:51:23.632 --> 00:51:25.444 
+in the previous instruction.
+
+00:51:25.444 --> 00:51:32.446 
+So that's read after write or flow data dependence, anti dependence here you're writing to register
+
+00:51:32.446 --> 00:51:37.044 
+one, but register 1 needs to be read in the previous instruction.
+
+00:51:37.604 --> 00:51:45.044 
+So in a in a pipeline design, A careful pipeline design that you make sure that you always update
+
+00:51:45.044 --> 00:51:51.564 
+your registers like the write backstage is always at the last stages of the pipeline.
+
+00:51:51.964 --> 00:51:58.037 
+This anti dependence is not going to cause any problem essentially because you're going to write to
+
+00:51:58.037 --> 00:52:01.044 
+this R1 at the very, very late at the last stage.
+
+00:52:01.404 --> 00:52:08.632 
+So when when the previous instruction is to read from R1, then is actually reading from the from the
+
+00:52:08.632 --> 00:52:09.644 
+correct value.
+
+00:52:09.644 --> 00:52:10.884 
+So there is no dependency.
+
+00:52:11.324 --> 00:52:17.915 
+But if you are not careful in your design, you might actually 'cause this problem that you are in
+
+00:52:17.915 --> 00:52:23.284 
+your pipeline, you are up, you update R1 before this instruction reads from R1.
+
+00:52:23.524 --> 00:52:28.302 
+And that is actually right after read, which actually kind of again, I want to say that it's
+
+00:52:28.302 --> 00:52:33.237 
+actually a false dependency because in the end, you could easily just use a different number, a
+
+00:52:33.237 --> 00:52:34.484 
+different Register here.
+
+00:52:34.484 --> 00:52:38.084 
+So this R1 here could be R thousand, for example.
+
+00:52:38.404 --> 00:52:41.644 
+Or when you want to write to R1 here, you could write to something else.
+
+00:52:41.764 --> 00:52:47.747 
+You could have a different register number but since the number of registers are limited in our
+
+00:52:47.747 --> 00:52:53.919 
+register flight then at some point you might get to these of dependencies anti dependence and also
+
+00:52:53.919 --> 00:52:56.124 
+similarly output output dependence.
+
+00:52:56.364 --> 00:53:04.463 
+So here also it might be the the fact that these are three essentially in the end, after executing
+
+00:53:04.463 --> 00:53:11.324 
+this instruction, this R3 should really have the value of R6 operated on R7, right?
+
+00:53:11.324 --> 00:53:13.124 
+This is the latest instruction that you have.
+
+00:53:13.444 --> 00:53:20.644 
+But if you're not careful in your pipeline design, you might end up having this R1 operated on R2 as
+
+00:53:20.644 --> 00:53:24.244 
+the late last value of R3, which is clearly wrong.
+
+00:53:24.444 --> 00:53:30.309 
+OK, so, but again, this also output dependence is just because we are using the same register in
+
+00:53:30.309 --> 00:53:35.564 
+order to you know, for these two instructions, but we could just use another register.
+
+00:53:35.604 --> 00:53:42.200 
+So these are these are kind of a not not real dependences, which you can easily actually by just
+
+00:53:42.200 --> 00:53:44.124 
+changing the register value.
+
+00:53:44.124 --> 00:53:46.684 
+If you can, you can just get out of it.
+
+00:53:46.844 --> 00:53:52.004 
+OK, But this read after write is a true dependence which you really cannot do anything without it.
+
+00:53:52.164 --> 00:53:55.764 
+So that's that's why this dependence is actually very fundamental.
+
+00:53:55.964 --> 00:53:57.804 
+You produce and you want to consume it.
+
+00:53:58.044 --> 00:54:04.389 
+OK, any question, we're going to get to this right after read and right after write a lot in our
+
+00:54:04.389 --> 00:54:10.404 
+later lectures in out of order design, but just to know the concept here is also important.
+
+00:54:10.844 --> 00:54:21.244 
+Yes, here we show these instructions.
+
+00:54:21.244 --> 00:54:25.924 
+No, no, no, the, the the top instruction is the earliest instruction.
+
+00:54:26.604 --> 00:54:31.004 
+Yeah, Yeah, Now it's clear.
+
+00:54:33.124 --> 00:54:34.524 
+OK, let's continue.
+
+00:54:35.524 --> 00:54:39.724 
+So in our example we see this load word and subtract.
+
+00:54:39.844 --> 00:54:40.324 
+For example.
+
+00:54:41.844 --> 00:54:53.716 
+But what if actually, yeah, so just think about it that this subtract could have been actually a
+
+00:54:53.716 --> 00:54:56.684 
+different Register here.
+
+00:54:56.684 --> 00:55:03.709 
+So this dollar 10, if you in the in your subtract also needs to read from register 10, then you have
+
+00:55:03.709 --> 00:55:07.644 
+this data read after write dependency in your execution.
+
+00:55:08.004 --> 00:55:12.204 
+OK, so we're going to see a lot how to handle data dependence.
+
+00:55:12.444 --> 00:55:15.364 
+And you can actually also check your book.
+
+00:55:15.764 --> 00:55:20.528 
+And in addition to that, I would also recommend you check this beautiful paper, the micro
+
+00:55:20.528 --> 00:55:25.827 
+architecture of Super scalar processor, which we're going to actually use the concept a lot in more
+
+00:55:25.827 --> 00:55:30.324 
+advanced pipelining, intro and exception handling and out of order and super scalar.
+
+00:55:30.564 --> 00:55:36.253 
+So these are going to be actually the topics for the later lectures, But I think it's good thing to
+
+00:55:36.253 --> 00:55:38.724 
+start reading this beautiful paper as well.
+
+00:55:39.684 --> 00:55:42.644 
+OK, so how to handle data dependence?
+
+00:55:42.844 --> 00:55:46.204 
+So anti and output dependences are easier to handle.
+
+00:55:46.204 --> 00:55:50.764 
+We just write to the destination only in the last stage and in program order.
+
+00:55:50.764 --> 00:55:56.381 
+OK, so in our pipeline, what we already designed, if you make sure that we write to the destination
+
+00:55:56.381 --> 00:56:01.204 
+only in last stage, then we're going to get rid of this anti and output dependencies.
+
+00:56:01.924 --> 00:56:06.004 
+However, for flow dependencies, they are much more interesting, let's say, and challenging.
+
+00:56:06.404 --> 00:56:11.837 
+So there are 6 fundamental ways of handling these flow dependences, and I'm going over these
+
+00:56:11.837 --> 00:56:13.964 
+fundamental ways very, very quickly.
+
+00:56:14.164 --> 00:56:18.124 
+But we're going to see that actually in later lectures as well, some of them.
+
+00:56:19.364 --> 00:56:21.524 
+So one way is actually you just detect and wait.
+
+00:56:21.804 --> 00:56:26.431 
+So you detect the dependency and then you wait, meaning that you stole the pipeline until your
+
+00:56:26.431 --> 00:56:27.564 
+dependency is resolved.
+
+00:56:28.004 --> 00:56:33.404 
+Another way is that we detect and then we try to forward and bypass data to dependent instruction.
+
+00:56:33.684 --> 00:56:39.344 
+We're going to see a lot about it today, how we we're going to create some forwarding passes in
+
+00:56:39.344 --> 00:56:42.324 
+order to provide the data for this earlier stages.
+
+00:56:43.124 --> 00:56:47.324 
+Another way is that we detect and eliminate the dependence at the software level.
+
+00:56:47.324 --> 00:56:50.004 
+So this can be actually very powerful technique.
+
+00:56:50.004 --> 00:56:56.354 
+If you can do it, your compiler can see that there are different instructions back-to-back that they
+
+00:56:56.354 --> 00:56:57.244 
+are dependent.
+
+00:56:57.644 --> 00:57:04.313 
+So if possible compiler can try to put some independent instructions in between such that you the
+
+00:57:04.313 --> 00:57:10.777 
+compiler increase the distance between dependent instructions and that can essentially provide
+
+00:57:10.777 --> 00:57:12.084 
+performance for us.
+
+00:57:12.244 --> 00:57:17.964 
+So, but of course it depends on how effectively compiler can do it.
+
+00:57:17.964 --> 00:57:18.084 
+Yes.
+
+00:57:18.084 --> 00:57:21.124 
+Would we just then have to give some information about the?
+
+00:57:21.124 --> 00:57:22.604 
+Yes, exactly.
+
+00:57:22.884 --> 00:57:28.652 
+So you're then actually you're ISA information is to actually provide some information about your
+
+00:57:28.652 --> 00:57:29.604 
+pipeline design.
+
+00:57:30.244 --> 00:57:35.569 
+So ISA needs to actually communicate some information to the compiler essentially that the micro
+
+00:57:35.569 --> 00:57:41.060 
+architecture pipeline for example has these number of stages and then compiler needs to be aware of
+
+00:57:41.060 --> 00:57:42.004 
+that essentially.
+
+00:57:42.004 --> 00:57:47.901 
+So then some of this, the way that we defined ISA, actually there might be some now for this kind of
+
+00:57:47.901 --> 00:57:53.564 
+implementation you might need to inform, you know, some of this information to the higher level.
+
+00:57:53.644 --> 00:57:54.044 
+Yes.
+
+00:57:57.204 --> 00:57:58.004 
+Any other question?
+
+00:57:59.204 --> 00:57:59.564 
+Good.
+
+00:58:01.324 --> 00:58:07.444 
+Another fundamental way is that we detect and move it out of the way for independent instructions.
+
+00:58:09.724 --> 00:58:15.217 
+Another way would be that we predict the needed value and for example, we whenever we are dependent,
+
+00:58:15.217 --> 00:58:20.545 
+we just predict that, OK, my value is going to be 0, for example, you know, and then you continue
+
+00:58:20.545 --> 00:58:22.084 
+the execution based on that.
+
+00:58:22.084 --> 00:58:27.973 
+Your prediction is speculatively because you're, you're speculatively executing and then you need to
+
+00:58:27.973 --> 00:58:31.684 
+verify if you're if you have done a correct job, then all good.
+
+00:58:31.924 --> 00:58:37.964 
+But if wrong, you need to essentially roll back to the before your speculation execution happened.
+
+00:58:38.804 --> 00:58:43.916 
+And another interesting way is actually do something else, which is actually the concept of fine
+
+00:58:43.916 --> 00:58:47.484 
+grain multi trading, which has been used a lot, for example in GPS.
+
+00:58:48.004 --> 00:58:53.324 
+Now we're going to see that hopefully in our GPU lectures as well that whenever.
+
+00:58:53.484 --> 00:58:58.484 
+So you have thousands of threads and these threads they have different instructions.
+
+00:58:58.484 --> 00:59:04.319 
+So once one thread have you have dependency among the instructions of that, you hopefully you have
+
+00:59:04.319 --> 00:59:09.678 
+some other threads that you can just schedule instructions from other threads and that can
+
+00:59:09.678 --> 00:59:15.453 
+potentially actually keep your pipeline full using different threads, which likely you don't have
+
+00:59:15.453 --> 00:59:19.324 
+dependency between instructions of different threats essentially.
+
+00:59:19.764 --> 00:59:21.764 
+So that's the topic we're going to get to that later.
+
+00:59:22.764 --> 00:59:30.138 
+And all these actually fundamental ways actually generate a lot of basically creative ideas through
+
+00:59:30.138 --> 00:59:35.204 
+these many years that people develop for handling data dependencies.
+
+00:59:37.644 --> 00:59:39.804 
+OK, so read after write dependency.
+
+00:59:39.844 --> 00:59:42.484 
+Is actually very important.
+
+00:59:42.644 --> 00:59:46.004 
+And so here in this picture, picture also you can see that.
+
+00:59:46.004 --> 00:59:50.667 
+So when we want to write back and then this instruction is to read this register, then we have this
+
+00:59:50.667 --> 00:59:51.044 
+problem.
+
+00:59:52.124 --> 00:59:54.604 
+Even this instruction also we have this problem.
+
+00:59:54.724 --> 00:59:56.804 
+Even this instruction also we have the problem.
+
+00:59:56.804 --> 01:00:00.724 
+Only this instruction we might be able to just read.
+
+01:00:00.844 --> 01:00:06.177 
+You know, if you consider that we have this that example that we write to the register file at the
+
+01:00:06.177 --> 01:00:11.402 
+first half of the cycle and then we can read from that the second-half, then this instruction is
+
+01:00:11.402 --> 01:00:12.164 
+not dependent.
+
+01:00:12.364 --> 01:00:14.964 
+But other than that, all these instructions are dependent.
+
+01:00:16.684 --> 01:00:22.404 
+OK, so one way actually is to resolve data dependencies that we stole the pipeline.
+
+01:00:22.924 --> 01:00:33.033 
+So instruction I here is writing something to register RX and then instruction J needs to read from
+
+01:00:33.033 --> 01:00:35.484 
+this register RX, right?
+
+01:00:36.044 --> 01:00:44.949 
+So that's why when here in this instruction in the the write back essentially instruction J cannot
+
+01:00:44.949 --> 01:00:46.404 
+continue moving.
+
+01:00:46.684 --> 01:00:47.764 
+So you need to install it.
+
+01:00:48.484 --> 01:00:54.084 
+And then so that basically we just put bubbles in the pipeline.
+
+01:00:54.084 --> 01:00:55.924 
+So this instruction will wait.
+
+01:00:55.924 --> 01:01:00.524 
+Here I'm going to show you how we can kind of implement it in the micro architecture.
+
+01:01:00.884 --> 01:01:07.684 
+But pictorially also you just this instruction is to wait in the instruction fetch and then you just
+
+01:01:07.684 --> 01:01:09.724 
+move bubbles in your pipeline.
+
+01:01:09.724 --> 01:01:18.364 
+So these are bubbles until you get to this position that you can continue decoding your instruction.
+
+01:01:18.444 --> 01:01:18.764 
+OK.
+
+01:01:20.564 --> 01:01:25.952 
+So clearly when you have this data dependence, your pipeline is getting your performance, your
+
+01:01:25.952 --> 01:01:31.569 
+throughput of the pipeline is getting actually affected because you cannot keep your pipeline full
+
+01:01:31.569 --> 01:01:37.129 
+by doing useful things like you're when you're actually moving bubbles, like depending on how you
+
+01:01:37.129 --> 01:01:42.632 
+implement bubbles, in the end you are doing something, but that's something is just no pressure,
+
+01:01:42.632 --> 01:01:42.804 
+OK?
+
+01:01:43.124 --> 01:01:48.404 
+So you're not really doing useful works when you're starting, OK?
+
+01:01:49.044 --> 01:01:53.484 
+So whenever we want to install, basically we make the dependent instruction wait.
+
+01:01:53.724 --> 01:01:58.204 
+So this instruction is to wait until it's source data value is available.
+
+01:01:58.804 --> 01:02:05.324 
+So how we implement it, essentially we stop all upper stream stages, upper stream stages.
+
+01:02:05.324 --> 01:02:10.473 
+Like for example, when this instruction is waiting the decoder stage, we just stop at the fetcher
+
+01:02:10.473 --> 01:02:11.004 
+stage, OK?
+
+01:02:11.644 --> 01:02:13.884 
+And we drain all downstream stages.
+
+01:02:13.884 --> 01:02:20.335 
+So those stage downstream stages that they were doing some useful thing, they need to drain until we
+
+01:02:20.335 --> 01:02:21.884 
+get to this instruction.
+
+01:02:22.604 --> 01:02:26.044 
+Like we have this value of this write back for this instruction to continue.
+
+01:02:28.124 --> 01:02:32.004 
+And that's the way we implemented, I'm going to show you in the micro architecture also very soon.
+
+01:02:32.404 --> 01:02:37.852 
+And this is the concept of interlocking, which is detection of dependence between instructions in a
+
+01:02:37.852 --> 01:02:40.604 
+pipeline processor to guarantee correct execution.
+
+01:02:40.884 --> 01:02:44.604 
+And it can be actually software based interlocking or hardware based interlocking.
+
+01:02:45.484 --> 01:02:51.338 
+And so in software based, essentially the programmer, the compiler needs to understand these
+
+01:02:51.338 --> 01:02:57.574 
+dependency and then compiler can try to as I said put some instructions independent instruction in
+
+01:02:57.574 --> 01:02:58.084 
+between.
+
+01:02:58.444 --> 01:03:04.364 
+And if the compiler cannot find independent instructions then it needs to put some no operation.
+
+01:03:04.964 --> 01:03:09.284 
+So there might be some some ISA instruction called NO, NOP, NOP.
+
+01:03:09.684 --> 01:03:15.318 
+And then just compile it to these instruction in between just to make sure that we are resolving
+
+01:03:15.318 --> 01:03:15.964 
+dependency.
+
+01:03:16.244 --> 01:03:22.567 
+So if you have too many of these knobs, then of course your throughput is just limited because
+
+01:03:22.567 --> 01:03:25.124 
+you're not really doing useful things.
+
+01:03:25.724 --> 01:03:32.244 
+And in hardware based interlocking essentially you you need to detect it and install the pipeline.
+
+01:03:32.644 --> 01:03:37.604 
+And then there are different ways how we can improve the performance which we're going to see that.
+
+01:03:38.924 --> 01:03:43.884 
+Does anyone knows the what MIPS acronym is like MIPS stands for what?
+
+01:03:44.724 --> 01:03:48.204 
+Because actually we use MIPS a lot, but we never talk about it.
+
+01:03:48.964 --> 01:03:51.764 
+Yes, MEGA instructions per second.
+
+01:03:51.764 --> 01:03:52.964 
+No, it's not that actually.
+
+01:03:54.524 --> 01:03:56.404 
+Hopefully yeah, that would be good.
+
+01:03:56.404 --> 01:04:06.774 
+Actually MIPS if if provide million millions of instruction per second, but it's not that anyone M
+
+01:04:06.774 --> 01:04:13.124 
+stands for micro architecture and I stands for interlocking.
+
+01:04:15.364 --> 01:04:23.502 
+So actually MIPS stands for something like micro architecture without interlocked pipeline stages,
+
+01:04:23.502 --> 01:04:25.164 
+something like that.
+
+01:04:26.764 --> 01:04:31.293 
+Basically when people were designing MIPS ISA, they wanted, they had this idea that they wanted to
+
+01:04:31.293 --> 01:04:35.084 
+have a micro architecture that which doesn't have any hardware based interlocking.
+
+01:04:35.364 --> 01:04:37.284 
+So everything should be handled at the compiler.
+
+01:04:37.764 --> 01:04:39.764 
+Well, that didn't really work out well.
+
+01:04:40.084 --> 01:04:46.218 
+And in later editions of the MIPS, they actually have it heavy implementation of hardware based
+
+01:04:46.218 --> 01:04:50.804 
+interlocking and in the end you can actually use both of them together.
+
+01:04:50.804 --> 01:04:53.724 
+So it's not decision of either this or that essentially.
+
+01:04:54.724 --> 01:04:55.644 
+OK, that's for fun.
+
+01:04:57.964 --> 01:05:04.044 
+So we have a different approaches to detect dependency in the in the hardware.
+
+01:05:04.364 --> 01:05:06.044 
+So one of them is a scoreboarding.
+
+01:05:06.924 --> 01:05:10.604 
+We're going to see a scoreboarding also a lot in the out of order execution.
+
+01:05:11.004 --> 01:05:13.124 
+So scoreboarding essentially is actually quite easy.
+
+01:05:13.124 --> 01:05:16.764 
+Like each register in register 5 has a valid bit associated with it.
+
+01:05:17.804 --> 01:05:21.604 
+An instruction that is writing to the register resets the valid bit.
+
+01:05:21.724 --> 01:05:28.322 
+So once you're decoding an instruction and you know that this instruction needs to write to, for
+
+01:05:28.322 --> 01:05:34.921 
+example, register 2, then you need to reset the valid bit of register 2, basically telling later
+
+01:05:34.921 --> 01:05:38.564 
+instructions that this register to value is obsolete.
+
+01:05:39.044 --> 01:05:41.204 
+So you need to wait for a valid information.
+
+01:05:41.804 --> 01:05:43.124 
+So that's the idea here.
+
+01:05:43.644 --> 01:05:49.696 
+And an instruction in the decode stage, basically you check if all its source and destination
+
+01:05:49.696 --> 01:05:55.164 
+registers are valid and if all of them are valid, then you can basically keep going.
+
+01:05:55.164 --> 01:05:57.524 
+So no need to install, there's no dependence.
+
+01:05:57.604 --> 01:06:00.964 
+If no, you need to install the instruction essentially.
+
+01:06:01.324 --> 01:06:03.404 
+So that's the one way to implement this idea.
+
+01:06:04.724 --> 01:06:08.924 
+So advantage is that it's actually quite simple because you add only one bit per register.
+
+01:06:09.484 --> 01:06:14.410 
+However, disadvantage is that we need to install for all types of self dependencies, not only flow
+
+01:06:14.410 --> 01:06:14.964 
+dependency.
+
+01:06:14.964 --> 01:06:15.524 
+And why is that?
+
+01:06:15.524 --> 01:06:21.364 
+Because you here you actually check both source and destination registers.
+
+01:06:21.724 --> 01:06:24.524 
+So you even you install for read after write.
+
+01:06:25.044 --> 01:06:29.444 
+I'm sorry for write after read and write after write dependencies.
+
+01:06:30.244 --> 01:06:32.004 
+OK, so that's a scoreboarding.
+
+01:06:35.924 --> 01:06:36.204 
+Yeah.
+
+01:06:36.204 --> 01:06:41.770 
+So here for example, this subtract instruction because it you need to for example, read from
+
+01:06:41.770 --> 01:06:45.884 
+register 10, then you can actually install it using this scoreboard.
+
+01:06:46.044 --> 01:06:52.063 
+OK, another way which your book also assume that is having this combination of dependence check
+
+01:06:52.063 --> 01:06:52.444 
+logic.
+
+01:06:53.004 --> 01:07:00.435 
+So essentially you need to have a combinational circuits that basically you need to get the
+
+01:07:00.435 --> 01:07:02.804 
+information for later stages.
+
+01:07:02.804 --> 01:07:07.756 
+So whenever you are at the decoded stage, you you know that these are the registers that you want to
+
+01:07:07.756 --> 01:07:08.004 
+read.
+
+01:07:08.644 --> 01:07:14.404 
+And then with your, this combinational circuit gets input from later stages as well.
+
+01:07:15.004 --> 01:07:21.006 
+And you know that you can see that if there is a equality between the registers that you want to
+
+01:07:21.006 --> 01:07:26.884 
+read and registers that they are touched that they're going to be touched by the later stages.
+
+01:07:27.004 --> 01:07:31.004 
+So if there is some equality, then you see that OK, I need to wait essentially.
+
+01:07:31.404 --> 01:07:36.844 
+And if there is no equality, then OK, there is no dependence and you can keep going, OK.
+
+01:07:36.844 --> 01:07:41.962 
+So I think by your understanding of how to implement combinational circuits, I think it's actually
+
+01:07:41.962 --> 01:07:43.164 
+very easy to implement.
+
+01:07:43.244 --> 01:07:46.604 
+So I'm not going to go over it very in too much detail.
+
+01:07:47.044 --> 01:07:53.698 
+But essentially if the you see that there is some equality between your, essentially your registers
+
+01:07:53.698 --> 01:07:58.404 
+that you want to read, you need to install the instructional pipeline.
+
+01:07:58.564 --> 01:08:00.404 
+If no, you just continue executing.
+
+01:08:01.124 --> 01:08:06.524 
+So the advantage here is that there is no need to install on anti and output dependencies here.
+
+01:08:06.604 --> 01:08:11.612 
+So which is good, but there are a lot of disadvantage here that logic is more complex than a
+
+01:08:11.612 --> 01:08:15.804 
+scoreboard and the logic becomes more complex as we make the pipeline deeper.
+
+01:08:15.884 --> 01:08:21.691 
+So in our here example, our pipeline is 5 stages, but what will happen if your pipeline has 20
+
+01:08:21.691 --> 01:08:22.124 
+stages?
+
+01:08:22.244 --> 01:08:27.649 
+OK, So then actually you need to get input from all these stages in order to see if there is a
+
+01:08:27.649 --> 01:08:28.684 
+dependency or not.
+
+01:08:29.404 --> 01:08:32.364 
+Whereas in other way scoreboarding, you just check one bit.
+
+01:08:32.804 --> 01:08:33.044 
+OK?
+
+01:08:33.724 --> 01:08:39.630 
+So that's the trade off essentially here And here also say that flash forward, which is superscalar
+
+01:08:39.630 --> 01:08:45.477 
+execution, we're going to see that actually, I don't know, in maybe 3 or 4 later lectures in super
+
+01:08:45.477 --> 01:08:50.847 
+scaler, actually you might have you, you, you're going to duplicate your pipeline, several
+
+01:08:50.847 --> 01:08:51.444 
+pipelines.
+
+01:08:51.444 --> 01:08:56.473 
+So you're going to have several pipelines and then you need to actually also check all of them as
+
+01:08:56.473 --> 01:08:58.444 
+well in this kind of dependency logic.
+
+01:08:59.124 --> 01:09:01.484 
+But you're going to get to that later.
+
+01:09:03.724 --> 01:09:11.884 
+OK, so, so once we detect the dependence in the hardware, then what do you do afterwards?
+
+01:09:11.884 --> 01:09:17.284 
+So essentially now we have one option which is to stall the dependent instruction right away.
+
+01:09:17.764 --> 01:09:22.644 
+And the second option is that we can stall the dependent instruction only when necessary.
+
+01:09:23.124 --> 01:09:29.170 
+So, so the first option is actually just ensure the correctness, but essentially it doesn't it's not
+
+01:09:29.170 --> 01:09:30.924 
+good for performance reasons.
+
+01:09:31.324 --> 01:09:35.542 
+And the second option is try to make sure that we are correct and high performance, which we're
+
+01:09:35.542 --> 01:09:36.964 
+going to also see ways for that.
+
+01:09:37.164 --> 01:09:39.804 
+There are also other options which we don't get to it.
+
+01:09:39.844 --> 01:09:42.164 
+In this lecture, but we're going to see that hopefully later.
+
+01:09:43.284 --> 01:09:46.204 
+So that's a topic of data for wording and bypassing.
+
+01:09:48.964 --> 01:09:53.436 
+So that's the problem that the consumer instruction has to wait in the decoder stage until the
+
+01:09:53.436 --> 01:09:56.244 
+producer instruction writes its value in the register part.
+
+01:09:56.244 --> 01:09:57.604 
+OK, so we discuss about it.
+
+01:09:58.244 --> 01:10:01.684 
+So now the goal is that we do not want to install the pipeline unnecessarily.
+
+01:10:02.044 --> 01:10:07.636 
+So how we do it, essentially the idea is that the data value needed by the consumer instruction can
+
+01:10:07.636 --> 01:10:13.004 
+be supplied directly from a later stage in the pipeline instead of only from the register file.
+
+01:10:13.444 --> 01:10:20.469 
+So once that, for example, your ALU generates the the value that you need to for your execution, you
+
+01:10:20.469 --> 01:10:21.804 
+can just bypass it.
+
+01:10:21.924 --> 01:10:24.284 
+You don't need to wait to read it from the register file.
+
+01:10:25.124 --> 01:10:30.045 
+So that's the idea here that essentially we add additional dependence check logic and data
+
+01:10:30.045 --> 01:10:35.240 
+forwarding pass or buses to supply the producers value to the consumer right after the value is
+
+01:10:35.240 --> 01:10:40.435 
+available, which is actually very similar how we do it actually in real in that of low machine,
+
+01:10:40.435 --> 01:10:40.764 
+right.
+
+01:10:40.764 --> 01:10:46.364 
+So whenever the data is ready, you just pass it and you can fire instructions.
+
+01:10:46.364 --> 01:10:52.004 
+So here is also the case when when the data is ready and we can continue executing, we try to do it.
+
+01:10:52.444 --> 01:10:53.764 
+We don't wait for that.
+
+01:10:55.004 --> 01:10:59.564 
+So that's provide essentially benefit that you have less stalling essentially in the end.
+
+01:11:01.684 --> 01:11:08.105 
+So now let's see how we can implement both stalling logic and how we can add this forwarding passes
+
+01:11:08.105 --> 01:11:08.884 
+essentially.
+
+01:11:09.724 --> 01:11:14.816 
+So when you want to, for example, stall here, you essentially disable program counter, make sure
+
+01:11:14.816 --> 01:11:17.044 
+that you don't change the program counter.
+
+01:11:17.724 --> 01:11:21.884 
+And also you disable instruction fetch and instruction decode thatching.
+
+01:11:21.884 --> 01:11:24.044 
+So this also is not going to be changed.
+
+01:11:24.244 --> 01:11:29.524 
+OK, so that's the one this ensure stall instruction stays in its stage.
+
+01:11:29.964 --> 01:11:35.691 
+So that's the way we implement and also we insert invalid instruction or no operations into the
+
+01:11:35.691 --> 01:11:38.404 
+stage following the start one called bubbles.
+
+01:11:38.964 --> 01:11:41.844 
+So here for example other stage we just push bubbles.
+
+01:11:42.324 --> 01:11:43.764 
+So how you can implement it?
+
+01:11:43.764 --> 01:11:46.084 
+Well, there are different ways to implement bubbles.
+
+01:11:46.284 --> 01:11:51.744 
+One way would be just, you know, just clear up all these registers, all zeros and all control
+
+01:11:51.744 --> 01:11:57.321 
+signals like those important control signal like right enables or whatever, those are all zeros
+
+01:11:57.321 --> 01:11:59.964 
+such that you make sure you don't cause harm.
+
+01:12:00.124 --> 01:12:00.484 
+OK.
+
+01:12:00.964 --> 01:12:06.280 
+But you can also think of some other ways also, you know that when you're studying, you can
+
+01:12:06.280 --> 01:12:11.364 
+potentially try to clock it, you know, some of these stages to save also power as well.
+
+01:12:11.364 --> 01:12:16.764 
+But these are not in the end not very important for the for understanding of this lecture.
+
+01:12:17.124 --> 01:12:20.764 
+You just need to make sure that you don't harm to other stages.
+
+01:12:20.764 --> 01:12:24.564 
+So there are multiple different ways of implementing it.
+
+01:12:27.204 --> 01:12:29.564 
+OK, so here is an example.
+
+01:12:30.164 --> 01:12:31.564 
+So how we can handle it.
+
+01:12:31.884 --> 01:12:34.724 
+This read off, read off the right data dependent example.
+
+01:12:35.964 --> 01:12:40.884 
+So there is this instruction that you're going to write to this register is 0.
+
+01:12:41.604 --> 01:12:48.604 
+And then there is another instruction here and that you need to read from this register.
+
+01:12:48.604 --> 01:12:53.484 
+So it's a kind of exactly this one produce and this one is going to consume OK.
+
+01:12:53.964 --> 01:12:56.604 
+So clearly you cannot continue like that.
+
+01:12:56.684 --> 01:12:58.884 
+So you need to essentially.
+
+01:12:59.884 --> 01:13:02.604 
+So this is going to read wrong value.
+
+01:13:03.124 --> 01:13:07.444 
+If you just continue like that, this instruction is going to also read wrong value.
+
+01:13:07.644 --> 01:13:12.580 
+And only this instruction, if you consider that internal forwarding pass, which we discussed in the
+
+01:13:12.580 --> 01:13:14.724 
+register for it can read the correct value.
+
+01:13:15.604 --> 01:13:20.124 
+So that's why we need to essentially stall and push bubbles in the execution.
+
+01:13:20.124 --> 01:13:21.164 
+So that's the way.
+
+01:13:21.364 --> 01:13:24.404 
+So in the at the compile time, you can actually add no operations.
+
+01:13:24.844 --> 01:13:30.024 
+You know, between this addition and then the dependent instruction, which is the next one, you can
+
+01:13:30.024 --> 01:13:30.764 
+just add Nope.
+
+01:13:31.564 --> 01:13:33.644 
+And that can fix the problem.
+
+01:13:33.644 --> 01:13:37.164 
+Of course, now your compiler needs to be aware of the micro architecture.
+
+01:13:37.524 --> 01:13:42.044 
+There should be some information about the pipeline stages such that compiler can handle it.
+
+01:13:43.244 --> 01:13:46.084 
+But the problem is that adding this no operation is not free.
+
+01:13:46.084 --> 01:13:52.324 
+Like when you add them you have useless instructions OK which going to cause performance overhead.
+
+01:13:52.524 --> 01:13:58.059 
+So ideally compile time need to under find some instructions that they are independent and can use
+
+01:13:58.059 --> 01:13:59.924 
+them as an operation essentially.
+
+01:13:59.924 --> 01:14:04.991 
+So you are you're going to use, you're going to do useful works while you're resolving your
+
+01:14:04.991 --> 01:14:05.604 
+dependence.
+
+01:14:08.164 --> 01:14:14.302 
+So essentially compiler is trying to reorder, reschedule and insert instruction at the compiler
+
+01:14:14.302 --> 01:14:16.564 
+level in order to fix this problem.
+
+01:14:18.404 --> 01:14:24.284 
+So in data forwarding which is also called data passing data bypassing in the hardware.
+
+01:14:24.604 --> 01:14:30.643 
+So you forward the result value to the dependent instruction as soon as the value is available and
+
+01:14:30.643 --> 01:14:36.621 
+which we have already seen this basic idea in data flow machine that we can do that and with data
+
+01:14:36.621 --> 01:14:39.764 
+forwarding actually you can see that now the micro.
+
+01:14:40.044 --> 01:14:47.044 
+Is getting closer to the to the data flow execution model or principles that we have seen.
+
+01:14:49.044 --> 01:14:52.724 
+OK, so how we can do that?
+
+01:14:54.364 --> 01:15:01.824 
+So this instruction which going to produce the value of this register S 0 is going to be the data is
+
+01:15:01.824 --> 01:15:09.061 
+going to be available at this stage, OK, because this ALU I calculate this addition and then this
+
+01:15:09.061 --> 01:15:11.524 
+value is actually available here.
+
+01:15:12.324 --> 01:15:22.724 
+So you can just clearly just put the forward from this state to the to the input of the ALU.
+
+01:15:22.844 --> 01:15:29.539 
+So from this, this clear nice forwarding pass and essentially you should also have some multiplexer
+
+01:15:29.539 --> 01:15:35.964 
+here in order to make sure that you select from the forwarding pass and not from this register.
+
+01:15:36.084 --> 01:15:36.404 
+OK?
+
+01:15:37.204 --> 01:15:42.851 
+But assuming that you're doing that, you can just forward and data from this stage to this stage and
+
+01:15:42.851 --> 01:15:44.884 
+then this instruction can get going.
+
+01:15:46.124 --> 01:15:49.964 
+And also this value is also ready.
+
+01:15:50.044 --> 01:15:53.684 
+I mean, this is generated here, so it's ready here.
+
+01:15:53.684 --> 01:15:57.684 
+And also you pass it to the next stage as well because you want to do it right back here, right?
+
+01:15:58.004 --> 01:16:01.644 
+So this value, this new register is also available here.
+
+01:16:01.644 --> 01:16:10.084 
+You can also have another bypassing pass from from the memory stage to the beginning of the executed
+
+01:16:10.084 --> 01:16:11.604 
+stage essentially.
+
+01:16:12.204 --> 01:16:14.404 
+So with that also you can do that.
+
+01:16:14.844 --> 01:16:19.524 
+So essentially we can do from latched output of ALU to the input of ALU.
+
+01:16:19.564 --> 01:16:20.724 
+That's one for wording pass.
+
+01:16:20.724 --> 01:16:26.433 
+Another would be from right back to input of ALU and from right back to the register file which we
+
+01:16:26.433 --> 01:16:28.764 
+have already seen that which we call it.
+
+01:16:29.284 --> 01:16:33.564 
+It is actually internal for avoiding pass in the register file OK.
+
+01:16:37.764 --> 01:16:40.684 
+Questo è OK.
+
+01:16:42.444 --> 01:16:42.764 
+Yeah.
+
+01:16:42.804 --> 01:16:49.004 
+So we have these different forwarding pass here actually also shown in this micro architecture.
+
+01:16:49.604 --> 01:16:54.684 
+So this red one is actually from latch output of ALU to the input of ALU.
+
+01:16:55.964 --> 01:17:02.259 
+And you need to do it for two sources because you don't know this is going to be consumed for which
+
+01:17:02.259 --> 01:17:03.404 
+sources of the Lu.
+
+01:17:03.404 --> 01:17:04.684 
+So you need to provide in both.
+
+01:17:05.404 --> 01:17:11.084 
+And also this yellow forwarding pass is actually from the right back to the input of ALU, OK?
+
+01:17:11.564 --> 01:17:16.417 
+And then from register file, you assume that your register file can handle it, that you can write in
+
+01:17:16.417 --> 01:17:19.524 
+the first half and then read from the second-half of your cycle.
+
+01:17:21.524 --> 01:17:25.364 
+OK, so that's forwarding.
+
+01:17:26.404 --> 01:17:30.644 
+So we forward to execute the stage from either memory stage or write back stage.
+
+01:17:31.404 --> 01:17:35.524 
+And now the question is that when should we forward from either memory or write back stage?
+
+01:17:36.244 --> 01:17:40.776 
+Like if that decision we write to a destination register and the destination register matches the
+
+01:17:40.776 --> 01:17:41.524 
+source register.
+
+01:17:41.924 --> 01:17:46.764 
+So that's our logic to understand that we need to use the forwarding pass.
+
+01:17:48.004 --> 01:17:53.679 
+And then another question is that if both the memory and write back stages contain matching
+
+01:17:53.679 --> 01:17:57.484 
+destination register, then which one you're going to protise?
+
+01:17:57.604 --> 01:18:02.844 
+So if both of them actually are matching the same register, so which one you're going to protise?
+
+01:18:03.324 --> 01:18:09.124 
+So of course, we're going to protise this red line because this actually has the more recent value
+
+01:18:09.124 --> 01:18:12.084 
+from the from the younger instruction essentially.
+
+01:18:12.524 --> 01:18:19.111 
+So that's the way you can protise in order to make sure that you forward the right value to the
+
+01:18:19.111 --> 01:18:25.907 
+execute Your book actually also provide this pseudo code, you know, to understand it better how we
+
+01:18:25.907 --> 01:18:28.404 
+can implement this forwarding logic.
+
+01:18:28.724 --> 01:18:35.845 
+So I let you go over it at home if you're interested And but the problem is that data forwarding is
+
+01:18:35.845 --> 01:18:37.284 
+not always possible.
+
+01:18:38.204 --> 01:18:40.044 
+So think about load word instruction.
+
+01:18:40.044 --> 01:18:47.433 
+So load word instruction essentially you, you have the value that you want to write the 0 actually
+
+01:18:47.433 --> 01:18:54.672 
+at the end of the memory stage, OK, you can potentially think about forwarding end of the memory
+
+01:18:54.672 --> 01:18:57.764 
+stage to the beginning of your ALU stage.
+
+01:18:57.924 --> 01:19:00.324 
+OK, so that's kind is possible.
+
+01:19:00.564 --> 01:19:04.844 
+But the problem is that if you do that, then your critical pass latency is increasing.
+
+01:19:05.404 --> 01:19:12.131 
+So now the your clock cycle needs to handle the memory stage and also the executed stage because you
+
+01:19:12.131 --> 01:19:18.724 
+need to, you need to be sure that these combinational circuit is going to fit in your clock cycle.
+
+01:19:19.004 --> 01:19:22.884 
+So that's why if you don't, it's better to not do that, of course.
+
+01:19:23.244 --> 01:19:29.074 
+And also assuming that memory stage is very slow and can be very slow, people don't do that most of
+
+01:19:29.074 --> 01:19:29.604 
+the time.
+
+01:19:29.964 --> 01:19:33.284 
+So that's why we don't provide this forwarding pass.
+
+01:19:34.164 --> 01:19:42.066 
+And then essentially this instruction whenever we have load word as the earlier instruction, you
+
+01:19:42.066 --> 01:19:44.124 
+need to you need to stop.
+
+01:19:44.564 --> 01:19:51.527 
+So this instruction and here you need to install at least for one for one cycle here in our example
+
+01:19:51.527 --> 01:19:55.044 
+and then it can continue to the for the execution.
+
+01:19:55.724 --> 01:20:03.363 
+OK, So with our with our forwarding pass, we kind of fix all the data dependence unless we have this
+
+01:20:03.363 --> 01:20:05.044 
+load word instruction.
+
+01:20:05.044 --> 01:20:10.484 
+So with load word, the next instruction if it is dependent needs to wait at least for one second.
+
+01:20:16.021 --> 01:20:18.581 
+Yes, yes, it's a tough task to do of course.
+
+01:20:19.581 --> 01:20:20.701 
+And then you need to test it.
+
+01:20:20.941 --> 01:20:23.861 
+What you have done was correct or not, but yeah, yeah, yeah.
+
+01:20:23.981 --> 01:20:30.541 
+That's why we are paying a lot also for to buy these chips, OK.
+
+01:20:31.701 --> 01:20:35.541 
+But these are costs that they are hopefully only one, one time.
+
+01:20:35.541 --> 01:20:42.237 
+I mean, after you change the processor, you need to spend a lot, but you you spend that time to
+
+01:20:42.237 --> 01:20:44.141 
+generate and a lot of cost.
+
+01:20:44.141 --> 01:20:49.741 
+And then hopefully you're going to, you know, sell thousand of that chips or millions of that chips.
+
+01:20:52.181 --> 01:20:59.101 
+OK, so yeah, this is the picture how we handle stalling independence.
+
+01:20:59.181 --> 01:21:08.067 
+So you essentially you disable program counter and also disable this fetch, decode register and all
+
+01:21:08.067 --> 01:21:14.261 
+of them you basically you book said that we flush them or clear them.
+
+01:21:14.381 --> 01:21:20.981 
+Essentially you write 0 such that you make sure that you don't harm in later stages of the pipeline.
+
+01:21:23.701 --> 01:21:30.901 
+OK, so this is the hardware and that we need to support for stalls so we have this.
+
+01:21:32.261 --> 01:21:38.514 
+Enable inputs to the to the fetch and decode pipeline registers and also we have synchronous reset
+
+01:21:38.514 --> 01:21:42.981 
+or clear input to the execute pipeline registers when we want to stop.
+
+01:21:44.621 --> 01:21:47.381 
+It can be in different ways of implementation as well.
+
+01:21:47.741 --> 01:21:53.550 
+However, when a load word stall occurs we we need to keep the values in the decode and fetch a stage
+
+01:21:53.550 --> 01:21:55.061 
+pipeline register as well.
+
+01:21:56.061 --> 01:21:56.341 
+OK.
+
+01:21:56.541 --> 01:22:03.381 
+So these are just a summary of what we have discussed for you to check later question.
+
+01:22:04.781 --> 01:22:09.490 
+I think we have time to cover this control dependence as well, at least some part of it and then
+
+01:22:09.490 --> 01:22:09.981 
+we'll see.
+
+01:22:10.741 --> 01:22:14.581 
+So there's a special case of data dependence, which is control dependence.
+
+01:22:15.741 --> 01:22:19.581 
+Is it kind of a data dependence on the instruction pointer or program counter?
+
+01:22:19.861 --> 01:22:26.821 
+OK, so control dependence, the question is that what should the fetch PC be in the next cycle?
+
+01:22:27.701 --> 01:22:31.461 
+So the simple answer is that it's going to be the address of the next instruction, OK.
+
+01:22:31.981 --> 01:22:35.621 
+But then the problem is that how can we know the address of the next instruction?
+
+01:22:36.261 --> 01:22:41.597 
+So if the fetch instruction is a non control flow instruction, next fetch PC is the address of the
+
+01:22:41.597 --> 01:22:44.701 
+next sequential instruction which is in MIPS for example.
+
+01:22:44.701 --> 01:22:50.250 
+It's going to be PC +4 OK, which is easy to determine if we know the size of the fetch instruction,
+
+01:22:50.250 --> 01:22:52.661 
+which is the case for MIPS ISA for example.
+
+01:22:53.261 --> 01:22:58.664 
+However, if the instruction that is fetch is a control flow instruction like branch or jump, then
+
+01:22:58.664 --> 01:23:00.781 
+how do we determine the next fetch PC?
+
+01:23:01.701 --> 01:23:06.261 
+And in fact, how do we know whether or not the fetch instruction is a control flow or not?
+
+01:23:06.501 --> 01:23:08.821 
+So you know it after you decode it, right?
+
+01:23:09.061 --> 01:23:14.581 
+At the fetch of stage, you have no idea if you do, if you're fetching branch or not.
+
+01:23:14.741 --> 01:23:15.101 
+OK.
+
+01:23:15.821 --> 01:23:20.941 
+So that's the concept of branch prediction, which is a special case of data dependence, which is
+
+01:23:20.941 --> 01:23:23.021 
+your dependence on the program counter.
+
+01:23:23.021 --> 01:23:28.810 
+You try to predict that you have branch and whether or not you're going to take take the pass or not
+
+01:23:28.810 --> 01:23:29.621 
+take the pass.
+
+01:23:30.541 --> 01:23:35.943 
+So in branch, if we call conditional branch, branch is not resolved until the 4th stage of the
+
+01:23:35.943 --> 01:23:36.461 
+pipeline.
+
+01:23:36.461 --> 01:23:38.661 
+OK, you need to do it at the fourth stage.
+
+01:23:40.061 --> 01:23:43.181 
+Instructions after the branch are fetched before the branch is resolved.
+
+01:23:43.181 --> 01:23:46.661 
+And that's can cause the problem essentially, right?
+
+01:23:47.221 --> 01:23:52.386 
+So we can have a simple branch prediction example that we always predict that the next sequential
+
+01:23:52.386 --> 01:23:55.901 
+instruction is fetch, which is called always not taken prediction.
+
+01:23:56.141 --> 01:24:01.701 
+So whenever you have instruction, you don't care if it's a branch or not, you just fetch the PC +4.
+
+01:24:02.181 --> 01:24:04.221 
+And this is a kind of a prediction essentially, right?
+
+01:24:04.221 --> 01:24:07.221 
+You predict that I'm not going to take any of the branches.
+
+01:24:07.221 --> 01:24:13.741 
+OK, We're going to see a more let's say intelligent branch prediction also later in this course.
+
+01:24:14.861 --> 01:24:21.073 
+And then after we resolve the branch, we need to flush or invalidate non taken pass instruction if
+
+01:24:21.073 --> 01:24:22.341 
+the branch is taken.
+
+01:24:22.741 --> 01:24:29.101 
+OK, so you there is a branch instruction you don't know if you're going to take or not, so you just
+
+01:24:29.101 --> 01:24:31.221 
+keep fetching other instructions.
+
+01:24:31.581 --> 01:24:36.248 
+But once you resolve that branch instructions is taken, then you need to flush those wrong
+
+01:24:36.248 --> 01:24:41.226 
+instructions that you have fetched, which going to be, you know, you need to pay that as a plant
+
+01:24:41.226 --> 01:24:44.701 
+penalty of the pipeline because your pipeline is going to be empty.
+
+01:24:44.941 --> 01:24:50.221 
+And then you need to wait until you have it full and get to the steady state.
+
+01:24:50.981 --> 01:24:56.259 
+And that's actually one of the reason that people should be careful about the stages of the
+
+01:24:56.259 --> 01:24:56.781 
+pipeline.
+
+01:24:56.821 --> 01:25:02.553 
+When your pipeline is deep, then you're going to pay much more for these branch instructions
+
+01:25:02.553 --> 01:25:03.301 
+essentially.
+
+01:25:03.981 --> 01:25:10.477 
+OK, so that's branch miss prediction penalty that people need to pay a number of instructions
+
+01:25:10.477 --> 01:25:13.621 
+flushed when branch is incorrectly predicted.
+
+01:25:14.781 --> 01:25:19.824 
+So this penalty can be reduced by resolving the branch earlier, which we call it early branch
+
+01:25:19.824 --> 01:25:20.421 
+resolution.
+
+01:25:20.421 --> 01:25:21.421 
+So how we do it?
+
+01:25:21.741 --> 01:25:29.526 
+This is our pipeline so far, but design so and this is actually the the example that we discussed
+
+01:25:29.526 --> 01:25:33.941 
+about it, the control how we flush and miss prediction.
+
+01:25:33.941 --> 01:25:35.101 
+So here is a branch.
+
+01:25:35.381 --> 01:25:41.739 
+If you call and then you actually you have some instructions in your pipeline which you miss because
+
+01:25:41.739 --> 01:25:45.301 
+of the miss prediction, you are actually executing them.
+
+01:25:45.621 --> 01:25:47.541 
+So you need to flush all of these instructions.
+
+01:25:47.541 --> 01:25:51.941 
+You flush these instructions and then you continue feeding your pipeline from the right pass.
+
+01:25:52.021 --> 01:25:52.701 
+So that's the way.
+
+01:25:54.261 --> 01:25:58.894 
+So in order to reduce this overhead, you can calculate branch target and condition in the decoder
+
+01:25:58.894 --> 01:25:59.181 
+stage.
+
+01:25:59.661 --> 01:26:01.661 
+So that's the early branch resolution.
+
+01:26:02.301 --> 01:26:07.741 
+So you add this equality check, you'd add this equality check here in the decoder stage.
+
+01:26:08.701 --> 01:26:15.628 
+And so with that, you can actually decide on your branch whether or not you want to take or not at
+
+01:26:15.628 --> 01:26:16.901 
+the decoder stage.
+
+01:26:16.981 --> 01:26:17.301 
+OK.
+
+01:26:18.021 --> 01:26:26.061 
+So if that's the case, you also need to move this logic for calculating the target address as well.
+
+01:26:26.061 --> 01:26:30.261 
+So this is the condition check and this is the logic for the target address.
+
+01:26:30.461 --> 01:26:31.901 
+So all of them you need to put.
+
+01:26:32.021 --> 01:26:36.021 
+In the decoder stage such that you can resolve the branch early enough.
+
+01:26:36.381 --> 01:26:40.021 
+So if you do that then you only need to flush this instruction.
+
+01:26:40.381 --> 01:26:46.261 
+OK other instruction you basically you don't fetch them because you are now resolving branch quite
+
+01:26:46.261 --> 01:26:46.621 
+early.
+
+01:26:48.501 --> 01:26:50.821 
+So early branch resolution is a good idea.
+
+01:26:51.141 --> 01:26:57.480 
+So of course, it has advantages like reduce branch miss prediction penalty and that reduced CPI for
+
+01:26:57.480 --> 01:27:03.499 
+you, but has disadvantage because that potentially increasing the clock cycle time because now
+
+01:27:03.499 --> 01:27:06.381 
+you're decoded stage, you're doing more work.
+
+01:27:06.701 --> 01:27:09.181 
+So it can potentially increase your clock cycle time.
+
+01:27:09.941 --> 01:27:15.034 
+So in the end, whether or not you need to, whether or not it's a good idea or not, you need to
+
+01:27:15.034 --> 01:27:15.901 
+evaluate it, OK?
+
+01:27:17.021 --> 01:27:19.781 
+And this also adds additional hardware costs, as you can see.
+
+01:27:20.941 --> 01:27:23.661 
+So in the end, we need to get to this performance analysis basic.
+
+01:27:24.541 --> 01:27:29.181 
+So we are reducing CPI, but we are increasing clock cycle time.
+
+01:27:29.421 --> 01:27:31.421 
+So in the end, it might be useful or not.
+
+01:27:31.461 --> 01:27:32.261 
+So we should see.
+
+01:27:33.701 --> 01:27:35.181 
+But that's not the old thing.
+
+01:27:35.381 --> 01:27:42.421 
+Actually your branch might be your BEQ instruction might need registers that they're going to be
+
+01:27:42.421 --> 01:27:45.501 
+produced actually by earlier instructions.
+
+01:27:45.701 --> 01:27:51.170 
+So you also need to, if you want to do it correctly, you need to add forwarding pass for these
+
+01:27:51.170 --> 01:27:52.101 
+decoded station.
+
+01:27:52.101 --> 01:27:59.564 
+So now you also need to forward from the from the memory after the ALU latched ALU, and also from
+
+01:27:59.564 --> 01:28:06.488 
+potentially from the output of the memory to the decoded stage as well in order to resolve
+
+01:28:06.488 --> 01:28:07.181 
+branches.
+
+01:28:07.741 --> 01:28:14.537 
+Again, whether or not it's a good idea, you need to evaluate it because this adds some complexity,
+
+01:28:14.537 --> 01:28:19.461 
+some longer latency, and can potentially cause longer clock cycle time.
+
+01:28:20.901 --> 01:28:21.221 
+OK.
+
+01:28:22.981 --> 01:28:29.126 
+So here also some from your book like how we can handle forwarding and studying the hardware
+
+01:28:29.126 --> 01:28:29.661 
+control.
+
+01:28:29.661 --> 01:28:33.141 
+You can think of this like a very long implementation of it, so you can check it.
+
+01:28:34.141 --> 01:28:40.981 
+And this actually our final pipeline needs processor from H&H which has includes always not taken
+
+01:28:40.981 --> 01:28:46.341 
+branch prediction, early branch resolution and forwarding and install logic.
+
+01:28:46.581 --> 01:28:49.901 
+So you can go over it with for more detail later.
+
+01:28:51.261 --> 01:28:52.341 
+OK, but we can do better.
+
+01:28:52.341 --> 01:28:55.661 
+Of course for branch prediction, they can, they can be much smarter.
+
+01:28:55.701 --> 01:28:58.421 
+You can have different idea.
+
+01:28:58.581 --> 01:29:03.162 
+So for example, you know that backward branches, usually they are used to implement loops and you
+
+01:29:03.162 --> 01:29:06.421 
+know that for loops you're going to take the branch most of the time.
+
+01:29:06.701 --> 01:29:10.821 
+So you can use this idea in order to have better prediction for branches.
+
+01:29:10.821 --> 01:29:17.038 
+You can actually also keep history of your branches and based on the history that you keep, decide
+
+01:29:17.038 --> 01:29:20.781 
+whether or not you want to take or not take these branches.
+
+01:29:21.261 --> 01:29:25.461 
+So accurate branch prediction reduces the fraction of branches that requires a flush.
+
+01:29:25.621 --> 01:29:31.667 
+So that's why this is actually this been, it's been a topic for many years and it's still also in
+
+01:29:31.667 --> 01:29:37.401 
+top computer architecture conferences that people try to come up with a better algorithms to
+
+01:29:37.401 --> 01:29:38.461 
+predict branches.
+
+01:29:39.101 --> 01:29:41.101 
+It can be actually much more sophisticated.
+
+01:29:41.101 --> 01:29:46.188 
+For example, you can use machine learning technique for that, but we're going to see in our branch
+
+01:29:46.188 --> 01:29:51.068 
+prediction lecture, if you are impatient, you can actually also check some earlier lectures on
+
+01:29:51.068 --> 01:29:53.301 
+that, but we're going to see later as well.
+
+01:29:54.501 --> 01:29:55.901 
+So I will stop here.
+
+01:29:56.141 --> 01:30:00.831 
+The rest of this lecture, we have some example on performance of the pipeline, which I leave it
+
+01:30:00.831 --> 01:30:01.621 
+actually to you.
+
+01:30:01.901 --> 01:30:05.461 
+You can actually go over on these slides, provide some example.
+
+01:30:06.101 --> 01:30:11.501 
+And next week, we're going to start with the next topic, which is I guess precise exception.
+
+01:30:11.861 --> 01:30:13.941 
+So have a nice weekend and see you all next week.
+
