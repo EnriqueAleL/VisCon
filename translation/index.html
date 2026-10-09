@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Folio · PDF Reader</title>
+  <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="layout">
+    <main id="viewer" class="page-scroll" tabindex="0" aria-label="PDF document">
+      <div id="page-stage"></div>
+    </main>
+    <aside id="chat-panel" class="chat-panel" aria-label="Ask about this document">
+      <div class="chat-header">
+        <h2>Ask about this document</h2>
+      </div>
+      <div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div>
+      <form id="chat-form" class="chat-form">
+        <input id="chat-input" type="text" placeholder="Ask a question…" autocomplete="off" maxlength="500" />
+        <button type="submit" aria-label="Send">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6"/>
+          </svg>
+        </button>
+      </form>
+    </aside>
+  </div>
+  <p id="status" role="status">Opening your document…</p>
+  <div class="drop-overlay"><span>Drop a PDF to open it</span></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

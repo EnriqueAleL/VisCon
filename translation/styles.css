@@ -1,0 +1,83 @@
+:root { color-scheme: light; font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f0f1ee; color: #344439; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.layout { display: flex; height: 100dvh; }
+.page-scroll { position: relative; flex: 1; min-width: 0; height: 100dvh; overflow: auto; padding: 16px; overflow-anchor: none; overscroll-behavior: contain; }
+.page-scroll:focus-visible { outline: 2px solid #88bda8; outline-offset: -2px; }
+#page-stage { width: max-content; min-width: 100%; display: flex; flex-direction: column; gap: 16px; }
+.page-row { display: flex; justify-content: center; align-items: flex-start; gap: 24px; }
+.pdf-page { position: relative; flex-shrink: 0; background: white; box-shadow: 0 2px 12px #1c322310; overflow: hidden; }
+.pdf-page canvas { display: block; }
+.textLayer { z-index: 1; }
+.translation-layer { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+.page-context { width: 280px; flex-shrink: 0; }
+#status { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px); margin: 0; padding: 12px 18px; border-radius: 8px; background: white; box-shadow: 0 2px 12px #1c322315; font-size: 13px; z-index: 5; }
+#status:empty { display: none; }
+.drop-overlay { display: none; position: fixed; inset: 12px; background: #f5f8f2f5; border: 2px dashed #719783; border-radius: 8px; align-items: center; justify-content: center; pointer-events: none; z-index: 10; font-size: 20px; }
+body.dragging .drop-overlay { display: flex; }
+
+/* Selection highlights the canvas text without painting the invisible text twice. */
+.textLayer ::selection {
+  color: transparent;
+  background: rgba(50, 116, 88, .24);
+}
+.textLayer br::selection { background: transparent; }
+
+.translation-popover {
+  position: absolute;
+  max-width: 280px;
+  pointer-events: auto;
+  background: #203b2e;
+  color: #eef3ee;
+  border-radius: 8px;
+  padding: 10px 28px 10px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  box-shadow: 0 6px 20px #10201630;
+  z-index: 3;
+}
+.translation-popover .original { opacity: .65; font-style: italic; margin: 0 0 6px; }
+.translation-popover .result { margin: 0; white-space: pre-wrap; }
+.translation-popover.loading .result::after { content: "Translating\2026"; opacity: .7; }
+.translation-popover .close {
+  position: absolute; top: 4px; right: 6px; width: 20px; height: 20px;
+  cursor: pointer; background: none; border: none; color: inherit; font-size: 14px; opacity: .6;
+}
+.translation-popover .close:hover { opacity: 1; }
+
+.chat-panel {
+  width: 340px; flex-shrink: 0;
+  margin: 16px 16px 16px 0;
+  height: calc(100dvh - 32px);
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px #1c322220;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.chat-header { padding: 14px 16px; background: #203b2e; color: #eef3ee; flex-shrink: 0; }
+.chat-header h2 { margin: 0; font-size: 14px; font-weight: 600; }
+
+.chat-messages { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.chat-message { max-width: 85%; padding: 8px 11px; border-radius: 10px; font-size: 13px; line-height: 1.4; white-space: pre-wrap; }
+.chat-message.user { align-self: flex-end; background: #203b2e; color: #eef3ee; border-bottom-right-radius: 3px; }
+.chat-message.assistant { align-self: flex-start; background: #f0f1ee; color: #344439; border-bottom-left-radius: 3px; }
+.chat-message.assistant.pending { color: #8a9a90; font-style: italic; }
+.chat-message.assistant.not-found { color: #71897a; }
+.chat-jump {
+  display: inline-flex; align-items: center; gap: 4px; margin-top: 6px;
+  border: none; background: #d9e5de; color: #203b2e; font-size: 12px; font-weight: 600;
+  padding: 4px 9px; border-radius: 6px; cursor: pointer;
+}
+.chat-jump:hover { background: #c6d8cd; }
+
+.chat-form { display: flex; gap: 6px; padding: 10px; border-top: 1px solid #e5e7e3; flex-shrink: 0; }
+.chat-form input {
+  flex: 1; min-width: 0; border: 1px solid #d5dbd6; border-radius: 8px;
+  padding: 8px 10px; font-size: 13px; font-family: inherit;
+}
+.chat-form input:focus-visible { outline: 2px solid #88bda8; outline-offset: -1px; }
+.chat-form button {
+  width: 34px; flex-shrink: 0; border: none; border-radius: 8px; cursor: pointer;
+  background: #203b2e; color: #eef3ee; display: grid; place-items: center;
+}
+.chat-form button:disabled { opacity: .5; cursor: default; }

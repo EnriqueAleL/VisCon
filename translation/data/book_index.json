@@ -1,0 +1,213 @@
+{
+  "version": 1,
+  "documents": {
+    "ti_book.pdf": {
+      "model": "gpt-4o-mini",
+      "pages": {
+        "28": {
+          "title": "Alphabets, Words, and Languages in Computer Science",
+          "summary": "This page introduces fundamental concepts in computer science including the formalism of texts as information carriers, defining key terms such as alphabet, word, and language. It also covers the transformation of input texts to output texts, examines decision and optimization problems, and introduces Kolmogorov complexity to discuss text compressibility and the measurement of information content.",
+          "key_terms": [
+            "Alphabet",
+            "Word",
+            "Language",
+            "Algorithm",
+            "Decision Problems",
+            "Optimization Problems",
+            "Kolmogorov Complexity",
+            "Information Theory"
+          ]
+        },
+        "29": {
+          "title": "Alphabete, Wörter und Sprachen in der Informatik",
+          "summary": "Diese Seite behandelt die Grundlagen von Alphabeten und Wörtern in der algorithmischen Datenverarbeitung, definiert wichtige Begriffe und beschreibt verschiedene Alphabete wie das Boole'sche und lateinische Alphabet. Zudem werden die Definitionen von Wörtern als Folgen von Buchstaben und deren Eigenschaften erklärt.",
+          "key_terms": [
+            "Alphabet",
+            "Wort",
+            "Kolmogorov-Komplexität",
+            "Symbol",
+            "Boole'sches Alphabet",
+            "lateinisches Alphabet",
+            "leeres Wort",
+            "Wortlängen"
+          ]
+        },
+        "30": {
+          "title": "Alphabets, Words, and Languages",
+          "summary": "This page discusses the representation of words using alphabets, defines the number of words of a given length over an alphabet, and explores binary representations of natural numbers. It includes tasks related to counting specific occurrences of symbols in words and describes how to compute m-adic representations of numbers.",
+          "key_terms": [
+            "alphabet",
+            "words",
+            "binary representation",
+            "natural numbers",
+            "m-adic representation",
+            "combinatorics",
+            "symbol occurrences",
+            "formal languages"
+          ]
+        },
+        "31": {
+          "title": "Graph Representation through Adjacency Matrices",
+          "summary": "This page discusses the representation of directed graphs using adjacency matrices and introduces encoding these matrices as strings over the alphabet {0, 1, #}. It explores the uniqueness of this representation and presents tasks related to finding more compact representations of graphs.",
+          "key_terms": [
+            "directed graph",
+            "adjacency matrix",
+            "uniqueness",
+            "encoding",
+            "weighted graphs",
+            "vertices",
+            "edges",
+            "alphabet"
+          ]
+        },
+        "32": {
+          "title": "Graph Representation and Boolean Expressions",
+          "summary": "This page discusses the representation of undirected weighted graphs using adjacency matrices and a specific letter encoding, including the interpretation of edge weights and the formulation of Boolean expressions through logical operations. It emphasizes the binary representation of weights and the use of specific symbols to structure data, particularly in the context of graphical and logical formats.",
+          "key_terms": [
+            "adjacency matrix",
+            "edge weight",
+            "Boolean expressions",
+            "undirected graphs",
+            "binary representation",
+            "logical operations",
+            "variables",
+            "graph encoding"
+          ]
+        },
+        "33": {
+          "title": "Concatenation and Reversal of Words in Formal Languages",
+          "summary": "This page covers the definitions and properties of word concatenation (Konkatenation) for alphabets, demonstrating its associative nature and the construction of a monoid. It introduces the concept of the reversal of a word and poses a task related to proving a property of reversals.",
+          "key_terms": [
+            "concatenation",
+            "Konkatenation",
+            "monoid",
+            "associativity",
+            "reversal",
+            "formal languages",
+            "alphabets",
+            "words"
+          ]
+        },
+        "34": {
+          "title": "Definitions of Subwords, Prefixes, and Suffixes",
+          "summary": "This page defines terms related to words in formal languages, including subwords, prefixes, and suffixes, and presents notation for counting occurrences of symbols in words. It also introduces canonical ordering for words based on a given alphabet.",
+          "key_terms": [
+            "subword",
+            "prefix",
+            "suffix",
+            "canonical order",
+            "alphabet",
+            "occurrences"
+          ]
+        },
+        "35": {
+          "title": "Sprachen und deren Eigenschaften",
+          "summary": "Der Text definiert den Begriff der Sprache als Teilmenge von Wörtern über einem Alphabet und erläutert verschiedene Typen von Sprachen sowie Operationen wie Konkatenation und den Kleene-Stern. Es werden Beispiele spezifischer Sprachen sowie deren Elemente vorgestellt.",
+          "key_terms": [
+            "Sprache",
+            "Alphabet",
+            "Konkatenation",
+            "Kleene-Stern",
+            "leere Sprache",
+            "einfachem Sprache",
+            "grammatische Korrektheit",
+            "syntaktische Korrektheit"
+          ]
+        },
+        "36": {
+          "title": "Distributive Laws in Formal Languages",
+          "summary": "This page discusses operations on languages, specifically focusing on union (∪), intersection (∩), concatenation, and the Kleene star. It presents Lemma 2.1, proving the distributive law concerning concatenation and union, and outlines the proof methodology for equality of languages, alongside a transition to addressing the validity of distributive laws for concatenation and intersection.",
+          "key_terms": [
+            "concatenation",
+            "union",
+            "intersection",
+            "Kleene star",
+            "distributive law",
+            "languages",
+            "Lemma 2.1",
+            "language equality"
+          ]
+        },
+        "37": {
+          "title": "Language Concatenation and Intersection Properties",
+          "summary": "This page discusses the relationship between languages formed by concatenation and intersection, presenting Lemmas 2.2 and 2.3. It establishes conditions under which L1(L2 ∩ L3) is a subset of L1L2 ∩ L1L3, and provides an example to show when the reverse inclusion does not hold, along with related exercises.",
+          "key_terms": [
+            "Languages",
+            "Concatenation",
+            "Intersection",
+            "Subset",
+            "Kleene Star",
+            "Formal Languages"
+          ]
+        },
+        "38": {
+          "title": "Homomorphismen und ihre Eigenschaften",
+          "summary": "Diese Seite behandelt Beweise zu den Gleichheiten von formalen Sprachen, insbesondere zeigt sie, dass {a}∗{b}∗ gleich der Menge {aibj | i, j∈ N} ist. Außerdem werden die Eigenschaften von Homomorphismen zwischen verschiedenen Alphabete definiert und erläutert, wie sie spezifische Wörter abbilden können.",
+          "key_terms": [
+            "Homomorphismus",
+            "Kleene-Stern",
+            "Konkatenation",
+            "formale Sprachen",
+            "Alphabete",
+            "Induktion",
+            "Wörter"
+          ]
+        },
+        "39": {
+          "title": "Homomorphisms and Algorithmic Problems in Computability",
+          "summary": "This page discusses homomorphisms between alphabets, defining the image of a language under a homomorphism. It also introduces algorithmic problems, specifically decision problems, and establishes criteria for algorithms to be considered valid.",
+          "key_terms": [
+            "Homomorphism",
+            "Alphabets",
+            "Languages",
+            "Algorithm",
+            "Turing Machine",
+            "Decision Problem",
+            "Computability",
+            "Complexity Theory"
+          ]
+        },
+        "40": {
+          "title": "Entscheidungsprobleme und Rekursive Sprachen",
+          "summary": "Diese Seite erläutert die Konzepte von rekursiven Sprachen und Entscheidungsproblemen. Sie definiert eine Sprache L und beschreibt, wie ein Algorithmus zur Erkennung dieser Sprache funktioniert, einschließlich praktischer Beispiele wie den Primzahltest und die syntaktische Korrektheit von C++-Programmen.",
+          "key_terms": [
+            "rekursive Sprache",
+            "Entscheidungsproblem",
+            "Primzahltest",
+            "syntaktisch korrekt",
+            "Hamiltonscher Kreis",
+            "Turingmaschine"
+          ]
+        },
+        "41": {
+          "title": "Entscheidungsprobleme und Algorithmische Relationen",
+          "summary": "Diese Seite behandelt Entscheidungsprobleme, insbesondere das Erfüllbarkeitsproblem für Boole’sche Formeln und Äquivalenzprobleme zwischen Programmen und Formeln. Es werden Definitionen für Funktionen und Relationen im Kontext von Algorithmen vorgestellt und erläutert, wie Algorithmen Beziehungen berechnen können.",
+          "key_terms": [
+            "Entscheidungsproblem",
+            "Erfüllbarkeitsproblem",
+            "Äquivalenzproblem",
+            "Algorithmen",
+            "Funktionen",
+            "Relationen",
+            "charakteristische Funktion",
+            "Boole’sche Formeln"
+          ]
+        },
+        "42": {
+          "title": "Optimierungsprobleme",
+          "summary": "Diese Seite definiert ein Optimierungsproblem als ein 6-Tupel, das die Eingabe- und Ausgabealphabete, die Sprache zulässiger Eingaben, eine Menge zulässiger Lösungen, eine Kostenfunktion und ein Optimierungsziel umfasst. Ein Algorithmus wird als Lösung eines Optimierungsproblems betrachtet, wenn er eine zulässige Lösung mit optimalen Kosten bereitstellt, je nachdem, ob ein Minimum oder Maximum angestrebt wird.",
+          "key_terms": [
+            "Optimierungsprobleme",
+            "Kostenfunktion",
+            "Algorithmus",
+            "Minimierungsproblem",
+            "Maximierungsproblem",
+            "zulässige Lösungen",
+            "Eingabealphabet",
+            "Ausgabealphabet"
+          ]
+        }
+      }
+    }
+  }
+}
