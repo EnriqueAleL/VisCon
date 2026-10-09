@@ -1,0 +1,4391 @@
+WEBVTT
+
+00:00:02.123 --> 00:00:04.043 
+OK, let's get started.
+
+00:00:05.803 --> 00:00:07.203 
+We're already at lecture 20.
+
+00:00:07.843 --> 00:00:08.723 
+That's a bit scary.
+
+00:00:11.723 --> 00:00:16.203 
+I know how how we came all the way to lecture 20.
+
+00:00:16.203 --> 00:00:21.443 
+You know, the semester is almost ending then I think we have 5 or 6 more lectures after this.
+
+00:00:22.283 --> 00:00:25.283 
+I don't know because there's some holidays, I think.
+
+00:00:26.483 --> 00:00:28.163 
+So it may be five, I'm not sure.
+
+00:00:29.083 --> 00:00:36.563 
+But the remaining lectures will be dedicated to memory, which is the bottleneck in existing system.
+
+00:00:36.563 --> 00:00:39.843 
+So it's going to be exciting to learn about how we design memories.
+
+00:00:40.363 --> 00:00:44.276 
+But in this lecture and previous lectures, we already talked about memories, memory banking, for
+
+00:00:44.276 --> 00:00:44.603 
+example.
+
+00:00:44.603 --> 00:00:46.883 
+I'll remind you of some of those things.
+
+00:00:47.643 --> 00:00:49.163 
+So today we'll talk about it.
+
+00:00:49.163 --> 00:00:51.883 
+Yet another exciting topic, which is GPU architectures.
+
+00:00:52.243 --> 00:00:58.763 
+We're going to build on the SIMD processors lecture that we had last week that Muhammad delivered,
+
+00:00:58.763 --> 00:01:05.351 
+where we talked about array and vector processors and GPU architectures are going to be essentially
+
+00:01:05.351 --> 00:01:06.283 
+more flexible.
+
+00:01:06.563 --> 00:01:07.923 
+Array and vector processors.
+
+00:01:08.243 --> 00:01:08.723 
+That's it.
+
+00:01:08.803 --> 00:01:14.478 
+Especially they're flexible in terms of their programming model, which also helps flexibility in the
+
+00:01:14.478 --> 00:01:17.883 
+hardware with some features that enable movement of threads.
+
+00:01:18.283 --> 00:01:19.043 
+More flexible.
+
+00:01:19.683 --> 00:01:21.163 
+OK, let's get started.
+
+00:01:21.163 --> 00:01:26.759 
+I'm going to cover some basics that you have seen already just to jog your memory because last week
+
+00:01:26.759 --> 00:01:28.003 
+we had only 1 lecture.
+
+00:01:29.083 --> 00:01:31.243 
+There seem to be a lot of holidays this this semester.
+
+00:01:31.243 --> 00:01:37.104 
+I don't know, we, we keep having these single Singleton lectures as opposed to having two lectures
+
+00:01:37.104 --> 00:01:37.643 
+in a row.
+
+00:01:38.323 --> 00:01:41.283 
+OK, but we're talking about graphics processing units.
+
+00:01:41.283 --> 00:01:43.003 
+Today we covered SIMD processing.
+
+00:01:43.003 --> 00:01:47.683 
+I'm going to mention some of those things so that you will see how GPU is built on top of that.
+
+00:01:47.883 --> 00:01:51.655 
+And remember we're we're talking about not just micro architecture here, we're talking about
+
+00:01:51.655 --> 00:01:52.803 
+hardware software interface.
+
+00:01:52.803 --> 00:01:56.363 
+Also we had a different programming model for SIMD.
+
+00:01:56.683 --> 00:02:02.306 
+If you remember, these are some of the readings and we're talking about exploiting data parallelism,
+
+00:02:02.306 --> 00:02:04.443 
+specifically regular data parallelism.
+
+00:02:05.323 --> 00:02:10.647 
+And you remember the paper we covered where we categorised architectures into four different things,
+
+00:02:10.647 --> 00:02:15.758 
+single instruction, single data, single instruction, multiple data, multiple instruction stream,
+
+00:02:15.758 --> 00:02:20.763 
+single data, of which systolic arrays are an example, and multiple instruction, multiple data.
+
+00:02:20.803 --> 00:02:24.665 
+In some of the things that we will see today, we're going to combine some of these paradigms
+
+00:02:24.665 --> 00:02:25.043 
+actually.
+
+00:02:25.043 --> 00:02:27.523 
+And GPUs do that in a nice way.
+
+00:02:27.523 --> 00:02:30.243 
+Some other machine learning accelerators also do in a nice way.
+
+00:02:30.963 --> 00:02:35.163 
+And you've seen this picture before where you talked about array and vector processors.
+
+00:02:35.163 --> 00:02:43.203 
+And these are basically doing essentially they, they're exploiting the space-time duality.
+
+00:02:43.323 --> 00:02:49.314 
+I would say in an array processor, the same instructions executed at the same time, but different
+
+00:02:49.314 --> 00:02:54.873 
+instructions are executed or operations are executed in different space, meaning different
+
+00:02:54.873 --> 00:02:55.923 
+functional units.
+
+00:02:56.363 --> 00:03:02.014 
+Whereas in a vector processor, oh, sorry, different instructions are executed in the same space,
+
+00:03:02.014 --> 00:03:02.603 
+basically.
+
+00:03:03.203 --> 00:03:09.003 
+Whereas in a vector processor you execute different operations at a given particular time.
+
+00:03:09.043 --> 00:03:14.408 
+If you look at this point over here, you execute different operations, but you're executing the same
+
+00:03:14.408 --> 00:03:15.803 
+operation, the same space.
+
+00:03:15.803 --> 00:03:20.302 
+Meaning functional units can be specialised to the operations wherein whereas an array processor,
+
+00:03:20.302 --> 00:03:22.483 
+functional units are much more general purpose.
+
+00:03:22.883 --> 00:03:25.723 
+In that sense, array processor is a little bit more expensive potentially.
+
+00:03:26.043 --> 00:03:29.043 
+So existing GP US are going to exploit both of these.
+
+00:03:29.043 --> 00:03:32.923 
+If you remember last week, we talked about this is a purest distinction.
+
+00:03:32.923 --> 00:03:37.083 
+Existing SIMD processors do both array processing and vector processing.
+
+00:03:37.083 --> 00:03:43.083 
+They exploit parallelism in both space and time and GPUs are going to be essentially the same.
+
+00:03:43.763 --> 00:03:43.963 
+OK.
+
+00:03:43.963 --> 00:03:47.563 
+We also talked about memory banking, which we will get to especially starting tomorrow.
+
+00:03:47.883 --> 00:03:53.321 
+Banking was needed so that you can actually have multiple accesses serviced concurrently across
+
+00:03:53.321 --> 00:03:57.443 
+different banks so that you can tolerate the latency of a single access.
+
+00:03:57.763 --> 00:04:04.322 
+And if you, if you remember in the Cray processor, the memory access latency was 11 cycles and they
+
+00:04:04.322 --> 00:04:10.617 
+needed to have 16 banks Oregon more than 11 banks or at least 11 banks so that they can get one
+
+00:04:10.617 --> 00:04:13.003 
+word out of memory per cycle, right.
+
+00:04:13.203 --> 00:04:18.142 
+So banking is a concept that we will get back to and it's really necessary so that we can get high
+
+00:04:18.142 --> 00:04:19.403 
+throughput from memories.
+
+00:04:19.403 --> 00:04:23.988 
+And we're going to talk about high throughput memories, especially with GPUs today because we have
+
+00:04:23.988 --> 00:04:27.123 
+so much compute parallelism because of array and vector processing.
+
+00:04:27.483 --> 00:04:31.203 
+So we will need bigger and bigger memories and higher and higher throughput memories.
+
+00:04:31.203 --> 00:04:32.803 
+So banking is going to be very important.
+
+00:04:33.883 --> 00:04:34.163 
+OK.
+
+00:04:34.163 --> 00:04:35.563 
+We also talked about bank conflicts.
+
+00:04:35.563 --> 00:04:39.911 
+I'm not going to get into that again, but this is a this is an issue that plagues a lot of
+
+00:04:39.911 --> 00:04:43.003 
+programmers who want to get high performance from their systems.
+
+00:04:43.283 --> 00:04:47.203 
+How do you ensure that two accesses don't conflict in the same bank?
+
+00:04:48.283 --> 00:04:52.069 
+If you can actually parallelise all your accesses to go to different banks in memory, you can get
+
+00:04:52.069 --> 00:04:53.163 
+the data at high throughput.
+
+00:04:53.163 --> 00:04:57.603 
+But if you actually have a conflict in a bank, then your data will be delayed as a result.
+
+00:04:57.803 --> 00:04:59.523 
+What your processor would be stalling, right?
+
+00:05:00.123 --> 00:05:03.930 
+And we talked about how to do this, but I'm not going to get again talk about it because this is
+
+00:05:03.930 --> 00:05:04.763 
+last week's material.
+
+00:05:04.763 --> 00:05:11.710 
+I'll just mention this beautiful paper from 35 years ago from Bob Rau, who actually invented
+
+00:05:11.710 --> 00:05:14.203 
+partially the VLIW architectures.
+
+00:05:14.203 --> 00:05:19.798 
+I mentioned that in the VLIW lecture, and they had the same problem in the VLIW processors because
+
+00:05:19.798 --> 00:05:21.683 
+you exploit a lot of parallelism.
+
+00:05:22.043 --> 00:05:28.742 
+And if the data accesses loads and stores go to the same bank, you have conflicts and you have low
+
+00:05:28.742 --> 00:05:31.203 
+throughput and your pipeline stalls.
+
+00:05:31.203 --> 00:05:37.411 
+Because in the LIW, remember that the principle was to make sure that you don't have any complicated
+
+00:05:37.411 --> 00:05:39.523 
+structures in the pipeline, right?
+
+00:05:39.923 --> 00:05:44.612 
+And you have lock step execution as a result, if one instruction stalls, all of the instructions
+
+00:05:44.612 --> 00:05:45.443 
+after that stall.
+
+00:05:46.123 --> 00:05:49.403 
+So if you're interested, there's a lot of interesting math in this area as well.
+
+00:05:49.563 --> 00:05:54.760 
+And existing GPU is actually employee a lot of the techniques that are developed in this paper and
+
+00:05:54.760 --> 00:05:56.723 
+also other papers that came after it.
+
+00:05:56.843 --> 00:05:59.003 
+Because again, memory is important.
+
+00:05:59.083 --> 00:06:00.963 
+You need high bandwidth access to memory.
+
+00:06:01.403 --> 00:06:04.403 
+Even if you have thousands of banks, still you get bank conflicts.
+
+00:06:04.923 --> 00:06:06.283 
+And you don't want bank conflicts.
+
+00:06:06.803 --> 00:06:08.883 
+Ideally, you won't like to eliminate all bank conflicts.
+
+00:06:09.483 --> 00:06:11.163 
+OK, so I already mentioned this.
+
+00:06:11.723 --> 00:06:15.963 
+Most modern SIMD processors are a combination of both array and vector processors.
+
+00:06:15.963 --> 00:06:18.003 
+They exploit data processing, both time and space.
+
+00:06:18.003 --> 00:06:24.303 
+And we're going to delve into GPUs, but just to jog your memory, we've given you this example in the
+
+00:06:24.303 --> 00:06:25.123 
+last lecture.
+
+00:06:25.483 --> 00:06:30.823 
+You can see that there's a vector instruction over here, which is adding vectors A&B and storing the
+
+00:06:30.823 --> 00:06:35.896 
+results in vector C So every element is being operated on using one single functional unit over
+
+00:06:35.896 --> 00:06:36.163 
+here.
+
+00:06:36.163 --> 00:06:43.564 
+As you can see, this is vector processing you, and this is a combination of both array processing
+
+00:06:43.564 --> 00:06:45.243 
+and vector processing.
+
+00:06:45.243 --> 00:06:50.209 
+If you look at this, four elements of the vector are being operated in parallel across four
+
+00:06:50.209 --> 00:06:55.449 
+different functional units, but then the next four are operated in a pipeline manner in the same
+
+00:06:55.449 --> 00:06:56.323 
+functional unit.
+
+00:06:56.563 --> 00:06:59.843 
+So you're exploiting parallelism in both space and time.
+
+00:07:00.043 --> 00:07:00.643 
+Over here.
+
+00:07:01.083 --> 00:07:02.883 
+We'll see this again in GPUs.
+
+00:07:02.883 --> 00:07:07.403 
+We're going to rename things in GPUs because GPUs are going to make things more flexible.
+
+00:07:07.723 --> 00:07:11.418 
+They're not going to have vector instructions, they're going to have regular scalar instructions,
+
+00:07:11.418 --> 00:07:13.323 
+but they're going to be part of different threads.
+
+00:07:13.883 --> 00:07:16.763 
+And essentially we'll do the same thing with a slightly different context.
+
+00:07:17.883 --> 00:07:22.283 
+OK, And if you remember, this is also, this was also shown last time.
+
+00:07:22.283 --> 00:07:23.403 
+I'm still jogging your memory.
+
+00:07:23.923 --> 00:07:30.053 
+We had partition vector registers so that different elements of an array can be accessed only for
+
+00:07:30.053 --> 00:07:33.403 
+from different only from particular functional units.
+
+00:07:33.403 --> 00:07:37.363 
+Basically, you partition the register file across the functional units.
+
+00:07:37.763 --> 00:07:42.603 
+If you have an instruction that needs to operate on element 0, it has to go to this lane.
+
+00:07:42.763 --> 00:07:44.843 
+For example, GPS will have the same issue.
+
+00:07:44.843 --> 00:07:50.375 
+Basically, if you have a thread that needs to operate on a particular register, it has to be mapped
+
+00:07:50.375 --> 00:07:55.741 
+to a particular lane because the register files partitioned, different registers are partitioned
+
+00:07:55.741 --> 00:07:56.803 
+across these lanes.
+
+00:07:56.803 --> 00:08:01.927 
+So we'll get back to this picture again, and we said that you can overlap the execution of multiple
+
+00:08:01.927 --> 00:08:02.963 
+vector instructions.
+
+00:08:02.963 --> 00:08:04.243 
+This was an example again.
+
+00:08:04.243 --> 00:08:11.806 
+I'm going to get to this example again later with, for example, a 32 vector length and a machine
+
+00:08:11.806 --> 00:08:14.643 
+width of eight load execution units.
+
+00:08:15.163 --> 00:08:20.723 
+You can do 8 loads per cycle and you finish the vector in 4 cycles.
+
+00:08:21.003 --> 00:08:25.560 
+And you can see that you unleash a lot of parallelism with a single instruction and then multiply
+
+00:08:25.560 --> 00:08:29.977 
+maybe operating on the results coming from the load unit, and then add, maybe operating on the
+
+00:08:29.977 --> 00:08:31.763 
+results coming from the multiply unit.
+
+00:08:32.283 --> 00:08:36.363 
+And basically you can fill the pipeline with these vector instructions very, very quickly.
+
+00:08:37.283 --> 00:08:40.003 
+And you can see that there's a lot of computation happening in the GPUs.
+
+00:08:40.003 --> 00:08:44.419 
+The computation will be actually millions and millions of operations, and memory will be
+
+00:08:44.419 --> 00:08:45.523 
+increasingly strained.
+
+00:08:45.603 --> 00:08:49.403 
+If you get millions of loads at the same time, you're going to be in big trouble basically.
+
+00:08:50.643 --> 00:08:51.003 
+OK.
+
+00:08:51.123 --> 00:08:55.124 
+We also talked about automatic code vectorisation and it's going to be important because I'm going
+
+00:08:55.124 --> 00:08:57.003 
+to build on this to introduce how GPS operate.
+
+00:08:57.483 --> 00:09:02.764 
+We said that this is a perfectly vectorisable loop, meaning there are no dependencies across loop
+
+00:09:02.764 --> 00:09:03.363 
+iterations.
+
+00:09:03.363 --> 00:09:09.299 
+So you can easily write a scalar sequential code for this, and if your compiler is smart, it can
+
+00:09:09.299 --> 00:09:14.123 
+basically identify that there are no dependencies across different iterations.
+
+00:09:14.563 --> 00:09:16.443 
+It can vectorise the code automatically.
+
+00:09:16.763 --> 00:09:24.086 
+This is in general very difficult to do because compiler analysis to ensure that dependencies don't
+
+00:09:24.086 --> 00:09:29.043 
+exist across across different iterations is not easy in many cases.
+
+00:09:29.243 --> 00:09:34.323 
+For example, if you had an I -1 over there, compiler would not be able to do what I show over here.
+
+00:09:34.323 --> 00:09:37.203 
+But here it's obvious that they're independent.
+
+00:09:37.563 --> 00:09:43.313 
+So the compiler basically puts together the iterations side by side, pictorially at least, and forms
+
+00:09:43.313 --> 00:09:49.005 
+a vector instruction, vector load over here that operates on different iterations, right, Different
+
+00:09:49.005 --> 00:09:54.698 
+data elements, in other words, right, because each iteration operates on the next data element that
+
+00:09:54.698 --> 00:09:55.043 
+comes.
+
+00:09:56.003 --> 00:09:57.483 
+And we said that you.
+
+00:09:58.043 --> 00:10:02.043 
+Vectorisation is essentially A compile time reordering of operation sequencing, right?
+
+00:10:02.043 --> 00:10:06.440 
+As opposed to sequencing the operations in a sequential manner like this, you sequence the
+
+00:10:06.440 --> 00:10:10.203 
+operations in a different way, in a parallel manner with vector instructions.
+
+00:10:11.123 --> 00:10:16.823 
+OK, not easy to do, but there are some applications like graphics where this is actually nicely
+
+00:10:16.823 --> 00:10:17.243 
+doable.
+
+00:10:17.243 --> 00:10:23.785 
+Because imagine a huge image, millions of pixels, and you're doing the same operation to every
+
+00:10:23.785 --> 00:10:24.203 
+pixel.
+
+00:10:24.723 --> 00:10:26.043 
+That's a lot of parallelism, right?
+
+00:10:26.523 --> 00:10:27.563 
+That's essentially this loop.
+
+00:10:28.123 --> 00:10:33.568 
+That's why graphics is a very good example of an application that fits single instruction, multiple
+
+00:10:33.568 --> 00:10:33.843 
+data.
+
+00:10:33.843 --> 00:10:39.379 
+Of course, depends on what you do with graphics, but in general, there's a lot of parallelism in
+
+00:10:39.379 --> 00:10:40.763 
+graphics processing, OK?
+
+00:10:41.003 --> 00:10:44.323 
+That's why GPUs have been the most successful SIMD engines of the world.
+
+00:10:45.363 --> 00:10:46.643 
+OK, we also discussed this.
+
+00:10:46.643 --> 00:10:50.243 
+Essentially, vector or SIMD machines are good at exploiting regular data parallelism.
+
+00:10:50.683 --> 00:10:54.699 
+Same operation performed on many data elements, improved performance, simplified design, no
+
+00:10:54.699 --> 00:10:55.803 
+intervector dependencies.
+
+00:10:55.803 --> 00:10:57.163 
+This is going to be true of GPUs also.
+
+00:10:57.963 --> 00:11:00.603 
+Performance improvement is limited by the vectorisability of code.
+
+00:11:00.603 --> 00:11:02.363 
+That's going to be true of GPUs also.
+
+00:11:02.723 --> 00:11:07.883 
+This is exactly why the Cray machine, Cray first Cray machine was a heterogeneous machine.
+
+00:11:08.323 --> 00:11:11.763 
+They did not have the most powerful SIMD unit of its time.
+
+00:11:11.763 --> 00:11:16.989 
+They also had the most powerful scalar unit of its time because Cray recognised that M das law was
+
+00:11:16.989 --> 00:11:17.683 
+so important.
+
+00:11:18.723 --> 00:11:24.262 
+If you cannot vectorise your code completely, you'll be bottlenecked by the serial bottleneck that
+
+00:11:24.262 --> 00:11:25.563 
+we have discussed also.
+
+00:11:26.003 --> 00:11:31.074 
+And essentially, if you don't have a good serial execution engine, your vector processor is not high
+
+00:11:31.074 --> 00:11:31.683 
+performance.
+
+00:11:32.123 --> 00:11:37.613 
+That's been the cornerstone of designing super computing systems and that's going to be affecting
+
+00:11:37.613 --> 00:11:38.123 
+GPU also.
+
+00:11:38.403 --> 00:11:44.803 
+That's why existing GPU architectures try to execute scalar code very well also.
+
+00:11:45.603 --> 00:11:51.444 
+So they add for example, sometimes CPU like units inside, sometimes they do heterogeneous computing
+
+00:11:51.444 --> 00:11:55.043 
+CPUs and GPUs together, especially in consumer grade devices.
+
+00:11:55.363 --> 00:11:57.563 
+And going forward, this is going to become more and more important.
+
+00:11:58.643 --> 00:12:03.398 
+OK, We also said that many existing ISA include ISA include CMD operations and that's where we
+
+00:12:03.398 --> 00:12:03.803 
+stopped.
+
+00:12:03.923 --> 00:12:06.363 
+But before that, I will show this picture again.
+
+00:12:06.363 --> 00:12:09.843 
+This is actually a very nice picture of M Das Law and the serial bottleneck.
+
+00:12:09.843 --> 00:12:14.239 
+Basically, serial bottleneck is where you have only one thread over here and this cannot be
+
+00:12:14.239 --> 00:12:14.723 
+paralysed.
+
+00:12:14.803 --> 00:12:18.963 
+And if that is a reasonable fraction of your code, then you're in trouble.
+
+00:12:19.363 --> 00:12:24.283 
+Even if you throw infinite number of parallel processing elements, you're not going to be able to
+
+00:12:24.283 --> 00:12:25.603 
+speed up that code, right?
+
+00:12:25.603 --> 00:12:26.163 
+That's the idea.
+
+00:12:26.163 --> 00:12:29.683 
+So GPUs will suffer from the serial bottleneck as well.
+
+00:12:29.683 --> 00:12:30.603 
+So keep that in mind.
+
+00:12:32.363 --> 00:12:39.156 
+OK, let me cover these very quickly because I don't intend to cover what Mohammed covered, but this
+
+00:12:39.156 --> 00:12:45.950 
+is to show you that SIMD operations have been quite successful even as specialised accelerators for
+
+00:12:45.950 --> 00:12:47.323 
+single instructions.
+
+00:12:47.323 --> 00:12:48.443 
+Single data IS as right.
+
+00:12:48.443 --> 00:12:54.543 
+X86 ISA, for example, is a sequential von Neumann ISA, but it has components that are SIMD
+
+00:12:54.543 --> 00:13:00.643 
+essentially, and they're added as instructions like all good von Neumann architectures do.
+
+00:13:00.963 --> 00:13:07.432 
+You sequence through these instructions also, and we've seen the SIMD extensions that started with
+
+00:13:07.432 --> 00:13:13.968 
+the MMX operations in 1990s and over time, and we've seen examples of how you can compare things in
+
+00:13:13.968 --> 00:13:14.563 
+parallel.
+
+00:13:15.203 --> 00:13:17.963 
+And this, this was an example of matrix vector multiply.
+
+00:13:18.083 --> 00:13:21.763 
+This is a paper from 1990 introducing Intel MMX operations.
+
+00:13:22.843 --> 00:13:24.883 
+Here we are in 2026.
+
+00:13:25.083 --> 00:13:29.635 
+Everybody's talking about matrix vector multiplication for some other reason, not for graphics,
+
+00:13:29.635 --> 00:13:29.923 
+right?
+
+00:13:30.403 --> 00:13:31.483 
+It's good to think about it, right?
+
+00:13:31.483 --> 00:13:34.763 
+Applications change, but some fundamental operations remain.
+
+00:13:35.843 --> 00:13:40.720 
+And I think this is good to also think about because there are many ways of accelerating matrix
+
+00:13:40.720 --> 00:13:42.723 
+matrix or matrix vector multiplication.
+
+00:13:42.723 --> 00:13:45.603 
+This is one way as part of your sequential ISA, right?
+
+00:13:46.243 --> 00:13:47.723 
+And you've seen this example last time.
+
+00:13:47.723 --> 00:13:51.123 
+I'm not going to go over, but I will tell you a story.
+
+00:13:51.123 --> 00:13:58.907 
+This was very controversial at Intel in 1990s when Uri Weiser who invented and developed along with
+
+00:13:58.907 --> 00:14:06.692 
+Alex Pelig the MMX technology that they called it, was met with let's say fierce opposition with an
+
+00:14:06.692 --> 00:14:09.523 
+Intel saying that no workloads uses.
+
+00:14:10.403 --> 00:14:15.883 
+Why are we investing in an accelerator that would accelerate the SIMD operations multimedia.
+
+00:14:17.603 --> 00:14:19.483 
+This is always a chicken and the egg problem, right?
+
+00:14:19.963 --> 00:14:23.323 
+No workloads use instructions because instructions doesn't exist, of course, right.
+
+00:14:23.963 --> 00:14:29.000 
+But if you put the instruction, you're making a bet and the bet is hopefully some workloads will use
+
+00:14:29.000 --> 00:14:30.763 
+it so that they can gain speed UPS.
+
+00:14:31.603 --> 00:14:35.683 
+And they did this bet, they made this bet and I think they won't in the end.
+
+00:14:36.323 --> 00:14:42.065 
+So this was a very good design decision in the end for Intel to change the instructions that
+
+00:14:42.065 --> 00:14:48.245 
+architecture because it's been, it's actually enabled CP US as an accelerator for graphics and many
+
+00:14:48.245 --> 00:14:50.243 
+operations for many, many years.
+
+00:14:50.763 --> 00:14:56.226 
+And in my opinion, they also delayed the, let's say successful success of the GP US a little bit
+
+00:14:56.226 --> 00:14:57.763 
+because you could actually.
+
+00:14:57.803 --> 00:15:00.203 
+To these operations as CPU with a specialised unit.
+
+00:15:01.003 --> 00:15:04.403 
+So you can see that as an architect you need to make decisions and you don't know the future, right?
+
+00:15:04.763 --> 00:15:08.123 
+Maybe nobody will use the instructions and extensions that you provide.
+
+00:15:08.123 --> 00:15:12.123 
+Because it is true that those instructions and extensions are not very general, right?
+
+00:15:12.483 --> 00:15:15.963 
+They do very specific things with small width elements.
+
+00:15:15.963 --> 00:15:21.003 
+It's not like a huge vector processor, but they've proven extremely useful, OK?
+
+00:15:21.603 --> 00:15:25.083 
+And you can see that these extensions have increased over time.
+
+00:15:25.083 --> 00:15:33.152 
+Intel added the streaming SMDAVX, which is actually much wider extensions, 512 bits as opposed to 64
+
+00:15:33.152 --> 00:15:34.363 
+bit operations.
+
+00:15:34.923 --> 00:15:40.683 
+And more recently, because of again, matrix vector multiplication or matrix multiplication, they
+
+00:15:40.683 --> 00:15:43.923 
+added the matrix multiplication units they called AMX.
+
+00:15:44.803 --> 00:15:47.723 
+Essentially, these are specialised units to do matrix multiplication.
+
+00:15:48.203 --> 00:15:50.803 
+We can think of it, and some of these are actually very, very high throughput.
+
+00:15:50.923 --> 00:15:55.123 
+You can look at the Wikipedia page or the Intel manuals to see their throughput.
+
+00:15:56.843 --> 00:15:58.803 
+OK, But they're all built on the SIMD paradigm.
+
+00:15:59.923 --> 00:16:02.203 
+OK, So Mohammed gave a lecture.
+
+00:16:02.203 --> 00:16:03.003 
+There's another lecture.
+
+00:16:03.003 --> 00:16:05.283 
+If you're interested in SIMD, there's more online.
+
+00:16:06.643 --> 00:16:11.828 
+Before going into GPUs, let me talk a little bit about the prevalence of SIMD, because it's not only
+
+00:16:11.828 --> 00:16:12.243 
+in GPUs.
+
+00:16:12.243 --> 00:16:17.834 
+There are also other accelerators that people use today that use SIMD, the wafer scale engine that
+
+00:16:17.834 --> 00:16:20.003 
+we discussed for example, by Cerebrus.
+
+00:16:21.403 --> 00:16:26.683 
+Remember there's a chip this big, and this is the more recent version.
+
+00:16:26.843 --> 00:16:30.003 
+You can see that there's a lot of memory, there's a lot of processing at the same time.
+
+00:16:30.443 --> 00:16:32.163 
+This is actually a combination of paradigms.
+
+00:16:32.243 --> 00:16:35.836 
+Basically, they want to the, the main reason they designed this processor was to accelerate machine
+
+00:16:35.836 --> 00:16:36.163 
+learning.
+
+00:16:36.163 --> 00:16:39.643 
+Again, initially training, but they figured out, I think training is not that easy.
+
+00:16:39.643 --> 00:16:44.997 
+So if they're pushing inference more on this one, but I think it could, anything that could be used
+
+00:16:44.997 --> 00:16:48.243 
+for training can potentially be used for inference, clearly.
+
+00:16:49.843 --> 00:16:58.969 
+But basically they want to map a neural network, a large neural network to the wafer and the wafer
+
+00:16:58.969 --> 00:17:01.763 
+is partitioned into many dots.
+
+00:17:02.483 --> 00:17:07.123 
+So to control this machine, they actually have a multiple instruction, multiple data model.
+
+00:17:07.243 --> 00:17:09.763 
+Essentially it's a multi threaded machine overall.
+
+00:17:09.763 --> 00:17:14.843 
+That's how you program it, where you have distributed memory, which we will talk about later on.
+
+00:17:15.283 --> 00:17:17.843 
+But if you look at this, these are the multiple dyes.
+
+00:17:17.843 --> 00:17:22.003 
+They have 84 dyes and you have 4500 tiles in one version of this processor.
+
+00:17:22.603 --> 00:17:28.643 
+And each tile is an independent execution unit and they communicate with each other through routers.
+
+00:17:28.643 --> 00:17:32.483 
+So you can think of this as a distributed system that's on a wafer, right?
+
+00:17:33.243 --> 00:17:36.963 
+And clearly you need to program it somehow, you need to compile into it.
+
+00:17:37.363 --> 00:17:42.912 
+But it's not just MIMD, there's also internally inside each processor to accelerate machine learning
+
+00:17:42.912 --> 00:17:43.523 
+operations.
+
+00:17:43.523 --> 00:17:45.843 
+They have SIMD processors very similar to what you have seen.
+
+00:17:46.203 --> 00:17:48.283 
+These are smaller SIMD processors.
+
+00:17:48.723 --> 00:17:56.006 
+They essentially they have, they can do for operations, each operating on 16 bit floating point data
+
+00:17:56.006 --> 00:17:56.443 
+types.
+
+00:17:57.003 --> 00:18:00.803 
+But imagine having 4500 of these.
+
+00:18:00.803 --> 00:18:04.403 
+So there's actually a lot of parallelism that you exploit if you can exploit it.
+
+00:18:04.483 --> 00:18:06.243 
+So there's local SRAM also.
+
+00:18:07.203 --> 00:18:07.523 
+OK.
+
+00:18:07.603 --> 00:18:13.370 
+If you're interested, the CTO of Cerebas had given a invited lecture in this course some number of
+
+00:18:13.370 --> 00:18:16.843 
+years ago, so you can go and watch it if you're interested.
+
+00:18:17.523 --> 00:18:23.729 
+I should also say that SIMD operations are not limited to, again, CPUGPUS or other accelerators, but
+
+00:18:23.729 --> 00:18:29.563 
+Fpgas have been used by Microsoft in this particular case to accelerate again neural networks.
+
+00:18:29.563 --> 00:18:31.843 
+And if you're interested, you can take a look at it.
+
+00:18:31.843 --> 00:18:36.363 
+I will not go through all these difficult to read figures at the moment, but you can take a look.
+
+00:18:37.003 --> 00:18:42.375 
+But essentially the key take away is they're doing single instruction operating on multiple data
+
+00:18:42.375 --> 00:18:47.580 
+elements and the core is to X-ray, multiply and accumulate operations that are at the core of
+
+00:18:47.580 --> 00:18:49.763 
+machine learning matrix multiplication.
+
+00:18:50.043 --> 00:18:51.323 
+We're going to get back to that later on.
+
+00:18:52.723 --> 00:18:55.243 
+Any questions Now?
+
+00:18:55.243 --> 00:19:01.883 
+I'll start the GPU part with that backdrop, OK, Probably using GPUs.
+
+00:19:01.883 --> 00:19:03.403 
+How many people here have used GPUs?
+
+00:19:05.003 --> 00:19:08.123 
+Programmed GPUs, not program.
+
+00:19:08.123 --> 00:19:08.643 
+Not that many.
+
+00:19:08.643 --> 00:19:13.283 
+OK, you'll probably used it even not without knowing it in your laptop.
+
+00:19:14.123 --> 00:19:15.243 
+That doesn't count I guess.
+
+00:19:15.683 --> 00:19:21.494 
+If you talk with a ChatGPT or some sort of LLM, you're probably using it without knowing it and even
+
+00:19:21.494 --> 00:19:24.923 
+paying for it, making a lot of money for NVIDIA these days.
+
+00:19:25.763 --> 00:19:30.971 
+It's good to look for alternative models, but GPUs have been successful because they do some things
+
+00:19:30.971 --> 00:19:31.603 
+really well.
+
+00:19:32.243 --> 00:19:33.803 
+And these are some examples over here.
+
+00:19:33.803 --> 00:19:39.788 
+And it's also good to consider that we're going to talk about the processing side of things, but
+
+00:19:39.788 --> 00:19:45.960 
+there is also a networking side of GPUs, which is you need to connect many GPUs to build like train
+
+00:19:45.960 --> 00:19:47.083 
+very large models.
+
+00:19:47.523 --> 00:19:51.563 
+And for that you really need very fast communication across different machines.
+
+00:19:51.563 --> 00:19:56.925 
+And there's been a lot of innovation in the GPU space on how to design the interconnects between
+
+00:19:56.925 --> 00:19:57.763 
+different GPUs.
+
+00:19:57.843 --> 00:20:00.963 
+So that you can communicate values very fast between the GPUs.
+
+00:20:00.963 --> 00:20:04.483 
+And that's what this bottom part shows, which I'll not get into.
+
+00:20:04.723 --> 00:20:08.855 
+But if you're interested, you can take our computer architecture course where we cover interconnects
+
+00:20:08.855 --> 00:20:09.723 
+in a lot more detail.
+
+00:20:11.243 --> 00:20:11.603 
+OK.
+
+00:20:11.643 --> 00:20:15.563 
+And one of the reasons they've been successful is AI models have been growing exponentially.
+
+00:20:15.643 --> 00:20:18.803 
+And these are some of the interconnect architectures over many years.
+
+00:20:18.803 --> 00:20:22.643 
+So people have been optimising how GPUs are interconnected to each other.
+
+00:20:22.643 --> 00:20:30.226 
+For example, in this particular case, these are the, the, the small white, small white squares are
+
+00:20:30.226 --> 00:20:30.923 
+the GPUs.
+
+00:20:31.523 --> 00:20:36.598 
+And this is, there's a router network over here that connects this set of GPUs to this set of GPUs
+
+00:20:36.598 --> 00:20:41.363 
+so that they can communicate and exchange information much more easily with each each other.
+
+00:20:42.523 --> 00:20:42.683 
+OK.
+
+00:20:42.803 --> 00:20:47.986 
+But based on what we have discussed, GPUs are essentially SIMD engines underneath the instruction
+
+00:20:47.986 --> 00:20:53.169 
+pipeline that we have in a GPU operates like a SIMD pipeline, very similar to an array processor,
+
+00:20:53.169 --> 00:20:56.643 
+but it's really a combination of array and vector as we will see.
+
+00:20:57.243 --> 00:21:02.501 
+However, the major difference and I believe the major thing that has made them very successful is
+
+00:21:02.501 --> 00:21:03.803 
+their programming model.
+
+00:21:04.483 --> 00:21:11.203 
+Programming is not done like a vector processor using SIMD instructions.
+
+00:21:11.403 --> 00:21:19.003 
+It's time using threads, a much more familiar programming model for people who program CPUs, right?
+
+00:21:19.843 --> 00:21:23.763 
+When you write ACPU program, you have a single thread.
+
+00:21:24.363 --> 00:21:26.723 
+If you want to parallelise it, you have multiple threads.
+
+00:21:27.003 --> 00:21:29.643 
+And essentially in GPUs you can do the same thing.
+
+00:21:30.563 --> 00:21:34.671 
+Of course, you may not be successful in terms of getting high performance if you do the exact same
+
+00:21:34.671 --> 00:21:34.923 
+thing.
+
+00:21:35.243 --> 00:21:40.400 
+You need to exploit the SIMD parallelism that's there, which is really single instruction, multiple
+
+00:21:40.400 --> 00:21:45.506 
+data, which means that you need to construct your threads such that they operate, They do the same
+
+00:21:45.506 --> 00:21:48.163 
+thing, but they operate on different data elements.
+
+00:21:49.003 --> 00:21:50.203 
+So that's the key idea basically.
+
+00:21:51.243 --> 00:21:54.603 
+So let's go back to this parallelizable code example that I showed you earlier.
+
+00:21:54.683 --> 00:21:57.123 
+But before that, I would like to distinguish between two things.
+
+00:21:57.603 --> 00:22:02.043 
+One is the programming model, this is software, what the software programmer gets exposed to.
+
+00:22:02.723 --> 00:22:06.453 
+And the other is the underlying execution model, which is the hardware, what the hardware really
+
+00:22:06.453 --> 00:22:06.803 
+supports.
+
+00:22:07.563 --> 00:22:12.560 
+And here it's actually a fascinating area because you can mix and match anything, but sometimes
+
+00:22:12.560 --> 00:22:17.768 
+mixing and matching anything is not a good idea because the programming model may not match the how
+
+00:22:17.768 --> 00:22:20.083 
+the hardware executes things and vice versa.
+
+00:22:20.163 --> 00:22:24.603 
+Potentially in GPUs, there's a programming model that very nicely matches the execution model.
+
+00:22:24.963 --> 00:22:29.483 
+OK, but let's cover this concept a little bit more because this is bigger than the GPUs also.
+
+00:22:30.363 --> 00:22:34.883 
+So a programming model, as I said, refers to how the programmer expresses the code.
+
+00:22:35.603 --> 00:22:40.703 
+For example, you see in sequential programming models, one moment we've seen data parallel SIMD
+
+00:22:40.703 --> 00:22:41.723 
+programming models.
+
+00:22:42.323 --> 00:22:47.163 
+In the last lecture, we've seen data flow programming models, either graphical or non graphical.
+
+00:22:47.683 --> 00:22:52.313 
+We've seen partially not as much, but MIMD programming models, if you've done multi threaded
+
+00:22:52.313 --> 00:22:57.094 
+programming, if you've done parallel programming, and probably a lot of you have done, how many
+
+00:22:57.094 --> 00:22:59.963 
+people have done multi threaded programming on CPUs here?
+
+00:23:00.083 --> 00:23:02.243 
+Pretty much all of you basically.
+
+00:23:02.243 --> 00:23:06.163 
+That's MIMD, multiple instruction streams operating on different data elements, right?
+
+00:23:06.803 --> 00:23:11.544 
+There is a special version of MIMD which is SPMD, which is a programming model that GPUs are going
+
+00:23:11.544 --> 00:23:11.883 
+to use.
+
+00:23:11.883 --> 00:23:13.243 
+We'll introduce that in a little bit.
+
+00:23:13.243 --> 00:23:17.480 
+Essentially the idea is you have multiple threads, but they're doing exactly the same thing on
+
+00:23:17.480 --> 00:23:18.563 
+different data elements.
+
+00:23:18.683 --> 00:23:23.831 
+That single program, multiple data, OK execution model refers to how the hardware executes the code
+
+00:23:23.831 --> 00:23:24.403 
+underneath.
+
+00:23:24.683 --> 00:23:29.003 
+And we've seen a lot of execution models actually in this class so far.
+
+00:23:29.603 --> 00:23:34.786 
+Pipelining for example, is an execution model out of order execution, vector processing, array
+
+00:23:34.786 --> 00:23:39.363 
+processing, data flow processing, right, multi processing, multi thread processing.
+
+00:23:39.363 --> 00:23:40.523 
+These are all execution fine grain.
+
+00:23:40.523 --> 00:23:42.283 
+Multi threading is an execution model also right?
+
+00:23:42.283 --> 00:23:44.923 
+And GPUs actually will use part of that execution model also.
+
+00:23:46.883 --> 00:23:52.313 
+So essentially execution model doesn't need to match the programming models requirements, but they
+
+00:23:52.313 --> 00:23:53.643 
+could be very different.
+
+00:23:53.643 --> 00:23:56.683 
+For example, we've seen this and it's been very successful.
+
+00:23:57.323 --> 00:24:02.163 
+You have a Von Neumann programming model which doesn't expose a lot of parallelism.
+
+00:24:02.923 --> 00:24:07.606 
+But if you implement it on a restricted data flow engine, which is called out of order execution or
+
+00:24:07.606 --> 00:24:12.243 
+dynamic scheduling processors, which we've covered, you can actually extract a lot of parallelism.
+
+00:24:13.643 --> 00:24:15.123 
+These are complete different things.
+
+00:24:15.923 --> 00:24:19.960 
+Data flow is a much better fit as we've discussed, for example, potentially for an auto world
+
+00:24:19.960 --> 00:24:23.043 
+execution machine, because fundamentally the architecture is data flow.
+
+00:24:23.043 --> 00:24:26.003 
+But nobody programs these things using a data flow model, right?
+
+00:24:27.163 --> 00:24:27.443 
+Why?
+
+00:24:27.443 --> 00:24:32.508 
+Because programming model is a lot easier if it's single instruction, single data, right, If it's
+
+00:24:32.508 --> 00:24:33.083 
+sequential.
+
+00:24:33.723 --> 00:24:37.683 
+And that's been the success of auto world execution CPUs.
+
+00:24:37.683 --> 00:24:45.203 
+There's a nice programming model and underlying hardware execution model doesn't quite match it.
+
+00:24:46.363 --> 00:24:51.596 
+Initially it matched it actually, but over time it got extended such that it exploits a lot of
+
+00:24:51.596 --> 00:24:54.603 
+parallelism and this has been very successful in GPUs.
+
+00:24:54.603 --> 00:24:57.723 
+We will see that there's a nice programming model also, and the hardware actually.
+
+00:24:57.803 --> 00:25:02.963 
+It matches it really nicely, but as a result it's not going to be as general purpose, OK.
+
+00:25:03.803 --> 00:25:09.243 
+And that's going to be the SPMD single program multiple data model implemented by a SIMD processor.
+
+00:25:09.483 --> 00:25:16.035 
+And there's a lot of research in GPUs to make it essentially a first class general purpose computing
+
+00:25:16.035 --> 00:25:16.363 
+unit.
+
+00:25:16.443 --> 00:25:22.072 
+In fact, when I was at CMU Carnegie Mellon, one of the big proposals that we wrote to the National
+
+00:25:22.072 --> 00:25:27.759 
+Science Foundation, which used to have found a lot of research at the time, was on enabling GPUs as
+
+00:25:27.759 --> 00:25:29.483 
+first class computing engines.
+
+00:25:29.483 --> 00:25:35.523 
+And we did a lot of research to enable the GPUs to execute arbitrary pieces of code.
+
+00:25:35.963 --> 00:25:37.003 
+I'm not going to talk about these.
+
+00:25:37.003 --> 00:25:40.991 
+There's a lot of possibilities over there, and there's more research that's going on in this area
+
+00:25:40.991 --> 00:25:41.403 
+right now.
+
+00:25:43.083 --> 00:25:49.951 
+But the hardware execution model in GPUs is SIMD, which limits what you can do, but it matches the
+
+00:25:49.951 --> 00:25:51.563 
+SPMD model really well.
+
+00:25:52.083 --> 00:25:54.203 
+OK, so let's go through this code example.
+
+00:25:54.203 --> 00:25:57.843 
+This is the same code example that you have seen, and the question now is more general.
+
+00:25:57.843 --> 00:26:02.483 
+How can you exploit the parallelism that is present in this code example?
+
+00:26:02.483 --> 00:26:05.603 
+And there's a lot of parallelism here, assuming I is very large.
+
+00:26:05.603 --> 00:26:11.283 
+And remember, in graphics, I is very large.
+
+00:26:13.643 --> 00:26:16.483 
+OK, so this is the scalar sequential code.
+
+00:26:17.123 --> 00:26:23.307 
+Every iteration comes after the previous iteration and we're going to look at 3 programming options
+
+00:26:23.307 --> 00:26:28.243 
+to exploit instruction level parallelism that's present in the sequential code.
+
+00:26:28.243 --> 00:26:34.148 
+1 is going to be sequential, the other is going to be data parallel SIMD, and the other is going to
+
+00:26:34.148 --> 00:26:38.443 
+be multi threaded MIMD and we're going to specialized it with SPMD also.
+
+00:26:39.243 --> 00:26:42.523 
+OK, sequential, you're very familiar with this is the sequential code you write.
+
+00:26:43.643 --> 00:26:44.963 
+It's very easy to write.
+
+00:26:45.123 --> 00:26:46.883 
+It can be executed on many things.
+
+00:26:48.163 --> 00:26:53.066 
+The pipeline processor, an out of order execution processor, which finds the independent
+
+00:26:53.066 --> 00:26:56.243 
+instructions and executes them when they're ready, right?
+
+00:26:56.243 --> 00:27:00.860 
+With a large window, for example, if that loads, stalls, for example, you can execute some other
+
+00:27:00.860 --> 00:27:04.083 
+iteration because you have a window, you can bring in instructions.
+
+00:27:04.723 --> 00:27:10.460 
+And if you think about it, what out of order execution does is it takes these different iterations
+
+00:27:10.460 --> 00:27:15.963 
+that are independent of each other and executes them in parallel in multiple functional units.
+
+00:27:16.123 --> 00:27:20.050 
+It doesn't explicitly, it's not aware of these iterations, of course, right, because you're writing
+
+00:27:20.050 --> 00:27:20.883 
+single threaded code.
+
+00:27:22.323 --> 00:27:28.803 
+But it's really unrolls these iterations dynamically if you think about it.
+
+00:27:28.803 --> 00:27:34.622 
+So if your window sizes for example 100 and if you have 4 instructions, unfortunately we're not
+
+00:27:34.622 --> 00:27:40.626 
+showing the branches over here, forget about the branches, let's say 5 instructions per iteration,
+
+00:27:40.626 --> 00:27:44.363 
+then you can have 20 iterations inside the machine right now.
+
+00:27:44.363 --> 00:27:46.523 
+You can exploit the parallelism across those 20 iterations.
+
+00:27:46.563 --> 00:27:53.248 
+That's how an out of order execution machine accelerates sequential code and we've seen this in in
+
+00:27:53.248 --> 00:27:54.203 
+past lectures.
+
+00:27:54.883 --> 00:27:59.243 
+You can also add superscalar or VLIW execution.
+
+00:27:59.923 --> 00:28:02.203 
+Usually out of order executions combined with superscalar.
+
+00:28:02.203 --> 00:28:04.963 
+And VLIW has a different philosophy as we have discussed.
+
+00:28:05.363 --> 00:28:10.594 
+And they also exploit instruction level parallelism by fetching and executing multiple instructions
+
+00:28:10.594 --> 00:28:11.123 
+per cycle.
+
+00:28:11.483 --> 00:28:17.100 
+And VLIW on top of that gives a lot of opportunity and freedom to the compiler so that the compiler
+
+00:28:17.100 --> 00:28:21.923 
+can do compile time reordering of the code so that it can exploit parallelism, right?
+
+00:28:22.003 --> 00:28:26.638 
+And the compiler can do a really great job in this particular case because every iteration is
+
+00:28:26.638 --> 00:28:28.283 
+independent of each other, right?
+
+00:28:28.523 --> 00:28:33.323 
+So this is also a very good fit for VLIW if you think about it.
+
+00:28:33.323 --> 00:28:38.163 
+OK, let's take a look at data parallel SIMD, which we discussed last time.
+
+00:28:38.163 --> 00:28:39.483 
+Single instruction, multiple data.
+
+00:28:40.883 --> 00:28:46.243 
+Clearly we realise that each instruct, each iteration is independent of every other iteration.
+
+00:28:46.243 --> 00:28:49.523 
+In this particular case, that's what it means to be fully vectorizable.
+
+00:28:50.483 --> 00:28:55.963 
+So what we can do is we can take iterations and put them next to each other pictorially.
+
+00:28:56.963 --> 00:29:02.803 
+And you can do this either as a programmer or as a compiler and program.
+
+00:29:03.283 --> 00:29:07.120 
+Actually, hardware can do this also, but we're not talking about that with the SIMD programming
+
+00:29:07.120 --> 00:29:07.363 
+model.
+
+00:29:08.163 --> 00:29:12.896 
+But programmer or compiler generates a SIMD instruction to execute the same instruction from all
+
+00:29:12.896 --> 00:29:14.523 
+iterations across different data.
+
+00:29:15.083 --> 00:29:16.723 
+All iterations is the ideal case.
+
+00:29:17.123 --> 00:29:20.003 
+You're limited by the vector length, of course, in a real machine.
+
+00:29:21.043 --> 00:29:26.243 
+But if your iteration count is smaller than your vector length, then all the iterations is correct.
+
+00:29:27.163 --> 00:29:33.134 
+OK, so basically the compiler or the programmer takes the same instruction from different iterations
+
+00:29:33.134 --> 00:29:35.403 
+and forms a vector instruction, right?
+
+00:29:35.403 --> 00:29:37.163 
+And that's our vector load.
+
+00:29:38.003 --> 00:29:44.793 
+You basically take vector loads, load A into vector register 1, and you also create another vector
+
+00:29:44.793 --> 00:29:47.843 
+load for loading B into vector register two.
+
+00:29:47.843 --> 00:29:51.243 
+Another vector instruction vector adds V1 plus V2.
+
+00:29:51.243 --> 00:29:53.843 
+Store the result in V3 and then a vector store.
+
+00:29:54.803 --> 00:29:55.363 
+Sounds good, right?
+
+00:29:55.363 --> 00:29:57.683 
+You've seen this also, we've actually gone through a code.
+
+00:29:57.803 --> 00:29:58.203 
+Examples.
+
+00:29:59.123 --> 00:30:01.603 
+One big advantage over here is you also eliminate branches.
+
+00:30:02.083 --> 00:30:06.152 
+So that's one upside over here, we couldn't eliminate branches in the previous case, but here we
+
+00:30:06.152 --> 00:30:07.763 
+eliminate the branches, which is nice.
+
+00:30:08.003 --> 00:30:14.771 
+And you've seen that last week, OK, So this is best executed by ASIMD processor because SIMD
+
+00:30:14.771 --> 00:30:21.981 
+processor essentially is built such that the hardware execution units do the same operation except
+
+00:30:21.981 --> 00:30:24.483 
+on different data elements, right?
+
+00:30:24.523 --> 00:30:26.083 
+Either in time or space.
+
+00:30:26.923 --> 00:30:30.763 
+OK, so a data parallel programming model is nice for SIMD processors.
+
+00:30:31.523 --> 00:30:34.083 
+You could also execute this in out of order execution processor, right?
+
+00:30:34.363 --> 00:30:40.813 
+You just need to convert those vector instructions to scalar instructions like or some sort of micro
+
+00:30:40.813 --> 00:30:41.523 
+operations.
+
+00:30:42.203 --> 00:30:45.883 
+Basically would waste a lot of the beauty of SIMD if you if you do that right.
+
+00:30:46.763 --> 00:30:51.123 
+I wouldn't recommend doing that unless you have to do it for binary compatibility reasons.
+
+00:30:51.123 --> 00:30:53.443 
+Then you don't have anything else to execute this on.
+
+00:30:54.123 --> 00:30:59.403 
+So that's the mismatch between programming model and hardware execution model if you think about it.
+
+00:31:00.003 --> 00:31:02.443 
+OK, now let's take a look at the multi threaded version of this.
+
+00:31:02.443 --> 00:31:04.243 
+So this is scalar sequential code.
+
+00:31:04.243 --> 00:31:08.403 
+Again the same example multi thread execution model.
+
+00:31:08.483 --> 00:31:14.363 
+Programmer or compiler realises again each iteration is independent and essentially assigns each
+
+00:31:14.363 --> 00:31:16.323 
+iteration to a different thread.
+
+00:31:18.203 --> 00:31:22.283 
+It does not form vector instructions across iterations.
+
+00:31:22.923 --> 00:31:27.043 
+Each thread, basically a programmer or compiler, generates a thread to execute each iteration.
+
+00:31:27.043 --> 00:31:31.003 
+Each thread does exactly the same thing, but on different data elements.
+
+00:31:32.203 --> 00:31:33.203 
+That's the idea over here.
+
+00:31:33.483 --> 00:31:37.123 
+We're accomplishing the same thing, but we're not changing the instructions here.
+
+00:31:37.363 --> 00:31:38.883 
+The instructions are still scalar.
+
+00:31:39.643 --> 00:31:44.563 
+Load, load, add, store and we have N number of scalar threads.
+
+00:31:46.203 --> 00:31:46.883 
+Makes sense, right?
+
+00:31:47.403 --> 00:31:49.883 
+Clearly you program things like this with multi threading.
+
+00:31:50.683 --> 00:31:55.163 
+This can be executed on a mimd machine where you have multiple CPUs.
+
+00:31:55.563 --> 00:31:57.843 
+Each can be actually very wimpy CPUs.
+
+00:31:57.843 --> 00:31:59.563 
+Remember the 1000 chickens?
+
+00:32:00.683 --> 00:32:06.243 
+So each each CPU can be something that doesn't even have pipelining for example, right?
+
+00:32:06.283 --> 00:32:13.123 
+Assuming the code, the iterations are very simple and you have a lot of parallelism in the CPU.
+
+00:32:13.123 --> 00:32:15.963 
+Multiple instruction multiplate the multi threaded processor multiprocessor.
+
+00:32:17.723 --> 00:32:24.763 
+This particular model, because of how the loop is, is also called single program multiple data.
+
+00:32:24.763 --> 00:32:29.243 
+Because the program or the thread is the same, right?
+
+00:32:30.043 --> 00:32:31.643 
+Except different.
+
+00:32:32.083 --> 00:32:36.203 
+Except the threads do the same thing on different data, right?
+
+00:32:36.643 --> 00:32:40.683 
+So the model itself is not SIMD anymore because we don't.
+
+00:32:40.683 --> 00:32:44.283 
+We didn't create instructions that operate on multiple pieces of data.
+
+00:32:44.483 --> 00:32:47.963 
+We created threads that do the same thing on different pieces of data.
+
+00:32:48.923 --> 00:32:54.683 
+So that's the realisation and this is what has made GP us very successful because it's a lot easier
+
+00:32:54.683 --> 00:32:57.243 
+to reason about, it's a lot easier to write.
+
+00:32:57.643 --> 00:33:02.613 
+You don't need to extract vector instructions, you don't need to deal with vector lengths, for
+
+00:33:02.613 --> 00:33:03.883 
+example, as we will see.
+
+00:33:04.363 --> 00:33:06.803 
+So this can be executed on a SMDSMD machine.
+
+00:33:07.563 --> 00:33:13.360 
+You could actually have ACD machine, a more rigid machine, you could take these and actually
+
+00:33:13.360 --> 00:33:16.323 
+generate these vector instructions dynamically.
+
+00:33:17.203 --> 00:33:20.363 
+Again, I wouldn't do that if you have a GPU, but you could do it.
+
+00:33:21.203 --> 00:33:24.643 
+It can also be executed on a single instruction, multiple thread machine.
+
+00:33:24.723 --> 00:33:28.283 
+This is actually Nvidia's terminology, but it's been pretty successful.
+
+00:33:28.803 --> 00:33:34.881 
+Essentially, you have single instructions, multiple threads, scalar threads that are doing the same
+
+00:33:34.881 --> 00:33:36.723 
+thing on different operations.
+
+00:33:37.123 --> 00:33:38.523 
+So this will become more clear.
+
+00:33:39.363 --> 00:33:41.083 
+So GPU is essentially ACD machine.
+
+00:33:41.563 --> 00:33:46.607 
+NVIDIA calls the SIMT machine because there's a slight difference and the difference is really you
+
+00:33:46.607 --> 00:33:48.563 
+don't program using SIMD instructions.
+
+00:33:48.563 --> 00:33:55.265 
+It's kind of not clean in the sense that it mixes up the programming model and the execution model a
+
+00:33:55.265 --> 00:33:56.003 
+little bit.
+
+00:33:56.243 --> 00:34:02.723 
+That's why I think in a, from a, from an execution model hardware perspective, this is SIMD machine.
+
+00:34:03.323 --> 00:34:05.563 
+But of course it needs to have some notion of threads.
+
+00:34:05.563 --> 00:34:06.443 
+So they're also right.
+
+00:34:07.163 --> 00:34:08.883 
+They're not completely wrong in this terminology.
+
+00:34:09.683 --> 00:34:13.563 
+OK, basically, except it's not programmed using SIMD instructions.
+
+00:34:14.403 --> 00:34:18.632 
+It is programmed using threads, which is the SPMD programming model which essentially everybody's
+
+00:34:18.632 --> 00:34:19.243 
+familiar with.
+
+00:34:20.083 --> 00:34:22.803 
+Each thread executes the same code, but operates on a different piece of data.
+
+00:34:22.803 --> 00:34:23.443 
+We set this.
+
+00:34:23.683 --> 00:34:25.163 
+Each thread has its own context.
+
+00:34:25.163 --> 00:34:26.083 
+This is essentially a thread.
+
+00:34:26.083 --> 00:34:31.899 
+Basically every thread in a multi threaded program has its context, meaning its registers, its
+
+00:34:31.899 --> 00:34:34.003 
+memory, and they may share memory.
+
+00:34:34.003 --> 00:34:35.363 
+Of course, in a shared memory context.
+
+00:34:35.883 --> 00:34:41.149 
+They can be treated independently, they can be restarted independently, they can be executed
+
+00:34:41.149 --> 00:34:45.843 
+independently, they could be scheduled or unscheduled independently of each other.
+
+00:34:46.163 --> 00:34:49.083 
+So this sort of flexibility doesn't exist in a vector instruction.
+
+00:34:49.283 --> 00:34:56.890 
+Right here you may have 64,000 threads and each of them you can decide to schedule or deschedule
+
+00:34:56.890 --> 00:34:57.683 
+right and.
+
+00:34:57.883 --> 00:34:59.843 
+You're going to see that existing GPUs do that.
+
+00:35:00.243 --> 00:35:05.531 
+When one thread stalls, they bring in some other thread so they can tolerate the latency of the
+
+00:35:05.531 --> 00:35:08.203 
+stalling, and stalling is usually due to memory.
+
+00:35:08.283 --> 00:35:09.723 
+But we'll also see some other reasons.
+
+00:35:10.563 --> 00:35:13.563 
+OK, now I'm going to describe some more terminology.
+
+00:35:14.963 --> 00:35:18.043 
+It's actually not bad terminology, but different companies use different terms.
+
+00:35:18.043 --> 00:35:20.923 
+And media uses warp, AMD uses wavefront.
+
+00:35:20.963 --> 00:35:25.283 
+AMD used to be ATI, which is also a graphics company.
+
+00:35:26.763 --> 00:35:32.243 
+Essentially, a set of threads executing the same instruction are dynamically grouped into a warp or
+
+00:35:32.243 --> 00:35:33.683 
+wavefront by the hardware.
+
+00:35:33.803 --> 00:35:35.403 
+This is not a programming construct.
+
+00:35:35.923 --> 00:35:41.612 
+As we will also see again, this is really how the hardware treats these threads that are at the same
+
+00:35:41.612 --> 00:35:42.523 
+program counter.
+
+00:35:43.243 --> 00:35:48.083 
+So the hardware, because it's a thread, it's a sequential scalar thread.
+
+00:35:48.083 --> 00:35:53.123 
+There's a program counter, and each program counter belong.
+
+00:35:53.523 --> 00:35:57.403 
+Each thread has a program counter, and hardware figures out which threads are at the same program
+
+00:35:57.403 --> 00:35:58.723 
+counter and groups them together.
+
+00:35:59.683 --> 00:36:02.683 
+Because if you're at the same program counter, you're executing the same instruction, right?
+
+00:36:03.523 --> 00:36:04.363 
+Good to think about that.
+
+00:36:05.403 --> 00:36:10.003 
+OK, so basically a warp is essentially A SIMD operation formed by hardware, right?
+
+00:36:10.563 --> 00:36:12.483 
+And that's what GPUs are very good at doing.
+
+00:36:12.683 --> 00:36:16.323 
+GPUs don't require the programmer or the compiler to do this.
+
+00:36:16.843 --> 00:36:21.923 
+They do it in hardware in a very, let's say high level sense.
+
+00:36:22.283 --> 00:36:28.939 
+It's somewhat similar to how we do single threaded programming on out of order execution, on, on, on
+
+00:36:28.939 --> 00:36:31.403 
+on an out of order execution machine.
+
+00:36:31.403 --> 00:36:35.889 
+An out of order execution machine kind of figures out which instructions can be executed
+
+00:36:35.889 --> 00:36:36.603 
+independently.
+
+00:36:36.603 --> 00:36:41.932 
+Right here we have multiple multi threaded programming and the GPU figures out which instructions
+
+00:36:41.932 --> 00:36:45.723 
+can be combined together because they're at the same program counter.
+
+00:36:46.163 --> 00:36:50.923 
+So the hard work is done by the hardware, no pun intended.
+
+00:36:51.283 --> 00:36:54.443 
+Hard and hard soft work is left to the software.
+
+00:36:55.803 --> 00:36:56.283 
+I like that.
+
+00:36:56.843 --> 00:37:04.363 
+OK anyway, so basically warp is a set of threads that execute the same instruction that the same PC.
+
+00:37:06.003 --> 00:37:11.603 
+So for example this is warp 0 at PCX and X is the program counter of the load.
+
+00:37:13.843 --> 00:37:16.963 
+This is warp 0 at PCX plus one right?
+
+00:37:18.043 --> 00:37:25.371 
+Basically the way you execute multiple threads is you go through the same warp, except every warp
+
+00:37:25.371 --> 00:37:28.243 
+increments its program counter, right?
+
+00:37:28.283 --> 00:37:32.822 
+Different scalar threads that are at the same program counter keep incrementing their program
+
+00:37:32.822 --> 00:37:33.603 
+counters, right?
+
+00:37:34.323 --> 00:37:38.083 
+This is warp 0 at PCX +2, this is warp 0 at PCX +3.
+
+00:37:38.203 --> 00:37:41.003 
+And at some point the thread is done OK.
+
+00:37:41.243 --> 00:37:44.843 
+This means that also you may have millions of warps, right?
+
+00:37:45.203 --> 00:37:52.849 
+If for example, your image is 32,000,000 pixels, for example, and each thread has 32 instructions,
+
+00:37:52.849 --> 00:37:56.283 
+you have 1,000,000 threads over here, right?
+
+00:37:56.843 --> 00:38:04.686 
+And if each warp is, let's say, I don't know, let's say 100 instructions at the same time, then
+
+00:38:04.686 --> 00:38:07.163 
+that's 1,000,000 / 100, right?
+
+00:38:07.563 --> 00:38:11.003 
+10,000, I guess you can have 10,000 threads based 10,000 warps.
+
+00:38:12.003 --> 00:38:15.923 
+OK, OK, basically I think I've given you the key idea.
+
+00:38:15.963 --> 00:38:18.283 
+We're going to now look at the benefits of this.
+
+00:38:19.243 --> 00:38:24.129 
+Graphics processing units are SIMD, not exposed to the programmer, and we're looking at the core,
+
+00:38:24.129 --> 00:38:29.066 
+these are called shader cores, essentially core of the graphics of processing units, basically the
+
+00:38:29.066 --> 00:38:29.923 
+computation core.
+
+00:38:29.923 --> 00:38:34.843 
+They're also graphics units have been around since let's say late 1980s.
+
+00:38:35.523 --> 00:38:40.865 
+They were put to do image processing, display processing, and over time more intensive graphics
+
+00:38:40.865 --> 00:38:41.203 
+tasks.
+
+00:38:41.203 --> 00:38:46.243 
+So there's a lot of specialised units also like the texture unit, we're not going to cover those.
+
+00:38:46.323 --> 00:38:50.443 
+More recently there are ray tracing units that are very specialised for graphics computations.
+
+00:38:51.163 --> 00:38:57.432 
+This is the more general purpose part of the graphics unit that has really enabled computations like
+
+00:38:57.432 --> 00:39:00.003 
+machine learning, training and inference.
+
+00:39:01.283 --> 00:39:03.763 
+So we're not learning everything about graphics processing units.
+
+00:39:03.963 --> 00:39:07.203 
+Keep that in mind, but we cannot cover everything about them.
+
+00:39:07.203 --> 00:39:09.083 
+Also, some of it you need to read.
+
+00:39:09.843 --> 00:39:14.603 
+OK, let's take a look at the SIMD and SIMD execution model a little bit more.
+
+00:39:14.603 --> 00:39:18.043 
+SIMD is a single sequential instruction stream of SIMD.
+
+00:39:18.203 --> 00:39:22.731 
+Essentially in the SIMD model, you have a single sequential instruction stream of SIMD instructions,
+
+00:39:22.731 --> 00:39:23.003 
+right?
+
+00:39:23.363 --> 00:39:25.963 
+Each instruction specifies multiple data inputs.
+
+00:39:27.363 --> 00:39:27.763 
+In a sense.
+
+00:39:27.763 --> 00:39:28.923 
+There is no notion of a threat.
+
+00:39:30.403 --> 00:39:35.106 
+So we've seen this for example, you have that particular example, you have two vector loads, one
+
+00:39:35.106 --> 00:39:38.683 
+vector add 1 vector store and you need to specify a vector length, right?
+
+00:39:39.283 --> 00:39:40.203 
+And that needs to be done.
+
+00:39:40.203 --> 00:39:45.881 
+Somebody needs to specify the vector length where simply you have multiple instruction streams of
+
+00:39:45.881 --> 00:39:49.803 
+scalar instructions and threads are dynamically grouped into warps.
+
+00:39:50.603 --> 00:39:53.803 
+If I had to summarize it, you don't have VS anymore.
+
+00:39:54.363 --> 00:39:57.723 
+Instructions are exactly the same as a sequential ISA like.
+
+00:39:57.803 --> 00:40:03.043 
+Von Neumann ISA load, load, add, store and you basically specify the number of threads.
+
+00:40:03.963 --> 00:40:05.963 
+That's the high level perspective, right?
+
+00:40:05.963 --> 00:40:10.683 
+We replaced vector length with number of threads and also vector instructions are gone.
+
+00:40:11.483 --> 00:40:12.563 
+So what are the advantages of this?
+
+00:40:12.563 --> 00:40:14.283 
+We're going to examine two major advantages.
+
+00:40:14.283 --> 00:40:17.483 
+There are a bunch of other ones, but those are secondary in my view.
+
+00:40:17.963 --> 00:40:23.990 
+One major advantages, you can treat each thread separately, meaning you can execute each thread
+
+00:40:23.990 --> 00:40:30.145 
+independently on any type of scalar pipeline, including an auto order pipeline potentially if you
+
+00:40:30.145 --> 00:40:32.683 
+want, and this leads to MIMD processing.
+
+00:40:33.963 --> 00:40:39.603 
+You can also group threads into warps flexibly because these are not programming constructs, right?
+
+00:40:40.003 --> 00:40:45.241 
+A vector length is a programming construct, A vector load is a programming construct, but a warp is
+
+00:40:45.241 --> 00:40:46.723 
+not a programming construct.
+
+00:40:46.723 --> 00:40:52.334 
+Hardware dynamically figures out which threads are truly executing the same instruction and can
+
+00:40:52.334 --> 00:40:56.883 
+dynamically group them together and maximise the benefits of SIMD processing.
+
+00:40:57.203 --> 00:40:59.243 
+This is something a compiler cannot do.
+
+00:40:59.923 --> 00:41:05.239 
+For example, if you have irregularity in your code, for whatever reason, the compiler may not be
+
+00:41:05.239 --> 00:41:10.612 
+able to form vector instructions and it can give up, whereas all the hardware here needs to do is
+
+00:41:10.612 --> 00:41:14.323 
+figure out which threads are executing in the same program counter.
+
+00:41:15.243 --> 00:41:17.283 
+So in a sense, it's relatively general purpose.
+
+00:41:18.963 --> 00:41:21.523 
+OK, let's start with the first one.
+
+00:41:22.283 --> 00:41:24.963 
+And all of this actually affects the programming ease, right?
+
+00:41:24.963 --> 00:41:26.843 
+It makes it easier to program these machines.
+
+00:41:27.483 --> 00:41:29.803 
+OK, so let's take a look at these warps and treating them separately.
+
+00:41:29.803 --> 00:41:31.923 
+These are threads, so you can actually do a fine grain multi threading.
+
+00:41:31.923 --> 00:41:35.590 
+While one thread is executing, 1 warp is executing 1 instruction, another warp can be executing
+
+00:41:35.590 --> 00:41:36.363 
+another instruction.
+
+00:41:36.363 --> 00:41:38.203 
+Another warp can be executing another instruction.
+
+00:41:38.203 --> 00:41:40.083 
+Another warp can be executing another instruction.
+
+00:41:40.403 --> 00:41:42.843 
+Another warp can be executing another instruction.
+
+00:41:43.163 --> 00:41:45.243 
+Another warp can be executing another instruction.
+
+00:41:45.243 --> 00:41:47.003 
+Other warp can be executing another instruction.
+
+00:41:47.243 --> 00:41:52.643 
+These warps are completely independent of each other, so your pipeline can be very simple.
+
+00:41:52.923 --> 00:41:55.803 
+And that's essentially how GPUs make their pipeline simple.
+
+00:41:56.283 --> 00:41:59.563 
+For example, let's assume a warp consists of 32 threads.
+
+00:42:01.323 --> 00:42:06.323 
+If you have 32,000 iterations and one iteration per thread, you have 1000 warps, right?
+
+00:42:07.883 --> 00:42:11.603 
+Warps can be interleaved on the same pipeline using fine grained multi threading.
+
+00:42:11.763 --> 00:42:13.163 
+This is a concept that we've seen.
+
+00:42:14.403 --> 00:42:20.404 
+You have different threads and each stage in the pipeline is executing a different an instruction
+
+00:42:20.404 --> 00:42:22.323 
+from a different thread, right?
+
+00:42:22.403 --> 00:42:24.403 
+And this has enabled us to get rid of branch prediction.
+
+00:42:24.403 --> 00:42:27.883 
+For example, this has enabled us to get rid of data dependency checking.
+
+00:42:28.563 --> 00:42:29.723 
+So it's a beautiful pipeline.
+
+00:42:30.763 --> 00:42:34.978 
+And we said when we covered fine grained multi threading that for this to be successful you need to
+
+00:42:34.978 --> 00:42:37.363 
+have a lot of parallelism in terms of number of threads.
+
+00:42:38.163 --> 00:42:41.483 
+Now the good news is in graphics there's a lot of parallels, right?
+
+00:42:42.043 --> 00:42:45.763 
+That's why fine grained multi threading has been very successful in the graphics domain.
+
+00:42:47.123 --> 00:42:50.683 
+OK, so let's take a look at this example, the same code again.
+
+00:42:51.003 --> 00:42:54.003 
+This is warp 0 at PCX, which is its load.
+
+00:42:55.443 --> 00:43:00.563 
+And then you can bring in warp one at PCX and look at the iterations.
+
+00:43:00.963 --> 00:43:04.518 
+So you can basically identify which iteration you're executing based on everything that I've written
+
+00:43:04.518 --> 00:43:05.123 
+over here, right?
+
+00:43:06.483 --> 00:43:13.275 
+These are warp 0 at PCX is executing iteration 0 through 31 because you have 32 loads that
+
+00:43:13.275 --> 00:43:14.483 
+particular load.
+
+00:43:15.323 --> 00:43:23.123 
+If you if I tell you I have warp one at PCX, then it has to start from the 32nd iteration, right?
+
+00:43:23.443 --> 00:43:27.163 
+So that warp belongs to 32nd through a 63rd iteration.
+
+00:43:27.803 --> 00:43:29.163 
+And you can do this arbitrarily.
+
+00:43:29.523 --> 00:43:38.085 
+For example, if I tell you warp 20 at PCX +2, which is that add instruction, this is iteration #20 *
+
+00:43:38.085 --> 00:43:45.963 
+32 and the next one is iteration times #20 * 32 + 1 and the last one is 20 * 32 + 31, right?
+
+00:43:46.523 --> 00:43:47.403 
+Those are the warps.
+
+00:43:47.403 --> 00:43:53.723 
+Those are the iterations that are being executed by warp 20 at that particular program counter.
+
+00:43:54.923 --> 00:43:58.803 
+And you know that it's at OK, so this is the fine grain multi threading.
+
+00:43:59.203 --> 00:44:04.999 
+Again, I'm not showing you the hardware but pictorially because all threads are independent of each
+
+00:44:04.999 --> 00:44:09.683 
+other, warps can be executed seamlessly in fine grained multi threaded pipeline.
+
+00:44:10.603 --> 00:44:18.043 
+So for example when warp 0 is at PCX plus three in the pipeline, it's doing some store.
+
+00:44:18.123 --> 00:44:26.308 
+For example, warp one at PCX +2 can be executing at right and warp 2 at PCX plus 2X plus one can be
+
+00:44:26.308 --> 00:44:31.683 
+executing this load and warp 3 at PCX can be executing this load.
+
+00:44:32.043 --> 00:44:35.866 
+They could be executed on different parts of the machine, assuming you have enough functional units
+
+00:44:35.866 --> 00:44:36.523 
+of course, right?
+
+00:44:37.443 --> 00:44:38.003 
+That's the idea.
+
+00:44:38.003 --> 00:44:43.134 
+Basically the key is providing enough functional units so that you can actually have this
+
+00:44:43.134 --> 00:44:46.883 
+parallelism exploited in this fine grained multi threaded manner.
+
+00:44:47.363 --> 00:44:48.203 
+So hopefully that's clear.
+
+00:44:48.203 --> 00:44:53.160 
+Basically what we did was we did the same thing as fine grained multi threading, except in fine
+
+00:44:53.160 --> 00:44:57.283 
+grained multi threading earlier we just have a single instruction stream right?
+
+00:44:57.963 --> 00:44:59.683 
+Now we don't have a single instruction stream.
+
+00:44:59.683 --> 00:45:03.363 
+We have many instruction streams, except they're doing the same thing.
+
+00:45:03.723 --> 00:45:10.203 
+And we Group A particular set of threads, 32 threads into a warp and we fine grain multi thread.
+
+00:45:10.843 --> 00:45:17.843 
+Those warps right in to be, to be like more, let's say, correct.
+
+00:45:17.843 --> 00:45:20.763 
+This is really fine grain multi warping in a sense, right?
+
+00:45:20.763 --> 00:45:22.803 
+You're really doing this warping thing.
+
+00:45:23.763 --> 00:45:26.523 
+OK, so you you remember the fine grain multi threading basic idea.
+
+00:45:26.523 --> 00:45:27.763 
+Of course this comes at a cost.
+
+00:45:27.923 --> 00:45:34.247 
+You need to actually have support for threads and GPUs have a lot of context as we will see later
+
+00:45:34.247 --> 00:45:34.443 
+on.
+
+00:45:35.163 --> 00:45:39.763 
+So we will need program counter support, we will need register files for different threads.
+
+00:45:39.763 --> 00:45:46.328 
+So GPUs will actually dedicate a lot of their area to support thousands and thousands and thousands
+
+00:45:46.328 --> 00:45:47.323 
+of threads, OK.
+
+00:45:47.323 --> 00:45:50.523 
+If you want to brush up your memory on fine grain multi threading, we have lectures as you know.
+
+00:45:52.523 --> 00:45:55.003 
+OK, let me see.
+
+00:45:55.923 --> 00:45:57.723 
+Maybe that's a good time to take a break.
+
+00:45:59.403 --> 00:46:00.203 
+Let's take a break.
+
+00:46:00.523 --> 00:46:03.843 
+But I will start earlier so that I want I can cover everything.
+
+00:46:03.843 --> 00:46:05.123 
+I may leave you early today.
+
+00:46:05.843 --> 00:46:10.723 
+Let's take a break until 1512 and then we'll continue.
+
+00:46:12.283 --> 00:46:13.603 
+And if you have questions let me know.
+
+00:46:17.114 --> 00:46:21.274 
+OK, before going forward there was a very good multiple good comments.
+
+00:46:21.434 --> 00:46:29.387 
+One is remember that these warps are formed dynamically for instructions or threads that are at the
+
+00:46:29.387 --> 00:46:31.074 
+same program counter.
+
+00:46:31.394 --> 00:46:38.117 
+Once you group multiple threads into a warp, you execute them on ASIMD engine, meaning it has the
+
+00:46:38.117 --> 00:46:40.474 
+characteristics of SIMD execution.
+
+00:46:41.154 --> 00:46:47.811 
+If one of the threads stalls, the other is also stalls because these this group of threads called
+
+00:46:47.811 --> 00:46:52.754 
+the warp are treated as a single entity, just like a vector instruction.
+
+00:46:53.074 --> 00:46:56.874 
+Remember this from the SIMD lecture, we call this lock step execution, right?
+
+00:46:56.874 --> 00:47:01.954 
+You have lock step characteristic and that exists over here also in a sense it has.
+
+00:47:01.954 --> 00:47:03.954 
+It also exists in BLIW for example.
+
+00:47:04.394 --> 00:47:10.234 
+But that limits the flexibility that you have the grouping of instructions.
+
+00:47:11.074 --> 00:47:16.436 
+Of grouping of the same program counter into multiple warps enables you to reduce some of the
+
+00:47:16.436 --> 00:47:17.474 
+control overheads.
+
+00:47:17.474 --> 00:47:26.571 
+For example, if you have a single thread executing on a single pipeline, not ACD pipeline, where you
+
+00:47:26.571 --> 00:47:33.394 
+group things you need to decode, you need to fetch decode that instruction.
+
+00:47:34.594 --> 00:47:42.649 
+Here you're grouping the same instruction from different threads together, so you only need to fetch
+
+00:47:42.649 --> 00:47:46.194 
+and decode once for all threads in the warp.
+
+00:47:46.194 --> 00:47:48.994 
+It's very similar to SIMD in that sense, right?
+
+00:47:50.314 --> 00:47:53.994 
+But we have different threads, so grouping things into warps.
+
+00:47:53.994 --> 00:47:59.594 
+Grouping instruction into warps enables you to really amortise the control overheads.
+
+00:47:59.874 --> 00:48:04.834 
+So you don't need to have 32 fetch and decode units, you have only one fetch and decode unit.
+
+00:48:05.554 --> 00:48:12.006 
+And because you grouped many warps, many threads into a warp 32, for example, it could be 1024, we
+
+00:48:12.006 --> 00:48:14.114 
+will see those numbers later on.
+
+00:48:15.114 --> 00:48:19.754 
+Then you you unleash a lot of parallelism by fetching and decoding a single instruction.
+
+00:48:20.074 --> 00:48:23.234 
+So that's a huge benefit of GPUs over CPUs.
+
+00:48:24.114 --> 00:48:26.714 
+That control overhead is reduced.
+
+00:48:26.834 --> 00:48:29.394 
+The downside is flexibility is also reduced, Right?
+
+00:48:30.194 --> 00:48:35.034 
+OK, OK, now let's go into a little bit more of this.
+
+00:48:35.034 --> 00:48:39.151 
+I'm going to say essentially similar things, but we're going to build up to some interesting
+
+00:48:39.151 --> 00:48:39.554 
+concepts.
+
+00:48:39.554 --> 00:48:45.194 
+So these are from the NVIDIA Tesla paper that I recommended from 2008.
+
+00:48:45.914 --> 00:48:49.114 
+But a set of threads that execute the same instruction are called warp.
+
+00:48:49.394 --> 00:48:50.714 
+These are on different data elements.
+
+00:48:50.714 --> 00:48:51.994 
+NVIDIA calls the SIMT.
+
+00:48:52.034 --> 00:48:56.554 
+Essentially, the reason it's called warp is all threads run the same code.
+
+00:48:56.794 --> 00:49:02.834 
+And in English, a warp refers to like in woven fabric, like like this cloth, for example.
+
+00:49:02.834 --> 00:49:06.354 
+A warp is essentially the threads that run length 5 and lengthwise.
+
+00:49:06.354 --> 00:49:10.354 
+And woven fabric, if you think about it, these are doing exactly the same thing.
+
+00:49:10.354 --> 00:49:11.394 
+I don't have it, unfortunately.
+
+00:49:11.394 --> 00:49:12.954 
+I should have worn something like that.
+
+00:49:13.314 --> 00:49:18.196 
+But essentially the threads are going down like that, and they're doing essentially the same thing
+
+00:49:18.196 --> 00:49:18.994 
+as they go down.
+
+00:49:19.594 --> 00:49:22.754 
+Anyway, that's where the analogy ends.
+
+00:49:22.754 --> 00:49:26.434 
+Maybe AMD calls us wavefronts, but they do essentially the same thing.
+
+00:49:26.434 --> 00:49:31.394 
+Wavefront is equal to warp, so this is a good representation of a warp.
+
+00:49:32.314 --> 00:49:34.234 
+It's dynamically formed if there's a.
+
+00:49:34.674 --> 00:49:39.634 
+So there needs to be some hardware to detect which threads are at the same program counter.
+
+00:49:39.634 --> 00:49:44.018 
+We're going to look at it a little bit more detail, but there's some complexity that's added to
+
+00:49:44.018 --> 00:49:44.434 
+hardware.
+
+00:49:44.834 --> 00:49:50.526 
+If threads are at the same program counter, they're grouped together, but they're also some other
+
+00:49:50.526 --> 00:49:55.984 
+things that you need to consider when grouping threads together, like which registers they're
+
+00:49:55.984 --> 00:49:59.154 
+accessing, for example, which iterations they're from.
+
+00:49:59.154 --> 00:50:01.194 
+Basically, what is their thread ID basically.
+
+00:50:01.434 --> 00:50:09.289 
+In other words, you cannot take a thread ID that's let's say whose modulus over the warp warps per
+
+00:50:09.289 --> 00:50:16.983 
+thread is 0 and put them together with another thread ID whose modules is 0 because they need to
+
+00:50:16.983 --> 00:50:22.194 
+access the same register file and the register files partitioned.
+
+00:50:22.514 --> 00:50:26.514 
+So you cannot basically put together threads that need to go to the same lane, right?
+
+00:50:26.794 --> 00:50:30.194 
+So this grouping needs to be done much more carefully.
+
+00:50:30.754 --> 00:50:32.474 
+And if you're wrong, basically your hardware will be wrong.
+
+00:50:32.994 --> 00:50:33.754 
+You should not be wrong.
+
+00:50:34.634 --> 00:50:39.514 
+OK, so essentially you have these different warps and they're there.
+
+00:50:39.514 --> 00:50:47.219 
+There's a scheduler over here, which is this picture over here that keeps, you can call it also
+
+00:50:47.219 --> 00:50:48.274 
+thread warps.
+
+00:50:48.274 --> 00:50:53.565 
+Essentially, normally people drop the thread and they called warps that that keep a lot of warps
+
+00:50:53.565 --> 00:50:55.274 
+that are ready to be scheduled.
+
+00:50:55.794 --> 00:51:00.234 
+And when the pipeline is empty, these warps go into the pipeline.
+
+00:51:00.594 --> 00:51:02.394 
+Your pipeline may be, let's say.
+
+00:51:02.514 --> 00:51:07.788 
+6 stages, 10 stages, but you may actually have thousands of warts outstanding waiting to be
+
+00:51:07.788 --> 00:51:09.354 
+scheduled on that pipeline.
+
+00:51:09.994 --> 00:51:13.114 
+10 stages, but the width can be 32, for example, right?
+
+00:51:13.114 --> 00:51:16.674 
+So you may be executing 32 * 10 things at the same time.
+
+00:51:17.714 --> 00:51:19.994 
+OK, so this is the higher level view of the GPU.
+
+00:51:19.994 --> 00:51:22.514 
+As I said, we're looking at the what is called the shader core.
+
+00:51:22.594 --> 00:51:26.274 
+This is the more most general purpose part of the GPU.
+
+00:51:26.914 --> 00:51:28.114 
+Clearly memory is important.
+
+00:51:28.114 --> 00:51:29.154 
+We're going to talk a lot about that.
+
+00:51:29.154 --> 00:51:30.194 
+There's an older picture.
+
+00:51:30.234 --> 00:51:32.154 
+We're at GDDR 7 these days.
+
+00:51:32.154 --> 00:51:36.674 
+That's a graphics DDR, which is specifically designed for high bandwidth.
+
+00:51:36.994 --> 00:51:39.554 
+Today, HPM is even higher bandwidth, high bandwidth memory.
+
+00:51:39.554 --> 00:51:42.234 
+We're going to talk about that in memory lectures later on.
+
+00:51:42.874 --> 00:51:47.554 
+But essentially these cores need to be fed with very good memory subsystem.
+
+00:51:48.154 --> 00:51:52.994 
+If you look at the core you have, these are the.
+
+00:51:53.394 --> 00:51:54.994 
+This is a representation of a warp.
+
+00:51:55.234 --> 00:52:01.514 
+You have program counter and you have some number of threads that is part of a warp that's a 32.
+
+00:52:02.034 --> 00:52:03.594 
+You also have something called a mask.
+
+00:52:05.514 --> 00:52:11.594 
+This means that basically this is a mask of which threads are active in this program counter.
+
+00:52:12.354 --> 00:52:19.079 
+Because of branching, the threads that are part of the same program counter may actually go
+
+00:52:19.079 --> 00:52:25.879 
+different paths, and we'll see that some threads become inactive if they are not supposed to
+
+00:52:25.879 --> 00:52:32.900 
+execute this path of the branch, and some threads become active if they are supposed to execute
+
+00:52:32.900 --> 00:52:34.674 
+that path on the branch.
+
+00:52:34.994 --> 00:52:37.074 
+So this is called the active mask in GPUs.
+
+00:52:37.234 --> 00:52:42.296 
+It basically identifies which warps which threads in the warp is supposed to execute that program
+
+00:52:42.296 --> 00:52:42.714 
+counter.
+
+00:52:43.514 --> 00:52:44.314 
+That's it basically.
+
+00:52:44.994 --> 00:52:51.128 
+Normally if there's no branching, all the active mask is all full of ones, meaning all threads are
+
+00:52:51.128 --> 00:52:53.194 
+supposed to execute that program.
+
+00:52:53.194 --> 00:52:56.234 
+Counter branching complicates things as we will see in a little bit.
+
+00:52:57.274 --> 00:52:59.314 
+But this is no different from vector masking.
+
+00:52:59.314 --> 00:53:01.594 
+Actually it's as you have seen in the last lecture.
+
+00:53:01.594 --> 00:53:04.634 
+In SIMD lecture we talked about masking V mask.
+
+00:53:04.754 --> 00:53:09.554 
+For example, GPUs do that without requiring vector mask registers.
+
+00:53:09.834 --> 00:53:12.874 
+They have these masks that are associated with each warp.
+
+00:53:13.834 --> 00:53:20.612 
+OK, So you, you fetch the instruction from the I cache instruction cache and then there is a single
+
+00:53:20.612 --> 00:53:21.434 
+decode unit.
+
+00:53:22.074 --> 00:53:24.194 
+It's unfortunately not nice over here in this picture.
+
+00:53:24.194 --> 00:53:26.194 
+It's actually a very small unit, I would say.
+
+00:53:26.674 --> 00:53:32.322 
+And then that decode unit distributes the same operation to different parts of the pipeline,
+
+00:53:32.322 --> 00:53:34.594 
+different register files essentially.
+
+00:53:36.154 --> 00:53:38.114 
+So if you look at the pipeline, they're all scalar.
+
+00:53:38.474 --> 00:53:44.343 
+They're actually independent of each other, but they're used together because there is only a single
+
+00:53:44.343 --> 00:53:48.394 
+fetch and single decode unit feeding many processing elements, right?
+
+00:53:48.394 --> 00:53:52.874 
+Essentially it's SIMD, except we don't use SIMD instructions.
+
+00:53:53.834 --> 00:53:55.554 
+OK, so we've also seen this.
+
+00:53:55.554 --> 00:53:59.034 
+I'll go through this relatively quickly, but I'll mention a couple of things over here.
+
+00:53:59.314 --> 00:54:00.514 
+We've already discussed a lot of these.
+
+00:54:00.514 --> 00:54:03.714 
+So you have one instruction per thread in the pipeline at a time.
+
+00:54:04.034 --> 00:54:05.954 
+So there's no need for hardware interlocking.
+
+00:54:06.034 --> 00:54:07.914 
+That's the benefit of fine grained multi threading.
+
+00:54:07.914 --> 00:54:09.994 
+There's no need for branch prediction over here.
+
+00:54:09.994 --> 00:54:12.474 
+There's no need for data dependency checking the pipeline.
+
+00:54:12.594 --> 00:54:17.797 
+The scalar pipeline is really, really simple and we discussed that we interleave warp execution to
+
+00:54:17.797 --> 00:54:18.594 
+hide latencies.
+
+00:54:19.194 --> 00:54:23.794 
+So register values of all threads stay in the register file, which is partitioned as you can see
+
+00:54:23.794 --> 00:54:24.274 
+over here.
+
+00:54:25.194 --> 00:54:29.594 
+And fine grain multi threading enabled as a very simple pipeline and long latency tolerance.
+
+00:54:29.634 --> 00:54:34.034 
+Imagine millions of threads operating on the same large image or video, for example.
+
+00:54:34.874 --> 00:54:38.594 
+I'll mention one thing over here that's going to be important later on.
+
+00:54:39.074 --> 00:54:41.754 
+Today's memory latencies are not 11 cycles like Cray one.
+
+00:54:42.274 --> 00:54:44.154 
+They're like on the order of hundreds of cycles.
+
+00:54:44.514 --> 00:54:50.178 
+For example, Microsoft Xbox which is CPU, but they did actually add a lot of graphics units later
+
+00:54:50.178 --> 00:54:50.354 
+on.
+
+00:54:50.714 --> 00:54:56.668 
+The memory access latency was 650 cycles, clock cycles, and to tolerate that latency they add a lot
+
+00:54:56.668 --> 00:54:58.714 
+of multi threading and fine grain.
+
+00:54:58.714 --> 00:55:01.074 
+Multi threading enables us also.
+
+00:55:01.074 --> 00:55:06.591 
+Basically, if you get a cache miss, for example, when you're accessing the cache, you have a load
+
+00:55:06.591 --> 00:55:07.274 
+instruction.
+
+00:55:10.434 --> 00:55:14.074 
+Then what the scheduler or the pipeline does is it takes out the warp.
+
+00:55:14.234 --> 00:55:19.831 
+It sends the request to memory, of course, to get the data, but it takes out the warp and puts them
+
+00:55:19.831 --> 00:55:25.428 
+in a special queue, a queue of or a structure that contains the warps that are accessing the memory
+
+00:55:25.428 --> 00:55:25.994 
+hierarchy.
+
+00:55:26.154 --> 00:55:31.114 
+Currently they wait there until the associated memory request comes back and wakes them up.
+
+00:55:33.114 --> 00:55:33.754 
+Makes sense, right?
+
+00:55:33.754 --> 00:55:39.194 
+This is scheduling that you do in hardware so that you can tolerate the memory latency.
+
+00:55:39.194 --> 00:55:42.954 
+You need to remove that warp so that doesn't block the pipeline for everyone else, right?
+
+00:55:43.394 --> 00:55:46.994 
+Very similar to auto war execution, except it's done in a much more regular manner.
+
+00:55:47.714 --> 00:55:50.554 
+So this queue can be pretty large also.
+
+00:55:50.554 --> 00:55:51.874 
+So there are two queues over here.
+
+00:55:52.154 --> 00:55:56.714 
+There are warps that are available for scheduling currently they're ready, they can go.
+
+00:55:57.274 --> 00:56:02.194 
+They feed the pipeline, the fetch engine and there there the other queue is there.
+
+00:56:02.634 --> 00:56:08.887 
+Warps that are waiting for memory accesses essentially, and those are where the scheduling points
+
+00:56:08.887 --> 00:56:15.205 
+come, because when the data comes back for all the threads in the warp, this is where data mapping
+
+00:56:15.205 --> 00:56:21.524 
+will be important. If different threads are not accessing sequential parts of memory, you may need
+
+00:56:21.524 --> 00:56:27.777 
+to access very different parts of memory, and as a result you may need to wait for a long time in
+
+00:56:27.777 --> 00:56:28.874 
+that warp, right.
+
+00:56:29.434 --> 00:56:34.931 
+We'll get back to that also, but you've seen scatter gather operations, for example in SIMD. You can
+
+00:56:34.931 --> 00:56:40.263 
+do the same things in G in GP US and they, if they're, if they're irregular, if you're accessing,
+
+00:56:40.263 --> 00:56:45.485 
+for example, random places in memory, because you're gathering data from random places, because
+
+00:56:45.485 --> 00:56:50.927 
+you're accessing a very sparse matrix, for example, then those warps would be waiting in that queue
+
+00:56:50.927 --> 00:56:56.150 
+for a long time because they need to issue a lot of memory requests. This is where things get a
+
+00:56:56.150 --> 00:56:58.514 
+little bit complicated and sometimes nasty.
+
+00:56:58.914 --> 00:57:05.983 
+Because a single warp. Assume that the warp is 32 threads. If if the accesses are irregular, meaning
+
+00:57:05.983 --> 00:57:12.840 
+each of them computes an address that has nothing to do with the other addresses, you'll probably
+
+00:57:12.840 --> 00:57:19.767 
+need to issue 32 memory requests. And you need to wait for all of those 32 memory requests to come
+
+00:57:19.767 --> 00:57:26.554 
+back so that you can schedule back that warp into the pipeline OK and after warps get scheduled.
+
+00:57:27.274 --> 00:57:33.416 
+They write back, they finish their instruction, they go back to the ready warp queue essentially. So
+
+00:57:33.416 --> 00:57:39.313 
+that's how scheduling happens in a GPU. That's all hardware based scheduling. OK, so you've seen
+
+00:57:39.313 --> 00:57:45.271 
+this picture. We're going to go through the same thing, except we're going to look at warps right
+
+00:57:45.271 --> 00:57:51.352 
+now. This is a vector add instruction that we've seen in SIMD and we exploited parallelism in space
+
+00:57:51.352 --> 00:57:55.714 
+as well as time essentially. If you look at a 32 thread warp executing.
+
+00:57:56.834 --> 00:58:03.260 
+This instruction, this instruction is not a vector instruction anymore. It's essentially A scalar
+
+00:58:03.260 --> 00:58:09.223 
+instruction where the arrays are indexed by the thread ID, right? That's the beauty of the
+
+00:58:09.223 --> 00:58:15.783 
+programming model that we have. You can execute it using a single scalar unit or you can execute it
+
+00:58:15.783 --> 00:58:21.944 
+using multiple scalar units. And essentially it's the same over here, right? The slide didn't
+
+00:58:21.944 --> 00:58:24.794 
+change except how we programmed it changed.
+
+00:58:26.234 --> 00:58:33.310 
+Makes sense, right? So this clearly demonstrates that an existing GPU is ASIMD unit. The hardware
+
+00:58:33.310 --> 00:58:40.459 
+did not change right ASIMD machine OK, So similarly to the SIMD machines we parti remember in that
+
+00:58:40.459 --> 00:58:47.025 
+case we partitioned the vector registers. A particular elements are in particular register
+
+00:58:47.025 --> 00:58:53.956 
+partitions. So for example, this partition register file component as elements 048, this one is
+
+00:58:53.956 --> 00:58:54.394 
+159...
+
+00:58:56.434 --> 00:59:02.900 
+In GPUs we essentially have the same thing. I keep going back and forth over here, but instead of
+
+00:59:02.900 --> 00:59:08.967 
+having elements zero, you have registers for thread ID 048. For example, on this partition,
+
+00:59:08.967 --> 00:59:15.500 
+register for thread ID is 159 on the other partition, etcetera. So not much has changed as you can
+
+00:59:15.500 --> 00:59:21.567 
+see. But this is going to limit our flexibility in how we group together threads. Also, for
+
+00:59:21.567 --> 00:59:23.834 
+example, if you have threads that.
+
+00:59:25.514 --> 00:59:32.337 
+Are at the same program counter, but their IDs are 048. You cannot group them together because they
+
+00:59:32.337 --> 00:59:39.023 
+need to access the same link, right? OK, so vector instruction level parallelism. I don't want to
+
+00:59:39.023 --> 00:59:45.778 
+harp on this too much essentially, but now you have warp instruction level parallelism. A warp may
+
+00:59:45.778 --> 00:59:52.326 
+be executing a load, unleashing 32 loads. Another warp may be unleashing 32 multiplies, another
+
+00:59:52.326 --> 00:59:53.154 
+warp 32 ads.
+
+00:59:53.514 --> 00:59:59.913 
+Essentially, different warps can be enabling a lot of operations at the same time. And remember, we
+
+00:59:59.913 --> 01:00:06.182 
+have a lot of warps. OK, let's talk about memory access a little bit. So if you want to have this
+
+01:00:06.182 --> 01:00:12.323 
+very regular, especially for example, if you have, if you're going through an array, that's the
+
+01:00:12.323 --> 01:00:18.463 
+best case for a GPU because the same instruction, different threads, different threads uses the
+
+01:00:18.463 --> 01:00:21.954 
+thread ID to index and access different data elements.
+
+01:00:23.474 --> 01:00:30.154 
+For example, warp 0 in this particular case has four threads. It's accessing 4 data elements and you
+
+01:00:30.154 --> 01:00:36.500 
+need to partition your data elements nicely. If you have a single array, it's natural of course
+
+01:00:36.500 --> 01:00:36.834 
+0123.
+
+01:00:37.474 --> 01:00:43.132 
+So warp 0 accesses data element 0, warp 1 access data element, basically warp 0 access data element
+
+01:00:43.132 --> 01:00:48.562 
+0123 in this particular case. And we will see later that those sequential accesses are actually
+
+01:00:48.562 --> 01:00:53.992 
+relatively fast from memory, because as we will see again in future lectures about memory, they
+
+01:00:53.992 --> 01:00:59.307 
+could be nicely packed into the cache. Even if they're not in the cache, they could be nicely
+
+01:00:59.307 --> 01:01:00.794 
+packed into the same bank.
+
+01:01:02.794 --> 01:01:08.880 
+OK, but basically the take away is if you're partitioning your data nicely, you can access it at
+
+01:01:08.880 --> 01:01:12.114 
+high throughput without hopefully stalling as much.
+
+01:01:13.034 --> 01:01:18.324 
+So for maximum performance, memory should provide enough bandwidth and that's why GPUs require much
+
+01:01:18.324 --> 01:01:19.714 
+higher bandwidth memories.
+
+01:01:20.594 --> 01:01:24.794 
+This means that elements per cycle throughput should match computation unit throughput, right?
+
+01:01:24.794 --> 01:01:29.557 
+Ideally, right, Because if your computation unit throughput is much higher than the elements per
+
+01:01:29.557 --> 01:01:33.874 
+cycle that you can provide to those computation units, you'll have to stall in the end.
+
+01:01:33.874 --> 01:01:36.714 
+Now that's the case actually today.
+
+01:01:36.714 --> 01:01:37.674 
+So we stall a lot.
+
+01:01:38.994 --> 01:01:44.095 
+OK, so warps are not exposed to programmers, so this should be clear by now, but I'm going to say
+
+01:01:44.095 --> 01:01:44.674 
+this again.
+
+01:01:45.194 --> 01:01:47.114 
+You have CPU threads and GPU kernels.
+
+01:01:49.474 --> 01:01:54.436 
+And normally if you have sequential code or modestly parallel sections, it it's best to execute them
+
+01:01:54.436 --> 01:01:54.834 
+on CPUs.
+
+01:01:55.354 --> 01:01:57.834 
+That's why heterogeneous computing is very useful.
+
+01:01:57.874 --> 01:02:03.239 
+You have a heterogeneous CPU and GPU and you have the sequential and or mostly modestly parallel
+
+01:02:03.239 --> 01:02:06.034 
+sections execute on ACPU that's powerful on those.
+
+01:02:06.594 --> 01:02:13.234 
+Whereas massively parallel sections are a much better fit for GPU and the way programmer programs.
+
+01:02:13.394 --> 01:02:16.554 
+I will very briefly go into the programming at a higher level.
+
+01:02:16.954 --> 01:02:20.674 
+The GPU programmer uses blocks and that's what's visible to the programmer.
+
+01:02:21.234 --> 01:02:26.274 
+You have some serial code and then you have some parallel kernel in GPU terminology.
+
+01:02:26.274 --> 01:02:32.914 
+Again, that's sent to the device because initially GPUs were devices that are attached to CPUs.
+
+01:02:33.874 --> 01:02:35.154 
+There were more accelerators.
+
+01:02:35.714 --> 01:02:40.407 
+They're becoming more general purpose now, and this is how a programmer specifies you have a kernel,
+
+01:02:40.407 --> 01:02:45.007 
+you have number of blocks and number of threads and some arguments to it, and then you have serial
+
+01:02:45.007 --> 01:02:48.434 
+code that's executed on the host and then you do another parallel kernel.
+
+01:02:48.434 --> 01:02:53.354 
+Basically, that's how things go if you have some heterogeneous execution.
+
+01:02:54.074 --> 01:02:58.394 
+And if you look at the sample, a sample GPU code, it's relatively simple to write.
+
+01:02:58.834 --> 01:03:02.354 
+Of course, this is a bit simplified, but this was our picture.
+
+01:03:02.354 --> 01:03:07.239 
+This was our function, right that I showed you earlier, written in a slightly different way with
+
+01:03:07.239 --> 01:03:11.514 
+IIS, for whatever reason, I don't know, I'd prefer, II guess some people prefer IIS.
+
+01:03:11.594 --> 01:03:14.994 
+You could go multiply IS and CUDA codes.
+
+01:03:15.434 --> 01:03:20.314 
+CUDA is a special programming model that NVIDIA owns, let's say, and that's one of the reasons why
+
+01:03:20.314 --> 01:03:22.754 
+they're very successful also because they own it.
+
+01:03:24.034 --> 01:03:26.514 
+Essentially, the code is the same.
+
+01:03:26.874 --> 01:03:33.940 
+If you look over here, you index the arrays using thread IDs and you do the computation and write
+
+01:03:33.940 --> 01:03:37.874 
+the results into the destination area using thread ID.
+
+01:03:38.594 --> 01:03:43.314 
+The only difference is the programmer needs to deal with partitioning of the data across blocks.
+
+01:03:44.994 --> 01:03:50.348 
+So this is imagine you, you're partitioning a big image, you're partitioning into the blocks and
+
+01:03:50.348 --> 01:03:51.074 
+then threads.
+
+01:03:51.354 --> 01:03:52.474 
+That's what you need to do.
+
+01:03:52.794 --> 01:03:57.064 
+There's some more bells and whistles, but if you want to do GPU programming, you can learn that
+
+01:03:57.064 --> 01:03:57.874 
+relatively easily.
+
+01:03:58.714 --> 01:04:04.507 
+So this is another example sampled CPU program that does something a little bit more complicated,
+
+01:04:04.507 --> 01:04:07.554 
+and this is the GPU program that corresponds to it.
+
+01:04:07.554 --> 01:04:11.783 
+You don't need to understand everything over here, but the key take away is the kernel is
+
+01:04:11.783 --> 01:04:13.114 
+essentially the same, right?
+
+01:04:13.434 --> 01:04:20.074 
+Slightly rewritten so that you can compute thread IDs and block IDs appropriately.
+
+01:04:20.074 --> 01:04:22.834 
+But there's no notion of warp in the end over here.
+
+01:04:23.194 --> 01:04:24.594 
+This is your program, this is your thread.
+
+01:04:24.874 --> 01:04:29.594 
+There are many of them, and the data is partitioned by the programmer.
+
+01:04:30.074 --> 01:04:31.714 
+Warps are formed all dynamically.
+
+01:04:33.434 --> 01:04:35.314 
+OK, we have Electron GPU programming.
+
+01:04:36.554 --> 01:04:41.154 
+I guess we used to have it sometimes, but we don't have enough material to cover.
+
+01:04:41.154 --> 01:04:44.194 
+So if you're interested, you can look at this lecture on GPU programming.
+
+01:04:44.914 --> 01:04:48.996 
+We also have a course actually, that we used to give on GPU programming and more generally
+
+01:04:48.996 --> 01:04:49.994 
+heterogeneous systems.
+
+01:04:50.234 --> 01:04:51.674 
+These materials are all online.
+
+01:04:52.114 --> 01:04:56.154 
+A lot of people in the industry actually still use it and ask us why we don't continue this.
+
+01:04:56.474 --> 01:04:57.634 
+We just don't have enough bandwidth.
+
+01:04:57.634 --> 01:05:02.968 
+It's like the memory bandwidth, you know, you cannot basically pump enough data out, but there's
+
+01:05:02.968 --> 01:05:08.247 
+demand basically for this sort of thing because a lot of people are actually doing this sort of
+
+01:05:08.247 --> 01:05:08.914 
+programming.
+
+01:05:10.154 --> 01:05:13.714 
+OK, so let's take a look at how you get from blocks to warps a little bit.
+
+01:05:14.034 --> 01:05:16.314 
+A GPU core is a SMD pipeline.
+
+01:05:16.434 --> 01:05:19.114 
+NVIDIA calls it streaming processor.
+
+01:05:19.994 --> 01:05:22.594 
+There are many such streaming processors, SMD processors.
+
+01:05:22.674 --> 01:05:24.714 
+NVIDIA calls it streaming multiprocessor.
+
+01:05:25.474 --> 01:05:27.074 
+I don't necessarily like this terminology.
+
+01:05:28.594 --> 01:05:29.834 
+It's called streaming course.
+
+01:05:29.834 --> 01:05:31.874 
+You can look it up, we can learn more.
+
+01:05:31.874 --> 01:05:33.114 
+But essentially it looks like this.
+
+01:05:33.114 --> 01:05:38.351 
+There are many streaming processors that are essentially SIMD pipelines and this is 1 streaming
+
+01:05:38.351 --> 01:05:39.234 
+multi processor.
+
+01:05:39.354 --> 01:05:42.154 
+And there are many of these streaming multiprocessors in AGPU.
+
+01:05:42.154 --> 01:05:48.021 
+We will see this more later, but you can see there's a warp scheduler, dispatch unit, register file,
+
+01:05:48.021 --> 01:05:53.713 
+a single very simple instruction, fetch engine, big scheduler, and most of the areas dedicated to
+
+01:05:53.713 --> 01:05:58.994 
+hopefully doing computation except for the memory hierarchy that we will discuss later on.
+
+01:05:59.874 --> 01:06:02.394 
+So you have the blocks that are specified by the.
+
+01:06:03.554 --> 01:06:09.914 
+Programmer, they're divided into warps, and warps are essentially the SIMD or SIMD unit.
+
+01:06:09.914 --> 01:06:11.074 
+It could be 32 threads.
+
+01:06:12.074 --> 01:06:13.914 
+And this is what they kind of look like, right?
+
+01:06:13.914 --> 01:06:15.594 
+These are block zeros, warps, for example.
+
+01:06:15.714 --> 01:06:20.189 
+These are block ones, warps, and these are block twos, warps, and they basically can get mapped to
+
+01:06:20.189 --> 01:06:21.834 
+different streaming multiprocessors.
+
+01:06:22.194 --> 01:06:28.419 
+OK, so mapping is another issue that we're not going to discuss in this course, but there's a lot of
+
+01:06:28.419 --> 01:06:34.147 
+work on how to map different blocks and different warps to different streaming processors to
+
+01:06:34.147 --> 01:06:38.754 
+maximise memory bandwidth usually, but we're not going to talk about that.
+
+01:06:40.434 --> 01:06:45.571 
+OK, let me start wrapping up a little bit the benefits and then we're going to talk about some other
+
+01:06:45.571 --> 01:06:46.034 
+benefits.
+
+01:06:46.674 --> 01:06:49.594 
+So traditional SIMD contains a single thread, right?
+
+01:06:49.714 --> 01:06:55.410 
+You have sequential instruction execution, lockstep operations on a SIMD instruction, programming
+
+01:06:55.410 --> 01:06:57.114 
+model SIMD, no extra threads.
+
+01:06:57.114 --> 01:06:58.914 
+Software needs to know the vector length.
+
+01:06:59.354 --> 01:07:01.874 
+Basic software needs to emit vector instructions.
+
+01:07:02.354 --> 01:07:04.434 
+ISA contains vector and SIMD instruction.
+
+01:07:04.434 --> 01:07:05.674 
+It requires an ISA change.
+
+01:07:05.994 --> 01:07:11.763 
+Also, warp based SIMD, which is essentially what we've been talking about, consists of multiple
+
+01:07:11.763 --> 01:07:14.314 
+scalar threads executing in a SIMD manner.
+
+01:07:14.834 --> 01:07:17.274 
+Same instruction executed by all threads, right?
+
+01:07:18.354 --> 01:07:19.714 
+Doesn't have to be lockstep.
+
+01:07:20.074 --> 01:07:24.394 
+For that particular warp it's lockstep, but for everything else it's not lockstep, right?
+
+01:07:24.954 --> 01:07:29.394 
+Once you group threads into a warp, it's lock step, but you can break it.
+
+01:07:29.394 --> 01:07:36.228 
+Also later on it's good to think about that each thread can be treated individually, in other words,
+
+01:07:36.228 --> 01:07:38.074 
+placed in a different warp.
+
+01:07:38.274 --> 01:07:43.658 
+So programming models essentially not SIMD software doesn't need to know the vector length, software
+
+01:07:43.658 --> 01:07:45.274 
+doesn't need to know anything.
+
+01:07:45.274 --> 01:07:50.324 
+Actually the programmer doesn't need to know vectors, they just need to think about blocks and
+
+01:07:50.324 --> 01:07:50.754 
+threads.
+
+01:07:51.674 --> 01:07:55.474 
+And this enables multi threading and flexible dynamic grouping of threads, which we will get.
+
+01:07:56.234 --> 01:07:57.754 
+Importantly, ISA is scalar.
+
+01:07:58.114 --> 01:08:06.340 
+So you can take an existing scalar core, a very wimpy one, and put it in your GPU, replicate it many
+
+01:08:06.340 --> 01:08:06.834 
+times.
+
+01:08:07.674 --> 01:08:08.914 
+It's easy design, right?
+
+01:08:09.274 --> 01:08:12.794 
+Of course you need to design everything else around it to supply the warps.
+
+01:08:13.354 --> 01:08:15.994 
+But you don't need to change the ISA, for example, right?
+
+01:08:16.274 --> 01:08:18.874 
+And we know that ISA changes are not easy to make.
+
+01:08:18.874 --> 01:08:23.394 
+OK, SIMD operations are formed dynamically.
+
+01:08:23.754 --> 01:08:25.634 
+Essentially we'll get back to the same thing.
+
+01:08:25.634 --> 01:08:28.794 
+It's SPMD programming model implemented on SIMD hardware.
+
+01:08:30.714 --> 01:08:33.914 
+I think we've already talked about SPMDI will not talk about that.
+
+01:08:33.914 --> 01:08:38.976 
+But maybe one question comes to your mind is the same procedures execute on different data elements,
+
+01:08:38.976 --> 01:08:40.394 
+but how do they synchronise?
+
+01:08:40.714 --> 01:08:45.016 
+So clearly when you divide a program into many threads, at some point they need to synchronise
+
+01:08:45.016 --> 01:08:49.274 
+potentially, unless you're really embarrassingly parallel and they never need to synchronise.
+
+01:08:49.954 --> 01:08:51.594 
+That's ideally the whole world.
+
+01:08:51.594 --> 01:08:55.667 
+But unfortunately, well, fortunately, there's a lot of synchronisation that needs to happen at some
+
+01:08:55.667 --> 01:08:55.914 
+point.
+
+01:08:56.714 --> 01:08:59.034 
+GPUs need special structures for that.
+
+01:09:00.154 --> 01:09:02.674 
+NVIDIA unfortunately calls it shared memory, for example.
+
+01:09:02.674 --> 01:09:08.214 
+There's some shared memory structure shared across different units, different streaming
+
+01:09:08.214 --> 01:09:09.234 
+multiprocessors.
+
+01:09:09.474 --> 01:09:10.754 
+That's how you do the synchronisation.
+
+01:09:10.754 --> 01:09:15.646 
+There needs to be some synchronisation operations to synchronise between different warps
+
+01:09:15.646 --> 01:09:17.314 
+essentially, or blocks anyway.
+
+01:09:17.314 --> 01:09:19.914 
+We're not going to talk about that, but you can.
+
+01:09:19.914 --> 01:09:24.961 
+You'll need to do that if you actually do GPU programming, for example, I think we've said all of
+
+01:09:24.961 --> 01:09:30.060 
+this, but maybe I will say that each program and procedure works on different data and can execute
+
+01:09:30.060 --> 01:09:32.194 
+a different control flow path at runtime.
+
+01:09:32.194 --> 01:09:34.314 
+So we're going to get to this different control flow path.
+
+01:09:35.114 --> 01:09:38.314 
+Actually, many scientific applications before GPUs were programmed this way.
+
+01:09:39.034 --> 01:09:44.293 
+So if you take a scientific program, some molecular dynamic simulation for example, there's a lot of
+
+01:09:44.293 --> 01:09:45.714 
+parallelism over there too.
+
+01:09:46.074 --> 01:09:53.114 
+You break it, you break the world of molecular dynamics into blocks, and you assign threads into it.
+
+01:09:53.274 --> 01:09:54.594 
+Every thread does the same thing.
+
+01:09:55.634 --> 01:10:01.086 
+In the past, when GPUs were not as popular or as powerful, people used to have supercomputers,
+
+01:10:01.086 --> 01:10:01.434 
+right?
+
+01:10:01.434 --> 01:10:05.674 
+They still have these supercomputers with GPUs, but essentially the programming model was the same.
+
+01:10:05.674 --> 01:10:11.839 
+You have single program or single procedure multiple data, except they were executed on many CPUs,
+
+01:10:11.839 --> 01:10:12.594 
+for example.
+
+01:10:13.074 --> 01:10:14.874 
+GPUs made this easier.
+
+01:10:16.594 --> 01:10:18.394 
+OK, we we've seen this picture.
+
+01:10:18.434 --> 01:10:21.474 
+Now I'm going to talk about the second major SIMT advantage.
+
+01:10:22.034 --> 01:10:22.714 
+Any questions?
+
+01:10:24.474 --> 01:10:27.074 
+Everybody is following enjoying GPUs, I guess.
+
+01:10:28.034 --> 01:10:31.834 
+OK, let's talk about the second advantage because this is actually very interesting.
+
+01:10:32.474 --> 01:10:34.514 
+You can group threads into warps flexibly.
+
+01:10:35.314 --> 01:10:38.714 
+In other words, you can group threads that are supposed to truly execute the same instruction.
+
+01:10:38.714 --> 01:10:45.660 
+And as a result, you can dynamically obtain and maximise benefits of SIMD processing even if your
+
+01:10:45.660 --> 01:10:48.954 
+program is not SIMD, as we as we have in GPUs.
+
+01:10:49.834 --> 01:10:51.074 
+Let's take a look at this example.
+
+01:10:51.314 --> 01:10:54.754 
+We're going to complicate things because real world is complicated, right?
+
+01:10:54.994 --> 01:11:01.994 
+You have conditional control flow instructions which made our life harder in pipelining for example.
+
+01:11:02.514 --> 01:11:03.994 
+It's going to make our life harder here also.
+
+01:11:03.994 --> 01:11:07.634 
+But we already know how to deal with them with the active masks, right?
+
+01:11:07.754 --> 01:11:11.114 
+We dealt with them with masked execution in vector process.
+
+01:11:11.114 --> 01:11:13.074 
+So we're going to do something similar over here.
+
+01:11:13.954 --> 01:11:16.154 
+Each thread can execute different control flow paths.
+
+01:11:16.154 --> 01:11:18.714 
+So each thread is supposed to execute this code.
+
+01:11:18.994 --> 01:11:20.314 
+Clearly, there are branches over here.
+
+01:11:20.314 --> 01:11:21.794 
+There's a control flow graph over here.
+
+01:11:22.154 --> 01:11:23.434 
+These are different basic blocks.
+
+01:11:24.114 --> 01:11:25.474 
+It could be some set of instructions.
+
+01:11:25.474 --> 01:11:27.714 
+Let's say the thread one is supposed to take this path.
+
+01:11:28.474 --> 01:11:31.274 
+Thread 2 is supposed to take this path because of the data values, right?
+
+01:11:31.914 --> 01:11:36.194 
+Thread 3 is supposed to take this path, and thread 4 is supposed to take this path, right?
+
+01:11:37.234 --> 01:11:44.747 
+If you group these threads into the same warp, you're basically assuming that they have the common
+
+01:11:44.747 --> 01:11:45.514 
+PC, right?
+
+01:11:46.114 --> 01:11:47.914 
+And initially they do have the common PC.
+
+01:11:47.914 --> 01:11:49.154 
+They all start from a right?
+
+01:11:49.154 --> 01:11:49.954 
+That basic block.
+
+01:11:50.234 --> 01:11:54.053 
+If that basic block is 5 instructions, they're going to execute all 5 instructions and they're all
+
+01:11:54.053 --> 01:11:54.794 
+going to be active.
+
+01:11:55.354 --> 01:12:01.628 
+But once they diverge, meaning one thread needs to go this way, another thread needs to go this way,
+
+01:12:01.628 --> 01:12:04.954 
+what you need to do is to create two different warps.
+
+01:12:05.954 --> 01:12:11.858 
+1 warp will go this way, another warp will go this way, and their active masks will be different
+
+01:12:11.858 --> 01:12:15.794 
+because different threads will need to execute that instruction.
+
+01:12:17.554 --> 01:12:20.954 
+Some threads will execute B, some some threads will execute F for example.
+
+01:12:21.234 --> 01:12:29.417 
+So basically the way you go through a control flow graph is you partition A warp into multiple warps
+
+01:12:29.417 --> 01:12:31.954 
+as you go through control flow.
+
+01:12:32.274 --> 01:12:34.714 
+Of course, if all threads go one way, you don't need to do that.
+
+01:12:35.114 --> 01:12:39.076 
+You don't need to create a separate warp because no thread is going to go this other way in a branch
+
+01:12:39.076 --> 01:12:39.354 
+thread.
+
+01:12:40.194 --> 01:12:41.354 
+So that's the idea over here.
+
+01:12:43.074 --> 01:12:44.434 
+I mean, we already said all of this over here.
+
+01:12:44.434 --> 01:12:45.874 
+You group scalar threads into warps.
+
+01:12:46.074 --> 01:12:47.794 
+This is the problem of branch divergent.
+
+01:12:47.794 --> 01:12:51.474 
+Essentially it occurs when threads inside warps branch to different execution paths.
+
+01:12:52.034 --> 01:12:55.394 
+So initially, let's assume that you have 8 threads per warp.
+
+01:12:55.714 --> 01:12:57.314 
+They're all in this program counter.
+
+01:12:57.594 --> 01:12:59.434 
+They all get to the branch, they execute the branch.
+
+01:12:59.434 --> 01:13:01.674 
+So they're still all threads are active.
+
+01:13:02.154 --> 01:13:04.354 
+Blue arrow means threads are active over here.
+
+01:13:05.154 --> 01:13:12.508 
+Now you execute the branch and you figure out that some threads need to go through path A and these
+
+01:13:12.508 --> 01:13:14.514 
+are threads 02/3 and seven.
+
+01:13:14.714 --> 01:13:22.021 
+As you can see those bits in the active mask which is at 8 elements bit vector are set saying that
+
+01:13:22.021 --> 01:13:28.434 
+at this PC this warp, these are the threads that should be executing the instructions.
+
+01:13:28.434 --> 01:13:34.034 
+Everything else goes through the functional units but the results are thrown away.
+
+01:13:35.354 --> 01:13:36.034 
+Makes sense right?
+
+01:13:37.034 --> 01:13:43.232 
+Now you create another sub warp or essentially another warp with a different active mask, which is
+
+01:13:43.232 --> 01:13:49.114 
+the complement of the active mask over here to execute path B in this particular case, right?
+
+01:13:50.434 --> 01:13:50.754 
+OK.
+
+01:13:50.754 --> 01:13:54.943 
+And eventually you need to have some mechanisms to merge these warps because you understand that
+
+01:13:54.943 --> 01:13:56.514 
+they're at the same program counter.
+
+01:13:56.954 --> 01:14:02.244 
+You don't have to have this mechanism, but having this mechanism allows you to maximise utilisation
+
+01:14:02.244 --> 01:14:03.474 
+of the pipeline, right?
+
+01:14:03.914 --> 01:14:13.248 
+So what has happened over here is these two warps are actually the same warp, but they had to
+
+01:14:13.248 --> 01:14:14.754 
+diverge, right?
+
+01:14:15.514 --> 01:14:19.434 
+And because they had to diverge, we reduce the utilisation of our pipeline, right?
+
+01:14:19.434 --> 01:14:25.714 
+Each warp could have been executing 8 instructions, but we executed 4 in each.
+
+01:14:26.034 --> 01:14:30.114 
+So our pipeline utilisation went to 50% over here and 50% over here.
+
+01:14:30.114 --> 01:14:34.954 
+It's also called SIMD utilisation and it's actually a very nice thing to ask questions about.
+
+01:14:34.954 --> 01:14:37.274 
+You will see some nice questions in the homeworks.
+
+01:14:37.554 --> 01:14:42.834 
+You can compute the SIMD utilisation of any program thrown at you if you know how AGP works please.
+
+01:14:43.674 --> 01:14:45.234 
+So ideally we don't want this, right?
+
+01:14:45.394 --> 01:14:52.572 
+Ideally we want 100% SIMD utilisation all the time, but unfortunately control flow doesn't allow you
+
+01:14:52.572 --> 01:14:53.434 
+to get that.
+
+01:14:54.554 --> 01:14:59.714 
+But what I what I've shown you over here is the same as conditional predicate or mass execution.
+
+01:15:01.194 --> 01:15:03.714 
+We call the vector mask and mass vector operations.
+
+01:15:03.834 --> 01:15:08.114 
+Except programmer doesn't deal with this, this is dealt by the hardware.
+
+01:15:08.554 --> 01:15:13.114 
+The hardware creates 2 masks that diverge.
+
+01:15:13.154 --> 01:15:19.596 
+Of course if the control flow is nested like after like something like this for example that I
+
+01:15:19.596 --> 01:15:24.874 
+showed you earlier, then you actually create more warps with different masks.
+
+01:15:24.874 --> 01:15:30.274 
+And as you go deeper in the nesting level, what happens is you reduce your SIMD utilisation.
+
+01:15:30.674 --> 01:15:34.874 
+So a control flow that diverges is not good for parallel machines like this.
+
+01:15:36.514 --> 01:15:37.514 
+It's good to think about this.
+
+01:15:38.354 --> 01:15:41.034 
+OK, so how can we fix some of this at least?
+
+01:15:42.514 --> 01:15:43.594 
+Remember, these are threads.
+
+01:15:43.754 --> 01:15:47.474 
+These are not SIMD instructions that someone dictated you should execute in lockstep.
+
+01:15:47.994 --> 01:15:53.206 
+We can actually regroup these threads by understanding which ones can be regrouped, and that's what
+
+01:15:53.206 --> 01:15:54.154 
+we're going to do.
+
+01:15:54.154 --> 01:15:59.024 
+Basically, if you have many threads that are waiting, we can find individual threads that are at the
+
+01:15:59.024 --> 01:16:02.434 
+same program counter with some search mechanism in hardware and group.
+
+01:16:02.514 --> 01:16:06.514 
+Put them together into a single warp dynamically to maximise the SIMD utilisation.
+
+01:16:07.114 --> 01:16:14.670 
+I see a thread with a warp with an active mask that has only two bits set and another another warp
+
+01:16:14.670 --> 01:16:18.834 
+with an active mask that has the remaining 6 bits set.
+
+01:16:19.354 --> 01:16:24.074 
+You can merge them so that you can have a warp with a full active mask.
+
+01:16:24.234 --> 01:16:24.434 
+Right?
+
+01:16:24.554 --> 01:16:25.514 
+That's the idea over here.
+
+01:16:25.514 --> 01:16:26.754 
+I'll show this pictorially Also.
+
+01:16:27.274 --> 01:16:32.674 
+This reduces divergent, improves SIMD utilisation and SIMD utilisation.
+
+01:16:32.674 --> 01:16:38.794 
+To define it more precisely, it's a fraction of SIMD lanes executing a useful operation.
+
+01:16:39.074 --> 01:16:41.554 
+Useful operation in this case is an active thread, right?
+
+01:16:41.994 --> 01:16:47.384 
+If you're executing a thread with the active mask bit bit mask turned off, that means you're going
+
+01:16:47.384 --> 01:16:52.114 
+to discard that result because the thread is not supposed to be executing that, right?
+
+01:16:52.114 --> 01:16:53.674 
+So your active mask needs to be set.
+
+01:16:54.554 --> 01:16:59.954 
+OK, so existing GPUs do this and more complicated things.
+
+01:16:59.954 --> 01:17:01.074 
+Let's talk about this first.
+
+01:17:01.434 --> 01:17:05.234 
+Essentially, they dynamically merge threads executing the same instruction.
+
+01:17:05.554 --> 01:17:11.085 
+In other words, at the same PC, they form new warps from warps that are waiting, and enough threads
+
+01:17:11.085 --> 01:17:15.834 
+branching to the same path enables creation of full new warps with full active masks.
+
+01:17:15.994 --> 01:17:18.834 
+For example, you have warp X and more Y.
+
+01:17:19.034 --> 01:17:24.545 
+You look at the scheduler, these are the active masks, and say, oh, I can combine these things and
+
+01:17:24.545 --> 01:17:26.514 
+get rid of one of the warps, right?
+
+01:17:27.154 --> 01:17:27.794 
+That's the idea.
+
+01:17:28.314 --> 01:17:33.104 
+It's like packing things together as long as they don't conflict in the lanes and people have
+
+01:17:33.104 --> 01:17:35.834 
+developed hardware algorithms to do this efficiently.
+
+01:17:36.594 --> 01:17:38.354 
+It's a lot of bit masking operations, by the way.
+
+01:17:38.994 --> 01:17:45.068 
+OK, so these two warps also can be grouped together, except the benefit you're going to get will not
+
+01:17:45.068 --> 01:17:45.554 
+be good.
+
+01:17:46.794 --> 01:17:47.754 
+How do you fix this?
+
+01:17:48.074 --> 01:17:49.994 
+Well, look at a bigger set of warps.
+
+01:17:50.354 --> 01:17:56.103 
+If you have a much bigger set of warps, the probability of you grouping things from that to create
+
+01:17:56.103 --> 01:18:00.914 
+full warps is going to be much higher than if you look at only a few warps, right?
+
+01:18:01.114 --> 01:18:07.756 
+That's why the scheduler in AGP has thousands of warps, OK, OK, so if you have the bigger set, now
+
+01:18:07.756 --> 01:18:14.398 
+you reduce 3 warps into two warps, and both of these two warps are more fully utilised even though
+
+01:18:14.398 --> 01:18:15.754 
+they're not perfect.
+
+01:18:16.794 --> 01:18:24.074 
+OK OK, so that's the idea of dynamic warp formation and I'll give you one more example over here.
+
+01:18:25.034 --> 01:18:25.914 
+This was path A.
+
+01:18:26.754 --> 01:18:30.674 
+Now let's assume that you have some other warp over here that also goes to path A.
+
+01:18:30.914 --> 01:18:34.194 
+You can merge these things and you can get some benefit.
+
+01:18:34.194 --> 01:18:36.154 
+In this particular case, you didn't get too much benefit.
+
+01:18:36.714 --> 01:18:38.074 
+That's why you need to look at a bigger picture.
+
+01:18:38.674 --> 01:18:39.714 
+I like this animation.
+
+01:18:39.794 --> 01:18:42.314 
+Again, I will not go through this in detail.
+
+01:18:42.314 --> 01:18:49.752 
+You can do it on your own, but here you have two warps over here and you have execution of warp X at
+
+01:18:49.752 --> 01:18:50.794 
+basic block A.
+
+01:18:50.834 --> 01:18:55.514 
+For example, you have the A over here, and this is execution of warp Y at basic block A.
+
+01:18:56.634 --> 01:18:59.434 
+This is the legend, and these are the active masks.
+
+01:18:59.434 --> 01:19:03.154 
+Initially, both warp X and worldwide have full active masks.
+
+01:19:03.274 --> 01:19:10.478 
+All four threads in the warp are active, and you can animate this and see how the execution goes in
+
+01:19:10.478 --> 01:19:14.554 
+the baseline, which doesn't dynamically merge the warps.
+
+01:19:14.994 --> 01:19:16.154 
+It looks kind of like this.
+
+01:19:16.674 --> 01:19:17.434 
+I guess I'll wait.
+
+01:19:17.594 --> 01:19:25.928 
+It's a bit slow, and we're going to save time by actually executing these things by creating a new
+
+01:19:25.928 --> 01:19:26.354 
+warp.
+
+01:19:26.514 --> 01:19:31.358 
+So this is a new warp created from scalar threads of both warp X&Y executing at basic block D, for
+
+01:19:31.358 --> 01:19:31.754 
+example.
+
+01:19:31.754 --> 01:19:32.554 
+Let's take a look at it.
+
+01:19:33.394 --> 01:19:34.794 
+So A is full.
+
+01:19:34.954 --> 01:19:35.634 
+That's good.
+
+01:19:35.994 --> 01:19:37.154 
+X&Y are both full.
+
+01:19:37.794 --> 01:19:45.718 
+Now here, by combining some things over here, you can make this warp full, but unfortunately,
+
+01:19:45.718 --> 01:19:50.234 
+because you cannot combine this one over here, right?
+
+01:19:50.354 --> 01:19:56.862 
+Because you have only four, four threads in a warp here, you can eliminate one of the warps, which
+
+01:19:56.862 --> 01:19:57.394 
+is nice.
+
+01:19:58.394 --> 01:20:00.194 
+Here you can also eliminate one of the warps.
+
+01:20:02.194 --> 01:20:03.914 
+Those are not eliminated here.
+
+01:20:03.914 --> 01:20:05.434 
+You can also eliminate one of the warps.
+
+01:20:05.794 --> 01:20:10.314 
+And in the end, even in this very simple example, you save a bunch of cycles.
+
+01:20:10.874 --> 01:20:11.794 
+That's the idea over here.
+
+01:20:12.074 --> 01:20:12.954 
+And this is very simple.
+
+01:20:13.154 --> 01:20:15.314 
+I'm showing you only two warps over here.
+
+01:20:15.314 --> 01:20:17.554 
+Imagine doing this in 10s of thousands of warps, right?
+
+01:20:18.394 --> 01:20:22.154 
+OK, so I said I said this already so I'll go through this quickly.
+
+01:20:22.154 --> 01:20:24.714 
+But hardware constraints limit flexibility of warp grouping.
+
+01:20:25.074 --> 01:20:31.531 
+You cannot move any thread flexibly to any lane because registers are partitions, and certain thread
+
+01:20:31.531 --> 01:20:37.795 
+IDs read their registers in a given partition, so it cannot conflict the thread IDs if they go to
+
+01:20:37.795 --> 01:20:39.474 
+the same partition, right?
+
+01:20:40.474 --> 01:20:42.834 
+People have some proposed mechanisms to avoid this.
+
+01:20:42.834 --> 01:20:46.154 
+This is very expensive to avoid in general.
+
+01:20:46.354 --> 01:20:51.596 
+It basically gets rid of a lot of the SIMD benefits if you try to schedule the threads to different
+
+01:20:51.596 --> 01:20:51.914 
+parts.
+
+01:20:52.794 --> 01:20:58.566 
+Either you need to expand the register file to make it a shared big register file that can be
+
+01:20:58.566 --> 01:20:59.994 
+accessed from any lane.
+
+01:21:00.674 --> 01:21:02.434 
+That's very expensive in general.
+
+01:21:03.034 --> 01:21:05.874 
+Or you need to move the registers, communicate the registers.
+
+01:21:05.994 --> 01:21:07.034 
+That's also very expensive.
+
+01:21:07.034 --> 01:21:12.548 
+In the end, the interconnection network that you need to design either to support that huge register
+
+01:21:12.548 --> 01:21:16.794 
+file or moving the data across different partitions of the registers is huge.
+
+01:21:16.794 --> 01:21:18.714 
+And as a result, it's very, very difficult to do.
+
+01:21:19.874 --> 01:21:22.314 
+OK, So analysing GPS is fun.
+
+01:21:22.634 --> 01:21:26.114 
+I will not go through this, but you can look at some of the example homeworks.
+
+01:21:26.434 --> 01:21:28.474 
+We have a lot of nice questions.
+
+01:21:28.794 --> 01:21:33.861 
+Some of them are reverse engineering questions and I like these because these really test
+
+01:21:33.861 --> 01:21:38.474 
+understanding of whether you have really understood the gist of how GPUs operate.
+
+01:21:40.354 --> 01:21:41.514 
+OK, we have some more time.
+
+01:21:41.514 --> 01:21:45.715 
+I'm going to go through a couple of other things and then discuss like how AGPU looks like today and
+
+01:21:45.715 --> 01:21:46.514 
+how it has evolved.
+
+01:21:48.074 --> 01:21:50.354 
+So we talked about pantry version.
+
+01:21:50.354 --> 01:21:52.634 
+So it's one of the reasons GPU resources are underutilized.
+
+01:21:52.634 --> 01:21:58.610 
+But as you will see in the next lectures, memory is an even bigger bottleneck and long latency
+
+01:21:58.610 --> 01:22:01.154 
+operations also destroy GPU utilisation.
+
+01:22:01.914 --> 01:22:02.954 
+I'm going to show you an example.
+
+01:22:02.954 --> 01:22:06.874 
+It's a paper that we wrote like 15 years ago together with some NVIDIA folks.
+
+01:22:07.274 --> 01:22:10.594 
+And a lot of GPS do even more complicated things than this today actually.
+
+01:22:11.874 --> 01:22:16.514 
+But let's take a look at core how, how you schedule warps.
+
+01:22:17.114 --> 01:22:18.554 
+So assume that you have some warps.
+
+01:22:18.954 --> 01:22:25.222 
+You schedule them one after another, and if they're doing the same thing, and if they're very
+
+01:22:25.222 --> 01:22:31.760 
+regular, they get to a long latency, cache miss, long latency load all at the same time, and they
+
+01:22:31.760 --> 01:22:32.434 
+all stall.
+
+01:22:33.314 --> 01:22:36.714 
+So while you're you compute and then you stall for a long time.
+
+01:22:36.794 --> 01:22:38.554 
+Imagine 600 cycle stalls.
+
+01:22:38.554 --> 01:22:41.674 
+Existing GPS actually sometimes have much longer stalls.
+
+01:22:42.754 --> 01:22:47.914 
+One way to fix this problem is to schedule differently.
+
+01:22:48.474 --> 01:22:54.217 
+As opposed to scheduling big work groups, like hundreds of them at the same time at the same PC,
+
+01:22:54.217 --> 01:22:55.594 
+group them differently.
+
+01:22:56.234 --> 01:22:59.634 
+So you group them in Group 0, they do some computation.
+
+01:23:00.154 --> 01:23:05.947 
+They get to these loads much quicker because you actually, you actually schedule from within the
+
+01:23:05.947 --> 01:23:07.154 
+smaller group first.
+
+01:23:07.354 --> 01:23:09.434 
+Not all of them are at the same PC, right?
+
+01:23:09.954 --> 01:23:15.558 
+And then you go to Group 1, which starts from an earlier PC, and they compute and they get to the
+
+01:23:15.558 --> 01:23:17.234 
+same load a little bit later.
+
+01:23:18.114 --> 01:23:19.594 
+So you overlap some latency.
+
+01:23:20.114 --> 01:23:25.670 
+And this way you can actually schedule from group 0 and Group One much earlier than before, and you
+
+01:23:25.670 --> 01:23:27.074 
+can save a lot of cycles.
+
+01:23:27.914 --> 01:23:32.164 
+If this doesn't make sense, don't worry, this is basically about how you really schedule and iterate
+
+01:23:32.164 --> 01:23:32.674 
+over groups.
+
+01:23:32.674 --> 01:23:36.674 
+So each group may have 16 or 32 warps, for example, right?
+
+01:23:37.434 --> 01:23:43.978 
+As opposed to scheduling thousands at the same program counter such that when they get to the long
+
+01:23:43.978 --> 01:23:50.455 
+latency load, they're all synchronised, finish one group much faster such that it gets ahead, and
+
+01:23:50.455 --> 01:23:53.594 
+then go to the next group that gets ahead also.
+
+01:23:54.114 --> 01:23:59.289 
+And they get to the same load instruction that misses the cache at different times such that you can
+
+01:23:59.289 --> 01:24:03.274 
+overlap the latency of computation and communication, which is memory access.
+
+01:24:03.834 --> 01:24:07.274 
+And this actually improves performance significantly, as we showed in this paper.
+
+01:24:07.474 --> 01:24:12.874 
+And this sort of scheduling mechanisms are employed in existing GPUs, even more complicated ones.
+
+01:24:13.514 --> 01:24:21.954 
+OK, another idea is to don't basically how you actually decide which warp needs to be grouped.
+
+01:24:22.434 --> 01:24:27.322 
+So we we introduced the idea of sub warping over here, which again I will not go into detail, but
+
+01:24:27.322 --> 01:24:28.834 
+you can have a mask over here.
+
+01:24:28.834 --> 01:24:35.144 
+This this is essentially the same warp but you look very carefully inside the warp so you actually
+
+01:24:35.144 --> 01:24:36.754 
+have different sub warps.
+
+01:24:37.074 --> 01:24:38.794 
+This also improves pipeline utilisation.
+
+01:24:39.114 --> 01:24:44.555 
+I will not go through that because we don't have time, but there's a lot of ideas that people have
+
+01:24:44.555 --> 01:24:49.997 
+proposed that went into how existing GPU architectures do scheduling, and a lot of them are really
+
+01:24:49.997 --> 01:24:55.438 
+related to how do you handle branch divergent, how do you handle memory, memory latency tolerance,
+
+01:24:55.438 --> 01:24:55.994 
+basically.
+
+01:24:56.434 --> 01:24:58.794 
+So I can read this paper for an early example.
+
+01:24:59.594 --> 01:25:02.634 
+Now let's go through an example GPU to see how things have evolved.
+
+01:25:03.394 --> 01:25:06.594 
+I'm going to pick NVIDIA as an example since that's more dominant today.
+
+01:25:06.674 --> 01:25:11.394 
+Although ATI actually makes nice GPUs too, they may be a bit harder to program these days.
+
+01:25:12.394 --> 01:25:18.794 
+OK, ATIAMD, this is an old GPU, but even then you will see that there is a lot of parallelism.
+
+01:25:19.034 --> 01:25:21.674 
+We're talking about 2006 or so.
+
+01:25:22.554 --> 01:25:24.034 
+This was GTX 285.
+
+01:25:24.034 --> 01:25:25.874 
+It's a consumer grade CPUGPU.
+
+01:25:26.314 --> 01:25:26.834 
+You have two.
+
+01:25:27.674 --> 01:25:30.514 
+Nvidia's language is a little bit different from what I will use.
+
+01:25:30.554 --> 01:25:31.994 
+NVIDIA says stream processors.
+
+01:25:31.994 --> 01:25:33.034 
+I said 240.
+
+01:25:33.594 --> 01:25:38.074 
+That means you have actually 30 cores and eight SIMD functional units per core.
+
+01:25:38.714 --> 01:25:39.834 
+So it kind of looks like this.
+
+01:25:39.834 --> 01:25:41.994 
+You have 8 SIMD functional units.
+
+01:25:41.994 --> 01:25:43.994 
+I'm showing multiply accumulate over here.
+
+01:25:45.434 --> 01:25:48.154 
+This is a single core with eight units.
+
+01:25:48.714 --> 01:25:55.723 
+The decode and fetch are shared across those 8 units and you have a lot of registers, 64 KB of
+
+01:25:55.723 --> 01:26:02.434 
+storage for thread context as you can see and this particular GPU grouped 32 threads such.
+
+01:26:02.514 --> 01:26:03.794 
+That they share the instruction stream.
+
+01:26:03.794 --> 01:26:04.714 
+Each group is a warp.
+
+01:26:05.354 --> 01:26:11.298 
+They redefined the warp earlier, but up to 32 warps are interleaved in a fine grain multi thread
+
+01:26:11.298 --> 01:26:14.394 
+manner and you can have up to 1024 thread context.
+
+01:26:14.474 --> 01:26:18.714 
+We're talking about 2006 doors still, and this is the GTX in full.
+
+01:26:18.954 --> 01:26:22.914 
+You have 30 cores, which amounts to more than 30,000 threads.
+
+01:26:22.914 --> 01:26:24.274 
+So that's a lot.
+
+01:26:24.274 --> 01:26:25.434 
+You can exploit a lot of parallels.
+
+01:26:26.234 --> 01:26:27.354 
+This has evolved a lot.
+
+01:26:27.554 --> 01:26:32.754 
+You can see the number of functional units per core and the gigaflops evolving a lot.
+
+01:26:33.154 --> 01:26:34.354 
+Let's take a look at what has happened.
+
+01:26:34.354 --> 01:26:41.434 
+Clearly people have added more processors like more cores and more functional units per core, right?
+
+01:26:41.434 --> 01:26:47.394 
+This is V-100 from 2015, 1617 or so, and they also added other stuff.
+
+01:26:47.594 --> 01:26:53.480 
+They basically figured out these cores are not good enough for very fast high throughput matrix
+
+01:26:53.480 --> 01:26:57.074 
+multiplication, so they added what is called tensor cores.
+
+01:26:57.834 --> 01:27:00.234 
+So this is a block diagram of V-100.
+
+01:27:01.794 --> 01:27:06.154 
+You can see that there's single precision and double precision operations are like this.
+
+01:27:06.154 --> 01:27:12.045 
+But if you use the tensor cores which are specialised for matrix multiplication, you get a lot
+
+01:27:12.045 --> 01:27:14.114 
+higher floating point throughput.
+
+01:27:14.754 --> 01:27:17.354 
+And what this looks like is very specialised architecture for.
+
+01:27:17.594 --> 01:27:23.490 
+They don't exactly discuss how the details of this NVIDIA, but it's a very specialised functional
+
+01:27:23.490 --> 01:27:26.834 
+unit for doing a lot of matrix operations concurrently.
+
+01:27:28.394 --> 01:27:33.218 
+OK, so this paper actually analysis some of what they have done and they have a theory of what they
+
+01:27:33.218 --> 01:27:36.434 
+do underneath, but you can take a look at it if you're interested.
+
+01:27:36.834 --> 01:27:43.511 
+Essentially, this paper discovers that they have 16 SIMD units per tensor core and they do 4x4
+
+01:27:43.511 --> 01:27:45.074 
+matrix multiplication.
+
+01:27:45.074 --> 01:27:49.834 
+They accumulate each cycle per tensor core again in Volta in 2017 or so.
+
+01:27:51.714 --> 01:27:52.794 
+OK, I'm going to skip that one.
+
+01:27:53.314 --> 01:27:54.834 
+So this could also be a systolic array.
+
+01:27:55.154 --> 01:28:00.947 
+I should mention that this tensor core may be a systolic array in future, I don't know or even right
+
+01:28:00.947 --> 01:28:05.234 
+now, because in the end what you're doing is matrix multiplication, right?
+
+01:28:05.794 --> 01:28:11.994 
+So you take some model and you basically multiply matrices.
+
+01:28:11.994 --> 01:28:17.037 
+So this is an HTPU which we have very briefly covered, I think in the last lecture or the previous
+
+01:28:17.037 --> 01:28:19.354 
+lecture when we talked about systolic arrays.
+
+01:28:19.874 --> 01:28:23.754 
+Essentially tensor cores can be anything, right?
+
+01:28:23.754 --> 01:28:26.554 
+Because it's done underneath, invisible to the programmer.
+
+01:28:26.754 --> 01:28:28.234 
+It could potentially be a systolic array.
+
+01:28:29.314 --> 01:28:33.474 
+And I'll let you think, what are the trade-offs between CMD and systolic arrays?
+
+01:28:34.714 --> 01:28:41.140 
+OK, we've covered systolic arrays, so you can take a look at this more so later people actually, or
+
+01:28:41.140 --> 01:28:46.594 
+MVD in this particular case, they added more cores, more functionally it's per core.
+
+01:28:46.874 --> 01:28:51.374 
+So things are getting bigger and bigger because you need to deal with more matrix multiplications,
+
+01:28:51.374 --> 01:28:51.834 
+let's say.
+
+01:28:52.434 --> 01:28:54.514 
+But they also added some more interesting things.
+
+01:28:54.674 --> 01:29:00.074 
+They added different data types because some of the data types are too expensive to support.
+
+01:29:00.234 --> 01:29:02.034 
+We're going to see that more later.
+
+01:29:02.394 --> 01:29:05.834 
+And they also added support for sparsity, and this is important.
+
+01:29:06.234 --> 01:29:07.434 
+This is the block diagram.
+
+01:29:08.114 --> 01:29:14.400 
+So if you look at the tensor core, they don't only have dense matrixes, dense matrices, but they
+
+01:29:14.400 --> 01:29:20.425 
+compress the matrix because not in machine learning especially or graph processing, when you
+
+01:29:20.425 --> 01:29:26.778 
+represent a graph or when you represent some activation functions or inputs, you don't have a lot
+
+01:29:26.778 --> 01:29:28.874 
+of the, a lot of the data zeros.
+
+01:29:29.154 --> 01:29:33.580 
+Basically, you don't need to really represent those zeros because when you multiply something with a
+
+01:29:33.580 --> 01:29:34.554 
+0, you get a 0, right?
+
+01:29:34.914 --> 01:29:36.754 
+You should not even do that computation.
+
+01:29:37.434 --> 01:29:41.994 
+And we've seen this also when we talked about SIMD execution, right?
+
+01:29:41.994 --> 01:29:44.514 
+You actually remove some of the operations.
+
+01:29:45.114 --> 01:29:51.629 
+So essentially there is a format where you compress the matrix and the compressed form matrix
+
+01:29:51.629 --> 01:29:56.394 
+encodes only non zero values and the indices of the non zero values.
+
+01:29:57.154 --> 01:30:04.662 
+So you basically have an index structure that points to which which values are at what location the
+
+01:30:04.662 --> 01:30:11.943 
+matrix and the sparse support enables the tensor core to operate to avoid operations on non zero
+
+01:30:11.943 --> 01:30:12.474 
+values.
+
+01:30:12.554 --> 01:30:16.194 
+Basically the inputs throughput at the expense of more complexity, right?
+
+01:30:16.554 --> 01:30:21.394 
+Complexity is you need to decode that matrix right now, OK.
+
+01:30:21.554 --> 01:30:24.634 
+But this actually improves throughput significantly.
+
+01:30:25.154 --> 01:30:30.834 
+And you can see that the tensor flow, tensor core throughput has improved a lot over time, OK.
+
+01:30:31.194 --> 01:30:32.474 
+So these keep improving.
+
+01:30:32.514 --> 01:30:39.711 
+As you can see more recently, not just M Media, but a lot of folks have realised that we don't want
+
+01:30:39.711 --> 01:30:42.474 
+to do computation on large data types.
+
+01:30:42.474 --> 01:30:45.754 
+32 bits, no, 16 bits, no, 8 bits, good.
+
+01:30:46.194 --> 01:30:47.554 
+4 bits, even better.
+
+01:30:47.554 --> 01:30:48.634 
+One bit, even better.
+
+01:30:49.114 --> 01:30:53.114 
+So people have figured out how to actually come up with better data types.
+
+01:30:53.194 --> 01:30:56.954 
+So I'm really introduce some of the scalable data types, for example, FP8.
+
+01:30:57.434 --> 01:31:02.434 
+So these cores are becoming more complicated because they support high precision data types.
+
+01:31:02.634 --> 01:31:09.358 
+Like 32 bits, but they also support different types of data types like brain float 16, FP 8,
+
+01:31:09.358 --> 01:31:10.674 
+etcetera and more.
+
+01:31:10.674 --> 01:31:13.674 
+Going forward, they will support even more ranges.
+
+01:31:14.194 --> 01:31:20.031 
+What this enables is again, input throughput, because if you operate on a 32 bit value, you can only
+
+01:31:20.031 --> 01:31:20.674 
+do so much.
+
+01:31:20.754 --> 01:31:24.984 
+But if you operate on a four bit value, you can use the same hardware to do eight of those
+
+01:31:24.984 --> 01:31:26.394 
+operations potentially, right?
+
+01:31:26.994 --> 01:31:28.034 
+It's good to think about that.
+
+01:31:28.554 --> 01:31:34.554 
+So you can see that FP16 throughput has, is this almost close to an exaflop?
+
+01:31:34.714 --> 01:31:36.834 
+I don't know, 1000 teraflops.
+
+01:31:36.834 --> 01:31:39.234 
+Is there an exaflop petaflop?
+
+01:31:39.234 --> 01:31:39.874 
+OK, that's good.
+
+01:31:39.874 --> 01:31:41.594 
+Yeah, it's, it's close to a petaflop.
+
+01:31:43.274 --> 01:31:46.834 
+I mean, at some point these supercomputers were trying to get the petaflops.
+
+01:31:46.834 --> 01:31:49.154 
+Now you can have it in a single GPU, as you can see.
+
+01:31:49.954 --> 01:31:52.674 
+OK, so there's more that's coming up.
+
+01:31:52.674 --> 01:31:55.794 
+I will not go into more detail, but you can read more about that.
+
+01:31:55.794 --> 01:31:57.954 
+But I will probably end with this food for thought.
+
+01:31:58.394 --> 01:32:04.554 
+We've talked about a lot of execution models, and some of these execution models are especially
+
+01:32:04.554 --> 01:32:06.954 
+developed to supply machine learning.
+
+01:32:07.034 --> 01:32:10.554 
+For example, it's good to think about which one is good for machine learning, right?
+
+01:32:10.554 --> 01:32:11.234 
+GPUs.
+
+01:32:12.034 --> 01:32:16.554 
+Clearly these shader cores were very good in SIMD, but they were not enough.
+
+01:32:17.234 --> 01:32:20.274 
+So people start adding other things on the side of the shaded course.
+
+01:32:20.514 --> 01:32:25.446 
+So if you actually do computation today, matrix multiplication today, those shader cores are not
+
+01:32:25.446 --> 01:32:26.114 
+running much.
+
+01:32:27.114 --> 01:32:32.280 
+If you're doing something right, you're actually using the tensor cores, so most of the hardware is
+
+01:32:32.280 --> 01:32:33.794 
+still not utilised very well.
+
+01:32:34.154 --> 01:32:35.394 
+It's good to think about it right.
+
+01:32:35.834 --> 01:32:41.097 
+Whereas if you look at a systolic array, you can utilise it quite well because systolic array is
+
+01:32:41.097 --> 01:32:45.154 
+much more specialised compared to a shader core like SIMD, SIMD execution.
+
+01:32:45.714 --> 01:32:51.961 
+So in terms of given the hardware, how much throughput and efficiency you're getting, If you're only
+
+01:32:51.961 --> 01:32:56.834 
+doing matrix multiplication, probably systolic arrays are much more efficient.
+
+01:32:57.514 --> 01:33:02.234 
+The problem is programming systolic arrays are harder compared to SIMD over here.
+
+01:33:02.714 --> 01:33:04.074 
+So it's good to think about these trade-offs.
+
+01:33:04.074 --> 01:33:06.874 
+There's also Fpgas, right, that we have not talked about.
+
+01:33:07.754 --> 01:33:12.374 
+I will mention this slide because this slide, I motivated this slide earlier, right where we talked
+
+01:33:12.374 --> 01:33:14.194 
+about convolutions and systolic arrays.
+
+01:33:14.794 --> 01:33:20.625 
+Convolutions, you can turn them into matrix multiplication and in turn matrix multiplication can be
+
+01:33:20.625 --> 01:33:23.394 
+executed on different types of execution units.
+
+01:33:23.874 --> 01:33:29.074 
+And the jury is still out how you actually design the best units for matrix multiplication.
+
+01:33:29.074 --> 01:33:33.567 
+I think even something as simple as matrix multiplication from my perspective, I tend to look at
+
+01:33:33.567 --> 01:33:35.954 
+many workloads that do very, very different things.
+
+01:33:35.954 --> 01:33:40.773 
+And matrix multiplication is an easy computation from my perspective because you know a lot of
+
+01:33:40.773 --> 01:33:41.594 
+things about it.
+
+01:33:41.754 --> 01:33:43.234 
+Sparse decomplicates things, of course.
+
+01:33:43.234 --> 01:33:48.386 
+Yeah, once you get sparse, now you're you need to do something smarter in coding, compression,
+
+01:33:48.386 --> 01:33:49.154 
+decompression.
+
+01:33:49.914 --> 01:33:50.194 
+OK.
+
+01:33:50.634 --> 01:33:54.708 
+I'll leave you with this, but if you're interested, you can take a look at our Heterogeneous systems
+
+01:33:54.708 --> 01:33:54.994 
+course.
+
+01:33:54.994 --> 01:34:00.051 
+And I will also mention that if you're interested in more of this, you can take our other courses
+
+01:34:00.051 --> 01:34:00.834 
+and talk to us.
+
+01:34:03.434 --> 01:34:04.274 
+I'll see you tomorrow.
+
+01:34:06.794 --> 01:34:07.234 
+Thank you.
+

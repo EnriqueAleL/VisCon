@@ -1,0 +1,4631 @@
+WEBVTT
+
+00:00:00.423 --> 00:00:02.823 
+OK, let's get started.
+
+00:00:03.183 --> 00:00:04.783 
+We have a lot of sparsity in the room.
+
+00:00:05.743 --> 00:00:06.743 
+You can see that there.
+
+00:00:07.743 --> 00:00:10.423 
+You can encode every bit over here with ones and zeros.
+
+00:00:10.423 --> 00:00:11.703 
+And there are a lot of zeros today.
+
+00:00:13.143 --> 00:00:14.143 
+It's good to compress them.
+
+00:00:14.143 --> 00:00:15.743 
+Probably, you know, you don't want these zeros.
+
+00:00:17.583 --> 00:00:23.103 
+OK, aside from jokes, today we're going to start with the memory part.
+
+00:00:23.103 --> 00:00:24.183 
+You've seen the memory part.
+
+00:00:24.183 --> 00:00:24.983 
+We've built memories.
+
+00:00:24.983 --> 00:00:29.752 
+Actually, we're going to pick up on that and build even bigger memories and build essentially a
+
+00:00:29.752 --> 00:00:32.263 
+memory hierarchy in the, in the next few lectures.
+
+00:00:32.583 --> 00:00:35.503 
+Hopefully I'll, we'll, we'll start today with the memory hierarchy also.
+
+00:00:35.503 --> 00:00:43.297 
+But I'd like to give a bit broader overview of how memory is important in systems today, because we
+
+00:00:43.297 --> 00:00:45.423 
+did a lot of things so far.
+
+00:00:45.423 --> 00:00:46.383 
+I'm going to mention that.
+
+00:00:46.423 --> 00:00:48.703 
+And that was mainly computation.
+
+00:00:49.023 --> 00:00:54.852 
+Now we're going to switch gears to something even more important and needs to be thought or
+
+00:00:54.852 --> 00:00:57.543 
+rethought even more going into the future.
+
+00:00:58.543 --> 00:01:03.962 
+But before I switch, we have this premiere of the GPU Programming lecture for those who wants to
+
+00:01:03.962 --> 00:01:05.543 
+learn about GPU programming.
+
+00:01:05.623 --> 00:01:06.783 
+It's going to happen today.
+
+00:01:07.103 --> 00:01:10.560 
+This is essentially the same lecture that was delivered some number of years ago, but if you're
+
+00:01:10.560 --> 00:01:11.943 
+interested, you can take a look at it.
+
+00:01:12.263 --> 00:01:18.185 
+And if you want to learn more about this, you can take or watch the Heterogeneous Systems course
+
+00:01:18.185 --> 00:01:21.023 
+that we have offered some number of years ago.
+
+00:01:22.503 --> 00:01:29.663 
+OK, these are the readings for today and the next lectures, You can take a look at them.
+
+00:01:29.823 --> 00:01:34.863 
+We have written this book on memory systems, which is actually, it's, it's not a book, it's a, it's
+
+00:01:34.863 --> 00:01:39.903 
+a book chapter on memory systems that introduces memory systems to hopefully a very broad audience.
+
+00:01:39.903 --> 00:01:42.423 
+So that should be a good reading for you to do.
+
+00:01:42.423 --> 00:01:47.143 
+But your books have maybe not enough material on memory systems, I would say.
+
+00:01:47.143 --> 00:01:51.943 
+So we'll cover a lot of things in the lectures that are not in the books as much, not in a nice way.
+
+00:01:52.263 --> 00:01:55.183 
+But before we jump into that, we're done with a lot of execution models.
+
+00:01:55.583 --> 00:02:01.037 
+So you know, a lot of things today on how modern computers are built and all of these principles and
+
+00:02:01.037 --> 00:02:05.183 
+also some of the implementations that we discussed are used in real systems.
+
+00:02:05.743 --> 00:02:07.863 
+I can actually say that all of these are used in real systems.
+
+00:02:07.863 --> 00:02:12.643 
+We didn't cover decoupled access execute in the lectures, but there's an optional lecture over there
+
+00:02:12.643 --> 00:02:13.743 
+you can take a look at.
+
+00:02:14.383 --> 00:02:19.411 
+That's the idea of basically decoupling computation and memory pipelines separately such that they
+
+00:02:19.411 --> 00:02:21.823 
+can proceed mostly independently of each other.
+
+00:02:22.983 --> 00:02:24.623 
+You can think of out of order processors.
+
+00:02:24.623 --> 00:02:29.481 
+What they do is they actually do out of order scheduling of instructions here in decoupled access
+
+00:02:29.481 --> 00:02:33.889 
+execute, you have an you have an instruction stream for computation and you have another
+
+00:02:33.889 --> 00:02:35.743 
+instruction stream for memory access.
+
+00:02:35.743 --> 00:02:37.103 
+And they're decoupled from each other.
+
+00:02:37.503 --> 00:02:42.926 
+And then they they basically when, when computation becomes a bottleneck, memory access can
+
+00:02:42.926 --> 00:02:43.463 
+continue.
+
+00:02:43.543 --> 00:02:46.343 
+When memory access become a bottleneck, computation can continue.
+
+00:02:46.543 --> 00:02:47.543 
+That's the idea over there.
+
+00:02:48.103 --> 00:02:50.023 
+It's an idea that's used in existing systems also.
+
+00:02:50.023 --> 00:02:51.943 
+That sort of decoupling happens a lot.
+
+00:02:53.463 --> 00:02:53.743 
+OK.
+
+00:02:53.743 --> 00:02:56.823 
+So I introduced that idea also, as you can see, OK.
+
+00:02:57.103 --> 00:03:01.023 
+And we've also covered these are actually approaches to instruction level concurrency.
+
+00:03:01.023 --> 00:03:03.023 
+It's a bit broader than the prior, prior slide.
+
+00:03:03.623 --> 00:03:10.023 
+We covered a lot of approaches starting from pipelining all the way to SIMD processing and GPUs.
+
+00:03:10.743 --> 00:03:15.535 
+Now you're familiar with many of these processing paradigms and it's good to keep thinking about the
+
+00:03:15.535 --> 00:03:16.063 
+trade-offs.
+
+00:03:16.223 --> 00:03:21.503 
+I kind of discussed that yesterday, like systolic arrays versus GPUs versus Fpgas, right?
+
+00:03:22.103 --> 00:03:23.783 
+Systolic arrays are very specialised.
+
+00:03:23.783 --> 00:03:28.943 
+As a result, their hardware cost is low, but their programmability is also low.
+
+00:03:28.943 --> 00:03:30.343 
+Their flexibility is also low.
+
+00:03:30.343 --> 00:03:33.183 
+So if you want to make it flexible, it becomes at an extra cost.
+
+00:03:33.223 --> 00:03:38.310 
+GPUs, as we discussed yesterday, they're SIMD engines and they're relatively general purpose
+
+00:03:38.310 --> 00:03:43.784 
+compared to systolic arrays, but their efficiency is low compared to systolic arrays even in matrix
+
+00:03:43.784 --> 00:03:44.503 
+computations.
+
+00:03:44.583 --> 00:03:46.183 
+But then programmability is higher.
+
+00:03:46.183 --> 00:03:50.796 
+So there is one example and there are many, many other examples that you can think of in terms of
+
+00:03:50.796 --> 00:03:52.223 
+trade-offs in these paradigms.
+
+00:03:52.223 --> 00:03:57.030 
+And this is exciting because when someone wants to build a new system, for example, assuming you are
+
+00:03:57.030 --> 00:04:01.501 
+going to do it based on existing paradigms, it's important to know the trade-offs that you're
+
+00:04:01.501 --> 00:04:02.463 
+dealing with, right?
+
+00:04:03.623 --> 00:04:03.983 
+OK.
+
+00:04:05.423 --> 00:04:07.183 
+And we've covered a lot of things across the stack.
+
+00:04:07.183 --> 00:04:12.229 
+Actually, we even looked at how to map algorithms like systolic computation, for example, to a
+
+00:04:12.229 --> 00:04:13.303 
+particular hardware.
+
+00:04:14.903 --> 00:04:15.143 
+OK.
+
+00:04:15.143 --> 00:04:18.583 
+And also good to think about what determines the widespread success of a paradigm, right?
+
+00:04:18.863 --> 00:04:25.339 
+It's, it's probably not easy to predict this because when GPUs were around the 1980s, nineteen 90s,
+
+00:04:25.339 --> 00:04:31.751 
+early 2000s, nobody has probably thought about AI as a workload that would execute on GPUs, people
+
+00:04:31.751 --> 00:04:34.303 
+who are thinking about graphics, right?
+
+00:04:34.303 --> 00:04:36.383 
+And that was a limited domain games, etcetera.
+
+00:04:36.703 --> 00:04:42.240 
+But over time, workloads change, technology changes, and you can see that some ideas may become
+
+00:04:42.240 --> 00:04:47.778 
+better than others, but this also requires you to have good programming models, good ability to
+
+00:04:47.778 --> 00:04:50.343 
+actually exploit the hardware in a good way.
+
+00:04:52.343 --> 00:04:53.263 
+OK, now let's take a.
+
+00:04:53.383 --> 00:04:56.903 
+Step back because all of the things that we discussed are important.
+
+00:04:56.903 --> 00:04:58.503 
+They're all implemented in real systems.
+
+00:04:58.823 --> 00:05:01.623 
+But a computing system is not just about processing, right?
+
+00:05:01.623 --> 00:05:04.743 
+It's also about data storage and memory.
+
+00:05:04.783 --> 00:05:06.143 
+And you've seen this picture before.
+
+00:05:06.143 --> 00:05:08.383 
+We have computation, communication, storage and memory.
+
+00:05:08.823 --> 00:05:11.703 
+We're going to look at the other parts right now today.
+
+00:05:12.343 --> 00:05:13.983 
+And you also seen this picture also.
+
+00:05:13.983 --> 00:05:17.183 
+We talked about processing a lot and we've covered a lot of processing paradigms.
+
+00:05:17.183 --> 00:05:20.983 
+Now we'll look at memory, memory and IO communication.
+
+00:05:20.983 --> 00:05:27.808 
+It's they're actually similar because in the end, memory is all about storing and communicating data
+
+00:05:27.808 --> 00:05:31.903 
+and IO and interconnects are needed to communicate the data.
+
+00:05:31.903 --> 00:05:37.161 
+And as we will see soon, memory itself is not just about storing data, but also communicating
+
+00:05:37.161 --> 00:05:37.783 
+internally.
+
+00:05:37.783 --> 00:05:41.063 
+There are a lot of interconnects, a lot of wires inside the memory.
+
+00:05:41.063 --> 00:05:46.143 
+You've seen this actually in the basic memories that we have built with flip flops, for example.
+
+00:05:47.383 --> 00:05:52.463 
+So let me give you a broad overview of why memory is so important.
+
+00:05:52.983 --> 00:05:56.503 
+I think you've seen some parts of it, but essentially it's most of our system today.
+
+00:05:56.503 --> 00:05:58.623 
+This is a picture from 20 years ago.
+
+00:05:58.903 --> 00:06:00.623 
+Right now AM DS Barcelona system.
+
+00:06:01.143 --> 00:06:02.343 
+You can see that at that time.
+
+00:06:02.343 --> 00:06:04.383 
+These are some of the earlier multi core systems.
+
+00:06:04.743 --> 00:06:09.943 
+Cores are big relatively, but still most of the system is dedicated to memory.
+
+00:06:09.983 --> 00:06:11.903 
+You can see a lot of caches inside the cores.
+
+00:06:11.903 --> 00:06:14.943 
+There are one caches, there's a memory interface, there's memory.
+
+00:06:15.463 --> 00:06:17.543 
+So most of the system is memory.
+
+00:06:18.063 --> 00:06:21.503 
+And if you look at this system, a large fraction is really memory SRAM.
+
+00:06:21.543 --> 00:06:23.823 
+We don't even see the DRAM over here if you look at it.
+
+00:06:23.823 --> 00:06:25.343 
+And then there's a communication interface.
+
+00:06:25.703 --> 00:06:28.783 
+So a good fraction of the chip is not really dedicated to computation.
+
+00:06:28.983 --> 00:06:35.413 
+You've seen GPUs, for example, GPUs, A large fraction is register files, caches, communication with
+
+00:06:35.413 --> 00:06:36.583 
+the outside world.
+
+00:06:36.863 --> 00:06:38.663 
+That's true for the cores over here also.
+
+00:06:38.823 --> 00:06:40.903 
+That's true for the neural engines over here also.
+
+00:06:41.223 --> 00:06:43.903 
+And then there's an outside communication with the memory channels.
+
+00:06:43.903 --> 00:06:46.983 
+And we're going to talk about a lot about the main memory system.
+
+00:06:48.303 --> 00:06:52.063 
+And this is if you think about memory extended their storage, right?
+
+00:06:52.143 --> 00:06:54.463 
+And that's actually a lot of transistors in the system.
+
+00:06:54.943 --> 00:06:56.063 
+And this has always been the case.
+
+00:06:56.063 --> 00:06:58.583 
+Actually, this is Intel Pentium Pro.
+
+00:06:58.623 --> 00:06:59.863 
+You've seen this picture before.
+
+00:07:00.543 --> 00:07:07.576 
+Because integration capability was lower in the past, processors did not tell even caches on the
+
+00:07:07.576 --> 00:07:07.943 
+chip.
+
+00:07:07.943 --> 00:07:09.383 
+This is the 11th level 2 cache.
+
+00:07:09.823 --> 00:07:14.601 
+And over time, we, we, we were able to put a lot more transistors and processors started eating
+
+00:07:14.601 --> 00:07:18.223 
+essentially everything else, all of the other chips that we have around.
+
+00:07:18.503 --> 00:07:21.583 
+And today you have a lot of caches on the processor chip.
+
+00:07:22.343 --> 00:07:25.623 
+It's, it's good to think about and ask the question, is this the right thing to do?
+
+00:07:25.623 --> 00:07:26.343 
+Of course, right.
+
+00:07:26.663 --> 00:07:29.023 
+Maybe we should be putting the processor on the memory chips, right.
+
+00:07:29.503 --> 00:07:31.543 
+And we're going to talk about that later on.
+
+00:07:31.543 --> 00:07:36.955 
+But that's how things have evolved because the way we design our systems, including the von Neumann
+
+00:07:36.955 --> 00:07:39.143 
+model, is very processor centric, right?
+
+00:07:39.223 --> 00:07:42.503 
+It's all about sequential execution a program executes.
+
+00:07:42.503 --> 00:07:44.023 
+It's not really about data, right?
+
+00:07:44.023 --> 00:07:49.616 
+If you think about data flow, it's a lot more about data, OK, anyway, And then this L2 cache got
+
+00:07:49.616 --> 00:07:51.423 
+consumed by the processor chip.
+
+00:07:51.543 --> 00:07:57.897 
+And you can see that this Pentium for L2 cache, the big, big part of the chip, this is more recent
+
+00:07:57.897 --> 00:07:59.583 
+processor, AMD Ryzen 2020.
+
+00:07:59.583 --> 00:08:03.463 
+You can see that LL3 cache is almost the whole chip, right?
+
+00:08:03.663 --> 00:08:05.063 
+There's also L2 cache over here.
+
+00:08:05.063 --> 00:08:06.263 
+There are L1 caches.
+
+00:08:06.263 --> 00:08:08.343 
+I didn't even include it in the green part over here.
+
+00:08:08.663 --> 00:08:13.015 
+But if you look at the, if you look at this chip, the cores, the processing parts are actually very
+
+00:08:13.015 --> 00:08:13.983 
+small fraction, right.
+
+00:08:14.983 --> 00:08:16.303 
+The rest is over here.
+
+00:08:16.303 --> 00:08:21.443 
+Global memory interconnect system management unit is the outside interfaces to communicate with the
+
+00:08:21.443 --> 00:08:21.703 
+chip.
+
+00:08:23.423 --> 00:08:25.463 
+OK and people are actually adding 3D stacking.
+
+00:08:25.463 --> 00:08:29.987 
+We're going to talk about that a little bit more today, but today it's there's exciting
+
+00:08:29.987 --> 00:08:30.663 
+technologies.
+
+00:08:30.663 --> 00:08:33.623 
+You don't grow only in the two-dimensional side, planar side.
+
+00:08:33.863 --> 00:08:36.543 
+You can actually put things on top of each other, different chips.
+
+00:08:36.823 --> 00:08:42.304 
+In this particular case, on top of the processor chip, they can put an SRAM chip that's actually
+
+00:08:42.304 --> 00:08:43.903 
+essentially used as a cache.
+
+00:08:44.503 --> 00:08:45.583 
+OK, we're going to talk about caches.
+
+00:08:45.583 --> 00:08:52.802 
+Of course, this is just to give you examples, and this is not just AMD, Intel, the general purpose
+
+00:08:52.802 --> 00:08:54.423 
+market, it's also IBM.
+
+00:08:54.423 --> 00:08:57.143 
+For example, it's a chip from IBM Power 10 from 2020.
+
+00:08:57.143 --> 00:08:59.943 
+You can see that memory is a very large fraction again over here.
+
+00:09:00.423 --> 00:09:06.943 
+And if you look around the chip, you can see that there's a lot of outside communication, PCIe
+
+00:09:06.943 --> 00:09:12.423 
+interfaces, Power, Exxon interface, memory buses, memory signalling interfaces.
+
+00:09:12.423 --> 00:09:16.863 
+So most of the chip is really about data storage and communication.
+
+00:09:16.903 --> 00:09:18.463 
+It's really about the outside world.
+
+00:09:18.463 --> 00:09:22.663 
+If you think about an outside world is actually a lot of it is memory and storage.
+
+00:09:25.023 --> 00:09:30.056 
+GPUs are a little bit better, not necessarily that much better because they can get away with let's
+
+00:09:30.056 --> 00:09:33.463 
+say smaller caches because they're not a general purpose, etcetera.
+
+00:09:33.823 --> 00:09:37.543 
+But if you look at the cords itself, there is a lot of register files inside there also.
+
+00:09:37.543 --> 00:09:42.423 
+So a good fraction of GPUs are also memory as you have seen yesterday, right?
+
+00:09:42.543 --> 00:09:49.065 
+Even inside the cords there are huge register files and the caches are still large and I could keep
+
+00:09:49.065 --> 00:09:51.503 
+going but I'll become boring I guess.
+
+00:09:51.863 --> 00:09:52.903 
+But this chip is actually.
+
+00:09:54.303 --> 00:10:00.852 
+This wafer scale chip is also a lot of memory and this is fascinating that we can actually put so
+
+00:10:00.852 --> 00:10:02.743 
+much SRAM on a wafer, right.
+
+00:10:02.743 --> 00:10:08.951 
+It's 40 gigabytes, very small actually if you think about it, it's nothing compared to existing KV
+
+00:10:08.951 --> 00:10:12.183 
+caches that we have in LLMS for example, or models.
+
+00:10:12.623 --> 00:10:17.543 
+So it's very small, but it's that's the downside of the SRAM technology as we will see.
+
+00:10:17.703 --> 00:10:19.463 
+SRAM occupies a lot of area.
+
+00:10:19.943 --> 00:10:22.983 
+So you can put very little of it on a huge wafer like this.
+
+00:10:23.343 --> 00:10:28.341 
+If it was DRAM, you could actually put a whole lot more like orders and orders of magnitude more
+
+00:10:28.341 --> 00:10:29.383 
+DRAM as we will see.
+
+00:10:30.343 --> 00:10:33.943 
+OK, So basically my point is memory is most of the platform today.
+
+00:10:33.943 --> 00:10:36.783 
+This is my picture from 2009.
+
+00:10:36.783 --> 00:10:40.783 
+I think I drew this picture for a proposal that I owed from for NSF.
+
+00:10:40.783 --> 00:10:44.783 
+We were working on scalable quality of service aware memory systems at the time.
+
+00:10:45.143 --> 00:10:50.512 
+And our point was basically you have a bunch of cores, which are the red parts over here or
+
+00:10:50.512 --> 00:10:54.583 
+accelerators, and they're all competing to access main memory, right?
+
+00:10:54.823 --> 00:10:58.103 
+And most of the chip is really cache's main memory.
+
+00:10:58.103 --> 00:11:03.222 
+And we'll see a lot of these components starting today, actually, especially today we'll talk about
+
+00:11:03.222 --> 00:11:08.290 
+different technologies, SRAM to build caches, DRAM to build main memory, and the interfaces how to
+
+00:11:08.290 --> 00:11:09.583 
+access data, for example.
+
+00:11:10.183 --> 00:11:15.510 
+But it's good to know that most of the system, what we're going to talk about today is really most
+
+00:11:15.510 --> 00:11:18.663 
+of the system what we talked all the way until lecture 19.
+
+00:11:19.263 --> 00:11:21.623 
+Well, lecture 20, I guess 20 is yesterday.
+
+00:11:21.703 --> 00:11:23.543 
+Computation is a very small fraction.
+
+00:11:24.903 --> 00:11:29.503 
+And one of the reasons is we have been very good at optimising computation, right?
+
+00:11:29.823 --> 00:11:34.719 
+And we may not be as good as optimising memory, even though we have optimised it a lot, maybe we
+
+00:11:34.719 --> 00:11:39.463 
+have not optimised it enough because you will see that the system is still by like by memory.
+
+00:11:39.463 --> 00:11:44.559 
+So if you actually think about this picture and take a blank slate, you don't know anything like the
+
+00:11:44.559 --> 00:11:45.783 
+10 year old kid example.
+
+00:11:45.783 --> 00:11:51.828 
+You know, a 10 year old kid who is smart, who can think, and who doesn't have any vested interest in
+
+00:11:51.828 --> 00:11:53.823 
+trillions of dollars or anything.
+
+00:11:55.183 --> 00:12:00.867 
+You're thrown with this picture and somebody tells you that they're dedicating almost all of their
+
+00:12:00.867 --> 00:12:05.623 
+resources, more than 99% of the hardware real estate of a single node to a memory.
+
+00:12:06.623 --> 00:12:12.500 
+And they ask you, this is, is this my bottleneck or should this be my bottleneck as a 10 year old
+
+00:12:12.500 --> 00:12:12.743 
+kid?
+
+00:12:12.743 --> 00:12:15.383 
+Probably you would say this shouldn't be your bottleneck, right?
+
+00:12:15.383 --> 00:12:19.383 
+You're putting all of your resources on it, yet it's still our bottleneck.
+
+00:12:19.503 --> 00:12:20.943 
+So it's good to think about that, right?
+
+00:12:21.863 --> 00:12:26.389 
+So going forward, we should be 10 year old kids, I think because we are actually wasting a lot of
+
+00:12:26.389 --> 00:12:27.463 
+things as you will see.
+
+00:12:27.743 --> 00:12:31.183 
+So basically we've seen actually memory many times in this course, right?
+
+00:12:31.183 --> 00:12:37.660 
+We constructed some very simple memories and we talked about memory loads, for example, and even in
+
+00:12:37.660 --> 00:12:43.679 
+pipelining when we assumed one cycle memory, the load to use delay, there's a load, there's,
+
+00:12:43.679 --> 00:12:48.783 
+there's a bubble that we had, right, because of how we construct the pipeline.
+
+00:12:49.143 --> 00:12:52.903 
+Even when you assume one cycle memory, you get a delay because of memory.
+
+00:12:53.103 --> 00:12:54.303 
+That sounds bad, right?
+
+00:12:55.223 --> 00:12:59.183 
+And we talked about load store handling, which is a very complicated part in out of order execution.
+
+00:12:59.183 --> 00:13:02.623 
+Out of order execution actually is there to tolerate a lot of the memory latencies.
+
+00:13:03.183 --> 00:13:07.983 
+We talked about stalls due to VLIW in VLIW due to long latency operations.
+
+00:13:07.983 --> 00:13:09.783 
+So memory is bottlenecking essentially everything.
+
+00:13:10.143 --> 00:13:14.983 
+Yesterday and the previous week we talked about memory banks needed in SIMD processors.
+
+00:13:14.983 --> 00:13:21.706 
+We're going to build on that more and we saw how important adding more ports or adding more banks is
+
+00:13:21.706 --> 00:13:25.943 
+to improve performance of a highly parallel computation engine.
+
+00:13:26.503 --> 00:13:32.558 
+We talked about GPU register files, we talked about systolic arrays and we talked about fine grade
+
+00:13:32.558 --> 00:13:34.783 
+multi threading to tolerate latency.
+
+00:13:34.783 --> 00:13:39.849 
+So a lot of what we did actually in this course is to tolerate latency, and a lot of that latency is
+
+00:13:39.849 --> 00:13:44.663 
+really coming from memory in the end, but we're still not very good at tolerating that latency.
+
+00:13:45.903 --> 00:13:51.215 
+OK, So this is something that I showed earlier, but this is becoming worse with workloads that are
+
+00:13:51.215 --> 00:13:54.143 
+becoming much more data intensive, like MLAI Genomics.
+
+00:13:54.143 --> 00:13:54.943 
+There's a lot of workloads.
+
+00:13:54.943 --> 00:13:55.263 
+Basically.
+
+00:13:55.263 --> 00:13:58.583 
+I'll show you some pictures over here and you will see some examples also.
+
+00:13:58.903 --> 00:14:03.755 
+And this data is increasing today and this data is enabled actually the machine learning revolution,
+
+00:14:03.755 --> 00:14:07.783 
+I guess third machine learning revolution, I don't know, I cannot keep track of it.
+
+00:14:08.303 --> 00:14:10.503 
+Maybe it'll go down again and then go up again, who knows?
+
+00:14:10.823 --> 00:14:17.834 
+But but basically the availability of data and the ability of humans to process it very fast and
+
+00:14:17.834 --> 00:14:23.823 
+efficiently has enabled the these machine learning models that we're dealing with.
+
+00:14:24.503 --> 00:14:25.703 
+But there will be more and more.
+
+00:14:25.903 --> 00:14:28.343 
+So this is an example from machine learning.
+
+00:14:29.143 --> 00:14:34.738 
+The, the large models have been requiring a lot more computation capability in very small number of
+
+00:14:34.738 --> 00:14:39.543 
+years as you can see, but also a lot more memory capability as well at the same time.
+
+00:14:39.863 --> 00:14:41.303 
+So a computation is not enough.
+
+00:14:41.583 --> 00:14:43.423 
+You really need to deal with memory.
+
+00:14:44.463 --> 00:14:46.063 
+OK, let me give you a couple of perspectives.
+
+00:14:46.063 --> 00:14:48.223 
+So from the application side, it's not just machine learning.
+
+00:14:48.223 --> 00:14:50.183 
+There are many, many applications that are actually interesting.
+
+00:14:50.543 --> 00:14:53.343 
+These are just to make you think, I'm not going to go into.
+
+00:14:53.383 --> 00:14:57.854 
+To the details of any of these, but there are a lot of papers that have been written on different
+
+00:14:57.854 --> 00:15:02.233 
+workloads and how memory is a big bottleneck in terms of its latency, in terms of bandwidth, in
+
+00:15:02.233 --> 00:15:03.063 
+terms of capacity.
+
+00:15:03.343 --> 00:15:05.503 
+And different applications are bottlenecked by different parts.
+
+00:15:05.703 --> 00:15:08.423 
+Different parts of an application are bottlenecked by different things in memory.
+
+00:15:08.543 --> 00:15:12.303 
+Sometimes it's bottleneck by the latency to access memory, sometimes it's bottleneck by capacity.
+
+00:15:12.303 --> 00:15:16.308 
+We're going to talk about capacity a lot actually in the last lecture when we talk about virtual
+
+00:15:16.308 --> 00:15:17.143 
+memory, for example.
+
+00:15:18.463 --> 00:15:21.223 
+So memory is a big bottleneck in terms of performance.
+
+00:15:21.623 --> 00:15:23.303 
+This is based on a study that we did.
+
+00:15:23.303 --> 00:15:25.383 
+I'm going to very briefly mention that later on.
+
+00:15:25.703 --> 00:15:31.703 
+We studied these workloads at Google from 2016 to 2018 and we published a paper about that.
+
+00:15:31.703 --> 00:15:32.983 
+I'll mention that paper later on.
+
+00:15:33.943 --> 00:15:40.864 
+So these were relatively early inference engines at Google and then web browsing and video playback
+
+00:15:40.864 --> 00:15:41.703 
+and capture.
+
+00:15:42.103 --> 00:15:45.503 
+And these workloads are actually very much problematic by memory in the end.
+
+00:15:46.823 --> 00:15:48.583 
+And we do a lot of work on genomics.
+
+00:15:48.583 --> 00:15:52.343 
+So I, I can tell you that genomics is also very much bottlenecked by memory.
+
+00:15:52.343 --> 00:15:55.343 
+But I'll let that go for a different.
+
+00:15:56.343 --> 00:16:00.557 
+So if you take courses from us in the future, for example, we talk a lot about genomics workloads
+
+00:16:00.557 --> 00:16:02.383 
+that are very much bottlenecked by memory.
+
+00:16:02.783 --> 00:16:08.143 
+So in the end, a lot of things that we care about scientific discovery, medical and health
+
+00:16:08.143 --> 00:16:10.823 
+applications are also bottlenecked by memory.
+
+00:16:11.943 --> 00:16:13.743 
+OK, let me give you some real data.
+
+00:16:13.743 --> 00:16:19.936 
+So performance perspective, this actually data from someone else, not my data, but this is actually
+
+00:16:19.936 --> 00:16:21.063 
+a very valid data.
+
+00:16:22.663 --> 00:16:25.703 
+**** Seitz was a chief architect of the ELF architecture.
+
+00:16:25.823 --> 00:16:28.863 
+ELF architecture was, you've seen that in out of order execution briefly.
+
+00:16:29.463 --> 00:16:33.863 
+It's essentially the competitor of Intel in 1980s, nineteen 90s.
+
+00:16:34.143 --> 00:16:39.967 
+They were building these fast out of order execution engines and after they designed a flagship
+
+00:16:39.967 --> 00:16:45.975 
+processor with **** Seitz wrote this paper and this is a famous paper because of what it says over
+
+00:16:45.975 --> 00:16:46.343 
+there.
+
+00:16:46.343 --> 00:16:47.503 
+It's the memory stupid.
+
+00:16:47.863 --> 00:16:53.907 
+It's playing with at the time there were elections in the US and somebody was running with it's the
+
+00:16:53.907 --> 00:16:54.823 
+economy stupid.
+
+00:16:55.663 --> 00:16:57.943 
+You can guess who that may be at the time.
+
+00:16:58.343 --> 00:17:01.183 
+Basically this is about it's, it's all about the memory stupid.
+
+00:17:01.183 --> 00:17:07.093 
+And basically he says with someone else in this work that they actually designed probably the
+
+00:17:07.093 --> 00:17:09.063 
+fastest processor of it's time.
+
+00:17:09.343 --> 00:17:10.663 
+It's finishing.
+
+00:17:10.863 --> 00:17:13.703 
+It's capable of finishing four instructions every cycle.
+
+00:17:13.703 --> 00:17:15.463 
+It's a super scaler processor.
+
+00:17:16.183 --> 00:17:23.181 
+Unfortunately, on these intensive memory intensive workloads, it's finishing one instruction every
+
+00:17:23.181 --> 00:17:26.823 
+five cycles or so, 5 to 7 cycles or whatever it is.
+
+00:17:26.823 --> 00:17:26.943 
+Yeah.
+
+00:17:27.703 --> 00:17:33.983 
+So basically it's operating at 120th of its peak capable peak throughput.
+
+00:17:34.583 --> 00:17:36.463 
+And the reason is basically memory.
+
+00:17:36.463 --> 00:17:37.743 
+It's waiting for memory, right?
+
+00:17:38.023 --> 00:17:40.143 
+We were talking about 1990s right now, right?
+
+00:17:41.143 --> 00:17:45.606 
+And he finishes this one page article saying that I expect that over the coming decade, memory
+
+00:17:45.606 --> 00:17:49.263 
+subsystem design will be the only important design issue for microprocessors.
+
+00:17:50.303 --> 00:17:53.663 
+And I kind of agree with them actually, because it is the only important design issue.
+
+00:17:53.663 --> 00:17:58.103 
+Everything we do is like design around that bottleneck.
+
+00:17:58.903 --> 00:17:59.103 
+OK.
+
+00:17:59.103 --> 00:18:02.983 
+This is a data that I gathered during my PhD thesis.
+
+00:18:03.743 --> 00:18:09.188 
+We did a lot of work with Intel and we, we were looking at the design of their top match like
+
+00:18:09.188 --> 00:18:14.458 
+leading edge processors at the time and the workloads that they were using to design those
+
+00:18:14.458 --> 00:18:15.103 
+processors.
+
+00:18:15.503 --> 00:18:18.743 
+And we did a lot of analysis to understand where the bottlenecks are.
+
+00:18:19.223 --> 00:18:23.863 
+And this is data summarised across like 150 workloads, important workloads.
+
+00:18:24.263 --> 00:18:29.813 
+And we see that the processor is waiting for more than 50% of the time for L2 misses, L2 cache
+
+00:18:29.813 --> 00:18:31.703 
+misses to come back from memory.
+
+00:18:32.063 --> 00:18:33.743 
+The process is basically idle, doing nothing.
+
+00:18:35.463 --> 00:18:38.463 
+OK, that's our paper and we wrote a lot of papers on this topic.
+
+00:18:38.463 --> 00:18:41.703 
+You may see that later in prefetching lectures.
+
+00:18:42.463 --> 00:18:44.823 
+OK, this is Fast forward 10 more years.
+
+00:18:44.823 --> 00:18:47.383 
+We're talking about 10-10 years intervals.
+
+00:18:47.743 --> 00:18:48.743 
+This is data from Google.
+
+00:18:48.783 --> 00:18:51.903 
+It's a beautiful paper that they published in ISCA in 2015.
+
+00:18:52.463 --> 00:18:57.493 
+According to them, this is all of their data centre workloads executing at on the cutting edge
+
+00:18:57.493 --> 00:19:00.063 
+processors that they have in their data centres.
+
+00:19:00.783 --> 00:19:04.583 
+And where, where does the time go basically during the execution of these workloads?
+
+00:19:04.983 --> 00:19:07.423 
+So back end bound is mostly waiting for memory.
+
+00:19:07.983 --> 00:19:09.023 
+That's this part over here.
+
+00:19:09.063 --> 00:19:13.882 
+There's more analysis in the paper to justify that front end bound is waiting for memory or branch
+
+00:19:13.882 --> 00:19:14.423 
+prediction.
+
+00:19:15.063 --> 00:19:16.463 
+So memory is also there.
+
+00:19:16.743 --> 00:19:21.383 
+As you can see, retiring is, you know what retires by now, it's finishing instructions, right?
+
+00:19:21.423 --> 00:19:22.863 
+It's doing what it's supposed to do.
+
+00:19:23.503 --> 00:19:28.487 
+So the way you can think of this as the processor, the cutting edge processor is doing what it's
+
+00:19:28.487 --> 00:19:31.863 
+supposed to do only 10 to 20% of the time finishing instructions.
+
+00:19:32.343 --> 00:19:36.503 
+The rest of the time it's waiting for data to come back again.
+
+00:19:36.583 --> 00:19:37.743 
+Be that 10 year old kit.
+
+00:19:38.223 --> 00:19:39.903 
+Throw this picture at the 10 year old kit.
+
+00:19:40.423 --> 00:19:41.023 
+Ask them.
+
+00:19:42.023 --> 00:19:45.543 
+I designed this thing from a performance perspective.
+
+00:19:45.543 --> 00:19:51.334 
+The sole goal of this thing is to finish instructions, and it's doing what it's supposed to be doing
+
+00:19:51.334 --> 00:19:53.303 
+10 to 10% of the time, that thing.
+
+00:19:53.423 --> 00:19:58.208 
+Old kid would say go to do something else because he probably didn't design this well or design
+
+00:19:58.208 --> 00:20:03.144 
+something else maybe do something else also design something else at least so it's good to I think
+
+00:20:03.144 --> 00:20:04.303 
+think about this right.
+
+00:20:04.303 --> 00:20:09.767 
+This is happening because of the way we're designing our systems processing is very much done in the
+
+00:20:09.767 --> 00:20:12.663 
+processor and memory is there to serve the processor.
+
+00:20:13.583 --> 00:20:18.220 
+So we'll see, I can actually keep going and going with these numbers, but it's, it's, it's really
+
+00:20:18.220 --> 00:20:22.570 
+important for you to see these numbers because if you, for example, if you go to a computer
+
+00:20:22.570 --> 00:20:27.303 
+architecture course and these, I'd actually took some of these computer architecture courses myself
+
+00:20:27.303 --> 00:20:27.543 
+also.
+
+00:20:27.543 --> 00:20:32.943 
+It may be very good, very interesting, but sometimes people miss the big perspective, right?
+
+00:20:33.143 --> 00:20:35.703 
+The perspective is, yes, you do all of that computation.
+
+00:20:35.703 --> 00:20:38.023 
+Computation is great, no question.
+
+00:20:38.023 --> 00:20:39.703 
+And we could keep optimising it forever.
+
+00:20:40.703 --> 00:20:45.463 
+The problem is somewhere else though, and that's what I'd like to instill over here.
+
+00:20:46.183 --> 00:20:52.923 
+And the reason that problem is somewhere else is because I think education doesn't understand and
+
+00:20:52.923 --> 00:20:55.703 
+show that the problem is somewhere else.
+
+00:20:56.343 --> 00:20:59.023 
+So that's why I would like to show that the problem is somewhere else.
+
+00:20:59.823 --> 00:21:04.676 
+You could actually keep doing a lot of computation, but in the end you'll be bottlenecked by memory
+
+00:21:04.676 --> 00:21:07.863 
+and everybody figures it out, as you can see, for 30 years or so.
+
+00:21:08.503 --> 00:21:09.423 
+Actually, it's more than that.
+
+00:21:10.023 --> 00:21:15.343 
+OK, anyway, this is more analysis than Google's paper, so let's talk about energy.
+
+00:21:15.623 --> 00:21:18.823 
+Energy is actually a lot more important today, and energy is much worse.
+
+00:21:19.703 --> 00:21:22.543 
+So hardware cost was bad, performance is bad.
+
+00:21:23.423 --> 00:21:26.143 
+If you think about energy of memory access, that's much worse.
+
+00:21:26.383 --> 00:21:28.503 
+In the end, and I'll give you some data.
+
+00:21:28.783 --> 00:21:35.063 
+This is data from NVIDIA in 2015, Bill Daly and media's chief scientist.
+
+00:21:36.823 --> 00:21:41.991 
+You can argue with the numbers, The numbers have changed because things have scaled in the last 11
+
+00:21:41.991 --> 00:21:45.103 
+years, but the relative differences did not change as much.
+
+00:21:45.503 --> 00:21:51.463 
+So what is depicted here is the cost in terms of energy of a computation operation.
+
+00:21:51.463 --> 00:21:54.583 
+It's a 64 bit double precision floating point operation.
+
+00:21:54.583 --> 00:21:59.863 
+It's a very hefty operation and the rest is basically communication.
+
+00:22:00.223 --> 00:22:08.601 
+So communicating some, for example, accessing 8 kilobytes of SRAM at the 256 bit granularity is 50
+
+00:22:08.601 --> 00:22:13.303 
+picojoules, for example, it's already larger than that.
+
+00:22:13.623 --> 00:22:16.983 
+As you can see, accessing DRAM is 16 nanojoules.
+
+00:22:18.023 --> 00:22:21.983 
+So if you do the calculation, that's 800X more than that 20 picojoules.
+
+00:22:24.063 --> 00:22:25.423 
+OK, it's good to think about that.
+
+00:22:25.823 --> 00:22:31.463 
+And also accessing from here to here in the chip is 1 nanojoules.
+
+00:22:31.783 --> 00:22:32.663 
+That's also a lot, right?
+
+00:22:33.423 --> 00:22:36.623 
+It's a big chip, of course, 20 millimetres by 20 millimetres.
+
+00:22:37.503 --> 00:22:41.657 
+So you can see that the communication is really the bottleneck in terms of energy because the
+
+00:22:41.657 --> 00:22:43.623 
+interconnects actually take a lot of energy.
+
+00:22:44.303 --> 00:22:49.741 
+And there's also a historical perspective to this, because we were able to scale technology really
+
+00:22:49.741 --> 00:22:52.183 
+well using Moore's Law and then ART scaling.
+
+00:22:52.183 --> 00:22:54.503 
+Transistors became smaller and smaller and smaller.
+
+00:22:54.703 --> 00:22:56.303 
+They became much more energy efficient.
+
+00:22:56.783 --> 00:23:00.143 
+As a result, the computation became much more energy efficient.
+
+00:23:00.663 --> 00:23:05.880 
+Unfortunately, interconnects did not scale very well because in the in the end, interconnects are
+
+00:23:05.880 --> 00:23:11.043 
+basically how far you communicate data on and it's very hard to scale them unless you go to some
+
+00:23:11.043 --> 00:23:16.260 
+other technology where you reduce the length of the interconnects, which we're also going to talk
+
+00:23:16.260 --> 00:23:16.583 
+about.
+
+00:23:17.223 --> 00:23:22.850 
+And going off chip is actually much worse because you actually need to drive huge interconnects that
+
+00:23:22.850 --> 00:23:23.863 
+go somewhere else.
+
+00:23:24.023 --> 00:23:29.455 
+And for that drive, you need to actually have a lot of power and you go out and then to to get to
+
+00:23:29.455 --> 00:23:32.143 
+some other chip like dear, I mean to drive more.
+
+00:23:32.863 --> 00:23:36.863 
+That's the reason you get actually this 800 X difference, OK, 800X.
+
+00:23:36.863 --> 00:23:39.143 
+People try to optimise that a lot today.
+
+00:23:39.463 --> 00:23:45.024 
+That number is the distinction, the difference between a memory access and a high precision
+
+00:23:45.024 --> 00:23:47.103 
+arithmetic operation, maybe 160 X.
+
+00:23:47.423 --> 00:23:50.423 
+Going below 150 is very, very, very, very difficult.
+
+00:23:50.783 --> 00:23:54.703 
+In the end, if you can do it, then you can actually design something much more energy efficient.
+
+00:23:54.703 --> 00:23:57.743 
+But people were not able to go beyond that as much.
+
+00:23:58.943 --> 00:24:00.063 
+So it's good to think about.
+
+00:24:01.143 --> 00:24:03.223 
+Does it really make sense to move data, right?
+
+00:24:03.543 --> 00:24:05.823 
+Why don't I actually do operations without moving the data?
+
+00:24:06.503 --> 00:24:08.783 
+OK, that was expensive arithmetic operation.
+
+00:24:08.783 --> 00:24:10.503 
+Let's look, we get a simpler arithmetic operation.
+
+00:24:10.503 --> 00:24:13.423 
+This is from another paper, again from NVIDIA.
+
+00:24:14.303 --> 00:24:23.863 
+And this shows that this is the energy cost of a 32 bit integer operation, which is simpler.
+
+00:24:24.383 --> 00:24:26.503 
+And this is DM access, energy cost of DM.
+
+00:24:27.263 --> 00:24:29.183 
+So the relative disparity increases.
+
+00:24:29.343 --> 00:24:35.531 
+As you can see if you make computation cheaper and smaller, memory access becomes more costly
+
+00:24:35.531 --> 00:24:36.263 
+relatively.
+
+00:24:36.983 --> 00:24:38.183 
+So that's 6400 X.
+
+00:24:38.743 --> 00:24:39.983 
+We're not even talking about storage yet.
+
+00:24:39.983 --> 00:24:41.143 
+We're talking about accessing the DRAM.
+
+00:24:41.263 --> 00:24:46.223 
+If you go to storage like SSD, multiply that by another 10X at least.
+
+00:24:47.103 --> 00:24:48.423 
+So the numbers go crazy, right?
+
+00:24:48.583 --> 00:24:53.303 
+So if you bring back the 10 year old kid out and say give them.
+
+00:24:53.583 --> 00:24:56.303 
+Give them these numbers, they'll say, are you crazy?
+
+00:24:56.303 --> 00:24:57.143 
+Are you moving data?
+
+00:24:58.223 --> 00:24:59.983 
+It doesn't make sense to move data, basically, right?
+
+00:24:59.983 --> 00:25:01.343 
+That's the key in the end.
+
+00:25:02.343 --> 00:25:06.303 
+This is actually true for even larger scale interconnects, like when you go to Internet.
+
+00:25:06.503 --> 00:25:08.823 
+Moving data is actually costly.
+
+00:25:09.223 --> 00:25:11.823 
+And we're moving a lot of data across the Internet as well.
+
+00:25:12.063 --> 00:25:16.063 
+But even with our basic systems, even within a system, we're moving data a lot.
+
+00:25:16.943 --> 00:25:17.263 
+OK.
+
+00:25:17.623 --> 00:25:21.263 
+So you can actually look at these numbers and look at the costs.
+
+00:25:22.463 --> 00:25:28.136 
+So we did a lot of studies to understand the effects of this data movement and also the way we're
+
+00:25:28.136 --> 00:25:33.868 
+designing our systems on essentially all metrics we care about energy, performance, hardware, real
+
+00:25:33.868 --> 00:25:34.863 
+estate, etcetera.
+
+00:25:35.143 --> 00:25:39.103 
+This is the study that I mentioned with Google that we did between 2016 and 2018.
+
+00:25:39.183 --> 00:25:43.303 
+We analysed those workloads that I showed you including tensor flow of inference, Chrome browsing
+
+00:25:43.303 --> 00:25:44.663 
+and video encoding and decoding.
+
+00:25:44.983 --> 00:25:50.243 
+And we found out that on average use cases in mobile workloads, more than 60% of the total system
+
+00:25:50.243 --> 00:25:53.063 
+energy is spent on moving data across the hierarchy.
+
+00:25:53.623 --> 00:25:54.823 
+This is not even this.
+
+00:25:54.823 --> 00:25:56.743 
+These are workloads that are resident in memory.
+
+00:25:56.863 --> 00:25:57.943 
+You don't even go to storage.
+
+00:25:58.223 --> 00:26:00.063 
+And these if you go to storage, this number increases.
+
+00:26:00.383 --> 00:26:06.063 
+Yes, yeah.
+
+00:26:06.063 --> 00:26:07.343 
+So that's a very good question.
+
+00:26:07.583 --> 00:26:08.623 
+That's a different question.
+
+00:26:10.863 --> 00:26:20.543 
+Not necessarily, because heat depends on the intensity of how fast you can actually heat up.
+
+00:26:20.583 --> 00:26:22.943 
+Something like how fast you can spend the energy, basically.
+
+00:26:23.503 --> 00:26:30.326 
+So in general, the heat is usually produced by computation units that are really operating at high
+
+00:26:30.326 --> 00:26:31.023 
+frequency.
+
+00:26:32.623 --> 00:26:35.223 
+But communication also effects heat.
+
+00:26:35.223 --> 00:26:39.794 
+But if you were only doing communication because that's slower and you're not operating at extremely
+
+00:26:39.794 --> 00:26:42.263 
+high frequency, the heat would be lower I would guess.
+
+00:26:44.783 --> 00:26:45.663 
+That's a very good question.
+
+00:26:47.383 --> 00:26:48.823 
+OK, so this is an example.
+
+00:26:48.823 --> 00:26:50.343 
+These are not the worst use cases.
+
+00:26:50.343 --> 00:26:54.743 
+These are general use cases where people use cell phones or Chromebooks, for example.
+
+00:26:55.343 --> 00:27:00.663 
+More recently, we've also worked with Google circa like 2018 to 2021.
+
+00:27:01.543 --> 00:27:07.983 
+We analysed the neural network models that they used in in their Pixel phone, for example.
+
+00:27:08.383 --> 00:27:10.543 
+These are commercial neural network models that they used.
+
+00:27:10.543 --> 00:27:15.788 
+And we found out that more than 90% of the total system energy spent on memory in these large
+
+00:27:15.788 --> 00:27:16.183 
+models.
+
+00:27:16.183 --> 00:27:22.096 
+I think I've, I've shown you a picture, a version of this picture very early on in this course, but
+
+00:27:22.096 --> 00:27:25.263 
+you can see that these are, this is before LLM times.
+
+00:27:25.863 --> 00:27:30.806 
+So the larger models are LSTMS, transducers, they're also of course convolutional neural networks,
+
+00:27:30.806 --> 00:27:32.623 
+recurrent neural networks, etcetera.
+
+00:27:33.023 --> 00:27:39.413 
+For the larger models, you can see that most of the energy is really spent on DM accesses and off
+
+00:27:39.413 --> 00:27:40.863 
+chip interconnect CPU.
+
+00:27:41.543 --> 00:27:42.943 
+Well, in this case it's an accelerator.
+
+00:27:42.943 --> 00:27:44.263 
+It's a systolic array base accelerator.
+
+00:27:44.263 --> 00:27:46.223 
+It's the HTPU that we discussed earlier.
+
+00:27:46.703 --> 00:27:50.183 
+The accelerator is not consuming a lot of power in the end.
+
+00:27:50.663 --> 00:27:54.783 
+That's true for smaller models also, but large models are much worse essentially.
+
+00:27:55.463 --> 00:27:57.303 
+There's also another thing to say here.
+
+00:27:57.543 --> 00:28:03.423 
+Clearly these models are big and you're communicating a lot, but there's another reason why.
+
+00:28:03.823 --> 00:28:09.122 
+Energy of data movements starts dominating things because if you optimise computation, if you
+
+00:28:09.122 --> 00:28:14.649 
+accelerate computation, it becomes faster, it becomes more energy efficient and the part that you
+
+00:28:14.649 --> 00:28:17.783 
+didn't optimise becomes start starts dominating, right.
+
+00:28:17.783 --> 00:28:19.303 
+So Zamdar's law in the end.
+
+00:28:20.063 --> 00:28:25.383 
+So in systems where you have a very specialised accelerator, many systems have that.
+
+00:28:25.383 --> 00:28:30.462 
+In machine learning today, computation has become less of a bottleneck and data moment and memory
+
+00:28:30.462 --> 00:28:35.594 
+have become more of a bottleneck because it's kind of been ignored in the sense that it's not been
+
+00:28:35.594 --> 00:28:36.223 
+accelerated.
+
+00:28:37.383 --> 00:28:38.703 
+OK, it's good to think about that also.
+
+00:28:39.023 --> 00:28:41.903 
+So that's one of the reasons why we do a lot of work on processing in memory.
+
+00:28:41.903 --> 00:28:47.707 
+Basically, the key idea is as opposed to moving data from memory to the processor CPU, why not
+
+00:28:47.707 --> 00:28:51.783 
+actually put processing capability inside the memory chips, right?
+
+00:28:51.783 --> 00:28:54.543 
+Then you move data very little, keep it inside the memory.
+
+00:28:54.543 --> 00:28:57.223 
+So you can take a look at some of the work that we've been doing.
+
+00:28:57.503 --> 00:29:03.965 
+We have a lot of papers and interviews, etcetera, articles, OK, So that was the performance energy
+
+00:29:03.965 --> 00:29:04.823 
+perspectives.
+
+00:29:04.983 --> 00:29:06.103 
+Now let's talk about robustness.
+
+00:29:06.103 --> 00:29:09.623 
+Robustness you've seen for example, you've seen the row hammer things.
+
+00:29:09.623 --> 00:29:13.783 
+I'm going to go through this relatively quickly, but this is also becoming worse essentially.
+
+00:29:13.983 --> 00:29:16.103 
+So memory dominates a lot of the robustness issues.
+
+00:29:16.103 --> 00:29:20.783 
+This is a study that we did with Facebook a long time ago, 2013 or so.
+
+00:29:21.623 --> 00:29:28.037 
+And essentially we found a very positive strong correlation with the density of the DRAM chip that's
+
+00:29:28.037 --> 00:29:32.463 
+employed in the server and the failure rate, the server's experience.
+
+00:29:32.543 --> 00:29:37.434 
+This is on production data centre, data centres that are employed at Facebook across all of the
+
+00:29:37.434 --> 00:29:37.743 
+world.
+
+00:29:37.743 --> 00:29:39.303 
+That's a lot of computers, actually.
+
+00:29:39.463 --> 00:29:41.743 
+This is very statistically significant data.
+
+00:29:41.823 --> 00:29:47.395 
+They don't allow us to publish how much memory we examined and how many servers we examined because
+
+00:29:47.395 --> 00:29:49.703 
+that's confidential information for them.
+
+00:29:49.703 --> 00:29:52.223 
+They don't want to reveal the size of their infrastructure.
+
+00:29:52.583 --> 00:29:53.263 
+But this is a.
+
+00:29:53.423 --> 00:29:59.555 
+A lot of data actually and very, it's also, it's a correlation based study that shows that denser
+
+00:29:59.555 --> 00:30:02.463 
+memory chips cause more problems, more errors.
+
+00:30:02.463 --> 00:30:06.223 
+Essentially you get some bit flip and that actually takes down the server, right.
+
+00:30:07.103 --> 00:30:12.261 
+OK, there's a lot more analysis of this and essentially as memory capacity increases, system
+
+00:30:12.261 --> 00:30:13.383 
+reliability reduces.
+
+00:30:13.503 --> 00:30:18.423 
+If you're interested, there's more analysis of this in this paper and also other papers.
+
+00:30:19.143 --> 00:30:20.783 
+So we actually built a lot of infrastructure.
+
+00:30:20.783 --> 00:30:26.623 
+You've seen some of this infrastructure in the past also to, to, to analyse these memory issues in
+
+00:30:26.623 --> 00:30:29.543 
+terms of both latency, energy errors, robustness.
+
+00:30:30.623 --> 00:30:35.167 
+So if you have an FPGA and with an FPGA based memory controller, if you can actually change the
+
+00:30:35.167 --> 00:30:39.760 
+access patterns to memory, change the voltage, change the latency parameters, you can discover a
+
+00:30:39.760 --> 00:30:42.583 
+lot of things about what's happening in these memory chips.
+
+00:30:42.623 --> 00:30:48.066 
+This was the infrastructure that we built at Carnegie Mellon and essentially it consists of FPGA
+
+00:30:48.066 --> 00:30:52.943 
+boards, DM modules, some temperature controller and also voltage controller, etcetera.
+
+00:30:53.623 --> 00:30:59.676 
+And we actually can test different types of DM chips including HPM chips and you can take a look at
+
+00:30:59.676 --> 00:31:02.183 
+that this the HPM testing infrastructure.
+
+00:31:02.183 --> 00:31:05.183 
+We also discover a lot of interesting things about HPM over here.
+
+00:31:05.503 --> 00:31:07.503 
+These are open source, people can take a look at it.
+
+00:31:07.943 --> 00:31:12.599 
+But essentially this is a laboratory that we have at ETETH right now where we actually have a lot of
+
+00:31:12.599 --> 00:31:14.183 
+these things, more than 120 or so.
+
+00:31:15.063 --> 00:31:16.983 
+Somebody can verify that, but maybe we would.
+
+00:31:18.223 --> 00:31:19.383 
+Is it not 150 yet?
+
+00:31:20.543 --> 00:31:21.983 
+OK, OK.
+
+00:31:22.143 --> 00:31:23.863 
+We should shoot for 500 or so.
+
+00:31:24.903 --> 00:31:30.423 
+Basically the the capacity is the, the capacity of the room is what's limiting us right now anyway.
+
+00:31:30.903 --> 00:31:33.263 
+So you've seen the row hammer phenomena.
+
+00:31:33.263 --> 00:31:38.989 
+I'm not going to go over this in detail, but essentially, as chips become denser, they become more
+
+00:31:38.989 --> 00:31:44.600 
+vulnerable to errors because the cells that we're going to study a lot more in the later part of
+
+00:31:44.600 --> 00:31:48.983 
+today, the cells become more smaller and cells become closer to each other.
+
+00:31:49.183 --> 00:31:54.132 
+As a result, the data that's stored in one cell gets affected by whatever you're doing in the
+
+00:31:54.132 --> 00:31:55.303 
+vicinity of that cell.
+
+00:31:55.823 --> 00:32:01.951 
+And RAW Hammer is very interesting because this is the first example of the fact that you can
+
+00:32:01.951 --> 00:32:04.983 
+actually predictably induce bit flips in most.
+
+00:32:04.983 --> 00:32:05.903 
+You can remove most today.
+
+00:32:05.903 --> 00:32:08.423 
+It's all DM memory chips if you know what you're doing.
+
+00:32:09.303 --> 00:32:10.663 
+So this is not supposed to be happening.
+
+00:32:10.663 --> 00:32:14.063 
+Basically, by accessing memory, you should not be able to induce errors.
+
+00:32:14.743 --> 00:32:18.103 
+So, so far, for example, we have seen a lot of computation mechanisms, right?
+
+00:32:18.543 --> 00:32:22.463 
+If you keep doing additions in a ALU, you should not get errors, right?
+
+00:32:23.063 --> 00:32:23.943 
+Same thing over here.
+
+00:32:23.943 --> 00:32:26.103 
+If you keep doing accessing memory, you should not get errors.
+
+00:32:27.343 --> 00:32:33.242 
+But we're getting these errors in memory and they're they're, they're actually pretty common these
+
+00:32:33.242 --> 00:32:33.543 
+days.
+
+00:32:34.543 --> 00:32:38.463 
+OK, I think you've seen these slides, so I'll go through this relatively quickly.
+
+00:32:38.783 --> 00:32:40.743 
+But we will see the structure of memory today.
+
+00:32:41.023 --> 00:32:42.423 
+This is an abstraction.
+
+00:32:42.903 --> 00:32:45.423 
+All memory in the end is 2 dimensional array of cells.
+
+00:32:45.943 --> 00:32:49.023 
+It's a hierarchical 2 dimensional array of cells.
+
+00:32:50.023 --> 00:32:53.263 
+To get more and more memory, there needs to be a hierarchy, as we will see.
+
+00:32:53.663 --> 00:32:56.783 
+So in the smaller version, there is a 2 dimensional array.
+
+00:32:57.263 --> 00:33:04.303 
+And if you want to access one bit, you need to activate the row that contains that bit.
+
+00:33:04.423 --> 00:33:07.143 
+Essentially we'll see the granularity, etcetera later today.
+
+00:33:07.143 --> 00:33:13.140 
+But in Row Hammer, you activate one row and activation of a row is essentially driving that
+
+00:33:13.140 --> 00:33:15.183 
+interconnect with high voltage.
+
+00:33:15.263 --> 00:33:16.903 
+You'll see this in more detail later today.
+
+00:33:16.903 --> 00:33:21.663 
+Again, essentially you open the row and then you access the data.
+
+00:33:23.023 --> 00:33:28.608 
+And then if you want to access some other row, you drive the word line to a low voltage, basically
+
+00:33:28.608 --> 00:33:29.463 
+close that row.
+
+00:33:29.463 --> 00:33:34.103 
+And if you keep doing this repeatedly, you get bit flips in adjacent rows.
+
+00:33:34.223 --> 00:33:35.343 
+That's what Row Hammer is about.
+
+00:33:35.543 --> 00:33:40.093 
+It's basically fundamentally due to the way we access memory, but it's also, there are some
+
+00:33:40.093 --> 00:33:44.743 
+underlying physical aspects that we're device level aspects that we're not going to get into.
+
+00:33:46.863 --> 00:33:52.785 
+So if you do this hammering enough times before the cells get refreshed, some cells in the victim
+
+00:33:52.785 --> 00:33:53.823 
+rows get corrupt.
+
+00:33:53.823 --> 00:33:55.943 
+They lose charge little by little with every access.
+
+00:33:56.303 --> 00:34:00.223 
+And you will see why this is happening in DM soon, because we're going to talk about DM technology.
+
+00:34:00.623 --> 00:34:03.743 
+Each DM cell has charge stored in it.
+
+00:34:03.743 --> 00:34:08.023 
+And that charge leaks every time you do some sort of hammering effect.
+
+00:34:08.423 --> 00:34:10.103 
+OK, we'll get back to this.
+
+00:34:11.263 --> 00:34:12.983 
+But clearly this should not be happening, right?
+
+00:34:12.983 --> 00:34:19.145 
+Because whenever you access some, some memory location, you should not change some other memory
+
+00:34:19.145 --> 00:34:20.183 
+location, right?
+
+00:34:21.183 --> 00:34:22.983 
+That's something that we should not.
+
+00:34:23.583 --> 00:34:26.423 
+If you, if you think about a load access, for example, we've seen Isas, right?
+
+00:34:27.063 --> 00:34:33.903 
+We're doing a load access and that's getting translated into these row accesses in DRAM.
+
+00:34:34.023 --> 00:34:36.263 
+And you keep doing this repeatedly going to the same row.
+
+00:34:36.703 --> 00:34:38.783 
+You should not be changing any data, right, architecturally.
+
+00:34:38.943 --> 00:34:43.650 
+The problem is this architecturally changes some data that belongs to potentially some other
+
+00:34:43.650 --> 00:34:44.623 
+application, right?
+
+00:34:44.943 --> 00:34:47.663 
+Or some or the operating system.
+
+00:34:48.463 --> 00:34:51.383 
+So you will see in the virtual memory lectures why this can be.
+
+00:34:51.743 --> 00:34:53.263 
+This circumvents the operating system.
+
+00:34:53.903 --> 00:34:54.183 
+OK.
+
+00:34:54.383 --> 00:34:59.983 
+But today this is a robustness problem because this problem is getting worse.
+
+00:35:00.103 --> 00:35:03.743 
+So we want to build higher capacity memories.
+
+00:35:04.143 --> 00:35:08.002 
+And if you want to build a higher capacity memory, you want to store more bits per square
+
+00:35:08.002 --> 00:35:08.783 
+millimetre, right?
+
+00:35:09.823 --> 00:35:12.343 
+In the past you had smaller memories.
+
+00:35:12.543 --> 00:35:15.943 
+Basically you want to make the cells smaller and closer to each other.
+
+00:35:16.183 --> 00:35:19.063 
+And as you do that, this sort of effects increase.
+
+00:35:19.143 --> 00:35:24.801 
+You basically start getting much more noise and interference and also you have the fundamental
+
+00:35:24.801 --> 00:35:30.701 
+capability of storing data is lower in the cell because in a smaller cell you have smaller charge,
+
+00:35:30.701 --> 00:35:31.063 
+right?
+
+00:35:31.103 --> 00:35:32.183 
+It's good to think about this.
+
+00:35:32.503 --> 00:35:37.971 
+That's why this sort of problem is increasing and it's not going to become better unless we figure
+
+00:35:37.971 --> 00:35:41.263 
+out a much better technology, which is also not easy today.
+
+00:35:42.063 --> 00:35:47.790 
+OK, so we'll, we'll get back to row Hammer in the virtual memory lecture, but you will see why this
+
+00:35:47.790 --> 00:35:48.543 
+is happening.
+
+00:35:48.863 --> 00:35:50.783 
+So this has security implications.
+
+00:35:50.863 --> 00:35:51.783 
+You've seen this before.
+
+00:35:51.783 --> 00:35:52.103 
+Also.
+
+00:35:52.103 --> 00:35:57.897 
+Basically people have devised attacks, especially Google to begin with, after reading our paper,
+
+00:35:57.897 --> 00:36:02.063 
+they devised attacks to take over a system, gain internal privileges.
+
+00:36:02.223 --> 00:36:04.263 
+And we will see how that happens in the virtual memory lecture.
+
+00:36:06.223 --> 00:36:08.943 
+And this shows that memory is critical for robustness.
+
+00:36:08.943 --> 00:36:09.863 
+This is just one example.
+
+00:36:10.303 --> 00:36:13.143 
+There are a bunch of other examples that I can give you, but we don't have time.
+
+00:36:14.103 --> 00:36:16.263 
+So it's really affecting everything that we care about.
+
+00:36:16.463 --> 00:36:18.423 
+I would say memory is really critical for computing.
+
+00:36:18.863 --> 00:36:23.546 
+So we've covered performance, energy, robustness, cost, but there are also other things, form
+
+00:36:23.546 --> 00:36:28.481 
+factor, quality of service, predictability, because when you're running multiple applications, for
+
+00:36:28.481 --> 00:36:33.014 
+example, one application is trying to access memory, but it's denied service by some other
+
+00:36:33.014 --> 00:36:34.223 
+application potentially.
+
+00:36:34.223 --> 00:36:38.802 
+This happens a lot actually in real systems and sustainability, which we don't have great metrics
+
+00:36:38.802 --> 00:36:43.333 
+for, but it's good to think about going into the future like how does the, how does the how does
+
+00:36:43.333 --> 00:36:44.703 
+memory affect sustainability?
+
+00:36:45.103 --> 00:36:47.823 
+I know for sure that a lot of the hardware that we have is memory actually.
+
+00:36:48.823 --> 00:36:52.343 
+OK, so let's now jump into the fundamentals of memory.
+
+00:36:52.423 --> 00:36:54.703 
+Hopefully I've convinced you that there is a lot to see here.
+
+00:36:55.543 --> 00:37:01.536 
+In my opinion, actually if I were starting doing, if I were starting a company, I would make it
+
+00:37:01.536 --> 00:37:04.943 
+memory centric as opposed to processor centric, right?
+
+00:37:04.983 --> 00:37:08.423 
+Because processor centric, a lot of people have done it.
+
+00:37:08.503 --> 00:37:13.931 
+It's boring and you'll be bottleneck in the end memory and it's very difficult to distinguish
+
+00:37:13.931 --> 00:37:16.383 
+yourself in terms of something new, right?
+
+00:37:16.783 --> 00:37:19.823 
+But if you start doing something memory centric, you can actually innovate a lot.
+
+00:37:19.943 --> 00:37:24.263 
+First of all, you will not be competing with people who can design processes extremely well.
+
+00:37:24.623 --> 00:37:29.983 
+And you will also potentially being much more disruptive, right?
+
+00:37:30.503 --> 00:37:34.702 
+So I think companies or research, I think company and research has some similarities because in the
+
+00:37:34.702 --> 00:37:36.823 
+in the research you're trying to do something big.
+
+00:37:36.823 --> 00:37:37.023 
+Yeah.
+
+00:37:37.463 --> 00:37:39.223 
+And you need to actually think about that.
+
+00:37:39.623 --> 00:37:43.223 
+OK, so let's go into memory fundamentals unless there are any questions.
+
+00:37:45.023 --> 00:37:45.303 
+OK.
+
+00:37:45.383 --> 00:37:50.244 
+And I'm going to start with memory organization and technology, but before I start with that, memory
+
+00:37:50.244 --> 00:37:51.703 
+looks like this for us, right?
+
+00:37:51.783 --> 00:37:53.143 
+You have loads and stores.
+
+00:37:53.583 --> 00:37:56.583 
+From the programmer's perspective, that's what you do.
+
+00:37:58.143 --> 00:38:00.063 
+You don't care how disturbs you, right?
+
+00:38:00.263 --> 00:38:03.801 
+From a programmer's perspective, this is a very high level programmer who doesn't care about
+
+00:38:03.801 --> 00:38:04.263 
+performance.
+
+00:38:04.783 --> 00:38:08.423 
+Now if you care about performance, you need to know what's inside there, right?
+
+00:38:08.423 --> 00:38:10.343 
+We talked about that in GPUs, for example.
+
+00:38:10.343 --> 00:38:14.223 
+You need to lay out your data such that different accesses go to different banks, right?
+
+00:38:14.223 --> 00:38:16.703 
+If everything goes to the same bank, you're in trouble.
+
+00:38:17.823 --> 00:38:23.663 
+OK, OK, so but I will mention this still because we're going to get to virtual memory.
+
+00:38:23.663 --> 00:38:25.743 
+What the programmer sees is virtual.
+
+00:38:26.183 --> 00:38:26.903 
+It's not real.
+
+00:38:27.183 --> 00:38:27.543 
+Basically.
+
+00:38:28.303 --> 00:38:29.303 
+That's why it's called virtual.
+
+00:38:31.343 --> 00:38:33.463 
+And the programmer can assume the memory is infinite.
+
+00:38:34.903 --> 00:38:39.383 
+The reality is physical memory size is much smaller than what the programmer assumes.
+
+00:38:41.063 --> 00:38:47.003 
+And the system itself, the system software and hardware cooperatively maps the virtual addresses to
+
+00:38:47.003 --> 00:38:50.663 
+physical memory, and that's what virtual memory is all about.
+
+00:38:50.903 --> 00:38:53.543 
+We're going to see that in direction mechanisms.
+
+00:38:54.583 --> 00:38:58.813 
+In other words, the system automatically manages the physical memory space transparently to the
+
+00:38:58.813 --> 00:38:59.303 
+programmer.
+
+00:38:59.503 --> 00:39:02.023 
+This makes programmers life a lot easier.
+
+00:39:02.023 --> 00:39:04.823 
+So we're going to introduce this more today.
+
+00:39:04.823 --> 00:39:06.543 
+We're going to talk a lot about physical memory.
+
+00:39:06.863 --> 00:39:08.143 
+We're going to ignore the virtual part.
+
+00:39:08.983 --> 00:39:14.198 
+So the upside of this virtual abstraction for the programmer is programmer doesn't need to know the
+
+00:39:14.198 --> 00:39:15.463 
+physical size of memory.
+
+00:39:15.903 --> 00:39:16.983 
+They don't need to manage it.
+
+00:39:18.383 --> 00:39:23.875 
+Also a physical memory can appear as a huge one to the programmer, a small one, and life is easier
+
+00:39:23.875 --> 00:39:27.183 
+for the programmer in the end, which is what we would like.
+
+00:39:27.263 --> 00:39:29.543 
+Like that's what we did without order execution also, right?
+
+00:39:29.623 --> 00:39:33.583 
+We didn't ask the programmer to tell us which instructions can be executed independently.
+
+00:39:34.143 --> 00:39:35.743 
+We did that for the programmer.
+
+00:39:36.183 --> 00:39:39.143 
+Under the hood, ISA is still 1 moment.
+
+00:39:39.823 --> 00:39:41.183 
+In a sense, this is also similar.
+
+00:39:42.143 --> 00:39:46.809 
+Unfortunately, now the system software and the architecture needs to be much more complex, and we
+
+00:39:46.809 --> 00:39:49.503 
+will see that complexity in the virtual memory lectures.
+
+00:39:49.503 --> 00:39:53.303 
+And this is actually a very successful classic example of the programmer microarchitecture.
+
+00:39:53.383 --> 00:39:53.703 
+Trade off.
+
+00:39:55.223 --> 00:39:59.583 
+So this requires, of course indirection and mapping between virtual to physical address spaces.
+
+00:39:59.583 --> 00:40:03.383 
+What the programmer sees virtual address space that's in the ISA.
+
+00:40:04.023 --> 00:40:07.574 
+And there's some indirection and mapping mechanisms to the physical memory that we're going to
+
+00:40:07.574 --> 00:40:08.103 
+discuss today.
+
+00:40:08.823 --> 00:40:12.103 
+OK, so we're going to talk about physical memory today.
+
+00:40:13.903 --> 00:40:17.783 
+And you need a larger level of storage to manage a small amount of physical memory automatically.
+
+00:40:17.983 --> 00:40:22.943 
+So virtual memory actually requires a larger amount of storage.
+
+00:40:23.343 --> 00:40:26.543 
+And for that physical memory has a backing store which is disk today.
+
+00:40:26.783 --> 00:40:27.823 
+Today it's s s, DS.
+
+00:40:28.303 --> 00:40:30.583 
+But then you can also have hard disks, you can also have tapes.
+
+00:40:31.023 --> 00:40:34.623 
+So the hierarchy, memory hierarchy extends actually quite large, right?
+
+00:40:34.983 --> 00:40:43.866 
+Registers SRAM caches, main memory, DRAM, s s, DS, hard disk drives, tape and who knows what else
+
+00:40:43.866 --> 00:40:45.423 
+out there, right?
+
+00:40:46.943 --> 00:40:50.553 
+So we will first start with the physical memory system and we're going to ignore this virtual to
+
+00:40:50.553 --> 00:40:51.343 
+physical indirection.
+
+00:40:52.183 --> 00:40:54.903 
+We will get back to it later, hopefully time will permit.
+
+00:40:56.943 --> 00:41:02.179 
+But before we start with the physical memory system, I think we should also think about like what is
+
+00:41:02.179 --> 00:41:04.903 
+the ideal thing that we want from the system, right?
+
+00:41:04.903 --> 00:41:07.103 
+It's always good to have this perspective.
+
+00:41:07.303 --> 00:41:08.663 
+I'm designing with a blank slate.
+
+00:41:09.223 --> 00:41:13.743 
+If I had the idea, if I could do the ideal thing, what is that ideal thing I could do?
+
+00:41:14.263 --> 00:41:16.783 
+And we've done this kind of for other things.
+
+00:41:16.783 --> 00:41:18.663 
+So I'd like to talk about this a little bit.
+
+00:41:18.943 --> 00:41:20.903 
+So we talked about pipelining, for example, right?
+
+00:41:21.503 --> 00:41:23.383 
+Ideally you want no pipeline stalls, right?
+
+00:41:23.463 --> 00:41:24.423 
+You remember that lecture?
+
+00:41:25.543 --> 00:41:28.063 
+We want perfect data flow, meaning no dependencies.
+
+00:41:28.263 --> 00:41:28.783 
+Ideally.
+
+00:41:28.943 --> 00:41:33.578 
+Again, ideally, if you have dependencies, if you need to communicate, we want zero cycle
+
+00:41:33.578 --> 00:41:34.263 
+interconnect.
+
+00:41:35.103 --> 00:41:35.823 
+That sounds good.
+
+00:41:36.223 --> 00:41:40.399 
+We want enough functional units such that we can do as much, we can exploit as much parallelism as
+
+00:41:40.399 --> 00:41:40.783 
+possible.
+
+00:41:41.223 --> 00:41:42.943 
+And ideally you want 0 latency compute.
+
+00:41:42.943 --> 00:41:44.183 
+This is what I want.
+
+00:41:44.183 --> 00:41:48.663 
+Of course, I don't get it necessarily right, but it's good to think about this from the instruction.
+
+00:41:48.943 --> 00:41:51.663 
+From the instruction supply, again, we want 0 latency access.
+
+00:41:51.663 --> 00:41:53.183 
+This is now becoming our part of memory.
+
+00:41:53.503 --> 00:42:00.132 
+Also, we want infinite capacity ideally or it just enough capacity to not go out, zero costs and
+
+00:42:00.132 --> 00:42:01.583 
+perfect control flow.
+
+00:42:01.703 --> 00:42:04.583 
+We talked about perfect control flow, branch prediction for example, right?
+
+00:42:04.583 --> 00:42:08.863 
+At least branch prediction as part of perfect control flow data supply is also a memory.
+
+00:42:09.063 --> 00:42:13.223 
+Again, we want 0 latency access, infinite capacity, infinite bandwidth and 0 cost.
+
+00:42:14.183 --> 00:42:18.823 
+I guess more summary in a in a more summarised manner.
+
+00:42:19.343 --> 00:42:24.823 
+Ideal memory is 0 latency, 0 cost, 0 energy, infinite capacity and infinite bandwidth, right?
+
+00:42:25.703 --> 00:42:26.183 
+Sounds good.
+
+00:42:27.183 --> 00:42:30.543 
+The problem is all of these conflict with each other, right?
+
+00:42:31.623 --> 00:42:37.503 
+And I will, for example, if you want to build very high capacity, latency becomes a problem.
+
+00:42:37.503 --> 00:42:39.623 
+I didn't even talk about robustness over here.
+
+00:42:39.623 --> 00:42:43.574 
+As you can see, right, if you want to build extremely high capacity, robustness becomes a problem,
+
+00:42:43.574 --> 00:42:44.583 
+Energy becomes a problem.
+
+00:42:45.303 --> 00:42:49.223 
+So they conflict with each other and we're going to see that conflict.
+
+00:42:49.223 --> 00:42:51.423 
+And that conflict will lead to a memory hierarchy.
+
+00:42:51.903 --> 00:42:53.823 
+You cannot get small.
+
+00:42:54.743 --> 00:42:57.023 
+You cannot get large to be fast.
+
+00:42:57.783 --> 00:43:05.218 
+So you have small and fast, and then you'll have large and slow, and increasingly you'll have slower
+
+00:43:05.218 --> 00:43:09.383 
+and larger memories that are far out from the processor.
+
+00:43:09.543 --> 00:43:11.103 
+Again, this is the processor centric perspective.
+
+00:43:11.103 --> 00:43:12.183 
+It's good to think about that, right?
+
+00:43:12.183 --> 00:43:17.171 
+Processor is the king, and everything else down that in that memory hierarchy is going to serve the
+
+00:43:17.171 --> 00:43:17.423 
+king.
+
+00:43:18.743 --> 00:43:20.023 
+The question is, do you want that king?
+
+00:43:21.143 --> 00:43:22.703 
+That's a very valid question these days.
+
+00:43:24.103 --> 00:43:29.757 
+OK, so let's talk about memory erase because we're going to build up this memory and every memory
+
+00:43:29.757 --> 00:43:33.663 
+will be quite similar to each other in terms of how we build it up.
+
+00:43:35.303 --> 00:43:40.543 
+You've seen part of this picture in the past, but essentially how can we store data as a question?
+
+00:43:40.543 --> 00:43:43.903 
+Like we've seen flip flops and latches a lot early on.
+
+00:43:43.943 --> 00:43:46.183 
+These are very fast, but very, very expensive.
+
+00:43:46.783 --> 00:43:53.623 
+Every bit costs 10s of transistors, static RAM, SRAM, this, we'll describe it soon.
+
+00:43:53.703 --> 00:43:57.463 
+This is relatively fast, not as fast as flip flops, but it's still expensive.
+
+00:43:57.783 --> 00:44:00.103 
+Not as fast, not as expensive as flip flops.
+
+00:44:00.143 --> 00:44:04.903 
+One bit costs about 6 transistors, maybe 8 if you want to accelerate things a little bit.
+
+00:44:04.903 --> 00:44:05.503 
+Dynamic RAM.
+
+00:44:05.503 --> 00:44:08.703 
+This is DRAM main memory row hammer exists here.
+
+00:44:09.503 --> 00:44:10.463 
+We will describe it soon.
+
+00:44:10.463 --> 00:44:14.783 
+Also this is slower reading and chart leakage destroys content.
+
+00:44:14.783 --> 00:44:15.663 
+So I need to refresh it.
+
+00:44:15.663 --> 00:44:16.863 
+That's why it's called dynamic.
+
+00:44:17.063 --> 00:44:18.543 
+You need to continuously refresh it.
+
+00:44:19.183 --> 00:44:23.183 
+It needs special process for manufacturing because it has a capacitor included.
+
+00:44:23.183 --> 00:44:26.903 
+So you cannot actually manufacture it the same way you manufacture logic.
+
+00:44:27.303 --> 00:44:29.543 
+Logic doesn't have capacitors, it has transistors.
+
+00:44:30.223 --> 00:44:33.383 
+And capacitor needs very special manufacturing conditions.
+
+00:44:34.143 --> 00:44:41.403 
+So as a result, it has to be a bit separate, and that's one of the reasons why memory and logic has
+
+00:44:41.403 --> 00:44:45.583 
+separated from each other over the course of the history.
+
+00:44:46.543 --> 00:44:52.418 
+The good news is it's very cheap, so one bit costs only one transistor plus one capacitor, so the
+
+00:44:52.418 --> 00:44:52.903 
+density.
+
+00:44:53.743 --> 00:44:58.422 
+Of this memory is very high, so you can build very high capacity memories using dynamic random
+
+00:44:58.422 --> 00:45:02.703 
+access memory and then you can think about other storage technology like flash memory.
+
+00:45:03.463 --> 00:45:06.423 
+These are SSDs today, hard disks.
+
+00:45:07.463 --> 00:45:08.983 
+How many people still use hard disks here?
+
+00:45:10.063 --> 00:45:10.943 
+OK, some people do.
+
+00:45:10.943 --> 00:45:12.623 
+How many people don't use hard disks anymore?
+
+00:45:13.343 --> 00:45:16.103 
+OK, so you're in 2026 as you can see, right?
+
+00:45:17.103 --> 00:45:21.343 
+You can see that some memories are replacing others, at least in some use cases.
+
+00:45:22.063 --> 00:45:22.863 
+And then there's tape.
+
+00:45:23.063 --> 00:45:24.143 
+Anybody uses tape here?
+
+00:45:25.263 --> 00:45:26.103 
+OK For what?
+
+00:45:27.383 --> 00:45:27.903 
+Music.
+
+00:45:27.903 --> 00:45:28.823 
+OK, I see music.
+
+00:45:28.823 --> 00:45:31.543 
+Yes, but I mean music, Sure.
+
+00:45:31.783 --> 00:45:37.929 
+But in the past, like I started with tape, for example, like when you how many people had a
+
+00:45:37.929 --> 00:45:40.023 
+Commodore 64 here, for example?
+
+00:45:40.503 --> 00:45:40.863 
+Nobody.
+
+00:45:41.063 --> 00:45:41.463 
+I had.
+
+00:45:41.463 --> 00:45:42.183 
+I had one of those.
+
+00:45:42.263 --> 00:45:43.023 
+OK, maybe you had one.
+
+00:45:43.823 --> 00:45:44.743 
+OK, your dad had one.
+
+00:45:44.783 --> 00:45:50.676 
+OK, So I had that and I used to play games, I used to program and essentially you have a tape over
+
+00:45:50.676 --> 00:45:53.383 
+there and that tape has your programs, right?
+
+00:45:53.623 --> 00:45:57.183 
+People still use magnetic tapes and data centres for cold data, for example.
+
+00:45:57.183 --> 00:45:59.383 
+This tape is actually very efficient in terms of storage.
+
+00:46:00.063 --> 00:46:03.903 
+But basically these storage technologies increasingly are much slower.
+
+00:46:04.263 --> 00:46:05.783 
+They require special manufacturing.
+
+00:46:05.783 --> 00:46:09.343 
+Clearly tape is a good example of that there.
+
+00:46:09.423 --> 00:46:14.924 
+The upside is the big upside is they're non volatile, meaning if you plug the power off, they still
+
+00:46:14.924 --> 00:46:15.703 
+keep the data.
+
+00:46:16.343 --> 00:46:21.799 
+That's not true for any of the upper technologies, flip flops, aesthetic RAM, dynamic RAM, you turn
+
+00:46:21.799 --> 00:46:23.783 
+the power off, they lose their data.
+
+00:46:24.423 --> 00:46:28.023 
+OK, so there's also other benefit to storage technology, as you can see.
+
+00:46:28.143 --> 00:46:29.983 
+And the other benefit is these are very cheap.
+
+00:46:31.423 --> 00:46:35.503 
+One transistor stores many bits and sometimes there are no transistors involved.
+
+00:46:35.503 --> 00:46:41.823 
+There's a different way of storing things and as a result you can actually make things much denser.
+
+00:46:42.423 --> 00:46:48.103 
+But the key take away if you look over here is there is a huge trade off between speed and cost.
+
+00:46:48.903 --> 00:46:50.783 
+In other words, speed and capacity, right?
+
+00:46:51.583 --> 00:46:54.623 
+Usually capacity and cost are similar to each other.
+
+00:46:55.063 --> 00:47:02.171 
+And this is exactly the reason why we will have a memory hard because we cannot build high capacity
+
+00:47:02.171 --> 00:47:03.823 
+things fast in the end.
+
+00:47:05.543 --> 00:47:08.183 
+OK, let me cover this and then we'll take a break.
+
+00:47:08.223 --> 00:47:10.863 
+So all memories look like this.
+
+00:47:10.943 --> 00:47:15.263 
+In the end, you have an array that stores cells, 2 dimensional array.
+
+00:47:15.263 --> 00:47:18.223 
+We're going to make it 3 dimensional later on potentially.
+
+00:47:18.743 --> 00:47:21.303 
+And the goal is to efficiently store large amounts of data.
+
+00:47:21.703 --> 00:47:27.074 
+You supply an address and you get data, and the granularity of the address should address
+
+00:47:27.074 --> 00:47:31.903 
+essentially everything you want in the array, with the addressability of course.
+
+00:47:31.903 --> 00:47:35.943 
+And you have some number of bits that you get.
+
+00:47:36.423 --> 00:47:40.333 
+So you have a memory array, you have some address selection logic which selects one row of the
+
+00:47:40.333 --> 00:47:40.583 
+array.
+
+00:47:40.943 --> 00:47:44.263 
+And there's some read out circulated that reads some column in the array.
+
+00:47:45.023 --> 00:47:47.063 
+And the column may be M bits over here, for example.
+
+00:47:48.023 --> 00:47:51.863 
+So an M bit value can be read or written at each unique M bit address.
+
+00:47:51.863 --> 00:47:54.103 
+All values can be accessed, but only M bits at a time.
+
+00:47:54.143 --> 00:47:56.503 
+Now we're building an interface to the array, right?
+
+00:47:56.623 --> 00:47:58.383 
+And all memories have this sort of interface.
+
+00:47:58.543 --> 00:48:04.883 
+In the end, this sort of access restriction, the fact that you cannot access everything, anything
+
+00:48:04.883 --> 00:48:09.263 
+you want immediately, enables more compact organization in the end.
+
+00:48:10.543 --> 00:48:12.583 
+Well, you've seen this array in the past, right?
+
+00:48:12.663 --> 00:48:13.983 
+This is our array.
+
+00:48:14.503 --> 00:48:18.343 
+And remember that this was a 4 * 3.
+
+00:48:18.903 --> 00:48:21.663 
+There are 4 entries and it's 3 bits.
+
+00:48:21.983 --> 00:48:26.743 
+In this case, address is 2 bits and the granularity is 3 bits, right?
+
+00:48:28.263 --> 00:48:30.303 
+It's a small array, but they can be bigger.
+
+00:48:30.663 --> 00:48:33.383 
+So basically we have a 2 dimensional array of bit cells.
+
+00:48:33.383 --> 00:48:38.023 
+Each bit cells stores one bit and you have two to the north rows and M columns.
+
+00:48:39.103 --> 00:48:43.463 
+Depth is the number of rows, width is number of columns and array size is clearly depth and width.
+
+00:48:43.703 --> 00:48:45.303 
+And you can basically, you've seen this before.
+
+00:48:45.303 --> 00:48:49.023 
+Also basically you have a mapping of the addresses to data.
+
+00:48:49.823 --> 00:48:50.623 
+This is an example.
+
+00:48:50.743 --> 00:48:53.383 
+Again I will not go through this because we've done this before.
+
+00:48:54.703 --> 00:49:00.920 
+An address specifies which row you're looking at and the width could be 3, but width also could be
+
+00:49:00.920 --> 00:49:06.503 
+like one row may have one million things and you select only eight of them, for example.
+
+00:49:06.823 --> 00:49:12.523 
+So there needs to be some other circuitry which is called a multiplexer as you know, to select 8 out
+
+00:49:12.523 --> 00:49:13.663 
+of 1,000,000, right?
+
+00:49:13.783 --> 00:49:15.063 
+Depending on the address bits.
+
+00:49:16.183 --> 00:49:18.543 
+OK, a larger and wider memory array looks like this.
+
+00:49:18.543 --> 00:49:23.223 
+Basically you increase the address and you have more words as you can see.
+
+00:49:23.223 --> 00:49:25.343 
+And then this case data is 32 bits.
+
+00:49:26.863 --> 00:49:30.103 
+So store I will I will generalize this a little bit.
+
+00:49:30.223 --> 00:49:32.543 
+This is a general way of looking at memory.
+
+00:49:32.583 --> 00:49:37.463 
+There's an address decoder, an address coming in and this is a 2 dimensional structure.
+
+00:49:37.463 --> 00:49:39.743 
+You have word lines, you have bit lines.
+
+00:49:39.743 --> 00:49:44.906 
+This is exactly the memory that we looked at four by three except storage nodes in one column are
+
+00:49:44.906 --> 00:49:46.823 
+connected to the bit line over here.
+
+00:49:47.543 --> 00:49:51.703 
+So sometimes you don't show that Max because it depends on how you sense the data.
+
+00:49:52.063 --> 00:49:53.063 
+So when you enable.
+
+00:49:53.383 --> 00:49:56.023 
+Word line, for example, let's say you supply address 10.
+
+00:49:56.023 --> 00:49:57.583 
+That's the active word line right now.
+
+00:49:58.383 --> 00:50:01.103 
+This is the activate that I showed you in the RAM with the row hammer.
+
+00:50:01.623 --> 00:50:08.010 
+Basically all of these bits in the same that are connected to the word line that are in this row get
+
+00:50:08.010 --> 00:50:09.863 
+connected to their bit lines.
+
+00:50:10.423 --> 00:50:16.453 
+And they they basically perturb their bit lines in some way depending on the technology in a way
+
+00:50:16.453 --> 00:50:20.663 
+that's very, the physics are very much dependent on the technology.
+
+00:50:21.103 --> 00:50:26.029 
+But essentially you read out the values that are stored in these storage nodes by activating the
+
+00:50:26.029 --> 00:50:26.543 
+word line.
+
+00:50:27.263 --> 00:50:28.143 
+Makes sense hopefully, right?
+
+00:50:28.623 --> 00:50:34.973 
+So if this was 1,000,000 bits wide in terms of number of columns, number of bit lines, all those
+
+00:50:34.973 --> 00:50:37.223 
+1,000,000 bits would be activated.
+
+00:50:37.543 --> 00:50:42.012 
+And if you need only eight of them, you need to have a multiplexer at the end to select which ones
+
+00:50:42.012 --> 00:50:42.423 
+you want.
+
+00:50:43.663 --> 00:50:46.423 
+So essentially content of the entire line is available, right?
+
+00:50:47.743 --> 00:50:49.183 
+OK, how is access controlled?
+
+00:50:49.183 --> 00:50:53.863 
+Essentially you have access transistors that connect the bit, store bit storage to the bit line.
+
+00:50:54.183 --> 00:50:55.463 
+These transistors are switches.
+
+00:50:55.463 --> 00:50:57.023 
+You know that from lecture one, right?
+
+00:50:58.503 --> 00:50:59.983 
+Access is controlled by the word line.
+
+00:50:59.983 --> 00:51:06.109 
+So when you enable the word line, what happens is really there's an access transistor over here, as
+
+00:51:06.109 --> 00:51:12.112 
+you can see this in DRAM, that enables this DRAM capacitor, which stores the data to be connected
+
+00:51:12.112 --> 00:51:13.103 
+to the bit line.
+
+00:51:13.343 --> 00:51:18.277 
+And there's some sensing circuitry that senses whether there's charge in the capacitor or there's no
+
+00:51:18.277 --> 00:51:22.423 
+charge in the capacitor below some noise margin, of course, above some noise margin.
+
+00:51:22.743 --> 00:51:24.703 
+So that's the sensing circuit in SRAM.
+
+00:51:24.703 --> 00:51:29.943 
+The sensing depends on the technology as well as robustness requirements, etcetera.
+
+00:51:30.143 --> 00:51:35.183 
+But SRAM is cross coupled inverters as you have seen early in the course.
+
+00:51:35.823 --> 00:51:39.395 
+You can see that there's an access transistor over here, there's another access transistor over
+
+00:51:39.395 --> 00:51:39.583 
+here.
+
+00:51:39.583 --> 00:51:44.223 
+You can read both the positive data that's stored and the complement of it.
+
+00:51:44.263 --> 00:51:46.903 
+Well, the value that's stored and the complement of it, right.
+
+00:51:47.223 --> 00:51:48.663 
+So there are two bit lines in this case.
+
+00:51:48.663 --> 00:51:52.543 
+And you can, if you have two bit lines, you can also play tricks with sensing.
+
+00:51:52.543 --> 00:51:56.791 
+You can do differential sensing by doing better comparison, better, you can get better noise
+
+00:51:56.791 --> 00:51:57.623 
+margins, etcetera.
+
+00:51:57.623 --> 00:51:59.783 
+We're not going to go into all of those in this course.
+
+00:51:59.783 --> 00:52:04.987 
+But essentially the key take away is you have some access transistor that gets enabled when you
+
+00:52:04.987 --> 00:52:07.343 
+drive high voltage on the word line, right?
+
+00:52:07.903 --> 00:52:16.423 
+And that that enables the storage node to drive the bit line in some way.
+
+00:52:16.503 --> 00:52:21.223 
+And there's some sensing circuitry that senses what data is stored in the storage node.
+
+00:52:21.383 --> 00:52:22.623 
+This is all types of memory.
+
+00:52:22.623 --> 00:52:26.663 
+Actually, all types of memory works very similarly.
+
+00:52:26.663 --> 00:52:28.343 
+Flash memory is also very similar.
+
+00:52:28.383 --> 00:52:33.903 
+There are some slight differences because of the density of and the way things are stored.
+
+00:52:33.903 --> 00:52:38.971 
+But in the end, what you're doing is activating a row and sensing the value in all of the cells that
+
+00:52:38.971 --> 00:52:39.783 
+are in that row.
+
+00:52:40.983 --> 00:52:46.663 
+OK, so building larger memories requires larger memory arrays, and you've seen that large is slow.
+
+00:52:47.223 --> 00:52:51.023 
+The key question becomes how do we make the memory large without making it too slow?
+
+00:52:51.743 --> 00:52:58.623 
+Clearly, if you have a single monolithic array, that becomes too slow.
+
+00:52:58.983 --> 00:53:03.610 
+So we want to divide the memory into smaller arrays and interconnect the arrays to input output
+
+00:53:03.610 --> 00:53:03.903 
+buses.
+
+00:53:04.463 --> 00:53:08.103 
+So a large memories, as I said earlier, are essentially hierarchical area structures.
+
+00:53:08.103 --> 00:53:14.604 
+We're going to impose hierarchy on this instead of building a single monolithic array that's like 1
+
+00:53:14.604 --> 00:53:15.983 
+billion by 1 billion.
+
+00:53:16.543 --> 00:53:21.743 
+That sounds terrible because now we have to build a huge decoder and a huge multiplexer.
+
+00:53:21.743 --> 00:53:23.463 
+We're not going to do that.
+
+00:53:23.463 --> 00:53:28.583 
+We're going to impose hierarchy, and we're going to see this hierarchy when we continue this.
+
+00:53:28.943 --> 00:53:31.023 
+OK, this is a good place to take a break.
+
+00:53:32.143 --> 00:53:38.220 
+Well, let's be back at 1520 and we'll continue with this hierarchy and we'll introduce a concept
+
+00:53:38.220 --> 00:53:40.943 
+that we actually studied, which is banking.
+
+00:53:45.053 --> 00:53:47.173 
+OK, I think we can get started now.
+
+00:53:49.773 --> 00:53:53.533 
+So now we're going to build the hierarchy of memory arrays.
+
+00:53:55.213 --> 00:53:59.133 
+And a key component of this hierarchy is memory banking.
+
+00:53:59.653 --> 00:54:05.953 
+And we've seen the idea of memory banking in SIMD processors and also yesterday when we discussed
+
+00:54:05.953 --> 00:54:06.213 
+GPU.
+
+00:54:06.213 --> 00:54:10.613 
+So the the general idea is banking or it's also called interleaving.
+
+00:54:12.093 --> 00:54:15.173 
+And the problem it's trying to solve is multiple.
+
+00:54:15.173 --> 00:54:20.533 
+One is if you have a single monotic large memory array, this takes too long to access.
+
+00:54:21.213 --> 00:54:26.474 
+It also doesn't allow you to enable multiple access in parallel, at least cheaply unless you have
+
+00:54:26.474 --> 00:54:27.613 
+many ports to memory.
+
+00:54:28.213 --> 00:54:34.418 
+So it can solve both of these problems, meaning you can reduce the latency of memory array access
+
+00:54:34.418 --> 00:54:40.623 
+and also enable multiple access in parallel by dividing that large monolithic array into multiple
+
+00:54:40.623 --> 00:54:46.253 
+banks that can be accessed independently either in the same cycle or consecutive cycles.
+
+00:54:46.933 --> 00:54:48.133 
+And you've seen this right with.
+
+00:54:48.253 --> 00:54:51.053 
+I'm going to show you the same picture again in this.
+
+00:54:51.333 --> 00:54:54.693 
+Basically each bank is smaller than the entire memory storage.
+
+00:54:54.693 --> 00:55:00.173 
+The various memory is essentially partitioned into multiple smaller arrays, Let's say 8 banks.
+
+00:55:00.173 --> 00:55:03.573 
+Today you have 16 banks easily within a single DM chip.
+
+00:55:04.693 --> 00:55:06.413 
+Each bank is smaller than the entire memory.
+
+00:55:06.413 --> 00:55:08.773 
+Storage and access to different banks can be overlapped.
+
+00:55:09.813 --> 00:55:12.853 
+Of course, the key issue becomes how do you map data to different banks?
+
+00:55:13.293 --> 00:55:16.413 
+In other words, how do you interleave data across banks?
+
+00:55:16.413 --> 00:55:18.093 
+That's why this is called so-called interleaving.
+
+00:55:18.293 --> 00:55:23.506 
+You're really interleaving the data across different banks, different physical structures that
+
+00:55:23.506 --> 00:55:24.893 
+comprise a larger memory.
+
+00:55:26.053 --> 00:55:29.573 
+So we have seen this, this is from the SIMD architectures lecture.
+
+00:55:29.573 --> 00:55:36.933 
+And also yesterday I I discussed this and this is one way of designing A-16 bank memory.
+
+00:55:36.933 --> 00:55:42.240 
+For example, every cycle you can start an access to a different bank and every cycle you can get
+
+00:55:42.240 --> 00:55:43.733 
+data from a different bank.
+
+00:55:44.293 --> 00:55:44.933 
+That's the idea.
+
+00:55:45.453 --> 00:55:51.033 
+Another way of designing it would be having many address and data buses such that you can start the
+
+00:55:51.033 --> 00:55:56.333 
+access concurrently to all of those banks and get data concurrently out of all of those banks.
+
+00:55:56.973 --> 00:56:01.412 
+The difficulty over there is of course you have a lot of address and data buses, right, because you
+
+00:56:01.412 --> 00:56:04.013 
+need to send the address to all of the banks concurrently.
+
+00:56:04.853 --> 00:56:09.013 
+And that may not be easy to do if this is not an on chip memory.
+
+00:56:09.493 --> 00:56:16.374 
+If the memory is off chip, meaning you're accessing Adm chip that's outside the processor for
+
+00:56:16.374 --> 00:56:23.477 
+example, then the number of address and data buses, the number of wires you have is really going
+
+00:56:23.477 --> 00:56:25.253 
+outside the chip, right.
+
+00:56:25.293 --> 00:56:28.653 
+And this really determines how big your chip is, how costly your chip is.
+
+00:56:29.013 --> 00:56:34.868 
+So having a single address and databus per bank is very expensive, whereas having a single address
+
+00:56:34.868 --> 00:56:40.783 
+and databus for all the banks that is shared consecutively in use consecutive in consecutive cycles
+
+00:56:40.783 --> 00:56:43.293 
+to access different banks is much cheaper.
+
+00:56:43.773 --> 00:56:51.216 
+So we will see that essentially all DM chips today have a single address and databus that that is
+
+00:56:51.216 --> 00:56:54.133 
+shared across all of the banks, right?
+
+00:56:54.173 --> 00:56:58.573 
+Because they don't want a lot of pins because pins are costly and we will see this soon.
+
+00:56:59.773 --> 00:57:05.295 
+So this is a generalised memory structure and especially like main memory structure, you can see DM
+
+00:57:05.295 --> 00:57:05.853 
+over here.
+
+00:57:06.613 --> 00:57:07.773 
+Let's build it up.
+
+00:57:07.773 --> 00:57:09.333 
+So you have two-dimensional array of cells.
+
+00:57:09.333 --> 00:57:17.773 
+This is going to be called the bank columns and rows and a particular set of cells inside a row.
+
+00:57:18.013 --> 00:57:22.613 
+A set of columns essentially can be your cache block as we will see later on.
+
+00:57:23.053 --> 00:57:28.970 
+And you can see ADRM chip consists of multiple banks and we put many DRM chips together to form a
+
+00:57:28.970 --> 00:57:32.813 
+rank to essentially a wider interface and also higher capacity.
+
+00:57:33.453 --> 00:57:39.733 
+Here all DRM chips are packaged together so that they can respond to the same command.
+
+00:57:40.053 --> 00:57:40.653 
+For example.
+
+00:57:40.693 --> 00:57:45.573 
+We will discuss this in a little bit and then you can have this call the DRM module or rank.
+
+00:57:46.573 --> 00:57:51.353 
+There could be multiple ranks per module also, but you can have actually multiple DRM ranks or
+
+00:57:51.353 --> 00:57:56.133 
+multiple DRM modules connected to a memory channel which is controlled by a memory controller.
+
+00:57:56.413 --> 00:57:57.853 
+And you can have many memory channels.
+
+00:57:59.253 --> 00:58:03.013 
+So this is going to be the type of hierarchy that you can.
+
+00:58:03.053 --> 00:58:04.973 
+You can see that this is some N dimensional, right?
+
+00:58:04.973 --> 00:58:08.493 
+This is 1 dimension, another one, another one, another one.
+
+00:58:08.813 --> 00:58:10.413 
+So it's an N dimensional hierarchy.
+
+00:58:10.933 --> 00:58:16.714 
+There's another example over here which is essentially showing the same thing in a different way,
+
+00:58:16.714 --> 00:58:19.933 
+and you can certainly read papers related to it in DM.
+
+00:58:20.293 --> 00:58:24.853 
+People also separate the channel into a command bus, address bus and databus.
+
+00:58:25.253 --> 00:58:27.253 
+So memory controller sends a command.
+
+00:58:28.253 --> 00:58:37.666 
+It can also send data if it's a right command, for example, and that command determines what the DM
+
+00:58:37.666 --> 00:58:39.093 
+chip should do.
+
+00:58:39.893 --> 00:58:40.413 
+And then there's.
+
+00:58:40.493 --> 00:58:44.293 
+An address, but that could accompany the commands like read from this address, right?
+
+00:58:44.293 --> 00:58:46.293 
+That could be one of the commands that you sent.
+
+00:58:46.533 --> 00:58:50.013 
+You're going to see that this is actually even more finer granularity soon.
+
+00:58:51.253 --> 00:58:54.493 
+OK, so we're going to see the structure a little bit more.
+
+00:58:54.893 --> 00:58:59.853 
+But I should also say that in the cutting edge, these memories are not necessarily planar.
+
+00:59:00.053 --> 00:59:02.053 
+So if you look at this, this looks kind of planar, right?
+
+00:59:02.453 --> 00:59:06.413 
+But people are building memories on top of each other also.
+
+00:59:06.413 --> 00:59:08.573 
+So you have a memory die on top of that memory die.
+
+00:59:08.573 --> 00:59:11.533 
+You have another memory die, another memory die, another memory die, another memory die.
+
+00:59:12.053 --> 00:59:16.813 
+And you can also have logic, logic die under the memory die.
+
+00:59:16.813 --> 00:59:20.593 
+And you can put all of these together and they can get connected to each other through some
+
+00:59:20.593 --> 00:59:21.133 
+interconnect.
+
+00:59:21.373 --> 00:59:27.009 
+And that interconnect technology becomes crucial like how how many of these interconnects, how many
+
+00:59:27.009 --> 00:59:32.133 
+of these wires you can put to communicate across these different layers or different dies?
+
+00:59:32.973 --> 00:59:35.853 
+And how thin are those layers, how robust are those layers?
+
+00:59:35.853 --> 00:59:40.773 
+They all determine how much memory bandwidth you can supply to the logic layer underneath.
+
+00:59:42.173 --> 00:59:45.613 
+So this is something that's quite exciting in development.
+
+00:59:46.093 --> 00:59:48.213 
+High bandwidth memory, for example, looks like this.
+
+00:59:49.173 --> 00:59:54.606 
+And that's essentially what's used in GPUs today, at least the high end GPUs, also high end systolic
+
+00:59:54.606 --> 00:59:57.813 
+arrays like TP us, they use actually high bandwidth memory.
+
+00:59:58.893 --> 01:00:03.853 
+And the reason is the memory bandwidth requirements of these accelerators is huge, right?
+
+01:00:04.373 --> 01:00:11.918 
+And the and the reason you get higher memory bandwidth over here compared to a planer thing that
+
+01:00:11.918 --> 01:00:19.699 
+looks like this is here you're limited by the pins in terms of how much data you can put out of the
+
+01:00:19.699 --> 01:00:22.293 
+chip or get into the chip, right?
+
+01:00:22.733 --> 01:00:27.603 
+The pins are big, so you need to actually move the data through those huge things and you are
+
+01:00:27.603 --> 01:00:30.013 
+limited by the space planar space of the ship.
+
+01:00:30.013 --> 01:00:31.973 
+This is also called shoreline of the ship.
+
+01:00:31.973 --> 01:00:36.478 
+If you think about the ship as an island, there's a shoreline in the ship and you have very limited
+
+01:00:36.478 --> 01:00:39.573 
+area and also a limited power in terms of how many pins you can add.
+
+01:00:40.373 --> 01:00:46.395 
+And this 3 dimensional architecture overcomes some of this, assuming that you can build these
+
+01:00:46.395 --> 01:00:52.807 
+interconnects much smaller because here you don't have those pins, you're connecting things through
+
+01:00:52.807 --> 01:00:55.333 
+some different interconnect technology.
+
+01:00:55.333 --> 01:00:59.053 
+It's called through silicon MIAs or hybrid bonding or some multi technology.
+
+01:00:59.093 --> 01:01:02.053 
+So going forward, this is going to change a lot.
+
+01:01:02.213 --> 01:01:05.613 
+It's already changing a lot in the space of computing and memory.
+
+01:01:06.173 --> 01:01:08.973 
+You can see that high performance chips are all using this.
+
+01:01:09.253 --> 01:01:15.360 
+And the reason is you can get a very high bandwidth access, like thousands of these interconnects
+
+01:01:15.360 --> 01:01:19.013 
+can be communicating data to some logic underneath, right?
+
+01:01:19.733 --> 01:01:23.305 
+Of course, one of the issues when you have this sort of 3D stacking is where does the heat go,
+
+01:01:23.305 --> 01:01:23.533 
+right?
+
+01:01:23.573 --> 01:01:26.533 
+So heats and heats and thermals become more difficult.
+
+01:01:27.333 --> 01:01:32.192 
+So this is from a paper that we wrote about some time ago to improve memory bandwidth in this 3D
+
+01:01:32.192 --> 01:01:33.053 
+stacked memories.
+
+01:01:33.053 --> 01:01:36.773 
+But this is one way of using 3D stacked DM.
+
+01:01:36.773 --> 01:01:43.488 
+You can have a processor, let's say a GPU, underneath many DM layers, or you can have stacked memory
+
+01:01:43.488 --> 01:01:49.533 
+and connected to a processor through some silicon interposer through some other substrate.
+
+01:01:49.733 --> 01:01:52.373 
+Basically this is essentially how things are designed today.
+
+01:01:53.173 --> 01:01:56.653 
+It's called 2 1/2 D Also, the memory is itself 3 dimensional.
+
+01:01:56.973 --> 01:01:59.373 
+As you can see 3 dimensional dies, they're connected to each other.
+
+01:01:59.373 --> 01:02:00.333 
+You have very high bandwidth.
+
+01:02:01.333 --> 01:02:07.299 
+The processor to avoid some of the heat and thermal issues is separated from the memory, but there's
+
+01:02:07.299 --> 01:02:12.013 
+still high bandwidth communication that happens through the silicon interposer.
+
+01:02:12.013 --> 01:02:15.493 
+Not as high bandwidth as what this would provide, but still not bad.
+
+01:02:15.573 --> 01:02:18.053 
+Let's say this is what a GPU kind of looks like today.
+
+01:02:18.053 --> 01:02:23.333 
+You have a GPU and you have a bunch of DM, high bandwidth memory DM next to it.
+
+01:02:24.813 --> 01:02:29.302 
+OK, so this is just to give you that there are other technologies that are coming up, but I'm going
+
+01:02:29.302 --> 01:02:31.933 
+to show you examples from planar technology to begin with.
+
+01:02:31.933 --> 01:02:34.493 
+But these other technologies are quite interesting.
+
+01:02:34.773 --> 01:02:40.439 
+For example, you can actually, you can actually fabricate the logic layer separately from the memory
+
+01:02:40.439 --> 01:02:44.293 
+layer and you can use a very good logic process for the logic layer.
+
+01:02:44.373 --> 01:02:47.693 
+That's not done yet, but it's going to be done going forward.
+
+01:02:47.693 --> 01:02:51.173 
+I believe with HPM 4, HPM 5, HPM 6, etcetera.
+
+01:02:51.613 --> 01:02:57.285 
+You can have a very strong logic layer, just like a very nice cutting it chip, and you can actually
+
+01:02:57.285 --> 01:03:02.672 
+have very nice memory layers also that's customized for fabrication of memory DRAM and you can
+
+01:03:02.672 --> 01:03:03.933 
+connect them together.
+
+01:03:04.253 --> 01:03:06.733 
+And this is now becoming processing near memory, right?
+
+01:03:06.733 --> 01:03:10.886 
+You have processing right next to memory, and you can customise that logic there to be an
+
+01:03:10.886 --> 01:03:12.053 
+accelerator, for example.
+
+01:03:13.453 --> 01:03:17.853 
+OK, so let me give you the top down view of the DM system.
+
+01:03:17.853 --> 01:03:20.973 
+And then we're going to see the bottom up view, and then we're going to see more of that.
+
+01:03:21.293 --> 01:03:22.653 
+So this is a hierarchical structure.
+
+01:03:22.653 --> 01:03:28.333 
+As I said, in the top part you have a channel and then you connect to a module.
+
+01:03:28.333 --> 01:03:33.893 
+It's also called DIM rank and then rank and then chip and then bank and then rowing column, right?
+
+01:03:33.893 --> 01:03:35.333 
+And then there's a cell over here.
+
+01:03:36.053 --> 01:03:38.413 
+Each rowing column intersections a cell.
+
+01:03:39.453 --> 01:03:40.173 
+So this is what?
+
+01:03:40.493 --> 01:03:44.213 
+System looks like right, you have the processor and you have a bunch of memory channels.
+
+01:03:44.213 --> 01:03:49.173 
+In this particular case you have two, there are some number of bits, 64 bits let's say.
+
+01:03:49.253 --> 01:03:55.382 
+So that's actually 64 pins coming out of the processor and each channel has multiple Dimms as you
+
+01:03:55.382 --> 01:04:01.133 
+can see dual in line memory modules and each dim has some chips over here, but we will see.
+
+01:04:01.573 --> 01:04:07.674 
+So a DIM looks like this, it's essentially A module and there are chips attached to both sides
+
+01:04:07.674 --> 01:04:08.453 
+potentially.
+
+01:04:09.053 --> 01:04:13.533 
+And the reason we have dim is such that we can get more capacity, right?
+
+01:04:13.853 --> 01:04:15.573 
+So each chip is small capacity.
+
+01:04:16.293 --> 01:04:19.733 
+If you put eight of these chips together, you get 8X more capacity.
+
+01:04:20.413 --> 01:04:26.333 
+If you also use the backside of the DIM in this planar structure, you get 16X more capacity.
+
+01:04:26.653 --> 01:04:29.653 
+So it's good from a capacity perspective, right?
+
+01:04:30.493 --> 01:04:33.293 
+So this is each side is also called a rank.
+
+01:04:33.733 --> 01:04:38.893 
+So a rank is a collection of eight chips, in this particular case, rank zero and rank one, right?
+
+01:04:39.133 --> 01:04:41.613 
+So your data can be in either in rank 0 or rank one.
+
+01:04:42.533 --> 01:04:50.425 
+Now rank is interesting because ranks have share an address and command bus and there's a chip
+
+01:04:50.425 --> 01:04:51.853 
+select over here.
+
+01:04:51.853 --> 01:04:53.893 
+They also share the data bus, as you can see.
+
+01:04:54.173 --> 01:05:00.093 
+So you can parallelise accesses to the ranks you can start access to in parallel.
+
+01:05:00.413 --> 01:05:03.413 
+But you can only read from one bank in a given cycle, right?
+
+01:05:03.413 --> 01:05:05.693 
+You can see the MUX over here and you can read 64 bits.
+
+01:05:06.253 --> 01:05:11.621 
+OK, so that is the increased granularity we'll build it will, will, will go down in the granularity
+
+01:05:11.621 --> 01:05:11.893 
+soon.
+
+01:05:11.973 --> 01:05:20.183 
+Yes, yeah, yeah.
+
+01:05:21.223 --> 01:05:25.023 
+So this is serial presence detect.
+
+01:05:25.023 --> 01:05:30.129 
+This basically is a small non volatile memory structure that the memory controller can communicate
+
+01:05:30.129 --> 01:05:32.943 
+with and identify what kind of chip it's dealing with.
+
+01:05:33.583 --> 01:05:39.380 
+So it's some bookkeeping information for example, you can do more things over there, but the main
+
+01:05:39.380 --> 01:05:44.879 
+reason is to enable the memory controller to talk to the memory dim and understand what what
+
+01:05:44.879 --> 01:05:46.493 
+timings to use for example.
+
+01:05:47.413 --> 01:05:49.093 
+Makes us very good question.
+
+01:05:50.053 --> 01:05:53.871 
+It's usually there needs to be some sort of non volatile memory to enable that sort of
+
+01:05:53.871 --> 01:05:54.493 
+communication.
+
+01:05:55.733 --> 01:06:01.373 
+OK, so you can see that each rank is independent except for the data and address and command buses.
+
+01:06:01.933 --> 01:06:08.127 
+And whenever you're accessing rank zero, chip select is set to 0 and rank one chip select is set to
+
+01:06:08.127 --> 01:06:08.253 
+1.
+
+01:06:08.253 --> 01:06:13.173 
+So there are two chip select signals that decide which one is enabled.
+
+01:06:14.013 --> 01:06:19.281 
+And so you can see that even though you may start accesses in parallel in different ranks, there's a
+
+01:06:19.281 --> 01:06:20.493 
+rank switching penalty.
+
+01:06:20.693 --> 01:06:25.523 
+Actually, when you actually want to switch from rank zero to rank 1, you have some time, some time
+
+01:06:25.523 --> 01:06:26.213 
+needs to pass.
+
+01:06:26.293 --> 01:06:27.133 
+This is a timing parameter.
+
+01:06:27.133 --> 01:06:32.493 
+There are a lot of timing parameters to access DRAM and main memory and also flash, OK?
+
+01:06:32.493 --> 01:06:33.293 
+But that's the idea.
+
+01:06:33.293 --> 01:06:39.493 
+This enables you both a higher parallelism and also higher capacity, as you can see.
+
+01:06:39.613 --> 01:06:42.253 
+So that's the purpose of hierarchy as we discussed, right?
+
+01:06:43.453 --> 01:06:43.773 
+OK.
+
+01:06:43.853 --> 01:06:49.373 
+If you break down a rank, each rank consists of, in this particular case, 8 chips.
+
+01:06:50.253 --> 01:06:53.453 
+And remember from a rank, we are getting 64 bits here.
+
+01:06:53.453 --> 01:06:57.973 
+Each chip supplies an 8 bit portion of those 64 bits.
+
+01:06:58.693 --> 01:06:58.973 
+OK.
+
+01:06:59.533 --> 01:07:05.127 
+The reason we have this is this way we can make the chip less costly because now the chip needs to
+
+01:07:05.127 --> 01:07:10.493 
+supply only 8 bits as opposed to 64 bits, meaning each chip doesn't need to have as many pins.
+
+01:07:11.773 --> 01:07:13.533 
+Less pin out, less cost.
+
+01:07:15.373 --> 01:07:18.493 
+But we can also still get a wide interface by putting multiple chips together.
+
+01:07:19.093 --> 01:07:21.973 
+So it's called a rank because this is like a rank of soldiers.
+
+01:07:22.573 --> 01:07:23.893 
+How many of you have been to the military?
+
+01:07:24.853 --> 01:07:27.613 
+OK, so you probably know what a rank of soldiers is, right?
+
+01:07:28.293 --> 01:07:33.762 
+You are, you form a rank and then the commander says do this, raise your hand and he raise your
+
+01:07:33.762 --> 01:07:34.453 
+hand, right?
+
+01:07:34.853 --> 01:07:35.973 
+Everybody does the same thing.
+
+01:07:36.453 --> 01:07:37.613 
+Each ship responds to that.
+
+01:07:37.693 --> 01:07:39.693 
+Maybe, maybe not everybody does the same thing.
+
+01:07:39.693 --> 01:07:42.013 
+OK, the in this case, everybody does the same thing.
+
+01:07:42.013 --> 01:07:47.944 
+It's better than soldiers in this case because it's not, let's say, prone to the human deficiencies,
+
+01:07:47.944 --> 01:07:52.333 
+these chips, they are prone to other deficiencies, but not the human ones.
+
+01:07:53.013 --> 01:08:00.591 
+But essentially these are these, they respond to the same command there you receive the same address
+
+01:08:00.591 --> 01:08:03.093 
+and they give the different data.
+
+01:08:03.093 --> 01:08:05.653 
+Essentially, that's the idea over here.
+
+01:08:06.333 --> 01:08:13.898 
+And the reason we have it is because we want to keep the chips less costly with a smaller interface,
+
+01:08:13.898 --> 01:08:20.253 
+fewer pins, and we still want to get a higher interface, a larger interface, OK, OK.
+
+01:08:21.413 --> 01:08:26.173 
+And then inside the chip you have some number of banks, in this particular case 8.
+
+01:08:26.573 --> 01:08:29.573 
+And you know this is the same banks that we have seen actually earlier.
+
+01:08:29.613 --> 01:08:37.307 
+Each chip consists of these banks and each bank is independent, except they share the data bus
+
+01:08:37.307 --> 01:08:40.173 
+outside over here, as we have seen.
+
+01:08:40.533 --> 01:08:44.453 
+So you can start and access in each bank or they also share the address and commandness.
+
+01:08:45.293 --> 01:08:46.573 
+It's not, which is not shown here.
+
+01:08:46.973 --> 01:08:52.411 
+You can start and access every cycle from a different bank and it can get data every cycle from a
+
+01:08:52.411 --> 01:08:53.253 
+different bank.
+
+01:08:53.533 --> 01:08:54.133 
+That's the idea.
+
+01:08:54.213 --> 01:08:58.173 
+It's the same bank that we have seen pictured in a different way over here.
+
+01:08:58.733 --> 01:09:04.453 
+This way the chip interface is still 8 bits and each bank can supply 8 bits in a given cycle.
+
+01:09:04.453 --> 01:09:07.453 
+But you have a lot more parallelism and also you have a higher capacity.
+
+01:09:08.933 --> 01:09:14.653 
+OK, now each bank is the 2 dimensional array that we started with rows and columns.
+
+01:09:14.933 --> 01:09:23.173 
+In this particular case there may be 32,000 rows and I guess 32,000 columns.
+
+01:09:23.173 --> 01:09:24.373 
+In this case 2 kilobytes.
+
+01:09:24.573 --> 01:09:26.693 
+No, that's 16,016 thousand columns.
+
+01:09:28.813 --> 01:09:35.459 
+So normally people try to make the array size like square, but columns may be may need to be larger
+
+01:09:35.459 --> 01:09:40.293 
+because you may need some sensor fires as we will see at the row buffer.
+
+01:09:41.333 --> 01:09:47.613 
+So essentially you get 8 bits out of the structure and the activation.
+
+01:09:47.893 --> 01:09:53.137 
+Essentially you need to activate if you want to access, for example this column over here, there's
+
+01:09:53.137 --> 01:09:55.813 
+some access granularity which is 8 bits over here.
+
+01:09:55.853 --> 01:10:00.446 
+As you can see, you activate that row because with the row address that's coming from the memory
+
+01:10:00.446 --> 01:10:00.973 
+controller.
+
+01:10:01.373 --> 01:10:08.488 
+And then you this row gets placed into the row buffer, it gets sensed the entire row, 2 kilobytes of
+
+01:10:08.488 --> 01:10:08.773 
+row.
+
+01:10:09.373 --> 01:10:14.693 
+And then you get the column address again also from the memory controller.
+
+01:10:15.053 --> 01:10:20.059 
+And you, you Multiplex out the chip multiplexes out the right 8 bits based on that column address
+
+01:10:20.059 --> 01:10:21.453 
+from the row that's sensed.
+
+01:10:22.213 --> 01:10:22.533 
+OK.
+
+01:10:23.213 --> 01:10:26.973 
+So you activate the entire row 2 kilobytes to get 8 bits out of it.
+
+01:10:28.173 --> 01:10:31.533 
+OK, so let's dig deeper to the DM bank operation.
+
+01:10:31.973 --> 01:10:36.293 
+I'll, I'll also introduce some commands over here as to how we access things.
+
+01:10:36.493 --> 01:10:39.813 
+So we have these two-dimensional array columns and rows.
+
+01:10:40.533 --> 01:10:42.693 
+This, this view of a bank is also an abstraction.
+
+01:10:42.693 --> 01:10:45.533 
+Actually internally, I'm not going to break this abstraction right now.
+
+01:10:45.533 --> 01:10:46.533 
+A little bit later I will.
+
+01:10:47.773 --> 01:10:53.619 
+Internally, a bank consists of many cells and other structures that enable access to cells like
+
+01:10:53.619 --> 01:10:54.973 
+transition capacitors.
+
+01:10:54.973 --> 01:11:01.773 
+And we're going to see some of that later, But at an abstract level, there's a row buffer.
+
+01:11:02.013 --> 01:11:08.373 
+This is equivalent to the size of a row and it's essentially sensing structure sends amplifiers.
+
+01:11:08.373 --> 01:11:10.093 
+It's really like an SRAM structure.
+
+01:11:10.653 --> 01:11:14.613 
+Each, each thing over here is a cross coupled inverter.
+
+01:11:15.373 --> 01:11:16.533 
+Initially this is empty.
+
+01:11:17.093 --> 01:11:22.836 
+And if the memory controller says I want to access row zero, column zero in this bank, it sends the
+
+01:11:22.836 --> 01:11:23.533 
+row address.
+
+01:11:24.293 --> 01:11:30.133 
+And as the DM chip activates row address 0, the DM chip activates row address 0.
+
+01:11:30.133 --> 01:11:36.821 
+Takes some time and activation consists of bringing the data into the row buffer, sensing it, and
+
+01:11:36.821 --> 01:11:39.373 
+then now the data is ready to access.
+
+01:11:39.373 --> 01:11:44.711 
+So there's a timing parameter from when the memory controller says activate row address to the time
+
+01:11:44.711 --> 01:11:47.893 
+when it can say, oh, I want to read column X from that row.
+
+01:11:48.653 --> 01:11:53.053 
+And then after that time passes, the memory controller says I want to access column zero.
+
+01:11:53.333 --> 01:12:00.164 
+It sends the command to the DRAM chip, and the DRAM chip multiplexes out the right column and sends
+
+01:12:00.164 --> 01:12:02.373 
+it out to the memory controller.
+
+01:12:03.013 --> 01:12:06.613 
+So this is how the memory controller and the DRAM chip interact to get the data.
+
+01:12:06.613 --> 01:12:08.853 
+And this is how the DRAM chip operates at an abstract level.
+
+01:12:08.853 --> 01:12:10.893 
+We're going to see the lower level soon.
+
+01:12:12.133 --> 01:12:12.933 
+So this is interesting.
+
+01:12:12.933 --> 01:12:16.293 
+Now the data is actually inside this row buffer, right?
+
+01:12:16.613 --> 01:12:21.371 
+You activate a row and all of the row is in the row buffer, which means that you've actually cached
+
+01:12:21.371 --> 01:12:22.093 
+the row buffer.
+
+01:12:22.093 --> 01:12:24.293 
+This is actually one of the caches that we see.
+
+01:12:24.453 --> 01:12:27.733 
+First we're going to see more caching, but now row zero is there.
+
+01:12:28.453 --> 01:12:34.468 
+If the memory controller now wants row zero and column one some other column next to it, the next 8
+
+01:12:34.468 --> 01:12:40.422 
+bits, let's say, it doesn't need to activate the row again because the row is already in the sense
+
+01:12:40.422 --> 01:12:44.493 
+on fires open row is in the row buffer, the merit controller sense.
+
+01:12:44.493 --> 01:12:45.773 
+This is called the row buffer hit.
+
+01:12:46.133 --> 01:12:52.721 
+A cache hit memory controller needs to have a bookkeeping structure to understand which row is open
+
+01:12:52.721 --> 01:12:53.653 
+in which bank.
+
+01:12:53.933 --> 01:12:55.693 
+So there's a lot of bookkeeping that needs to be done.
+
+01:12:55.693 --> 01:12:58.973 
+You'll see this bookkeeping structure when we talk about cache's next lecture.
+
+01:13:00.053 --> 01:13:05.893 
+It's very similar structure in the end, and the memory control identifies based on a look up at that
+
+01:13:05.893 --> 01:13:08.813 
+bookkeeping structure, that row 0 is already open.
+
+01:13:08.813 --> 01:13:12.502 
+It says I'm not going to send the activate command because row 0 is already open, It's a row for a
+
+01:13:12.502 --> 01:13:12.653 
+hit.
+
+01:13:12.653 --> 01:13:19.218 
+So I'm just going to send a command to this DM bank saying I want column address 1, so give me
+
+01:13:19.218 --> 01:13:21.733 
+column one from the row that's open.
+
+01:13:22.133 --> 01:13:26.133 
+And the DM chip obliges because it cannot do anything by itself.
+
+01:13:26.613 --> 01:13:30.453 
+It basically obeys the command and delivers the data.
+
+01:13:31.053 --> 01:13:31.853 
+So that's the idea.
+
+01:13:32.013 --> 01:13:36.906 
+As you can see right now, if the memory controller again needs access to another column in the same
+
+01:13:36.906 --> 01:13:38.093 
+row, same thing happens.
+
+01:13:38.093 --> 01:13:40.453 
+It's a row buffer hit the memory controller sends.
+
+01:13:40.493 --> 01:13:42.413 
+There's only the column address with the column command.
+
+01:13:42.413 --> 01:13:45.813 
+Give me this column and the DAM ship obliges.
+
+01:13:46.213 --> 01:13:47.213 
+Now this sounds good, right?
+
+01:13:47.693 --> 01:13:51.173 
+We're not accessing the big array over there, we're accessing the small row buffer.
+
+01:13:51.253 --> 01:13:52.973 
+Much faster to do.
+
+01:13:54.333 --> 01:13:58.893 
+Now the problem happens if memory controller needs row one, for example some other row.
+
+01:13:59.733 --> 01:14:00.773 
+This takes some time.
+
+01:14:00.773 --> 01:14:07.434 
+Now the memory controller needs to send a command to the DAM bank saying I know you have row zero,
+
+01:14:07.434 --> 01:14:10.493 
+close it because I have a conflicting access.
+
+01:14:11.333 --> 01:14:13.333 
+So this is called a pre charge command in DM.
+
+01:14:13.813 --> 01:14:20.073 
+The DM chip bank closes the row, it takes some time and then the memory controller sends row address
+
+01:14:20.073 --> 01:14:21.013 
+1, the DM chip.
+
+01:14:21.093 --> 01:14:23.653 
+The DM bank activates row address 1.
+
+01:14:23.693 --> 01:14:29.685 
+The entire row gets sensed and placed in the row buffer and then the memory controller sends column
+
+01:14:29.685 --> 01:14:32.893 
+address 0 to get the right column out of the DM bank.
+
+01:14:33.973 --> 01:14:36.733 
+So we can see that different access have different timings right?
+
+01:14:37.093 --> 01:14:43.117 
+If the data that you're trying to access is already in the row buffer, the access is much faster
+
+01:14:43.117 --> 01:14:44.373 
+because it's cached.
+
+01:14:44.453 --> 01:14:45.533 
+Inside the DM chip.
+
+01:14:45.933 --> 01:14:51.811 
+There's a structure that's necessary for DM to operate because every row that the access needs to be
+
+01:14:51.811 --> 01:14:53.693 
+sensed and we will see why soon.
+
+01:14:53.693 --> 01:15:00.115 
+In the underlying structure, if the access that you have is to row that is not in the row buffer and
+
+01:15:00.115 --> 01:15:05.253 
+there's some other row in the row buffer that's called the row buffer conflicts.
+
+01:15:05.653 --> 01:15:10.493 
+The memory controller needs to 1st close the row, open another row and access the column it needs.
+
+01:15:11.133 --> 01:15:13.253 
+And this could actually take two to three X longer.
+
+01:15:13.653 --> 01:15:20.435 
+The disparity in these accesses like one of the a row hit maybe 25 nanoseconds, a row conflict maybe
+
+01:15:20.435 --> 01:15:21.453 
+75 nanoseconds.
+
+01:15:22.373 --> 01:15:26.093 
+This is, these are some potentially real numbers actually depending on the DM chip that you have.
+
+01:15:27.133 --> 01:15:29.933 
+So it really matters how you access data as you can see, right?
+
+01:15:30.293 --> 01:15:35.729 
+It's better if you actually program such that you keep accessing the same row or if the compiler
+
+01:15:35.729 --> 01:15:41.221 
+lays out the data such that you have maximise the locality in the row, meaning you access the row
+
+01:15:41.221 --> 01:15:44.053 
+as much as possible before needing some other row.
+
+01:15:45.253 --> 01:15:48.413 
+So you can see that this makes a huge difference potentially in the performance.
+
+01:15:48.973 --> 01:15:53.013 
+We're talking about not one nanosecond, we're talking about 25 versus 75 nanoseconds.
+
+01:15:53.773 --> 01:16:00.566 
+If you're A5 gigahertz processor multiply to get the clock cycles and you'll see 125 versus 5 times
+
+01:16:00.566 --> 01:16:01.733 
+of it 625, right.
+
+01:16:02.453 --> 01:16:06.813 
+OK, OK, I think I already said this, but that's under.
+
+01:16:06.853 --> 01:16:09.373 
+That's basically how a bank operates.
+
+01:16:09.853 --> 01:16:11.973 
+As I said, this is an abstraction.
+
+01:16:13.293 --> 01:16:21.040 
+Internally what happens is it's very difficult to build a bank that has 32,000 rows for various
+
+01:16:21.040 --> 01:16:21.693 
+reasons.
+
+01:16:21.693 --> 01:16:27.384 
+If you want to make the latency low, if you want to make the thing robust, especially with smaller
+
+01:16:27.384 --> 01:16:27.733 
+cells.
+
+01:16:28.333 --> 01:16:34.902 
+So internally what people do is divide the bank into smaller sub banks, Oregon subarrays, and each
+
+01:16:34.902 --> 01:16:41.203 
+subway is much smaller, maybe 512 or 1024 rows, and each of them has a local row buffer, local
+
+01:16:41.203 --> 01:16:43.013 
+sense amplifiers basically.
+
+01:16:44.493 --> 01:16:49.964 
+So internally things look like this and then you need to read the data out to a global row buffer
+
+01:16:49.964 --> 01:16:51.093 
+and then amplify it.
+
+01:16:51.093 --> 01:16:52.933 
+So internally things are more complicated as you can see.
+
+01:16:52.933 --> 01:16:59.930 
+And the main reason is it's too long latency to access a structure that's that big 32,000 rows
+
+01:16:59.930 --> 01:17:06.853 
+internally, subways also have smaller mats, but we're not going to talk about that right now.
+
+01:17:06.973 --> 01:17:12.514 
+So it actually works in the what I showed you is you break the Y dimension, but you also break the X
+
+01:17:12.514 --> 01:17:17.613 
+dimension in the end, X or Y, you can basically break both dimensions to smaller structures.
+
+01:17:18.173 --> 01:17:19.253 
+And that's your hierarchy.
+
+01:17:20.413 --> 01:17:25.293 
+OK, so this is another view of the DM bank from one of the papers that we have written.
+
+01:17:25.293 --> 01:17:28.613 
+And I'll, I'll recommend this for you, but I'm also going to build it up.
+
+01:17:28.893 --> 01:17:35.313 
+So internally, actually a subway consists of multiple mats in this particular case, like you have
+
+01:17:35.313 --> 01:17:40.013 
+two subways and two mats over here, but you can look at it on your own.
+
+01:17:41.253 --> 01:17:43.253 
+So let's go into a little bit more depth.
+
+01:17:43.373 --> 01:17:48.667 
+This is like it's, it's important for you to understand how things work and why things, why
+
+01:17:48.667 --> 01:17:49.773 
+decisions are made.
+
+01:17:49.773 --> 01:17:52.293 
+I think so this is a real DM module and a chip.
+
+01:17:54.573 --> 01:17:57.333 
+There is a lot of conflicting goals in memory design.
+
+01:17:57.453 --> 01:18:03.456 
+This is true for all memories in the end, especially stringent in DRAM because DRAM is actually has
+
+01:18:03.456 --> 01:18:04.973 
+a very interesting space.
+
+01:18:04.973 --> 01:18:09.902 
+This is the first memory that's outside the processor chip and it cannot be inside the processor
+
+01:18:09.902 --> 01:18:14.575 
+chip because the fabrication needs to be completely different as we will see because of the
+
+01:18:14.575 --> 01:18:16.373 
+capacitor and it's relatively fast.
+
+01:18:16.453 --> 01:18:18.013 
+It's not as slow as SSDs.
+
+01:18:18.453 --> 01:18:21.893 
+It's actually very fast compared to what we had in the before DRAM.
+
+01:18:22.653 --> 01:18:27.851 
+It's very high bandwidth, very relatively, again, very high capacity still, and it needs to be
+
+01:18:27.851 --> 01:18:29.013 
+designed really well.
+
+01:18:29.213 --> 01:18:31.213 
+And today actually, this is becoming much more important.
+
+01:18:31.293 --> 01:18:34.653 
+You may have heard that people are paying a lot more money for DM.
+
+01:18:35.253 --> 01:18:39.133 
+I think this is good because there's a reason for this, because memory is important, right?
+
+01:18:39.893 --> 01:18:40.253 
+So.
+
+01:18:40.533 --> 01:18:44.401 
+The cost is important, latency is important, bandwidth, parallelism, power, energy, reliable,
+
+01:18:44.401 --> 01:18:44.693 
+secure.
+
+01:18:44.693 --> 01:18:46.973 
+There are a lot of design decisions that you need to make.
+
+01:18:47.733 --> 01:18:49.533 
+Let's take a look at how things are designed.
+
+01:18:49.533 --> 01:18:54.013 
+So this is Adm chip with eight banks over here.
+
+01:18:54.253 --> 01:18:55.013 
+This is cartoon.
+
+01:18:55.813 --> 01:18:58.733 
+I'm showing you 2 subways in this eight banks.
+
+01:18:59.813 --> 01:19:01.493 
+This is what a sense amplifier looks like.
+
+01:19:01.533 --> 01:19:03.373 
+I'm going to build up the subway.
+
+01:19:03.373 --> 01:19:04.773 
+Actually, we're going to build up to this thing.
+
+01:19:05.733 --> 01:19:07.013 
+This is what a sense amplifier looked like.
+
+01:19:07.013 --> 01:19:08.213 
+And you have seen this before, right?
+
+01:19:08.213 --> 01:19:08.733 
+It's a 2.
+
+01:19:08.933 --> 01:19:10.093 
+It's a cross coupled inverter.
+
+01:19:11.333 --> 01:19:13.413 
+This is actually a strap, right?
+
+01:19:14.133 --> 01:19:17.773 
+There's a little bit more logic outside it to make it work, but I'm not going to talk about that.
+
+01:19:17.773 --> 01:19:20.013 
+But this is really the essence of a Sense am fire.
+
+01:19:20.013 --> 01:19:22.133 
+There's a top part, there's a bottom part.
+
+01:19:23.213 --> 01:19:29.136 
+There's an enable signal that we're going to add to the sense am fire because you need to enable it
+
+01:19:29.136 --> 01:19:30.573 
+to save power, etcetera.
+
+01:19:31.813 --> 01:19:33.933 
+There are two stable states of the Sense am fire.
+
+01:19:34.573 --> 01:19:36.493 
+This is how a logical 1 is sensed.
+
+01:19:36.933 --> 01:19:39.173 
+This is we're going to connect the bit line over here.
+
+01:19:40.053 --> 01:19:41.853 
+Bit line will come from the storage nodes.
+
+01:19:42.533 --> 01:19:47.173 
+So there's a VDD, meaning high voltage on the side and there's zero on the side.
+
+01:19:47.173 --> 01:19:52.013 
+When the sensor is enabled, you either have VDD on the side or 0 on the side.
+
+01:19:52.253 --> 01:19:57.493 
+And necessarily you should have the logical complement 0 and VDD on the other side, right?
+
+01:19:58.093 --> 01:19:59.293 
+So this is your logical one.
+
+01:19:59.493 --> 01:20:00.533 
+This is your logical 0.
+
+01:20:01.133 --> 01:20:01.893 
+Sounds good so far.
+
+01:20:01.893 --> 01:20:09.308 
+Right now the way this operates is you have some voltage level at the top, you have some voltage
+
+01:20:09.308 --> 01:20:10.853 
+level at the bottom.
+
+01:20:12.053 --> 01:20:17.733 
+When you disable the sense amplifier, nothing happens when you enable the sense amplifier.
+
+01:20:18.053 --> 01:20:26.985 
+What the sense amplifier does with some outside circuitry help also is it's basically senses that Vt
+
+01:20:26.985 --> 01:20:27.253 
+is.
+
+01:20:27.293 --> 01:20:34.973 
+If the Vt is greater than VB, it amplifies Vt to VDD and bottom voltage to 0.
+
+01:20:36.813 --> 01:20:38.853 
+Basically, that's the essence of sense amplification.
+
+01:20:39.013 --> 01:20:44.962 
+If voltage, if one of the voltages is greater than the other, the greater voltage is amplified to
+
+01:20:44.962 --> 01:20:49.133 
+the top level voltage VDD, the lower voltage is amplified down to 0.
+
+01:20:49.973 --> 01:20:51.533 
+That's what sense amplification means.
+
+01:20:51.653 --> 01:20:59.141 
+Basically, you sense either end of the, you sense the voltage in either end, and then you amplify
+
+01:20:59.141 --> 01:20:59.373 
+it.
+
+01:20:59.813 --> 01:21:02.693 
+OK, OK, now let's take a look at the DM cell.
+
+01:21:02.693 --> 01:21:05.373 
+We're going to connect the DM cell to the sense amplifiers.
+
+01:21:05.813 --> 01:21:06.933 
+This is the capacitor, right?
+
+01:21:07.213 --> 01:21:08.053 
+That's the DM cell.
+
+01:21:08.613 --> 01:21:11.573 
+We're not, we don't have the access transistor because that's not where data is stored.
+
+01:21:11.853 --> 01:21:14.093 
+Data is stored inside the capacitor and that's it.
+
+01:21:14.773 --> 01:21:17.133 
+Access transistor is there to access the data.
+
+01:21:17.853 --> 01:21:20.773 
+So empty state looks like this capacitor doesn't have any charge.
+
+01:21:21.653 --> 01:21:24.733 
+It's ideal empty state, of course, logical 0.
+
+01:21:25.573 --> 01:21:29.213 
+And this is the logical one, which is fully charged state.
+
+01:21:29.213 --> 01:21:29.853 
+Again, ideal.
+
+01:21:30.613 --> 01:21:35.456 
+Sometimes you lose charge, so it may not be ideal, but you may still be in the logical one state
+
+01:21:35.456 --> 01:21:39.493 
+because you're beyond the noise margins of the sense amplifier detection, right?
+
+01:21:39.493 --> 01:21:39.693 
+OK.
+
+01:21:40.453 --> 01:21:46.733 
+But this is the, let's say, beautiful world where things are logically 0 and black and white.
+
+01:21:47.413 --> 01:21:51.053 
+So the issue with the capacitor is it's very small, and we want it to be small.
+
+01:21:51.373 --> 01:21:53.533 
+I'm going to show you a real picture of it sometime later.
+
+01:21:54.253 --> 01:21:56.613 
+We want it to be small so that we can get higher capacity, right?
+
+01:21:57.373 --> 01:22:01.133 
+And because it's small, it cannot drive very large circuits.
+
+01:22:01.133 --> 01:22:03.613 
+So the data needs to be amplified over here.
+
+01:22:04.293 --> 01:22:08.893 
+And there's another issue, which is when you read the charge out, you destroy the state.
+
+01:22:09.373 --> 01:22:14.373 
+You mean you deplete the charge out of the capacitor.
+
+01:22:15.413 --> 01:22:20.573 
+So we actually connect the capacitor to the sensor fire so that we can solve those problems.
+
+01:22:21.493 --> 01:22:26.773 
+So this is the zero state in the capacitor.
+
+01:22:26.773 --> 01:22:27.533 
+It's the one state.
+
+01:22:28.173 --> 01:22:32.293 
+And we would like to sense this as zero, as you can see over here.
+
+01:22:32.333 --> 01:22:34.253 
+And we would like to sense this as one.
+
+01:22:35.213 --> 01:22:38.853 
+And the way we do it is by using an access transistor and a bit line.
+
+01:22:39.653 --> 01:22:44.553 
+So we have the DM cell, we have the access transistor, which is controlled by the word line, which
+
+01:22:44.553 --> 01:22:45.453 
+is not shown here.
+
+01:22:46.133 --> 01:22:47.093 
+And we have the bit line.
+
+01:22:47.773 --> 01:22:48.773 
+There's only one cell.
+
+01:22:49.133 --> 01:22:54.249 
+If you have more word lines that are going to be connected over here soon when you enable the access
+
+01:22:54.249 --> 01:22:55.733 
+transfer, what happens is OK.
+
+01:22:55.773 --> 01:23:03.051 
+I should also say that initially in what's called pre chart state and DRAM, it's ready to be sensed
+
+01:23:03.051 --> 01:23:03.493 
+state.
+
+01:23:03.533 --> 01:23:10.080 
+In other words, this bit line or the top part of the sensor amp fire set to reference voltage called
+
+01:23:10.080 --> 01:23:13.093 
+half VDD and the bottom part is also half VDD.
+
+01:23:13.573 --> 01:23:13.893 
+OK.
+
+01:23:14.613 --> 01:23:16.973 
+Ideally, you should not get any data out of that.
+
+01:23:18.013 --> 01:23:23.213 
+Now when you connect the capacitor to the bit line, capacitor charges are very little.
+
+01:23:23.773 --> 01:23:27.773 
+It perturbs the bit line, so it shares a little bit of charge over here.
+
+01:23:27.773 --> 01:23:34.765 
+So the voltage here increases and at some point the DM chip internally as a mechanism to enable the
+
+01:23:34.765 --> 01:23:35.613 
+sensor fire.
+
+01:23:35.613 --> 01:23:40.413 
+And when it enables the sensor fire, the sensor fire detects that difference and amplifies.
+
+01:23:40.493 --> 01:23:44.973 
+Advise the this bit line to VDD and the bottom part to 0.
+
+01:23:45.613 --> 01:23:47.333 
+That's how you actually detect this.
+
+01:23:47.333 --> 01:23:51.613 
+There's clearly a lot of circuit level, device level mechanism, but that's the essence of it, right?
+
+01:23:52.133 --> 01:23:53.373 
+It makes sense electrically.
+
+01:23:54.733 --> 01:24:01.139 
+OK, another thing that happens as the sense amplifier amplifies this to VDD, the charge on the bit
+
+01:24:01.139 --> 01:24:03.493 
+line gets driven into the capacitor.
+
+01:24:04.053 --> 01:24:09.156 
+Now the charge direction gets reversed and the capacitor becomes fully charged, which is what we
+
+01:24:09.156 --> 01:24:12.293 
+want because that's what we read from the capacitor, right?
+
+01:24:12.653 --> 01:24:14.373 
+So that's called the restoration of the charge.
+
+01:24:14.373 --> 01:24:19.293 
+So we sensed the charge, amplified it and restored it, right?
+
+01:24:19.653 --> 01:24:26.927 
+So that's those are the steps that happen when you read Adm cell, OK, now that's one DM cell and
+
+01:24:26.927 --> 01:24:28.973 
+that's one sense amplifier.
+
+01:24:28.973 --> 01:24:33.533 
+We don't want the Samsung fire for every DM cell because that's bad, right?
+
+01:24:33.533 --> 01:24:33.813 
+Why?
+
+01:24:33.813 --> 01:24:39.613 
+Because Sense amplifier is expensive, it has a lot of circuitry over there, at least 4 transistors
+
+01:24:39.613 --> 01:24:42.573 
+plus a bunch of other circuitry that is not shown.
+
+01:24:43.173 --> 01:24:47.133 
+We actually want to amortise the cost of that sensor fire across many DM cells.
+
+01:24:47.573 --> 01:24:54.576 
+That's why we actually put a lot of other DM cells across the bit line, right one on this side, on
+
+01:24:54.576 --> 01:24:58.293 
+the on the other side and this is now your bit line.
+
+01:24:59.533 --> 01:25:04.533 
+And we also want 2 dimensional of these things so that we can actually get more capacity.
+
+01:25:05.213 --> 01:25:09.253 
+And we extend the number of cells that are connected to the same word line.
+
+01:25:09.853 --> 01:25:16.543 
+So there is an array of sensamp files called the row buffer and there or row of sensamp files called
+
+01:25:16.543 --> 01:25:23.032 
+the row buffer that is used to sense any row that you enable by enabling a word line by providing
+
+01:25:23.032 --> 01:25:24.973 
+the address of the word line.
+
+01:25:25.093 --> 01:25:26.333 
+Right, That's the idea.
+
+01:25:26.733 --> 01:25:28.293 
+So you can see that the magic is gone.
+
+01:25:28.413 --> 01:25:36.100 
+This is how DM all DM all memory, all main memory works and there needs to be an enable signal for
+
+01:25:36.100 --> 01:25:36.493 
+that.
+
+01:25:36.733 --> 01:25:40.373 
+And then there needs to be a decoder that decodes the word line address clearly.
+
+01:25:41.253 --> 01:25:47.613 
+And there needs to be a multiplexer that takes out the appropriate part of the row as we have seen
+
+01:25:47.613 --> 01:25:48.133 
+earlier.
+
+01:25:49.493 --> 01:25:50.573 
+OK, and that's the salary.
+
+01:25:51.173 --> 01:25:53.653 
+So this is essentially 1 sub race.
+
+01:25:53.733 --> 01:25:54.653 
+This is called a sub race.
+
+01:25:55.213 --> 01:25:56.573 
+And then there could be multiple sub race.
+
+01:25:56.573 --> 01:26:00.093 
+As you can see this is a chip where you have two sub race per DM back.
+
+01:26:00.493 --> 01:26:06.770 
+In modern chips, you have hundreds to thousands of subways in Adam Bank, and there needs to be some
+
+01:26:06.770 --> 01:26:13.048 
+bank IO so that when you actually read the data from one row into the array of sands amp fires, you
+
+01:26:13.048 --> 01:26:14.253 
+get all 8 kilobits.
+
+01:26:14.853 --> 01:26:20.979 
+And when you want to get one column, like 8 bits or 64 bits out, whatever the granularity is, that
+
+01:26:20.979 --> 01:26:24.293 
+data gets transferred to something, some other sense.
+
+01:26:24.293 --> 01:26:25.253 
+I'm fire over here.
+
+01:26:25.373 --> 01:26:26.373 
+It's called a global sense.
+
+01:26:26.373 --> 01:26:28.493 
+I'm fire or global IO logic.
+
+01:26:28.493 --> 01:26:30.333 
+There could be multiple steps over there also.
+
+01:26:30.813 --> 01:26:35.653 
+But essentially there needs to be a smaller granularity access mechanism.
+
+01:26:36.813 --> 01:26:40.413 
+And it's good to think about this because you need interconnects over here, right?
+
+01:26:40.773 --> 01:26:47.618 
+You supply the address, one row gets enabled, and that enable draw goes over here into the array of
+
+01:26:47.618 --> 01:26:50.453 
+sensamp fires for that particular subway.
+
+01:26:50.453 --> 01:26:53.013 
+And then you need to supply the column address.
+
+01:26:53.413 --> 01:26:56.053 
+They need to go through much longer interconnects, right?
+
+01:26:56.173 --> 01:27:02.413 
+And those interconnects are not only long, but they're also much wider because you need to support
+
+01:27:02.413 --> 01:27:05.533 
+the travel of data across a much larger distance.
+
+01:27:06.053 --> 01:27:09.933 
+And to do that robustly, you need a lot more voltage and a lot more width of these interconnects.
+
+01:27:09.933 --> 01:27:13.453 
+So they cannot be 8 kilobytes, they can be only 64 bits, for example.
+
+01:27:14.333 --> 01:27:17.213 
+OK, so basically this is our DM chip.
+
+01:27:17.213 --> 01:27:19.053 
+You have a memory channel of eight bits.
+
+01:27:19.373 --> 01:27:21.733 
+You have a shared internal bus across different banks.
+
+01:27:22.293 --> 01:27:26.653 
+Each bank gets access to the bus depending on which one is transferring data.
+
+01:27:27.333 --> 01:27:31.933 
+And we've seen the operation, but I'll also discuss it so that we can complete it.
+
+01:27:32.053 --> 01:27:37.853 
+If you want to access, let's say this element over here, in this row, you first activate the row.
+
+01:27:38.053 --> 01:27:41.813 
+You supply the row address, so that row gets activated.
+
+01:27:41.813 --> 01:27:50.077 
+This is the element that you want and then the memory controller sends a read write supplying the
+
+01:27:50.077 --> 01:27:54.253 
+column address and that element gets read out OK.
+
+01:27:55.413 --> 01:28:00.373 
+So there needs to be interconnects to support this and then eventually the memory controller sends a
+
+01:28:00.373 --> 01:28:05.235 
+pre charge command which clears the row from the row buffer so that you can bring another row over
+
+01:28:05.235 --> 01:28:05.533 
+there.
+
+01:28:07.173 --> 01:28:08.133 
+Makes sense hopefully right?
+
+01:28:09.253 --> 01:28:12.253 
+OK, so this is essentially how DM operates.
+
+01:28:12.253 --> 01:28:14.973 
+There's of course more detail, but we don't need to go into it.
+
+01:28:15.933 --> 01:28:22.293 
+If you want more, you can take a look at this paper that we wrote with one of my prior PhD students.
+
+01:28:23.533 --> 01:28:25.253 
+Let's take a look at the top down view.
+
+01:28:25.813 --> 01:28:26.293 
+Also.
+
+01:28:27.013 --> 01:28:28.173 
+Wait, bottom up view?
+
+01:28:28.173 --> 01:28:32.413 
+Bottom up view, Sorry, No, no, no, we, we already went through all of those views.
+
+01:28:32.413 --> 01:28:32.733 
+Sorry.
+
+01:28:33.093 --> 01:28:38.213 
+Let's take a look at how things get transferred from the DM chip to the processor.
+
+01:28:39.333 --> 01:28:39.693 
+So.
+
+01:28:40.493 --> 01:28:43.773 
+If you in in the end you need to map the data appropriately.
+
+01:28:44.693 --> 01:28:50.138 
+For example, if your access granularity is a cache block granularity 64 bytes let's say, which is
+
+01:28:50.138 --> 01:28:54.293 
+the granularity in many CPU based systems today and also GPU based system.
+
+01:28:54.293 --> 01:28:55.533 
+It could be larger in GPUs.
+
+01:28:57.213 --> 01:29:04.653 
+You need to have a mapping of that physical 64 bytes to the underlying hierarchy.
+
+01:29:04.893 --> 01:29:12.893 
+Right here you can see that the 64 bytes is mapped to channel 0, rank zero, dem zero.
+
+01:29:13.613 --> 01:29:17.453 
+And the hope is that you're going to get all of those 64 bytes quickly out of that.
+
+01:29:18.013 --> 01:29:21.093 
+You don't need to switch channels, you don't need to switch banks, etcetera, right?
+
+01:29:22.173 --> 01:29:22.813 
+Not switch banks.
+
+01:29:22.813 --> 01:29:24.493 
+You don't need to switch ranks.
+
+01:29:25.413 --> 01:29:28.093 
+OK, internally, this is what the mapping looks like.
+
+01:29:28.093 --> 01:29:29.253 
+This is our rank 0.
+
+01:29:29.573 --> 01:29:35.733 
+Internally, you have 8 chips and you get 64 bits at a time.
+
+01:29:35.933 --> 01:29:38.013 
+We want a 64 byte cache blocked or, right?
+
+01:29:38.453 --> 01:29:43.333 
+So you're going to bring it 64 bits at a time over 8 clock cycles in the event.
+
+01:29:43.933 --> 01:29:46.773 
+So one access will give us 64 bits.
+
+01:29:47.333 --> 01:29:49.493 
+So this is row zero, column zero, for example.
+
+01:29:50.053 --> 01:29:54.013 
+It's going to give us 8 bits from each chip and 64 bits from all of the chips.
+
+01:29:55.293 --> 01:29:59.709 
+That gives us the 1st 8 bytes in the cache block, and then we're going to go to row zero, column
+
+01:29:59.709 --> 01:29:59.893 
+one.
+
+01:30:00.493 --> 01:30:04.013 
+That will give us the next 8 bytes, and then we're going to go to row zero, column two.
+
+01:30:04.013 --> 01:30:06.213 
+We're going to get next 8 bytes and you get the idea.
+
+01:30:06.773 --> 01:30:12.133 
+So it takes 8 IO cycles to transfer the entire 64 byte cache block.
+
+01:30:12.453 --> 01:30:14.813 
+And during the process, 8 comms are read sequentially.
+
+01:30:15.253 --> 01:30:18.213 
+The good news is this is all except for the first access.
+
+01:30:18.213 --> 01:30:19.693 
+It's all coming from the row buffer, right?
+
+01:30:20.573 --> 01:30:21.773 
+Because it's sequential access.
+
+01:30:21.773 --> 01:30:26.620 
+And if you map your data nicely, which is what you should do all the time, which is what systems do,
+
+01:30:26.620 --> 01:30:30.693 
+I should say you don't need to deal with this at the level of the programming today.
+
+01:30:31.333 --> 01:30:34.533 
+But essentially it's all coming out of the row buffer.
+
+01:30:36.573 --> 01:30:37.253 
+Any questions?
+
+01:30:38.893 --> 01:30:41.373 
+OK, hopefully this is fascinating and interesting, right?
+
+01:30:42.293 --> 01:30:43.133 
+So we have some time.
+
+01:30:43.133 --> 01:30:48.845 
+I'll introduce some of the memory technologies and this will hopefully be a good stepping stone for
+
+01:30:48.845 --> 01:30:49.653 
+the next time.
+
+01:30:49.733 --> 01:30:50.893 
+So we talk about DRAM.
+
+01:30:52.293 --> 01:30:57.127 
+This is dynamic capacitor charged stores the value and you have one capacitor, it's very cheap
+
+01:30:57.127 --> 01:30:58.773 
+basically as you can see, right?
+
+01:30:58.773 --> 01:31:04.336 
+And you have one access transistor and we already said that this cell loses charge over time, so it
+
+01:31:04.336 --> 01:31:05.573 
+needs to be refreshed.
+
+01:31:05.653 --> 01:31:07.053 
+That is not going to exist in SRAM.
+
+01:31:07.053 --> 01:31:10.373 
+So we're going to talk about memory technology a little bit.
+
+01:31:10.373 --> 01:31:13.933 
+I should also say that this is the virtual view of the DRAM.
+
+01:31:14.253 --> 01:31:16.013 
+This is what a physical view looks like.
+
+01:31:16.373 --> 01:31:21.293 
+And under scanning electron microscope capacitors are actually etched like this in the DRAM.
+
+01:31:21.293 --> 01:31:22.373 
+You can see that they're huge.
+
+01:31:22.613 --> 01:31:24.773 
+They're in the three-dimensional and it's actually fascinating.
+
+01:31:24.773 --> 01:31:26.533 
+Manufacturing these chips is not easy.
+
+01:31:26.893 --> 01:31:28.733 
+As you can see, the bit line looks like this.
+
+01:31:29.413 --> 01:31:34.269 
+The word line is over here, but you can see that the capacitors are very dense and close to each
+
+01:31:34.269 --> 01:31:34.573 
+other.
+
+01:31:34.933 --> 01:31:40.638 
+And this is one of the reasons why things are quite noisy when you actually read OK, static random
+
+01:31:40.638 --> 01:31:41.453 
+access memory.
+
+01:31:41.453 --> 01:31:42.253 
+You've also seen this.
+
+01:31:42.253 --> 01:31:44.133 
+This is 2 cross coupled inverters.
+
+01:31:44.493 --> 01:31:49.406 
+They store a single bit and there's a feedback path that enables the store value to stay in the cell
+
+01:31:49.406 --> 01:31:50.733 
+as long as it's powered on.
+
+01:31:51.253 --> 01:31:51.813 
+That's good.
+
+01:31:52.733 --> 01:31:54.413 
+You have 4 transistors for storage.
+
+01:31:54.533 --> 01:31:57.973 
+It's immediately much more expensive as you can see, but that's not enough.
+
+01:31:57.973 --> 01:31:58.973 
+You cannot access this thing.
+
+01:31:58.973 --> 01:32:00.573 
+And you know that from very early on.
+
+01:32:00.973 --> 01:32:02.653 
+We need 2 transistors for access.
+
+01:32:03.333 --> 01:32:07.887 
+And usually you need 2 transistors to enable differential sensing in the in SRAM, which we're not
+
+01:32:07.887 --> 01:32:08.733 
+going to get into.
+
+01:32:09.253 --> 01:32:15.156 
+But in some technologies, especially when you have very low voltage, you may need more than two
+
+01:32:15.156 --> 01:32:16.213 
+transistors also.
+
+01:32:16.413 --> 01:32:19.933 
+So at least six transistors, as you can see, expensive.
+
+01:32:20.853 --> 01:32:26.373 
+So memory bank is organised similarly regardless of whether or not you have SRAM or DRAM, right?
+
+01:32:26.893 --> 01:32:31.191 
+Essentially you have some 2 dimensional storage array, you have a row decoder, you have a column
+
+01:32:31.191 --> 01:32:32.893 
+decoder, you have an address register.
+
+01:32:33.053 --> 01:32:38.067 
+Most significant bits of the address provide the essentially the row address, least significant bits
+
+01:32:38.067 --> 01:32:40.173 
+of the address provide the column address.
+
+01:32:40.493 --> 01:32:46.272 
+And then you read data out in SRAM you supply, you can supply the entire address because it's on
+
+01:32:46.272 --> 01:32:46.573 
+chip.
+
+01:32:46.573 --> 01:32:51.712 
+Usually that's the assumption for off chip memories because you don't want to have very large
+
+01:32:51.712 --> 01:32:56.133 
+address buses because these are actually driving interconnects outside the chip.
+
+01:32:56.693 --> 01:32:59.853 
+You supply the row address first and then you supply the column address.
+
+01:32:59.853 --> 01:33:04.813 
+That enables things to have less, fewer pins.
+
+01:33:05.493 --> 01:33:08.733 
+So off chip and on chip you have different trade-offs.
+
+01:33:09.333 --> 01:33:10.773 
+We've actually seen a lot of this.
+
+01:33:10.773 --> 01:33:13.093 
+This is actually happening for both SRAM and DM.
+
+01:33:13.653 --> 01:33:14.853 
+So this is a good place to stop.
+
+01:33:16.253 --> 01:33:21.946 
+Now that you're familiar with memory technology, organization, how things work, we're going to build
+
+01:33:21.946 --> 01:33:25.533 
+up to a memory hierarchy and we'll talk about caches next week.
+
+01:33:25.733 --> 01:33:27.613 
+And I think we have only one lecture next week, Right?
+
+01:33:28.773 --> 01:33:30.053 
+OK, another Singleton.
+
+01:33:30.653 --> 01:33:32.733 
+OK, have a good weekend.
+
+01:33:33.293 --> 01:33:34.253 
+I'll see you next week.
+

@@ -1,0 +1,3584 @@
+WEBVTT
+
+00:00:02.340 --> 00:00:04.220 
+Did you start live stream as well?
+
+00:00:04.620 --> 00:00:05.820 
+OK, everything's good.
+
+00:00:07.380 --> 00:00:07.780 
+Thank you.
+
+00:00:09.100 --> 00:00:11.420 
+OK, welcome back.
+
+00:00:12.380 --> 00:00:13.020 
+Good afternoon.
+
+00:00:13.620 --> 00:00:21.260 
+So lecture 22, I hope you had a nice holiday yesterday.
+
+00:00:22.020 --> 00:00:25.500 
+Today is actually also a holiday for children in school.
+
+00:00:27.300 --> 00:00:29.820 
+Fortunately or unfortunately, it's not a holiday for us.
+
+00:00:31.060 --> 00:00:33.100 
+My son was actually was confused.
+
+00:00:33.100 --> 00:00:34.220 
+That's why I'm working today.
+
+00:00:35.660 --> 00:00:36.420 
+So let's see.
+
+00:00:36.580 --> 00:00:38.900 
+I hope the lecture is exciting today.
+
+00:00:40.780 --> 00:00:45.557 
+OK, so today we're going to continue from the point that we left off last week regarding memory
+
+00:00:45.557 --> 00:00:46.060 
+hierarchy.
+
+00:00:46.060 --> 00:00:50.940 
+And then we're going to get to the caches and how we organise and design cache architectures.
+
+00:00:52.100 --> 00:00:59.600 
+So these are some reading for this lecture and probably also some for next week because we are not
+
+00:00:59.600 --> 00:01:03.580 
+going to cover everything in this lecture today, OK.
+
+00:01:03.580 --> 00:01:09.471 
+So remember record that we discussed about memory which is critical for computing and it's critical
+
+00:01:09.471 --> 00:01:15.302 
+because of performance, energy, robustness, cost, form factor, sustainability and and so on and so
+
+00:01:15.302 --> 00:01:15.660 
+forth.
+
+00:01:17.580 --> 00:01:20.500 
+We covered some fundamentals on memory last week.
+
+00:01:20.820 --> 00:01:28.298 
+We remember about this idealised memory that essentially we want 0 access time, infinite capacity, 0
+
+00:01:28.298 --> 00:01:31.140 
+cost, infinite bandwidth and 0 energy.
+
+00:01:31.740 --> 00:01:35.900 
+And essentially it's really it's not possible to really achieve all of them together.
+
+00:01:35.940 --> 00:01:42.113 
+It's not even possible to achieve one of them also any of them because 0 is very absolute number and
+
+00:01:42.113 --> 00:01:43.780 
+infinite is also very high.
+
+00:01:46.860 --> 00:01:50.020 
+And then essentially we also discuss about memory arrays.
+
+00:01:51.420 --> 00:01:56.940 
+We started with this review slide that we've seen also in the beginning of the lectures.
+
+00:01:57.860 --> 00:02:04.320 
+I guess in lecture three of two or three that essentially flip flops are really fast, but they are
+
+00:02:04.320 --> 00:02:04.980 
+expensive.
+
+00:02:04.980 --> 00:02:11.027 
+We also have a static RAM which they are also relatively fast, but they are less expensive compared
+
+00:02:11.027 --> 00:02:16.220 
+to flip flops and DRAM and other storage media like flash memory, hard disk, antique.
+
+00:02:18.220 --> 00:02:23.320 
+So this slide is actually important because as we described today, we want, we're going to make
+
+00:02:23.320 --> 00:02:28.260 
+hierarchy of all these different memory technologies and also different sizes of the memory.
+
+00:02:30.900 --> 00:02:37.820 
+So and essentially as we go down, things are getting slower and also getting less costly and and
+
+00:02:37.820 --> 00:02:44.020 
+that's actually going to shape the trade off that we're going to do in this hierarchy.
+
+00:02:44.660 --> 00:02:44.940 
+OK.
+
+00:02:45.620 --> 00:02:51.618 
+And also this area organizational memory that essentially most of memories are actually considered
+
+00:02:51.618 --> 00:02:57.372 
+like this that you have you may get array for a bank and you provide address and you basically
+
+00:02:57.372 --> 00:03:02.820 
+fetch data or you write the data that on the ad location that the address is pointing to.
+
+00:03:05.060 --> 00:03:05.420 
+Yeah.
+
+00:03:05.620 --> 00:03:12.223 
+And essentially we discuss about, you know, how we can make larger memories that we essentially we
+
+00:03:12.223 --> 00:03:15.660 
+need to, you know, make a hierarchy in that memory.
+
+00:03:15.660 --> 00:03:21.096 
+And therefore that we discuss, you know, as an example, in DRAM we have channels, rank bank
+
+00:03:21.096 --> 00:03:25.100 
+subarrays and Mats, which you've seen that in the previous lecture.
+
+00:03:26.580 --> 00:03:32.569 
+And we discussed about this top down and bottom up design of the DRAM architecture, DRAM subsystem
+
+00:03:32.569 --> 00:03:34.220 
+organization in detail, OK.
+
+00:03:34.980 --> 00:03:40.489 
+And we were also discussing about memory technology like DRAM, which you've seen also that there is
+
+00:03:40.489 --> 00:03:42.660 
+a capacitor and also access transistor.
+
+00:03:43.340 --> 00:03:50.626 
+And we know that this capacitor leaks through the RC pass, which is resistor capacitor pass because
+
+00:03:50.626 --> 00:03:52.540 
+things are not ideal here.
+
+00:03:53.140 --> 00:03:57.620 
+And because of that DRAM cell loses DRAM cell loses charge over time.
+
+00:03:57.620 --> 00:03:59.380 
+And we do need to refresh DRAM.
+
+00:04:01.340 --> 00:04:07.257 
+Also we discussed about the static RAM SRAM, which essentially we store data in a cross couple, 2
+
+00:04:07.257 --> 00:04:08.660 
+cross couple inverters.
+
+00:04:08.980 --> 00:04:11.540 
+And you know that for each of these inverter we need 2 transistors.
+
+00:04:11.540 --> 00:04:18.455 
+So in overall we have 4 transistor, but at the same time we also need to add other transistors in
+
+00:04:18.455 --> 00:04:25.300 
+order to be able to write and what we want to store in this SRA, OK, so we were around this part
+
+00:04:25.300 --> 00:04:26.940 
+that we basically stop.
+
+00:04:27.700 --> 00:04:32.790 
+So, yeah, so memory bank organization, regardless of the memory technology is more or less something
+
+00:04:32.790 --> 00:04:33.300 
+like that.
+
+00:04:33.300 --> 00:04:39.569 
+So essentially you have a, you provide address and there is address register and this address is
+
+00:04:39.569 --> 00:04:44.860 
+going to be fed to the row decoder in order to find which row you want to access.
+
+00:04:45.460 --> 00:04:51.548 
+And part of the address which is usually low significant bit or sorry least significant bits are
+
+00:04:51.548 --> 00:04:57.383 
+going to fit to this multiplexer in order to select the column or basically several bytes or
+
+00:04:57.383 --> 00:04:59.540 
+several bits that you are reading.
+
+00:04:59.660 --> 00:05:07.160 
+Out so, so in the read access sequence, first you need to decode the row address and drive forward
+
+00:05:07.160 --> 00:05:07.620 
+lines.
+
+00:05:08.060 --> 00:05:12.060 
+And then you selected bit drives bit lines.
+
+00:05:12.900 --> 00:05:19.230 
+So we read entire row and then we need to amplify the row data and decode the column address using
+
+00:05:19.230 --> 00:05:22.460 
+this least significant bits to send to the output.
+
+00:05:22.860 --> 00:05:26.660 
+And then we need to pre charge the bit lines for the next accesses essentially.
+
+00:05:26.980 --> 00:05:31.460 
+So that's a overview overall design of the memory bank.
+
+00:05:33.500 --> 00:05:35.860 
+Also in SRAM, we have the similar structure.
+
+00:05:36.220 --> 00:05:42.280 
+I'm not going into detail of that, but essentially in ridiculous, you also need to provide the
+
+00:05:42.280 --> 00:05:48.340 
+address first and you drive row enable and selected with sales drive bit lines same as before.
+
+00:05:49.180 --> 00:05:53.780 
+And essentially we have the sensing differential sensing and column select.
+
+00:05:54.060 --> 00:05:58.420 
+So the sensing, differential sensing in this RAM is a little bit different from DRAM.
+
+00:05:58.740 --> 00:06:04.558 
+We're not going into detail of how we design it, but things are very much similar and we need to pre
+
+00:06:04.558 --> 00:06:06.420 
+charge also all bit lines again.
+
+00:06:06.980 --> 00:06:13.876 
+So in also in SRM access, access latency dominated by Step 2 and three like how fast you can drive
+
+00:06:13.876 --> 00:06:20.773 
+the word line and how fast you can essentially your bit lines are going to be driven with the data
+
+00:06:20.773 --> 00:06:21.900 
+and essentially.
+
+00:06:21.900 --> 00:06:28.471 
+So these two, the latency of Step 2 is dependent on the on the number of columns that you have,
+
+00:06:28.471 --> 00:06:35.111 
+because the more columns, the the word line is going to be longer and you need to basically wait
+
+00:06:35.111 --> 00:06:37.740 
+longer until the IT has enough charge.
+
+00:06:38.380 --> 00:06:40.780 
+And the the bit line.
+
+00:06:40.780 --> 00:06:47.053 
+Also, the latency of the bit line for the Step 3 is determined by the essentially professional to to
+
+00:06:47.053 --> 00:06:49.940 
+2 to the power N, which is the number of rows.
+
+00:06:50.340 --> 00:06:53.060 
+The more rows you have, the longer bit line you're going to have.
+
+00:06:53.060 --> 00:06:58.260 
+And then that's going to essentially specify the latency of your strap.
+
+00:06:59.860 --> 00:07:02.820 
+For Dean, I'm also we've seen it, so I'm not going to detail of that.
+
+00:07:04.220 --> 00:07:11.201 
+But yeah, in DRAM essentially we know that bit cell loses charge when read and bit cell loses charge
+
+00:07:11.201 --> 00:07:11.900 
+over time.
+
+00:07:12.260 --> 00:07:14.660 
+So essentially we need, we do need to refresh DRAM.
+
+00:07:14.660 --> 00:07:18.220 
+We don't need to refresh SRAM, but in DRAM we do need to do refreshing.
+
+00:07:18.740 --> 00:07:22.580 
+And also when we read from DRAM, read is actually destructive.
+
+00:07:22.980 --> 00:07:29.540 
+So you need to wait after sensing to restore the charge in the in your capacitor in DRAM.
+
+00:07:29.860 --> 00:07:36.515 
+But for SRAM, for example, we don't need to do that as so rate sequence in DRAM is step one to three
+
+00:07:36.515 --> 00:07:37.780 
+similar as a SCRAM.
+
+00:07:37.780 --> 00:07:44.420 
+But then we have this flip flopping sense amplifier to amplify and regenerates the bit line.
+
+00:07:45.300 --> 00:07:50.665 
+And then also we need to pre charge and we know about destructive reads and charge loss over time
+
+00:07:50.665 --> 00:07:52.380 
+and that we need to do refresh.
+
+00:07:53.260 --> 00:07:56.100 
+But these are more or less kind of review from you.
+
+00:07:56.460 --> 00:07:57.300 
+Any questions?
+
+00:07:59.340 --> 00:07:59.620 
+OK.
+
+00:08:01.220 --> 00:08:08.102 
+So now let's quickly compare DRAM and SRAM because in so the point here is that we want to show that
+
+00:08:08.102 --> 00:08:13.540 
+these memory technologies they are not none of them are perfect in all aspects.
+
+00:08:13.780 --> 00:08:17.500 
+So there are Reds and greens and so we have trade off here.
+
+00:08:17.660 --> 00:08:23.447 
+So in DRAM actually we have compared to SRAM, we have a slower access because of the capacitor and
+
+00:08:23.447 --> 00:08:29.116 
+that capacitor is actually small and then you need to spend some time for chart trading and then
+
+00:08:29.116 --> 00:08:30.180 
+also sensing that.
+
+00:08:30.620 --> 00:08:36.022 
+So sensing that the small charge in that capacitor is not really easy and that would actually cause
+
+00:08:36.022 --> 00:08:39.460 
+one of the reason that we have longer latency in DRAM accesses.
+
+00:08:40.340 --> 00:08:45.620 
+But because of that the small transistor actually DRAM is much have much higher density.
+
+00:08:45.620 --> 00:08:50.020 
+So it's one T1C cell and lower costs relatively to a STRAM.
+
+00:08:51.620 --> 00:08:57.121 
+But DRAM requires refresh and that refresh actually comes at the price of power, performance and
+
+00:08:57.121 --> 00:09:01.820 
+some circuitry because you need to consume power consumption for doing refreshing.
+
+00:09:02.100 --> 00:09:07.260 
+So if your system is actually either for a long time, even that idle.
+
+00:09:07.260 --> 00:09:13.820 
+Also your DRAM needs to get refreshed every 10s of milliseconds and that would consume power.
+
+00:09:14.340 --> 00:09:18.933 
+And while you are the 1 to access your DRAM, sometimes your DRAM cannot be accessed or at least some
+
+00:09:18.933 --> 00:09:23.480 
+part of your DRAM, some banks they cannot be accessed because you are doing refresh in that part of
+
+00:09:23.480 --> 00:09:23.940 
+your DRAM.
+
+00:09:24.140 --> 00:09:26.660 
+So that would also comes at their performance penalty.
+
+00:09:27.180 --> 00:09:33.145 
+And also you need to provide some circuitry for doing the refresh which also you know has some
+
+00:09:33.145 --> 00:09:33.780 
+overheads.
+
+00:09:35.020 --> 00:09:39.933 
+And another issue with DRAM is that unfortunately manufacturing requires putting capacity and logic
+
+00:09:39.933 --> 00:09:40.380 
+together.
+
+00:09:40.500 --> 00:09:47.915 
+So essentially the manufacturing process of DRAM and CMOS are not very much similar and that's why
+
+00:09:47.915 --> 00:09:52.380 
+actually DRAM is not integrated much in the processor chip.
+
+00:09:52.620 --> 00:09:58.087 
+So if you really want to do that, then your processor chip is going to be much, very much
+
+00:09:58.087 --> 00:09:59.500 
+inefficient because of.
+
+00:10:00.020 --> 00:10:02.460 
+A lot of reason that I don't want to go into detail of that.
+
+00:10:02.900 --> 00:10:05.660 
+So that's why these two are separated.
+
+00:10:06.940 --> 00:10:11.780 
+And so when you look at the processor chip, you actually don't see DRAM in your processor chip.
+
+00:10:12.020 --> 00:10:13.660 
+You do see SRAM.
+
+00:10:13.660 --> 00:10:17.380 
+Actually you do see a lot of SRAM because of caches that we're going to see a lot.
+
+00:10:17.780 --> 00:10:23.229 
+But DRAM are not there because of the manufacturing process difference in manufacturing difference
+
+00:10:23.229 --> 00:10:24.620 
+in manufacturing process.
+
+00:10:25.580 --> 00:10:30.020 
+So SRAM compared to DRAM is much faster and we don't have capacitor which is good.
+
+00:10:30.020 --> 00:10:36.348 
+So when you don't have capacitor then you can actually design it with a similar integration
+
+00:10:36.348 --> 00:10:43.232 
+technology that you have for processor chip but has lower density because of the 60 cent and higher
+
+00:10:43.232 --> 00:10:43.580 
+cost.
+
+00:10:43.940 --> 00:10:49.552 
+SRAM doesn't need to refresh which is also good and and also manufacturing compatible with logic
+
+00:10:49.552 --> 00:10:50.020 
+process.
+
+00:10:50.660 --> 00:10:52.820 
+So these are the good things about the SRAM.
+
+00:10:54.020 --> 00:10:57.697 
+But for example, if you want to design the whole system with the strand, then we're going to have
+
+00:10:57.697 --> 00:10:59.100 
+problem with the density of a strand.
+
+00:10:59.100 --> 00:11:04.208 
+Then you're going to have a, you know, the motherboard, which might be, you know, as big as this
+
+00:11:04.208 --> 00:11:05.220 
+table, for example.
+
+00:11:07.100 --> 00:11:13.638 
+OK, this is just an assigned that these are not the only tech memory technology that we have DRAM
+
+00:11:13.638 --> 00:11:14.380 
+and strand.
+
+00:11:14.380 --> 00:11:20.229 
+There are also a lot of other technologies which you can think of as a emerging memory technologies
+
+00:11:20.229 --> 00:11:26.078 
+that they are not that mature, but they are very interesting to look into it because they also have
+
+00:11:26.078 --> 00:11:27.260 
+some goods and bads.
+
+00:11:27.780 --> 00:11:30.020 
+And then essentially designing the system.
+
+00:11:30.180 --> 00:11:35.358 
+By knowing some other memory technologies, you might be able to get a much more balanced system
+
+00:11:35.358 --> 00:11:35.740 
+design.
+
+00:11:36.460 --> 00:11:42.802 
+So this is the topic that actually our group have worked a lot on that Face change memory is one
+
+00:11:42.802 --> 00:11:43.860 
+example of that.
+
+00:11:44.740 --> 00:11:51.622 
+In face change memory you have a material like for example Charcoganite glass which this glass
+
+00:11:51.622 --> 00:11:53.380 
+actually has two states.
+
+00:11:54.140 --> 00:12:00.857 
+One state is amorphous which has low optical reflexivity and high electrical resistivity and another
+
+00:12:00.857 --> 00:12:07.373 
+phase of that material which is crystalline which has high optical reflexivity and low electrical
+
+00:12:07.373 --> 00:12:08.180 
+resistivity.
+
+00:12:08.740 --> 00:12:16.325 
+So with that since you have two different state of that material, you can essentially you can use
+
+00:12:16.325 --> 00:12:17.420 
+that to store.
+
+00:12:17.900 --> 00:12:26.229 
+So once for example as a, if you think about as a like optical difference reflex reflexivity with
+
+00:12:26.229 --> 00:12:27.260 
+the optical.
+
+00:12:27.700 --> 00:12:34.652 
+So you just shine the light on your material and see if if the material has like high reflexivity,
+
+00:12:34.652 --> 00:12:38.980 
+you realise that OK, my material is in crystalline situation.
+
+00:12:39.580 --> 00:12:42.540 
+And then you can encode that situation as one or zero, whatever you want.
+
+00:12:43.460 --> 00:12:47.940 
+So you can actually understand how they reflex the light after shining.
+
+00:12:48.140 --> 00:12:55.510 
+And based on the the fact you can see if you're in amorphous state or crystalline state, you can
+
+00:12:55.510 --> 00:12:59.580 
+also derive with some current, you know the material.
+
+00:12:59.860 --> 00:13:04.390 
+And then depending on the resistance that you're observing from the material, you can you can
+
+00:13:04.390 --> 00:13:07.460 
+understand that you're in amorphous state or crystalline state.
+
+00:13:07.940 --> 00:13:10.340 
+And these two actually has been used, both of them.
+
+00:13:11.300 --> 00:13:17.860 
+If you know about CD rewritable CDs, have you, do you have you ever used relatable CDs?
+
+00:13:17.860 --> 00:13:19.580 
+Yeah, I use a lot.
+
+00:13:20.500 --> 00:13:25.633 
+So these are actually one of the interesting technology in CD rewritable CDs is that that
+
+00:13:25.633 --> 00:13:30.767 
+essentially use exactly the same material there and you decide based on this amorphous or
+
+00:13:30.767 --> 00:13:31.460 
+crystalline.
+
+00:13:32.020 --> 00:13:40.745 
+But later on people work a lot to see how they can design some, let's say, electrical electronic
+
+00:13:40.745 --> 00:13:46.380 
+circuit in order to understand the resistance of the material.
+
+00:13:46.620 --> 00:13:51.100 
+And with that you can actually have a sensing circuitry which you can do it electrically.
+
+00:13:51.780 --> 00:13:56.391 
+IBM is one of the companies that also work a lot on that and they actually publish one of the
+
+00:13:56.391 --> 00:13:57.780 
+earliest paper in that line.
+
+00:13:59.340 --> 00:14:04.878 
+And with that, actually, once you can have it as electrics electronic circuit, then you can actually
+
+00:14:04.878 --> 00:14:07.260 
+use them as a memory, which is much faster.
+
+00:14:07.300 --> 00:14:12.900 
+So this operation of shining light and check the reflexive of that is actually very small slow.
+
+00:14:13.180 --> 00:14:15.340 
+And that's why rewritable C DS are very slow.
+
+00:14:16.220 --> 00:14:20.820 
+But using this electrical circuits actually you can make it much faster.
+
+00:14:21.140 --> 00:14:28.263 
+And after that point, actually, we, we, we observed this shift in computer architecture that people
+
+00:14:28.263 --> 00:14:34.380 
+started using this PCM as a, as a main memory or as a combination to the main memory.
+
+00:14:35.020 --> 00:14:37.140 
+So our group also work a lot in this paper.
+
+00:14:37.140 --> 00:14:42.740 
+Actually, we try to replace the whole DRAM with PCMPCM.
+
+00:14:43.980 --> 00:14:49.206 
+There are also other options of that, that you can basically use DRAM and PCM together as a hybrid
+
+00:14:49.206 --> 00:14:49.580 
+memory.
+
+00:14:50.820 --> 00:14:54.100 
+But basically I'm, I'm not going to go into detail of that.
+
+00:14:54.100 --> 00:14:55.780 
+If you're interested, you can check these papers.
+
+00:14:56.380 --> 00:14:59.380 
+But essentially when if you move.
+
+00:14:59.580 --> 00:15:05.315 
+I mean use PCM completely as your main memory, then you have problems because of the longer latency
+
+00:15:05.315 --> 00:15:10.993 
+and you need to design some techniques in order to provide, I mean mitigate the overhead of longer
+
+00:15:10.993 --> 00:15:12.500 
+latency and longer energy.
+
+00:15:13.340 --> 00:15:17.740 
+But at the same time PCM is much denser which provides you much higher density.
+
+00:15:18.100 --> 00:15:23.813 
+So these are some papers about using pure PCM main memory and also hybrid PCM DRAM which you can
+
+00:15:23.813 --> 00:15:25.420 
+check if you're interested.
+
+00:15:26.100 --> 00:15:29.500 
+And this is one of the paper that I was talking about.
+
+00:15:31.620 --> 00:15:38.694 
+OK, Intel also has used it and they designed this non volatile memory based on three DX point
+
+00:15:38.694 --> 00:15:44.780 
+technology which is very much similar to PCM and these obtain persistent memory.
+
+00:15:44.860 --> 00:15:52.360 
+They have proposed which you can actually you could have bought these themes and put in your
+
+00:15:52.360 --> 00:15:55.540 
+computer and use the this large memory.
+
+00:15:55.740 --> 00:16:01.840 
+So you can see that the size of it is actually 128 GB, which is relatively actually very high
+
+00:16:01.840 --> 00:16:03.940 
+capacity compared to DRAM teams.
+
+00:16:04.820 --> 00:16:13.380 
+And they also have another branch of it which you essentially use obtain for for SSDs.
+
+00:16:14.420 --> 00:16:21.948 
+So normally in a solid-state drive, you use flash memory, but you can also use obtain 3DX point as
+
+00:16:21.948 --> 00:16:24.100 
+as a for your storage media.
+
+00:16:24.420 --> 00:16:27.980 
+That would also provide fast higher performance.
+
+00:16:28.700 --> 00:16:36.526 
+Yeah, unfortunately Intel has stopped actually this line for persistent memory for some business
+
+00:16:36.526 --> 00:16:44.353 
+reasons, not, I'm not saying that much really scientific reasons, but from the business point of
+
+00:16:44.353 --> 00:16:52.180 
+view, they really couldn't I guess integrate nicely in their fabrication lab to reduce the cost.
+
+00:16:52.340 --> 00:16:58.620 
+So still fabricating such memories is actually costly and we cannot amortize overhead with.
+
+00:16:59.620 --> 00:17:06.020 
+OK, so now let's quickly also compare DRAM with phase change memory so or PCM.
+
+00:17:06.020 --> 00:17:13.100 
+So compared DRAM compared to PCM is faster, but actually much lower density.
+
+00:17:13.100 --> 00:17:19.717 
+So PCM is actually slower because so when you when you want to change the and that the phase of the
+
+00:17:19.717 --> 00:17:23.460 
+material you need to do heating and cooling essentially.
+
+00:17:23.820 --> 00:17:29.803 
+So by electrical circuits, you actually provide some current to your material and that current needs
+
+00:17:29.803 --> 00:17:31.060 
+to follow some pulse.
+
+00:17:31.620 --> 00:17:37.776 
+And with that you, for example, you heat the material and then you cool it down quickly or you heat
+
+00:17:37.776 --> 00:17:39.020 
+it in a longer time.
+
+00:17:39.260 --> 00:17:44.760 
+So based on that you can actually set different, you know, the phase of the material and that is
+
+00:17:44.760 --> 00:17:47.740 
+actually costly in terms of latency and also energy.
+
+00:17:48.900 --> 00:17:54.340 
+However, PCM has much higher density and this actually density is coming from 2 main reasons.
+
+00:17:54.340 --> 00:17:58.380 
+1 is that first of all you can scale PCM much better.
+
+00:17:58.620 --> 00:18:04.780 
+So DRAM is actually considered as a charge memory which you you store charge in capacitor.
+
+00:18:04.780 --> 00:18:09.940 
+And as you downscale DRAM at that capacity is getting smaller and smaller and smaller.
+
+00:18:10.300 --> 00:18:16.660 
+And that's essentially sensing that a small charge is becoming much more harder and and also causing
+
+00:18:16.660 --> 00:18:20.540 
+a lot of read disturbance issues that we are observing today.
+
+00:18:21.300 --> 00:18:27.749 
+However, for PCM actually people have showed that we can actually scale it much better with less
+
+00:18:27.749 --> 00:18:28.220 
+issues.
+
+00:18:28.260 --> 00:18:33.340 
+So PCM is potentially can provide the higher density because of the scalability.
+
+00:18:33.860 --> 00:18:37.940 
+And also in PCM you can store multiple bits in one set.
+
+00:18:38.940 --> 00:18:47.289 
+So with discuss about the resistive value and you can actually partition your resistive, let's say
+
+00:18:47.289 --> 00:18:49.420 
+window in only two steps.
+
+00:18:50.020 --> 00:18:53.220 
+And then you can encode it into only one bit like 0 or 1:00.
+
+00:18:53.580 --> 00:18:59.881 
+But you can also do it much, let's say with higher accuracy and you divide or you basically chop
+
+00:18:59.881 --> 00:19:03.820 
+the, you know, the distribution of resistance in four steps.
+
+00:19:04.300 --> 00:19:12.820 
+And with that you can essentially send 2 bits or you can do it 8 location and then you sense 3 bits.
+
+00:19:13.300 --> 00:19:19.180 
+And that's another angle that caused PCM have higher density compared to DRAM.
+
+00:19:19.500 --> 00:19:25.399 
+For DRAM also it's, it's not very easy as long as you, you really need to redesign that sensing
+
+00:19:25.399 --> 00:19:26.020 
+amplifier.
+
+00:19:26.260 --> 00:19:30.660 
+And that was not, people have not found how to do it actually with less cost.
+
+00:19:31.060 --> 00:19:34.980 
+And that's why in DRAM we still do only two steps, like 0 and one.
+
+00:19:35.420 --> 00:19:39.620 
+But in PCM, actually easily we can do 4 steps, 8 steps or so.
+
+00:19:40.220 --> 00:19:43.780 
+And that's also a technology that we are also using in flash memory as well.
+
+00:19:43.780 --> 00:19:50.717 
+Like in today's flash memory, I think you've seen they call it QLC that essentially they store 4
+
+00:19:50.717 --> 00:19:52.380 
+bits in each flash set.
+
+00:19:53.620 --> 00:19:59.460 
+OK, So PCM has higher density and also PCM we don't need to refresh actually.
+
+00:19:59.780 --> 00:20:05.720 
+And that's why because PCM is considered as a resistive memory and usually memories that they are
+
+00:20:05.720 --> 00:20:06.700 
+based on charge.
+
+00:20:06.900 --> 00:20:10.300 
+Fundamentally they lose charge after some time and you need to refresh them.
+
+00:20:10.780 --> 00:20:15.894 
+But PCM is considered as a resistive memory and you essentially you don't need to refresh it and you
+
+00:20:15.894 --> 00:20:17.020 
+would keep the charge.
+
+00:20:17.380 --> 00:20:23.868 
+Another important thing about PCM is that they are non volatile, meaning that in DRAM when you if
+
+00:20:23.868 --> 00:20:29.220 
+you just turn off the electricity, then DRAM is going to lose the charge, right.
+
+00:20:29.620 --> 00:20:33.140 
+But PCM will retain the charge even without electricity.
+
+00:20:33.140 --> 00:20:33.460 
+So.
+
+00:20:33.820 --> 00:20:38.620 
+And that's another very important reason that PCM can be used as a persistent memory.
+
+00:20:39.500 --> 00:20:44.818 
+DRAM cannot be used as persistent memory and that's why you always need to back DRAM with your disk
+
+00:20:44.818 --> 00:20:46.860 
+when you want to have persistent data.
+
+00:20:47.380 --> 00:20:54.180 
+But PCM can provide persistency because they don't lose charge by cutting off the electricity.
+
+00:20:56.980 --> 00:21:02.500 
+Yeah and the manufacturing PCM is actually not very, you know, mature.
+
+00:21:04.260 --> 00:21:06.380 
+So I show that Intel, for example, has done it.
+
+00:21:06.380 --> 00:21:11.518 
+But for for them also they realise that the overhead of that is actually huge and at some point
+
+00:21:11.518 --> 00:21:14.060 
+didn't make sense to them to continue the line.
+
+00:21:14.060 --> 00:21:15.700 
+From the business perspective.
+
+00:21:17.100 --> 00:21:25.096 
+These memory, PCM and also some other emerging memory technologies, they have endurance problems
+
+00:21:25.096 --> 00:21:32.260 
+which essentially you cannot write, raise and write or hear only write after NN times.
+
+00:21:32.460 --> 00:21:40.119 
+So for example, in PCM, if you write 10 to the power, 8 to a cell, then the cell is going to be out
+
+00:21:40.119 --> 00:21:45.380 
+and you cannot write reliably or even write and read from that cell.
+
+00:21:45.820 --> 00:21:51.194 
+And that's the endurance problem, which in order to make your memory reliable, you need to deal with
+
+00:21:51.194 --> 00:21:52.860 
+that with those issues as well.
+
+00:21:53.300 --> 00:21:59.472 
+I should say that actually flash memory also has the same problem, but people are designing a system
+
+00:21:59.472 --> 00:22:05.521 
+around flash memory, the story stop system in order to, you know, solve this problem and also many
+
+00:22:05.521 --> 00:22:07.620 
+other problems that they have, OK.
+
+00:22:07.780 --> 00:22:13.298 
+And PCM has higher access energy, especially, right energy for PCM is much higher because of this
+
+00:22:13.298 --> 00:22:16.940 
+process that you need to change the of the phase of the measure.
+
+00:22:18.180 --> 00:22:19.420 
+OK, any question.
+
+00:22:21.260 --> 00:22:27.458 
+I mean, these are just quick overview of these technologies, but if you really want to learn about
+
+00:22:27.458 --> 00:22:33.720 
+them, we have some lectures that I'm going to point you from, from our advanced course that you can
+
+00:22:33.720 --> 00:22:34.100 
+check.
+
+00:22:34.540 --> 00:22:40.380 
+OK, I'm going to also distinguish between these memory from charge memory and resistor memory.
+
+00:22:40.380 --> 00:22:46.100 
+As I also mentioned, charge memory, essentially you write data by capturing some charge.
+
+00:22:46.300 --> 00:22:48.540 
+And this is actually similar in DRAM.
+
+00:22:49.540 --> 00:22:50.980 
+Flash memory is also the same.
+
+00:22:52.220 --> 00:22:57.398 
+The technique is a bit different, but essentially also in flash memory in each cell you capture
+
+00:22:57.398 --> 00:22:57.780 
+charge.
+
+00:22:58.620 --> 00:23:01.140 
+I'm not going to detail of that, but that's also based on charge.
+
+00:23:01.620 --> 00:23:08.107 
+And then when you want to read, you need to read data by detecting the voltage, like how much charge
+
+00:23:08.107 --> 00:23:09.340 
+you have it stored.
+
+00:23:10.300 --> 00:23:16.996 
+Whereas in resistive memory you write data by pulsing some current and read data by detecting the
+
+00:23:16.996 --> 00:23:18.860 
+resistive of that material.
+
+00:23:19.380 --> 00:23:25.144 
+So charge memory is unfortunately are fundamentally prone to this losing charge and that's why you
+
+00:23:25.144 --> 00:23:26.380 
+need to refresh them.
+
+00:23:26.460 --> 00:23:30.100 
+In DRAM you need to refresh every 10s of millisecond.
+
+00:23:30.580 --> 00:23:31.940 
+In flash memory, you don't.
+
+00:23:32.260 --> 00:23:38.399 
+You don't need to refresh them that frequently, but still you need to refresh once a while, like
+
+00:23:38.399 --> 00:23:43.260 
+once a week or twice a week in order to, you know, have your data available.
+
+00:23:44.100 --> 00:23:50.930 
+If you if you just store your data in a flash cool disk and don't access your flash memory for
+
+00:23:50.930 --> 00:23:57.180 
+several years, then you may not be able actually to, you know, get your data reliably.
+
+00:23:58.860 --> 00:24:03.860 
+But our s s DS today are actually doing that in at the storage controller.
+
+00:24:04.820 --> 00:24:09.710 
+OK, but resistive memory, they don't have this problem, but they also have some other problems that
+
+00:24:09.710 --> 00:24:11.340 
+in the end is a trade off design.
+
+00:24:12.260 --> 00:24:16.580 
+So there are, there are many actually different, let's say emerging memory technologies.
+
+00:24:16.580 --> 00:24:22.524 
+But these are some promising resistive memory technologies, PCM, which we have already discussed
+
+00:24:22.524 --> 00:24:28.469 
+about it a little bit that you inject current to change the material phase and then we determine
+
+00:24:28.469 --> 00:24:31.380 
+the resistance, resistance of the of that face.
+
+00:24:32.500 --> 00:24:35.300 
+There is also another technology SCT MRAM.
+
+00:24:38.740 --> 00:24:48.420 
+It's been, it's been torque memory MRAM, like, yeah, I forgot what was what does it stand for?
+
+00:24:48.420 --> 00:24:52.260 
+But yeah, anyway, it's say transfer torque.
+
+00:24:52.260 --> 00:24:53.220 
+Yeah, it's been transfer torque.
+
+00:24:53.220 --> 00:24:53.580 
+Thank you.
+
+00:24:54.340 --> 00:24:57.380 
+Which in inject current to change magnet priority.
+
+00:24:57.500 --> 00:24:59.460 
+So basically there is a.
+
+00:24:59.580 --> 00:25:06.065 
+Well that by injecting current you can change the polarity of that magnet and there is a reference
+
+00:25:06.065 --> 00:25:12.351 
+to that and you can check understand whether or not you restore zero or one by checking the the
+
+00:25:12.351 --> 00:25:13.940 
+polarity of that magnet.
+
+00:25:14.860 --> 00:25:20.697 
+So, and there is also another other memory technologies, memory store, which you essentially inject
+
+00:25:20.697 --> 00:25:26.300 
+current to change the atomic structure and resistance determined by atom distance, essentially.
+
+00:25:27.500 --> 00:25:31.620 
+So yeah, if we want to learn more about these, you can check our lectures.
+
+00:25:32.580 --> 00:25:37.420 
+And essentially there are pros and cons among these technologies.
+
+00:25:37.740 --> 00:25:42.953 
+And unfortunately, there is no single perfect technology that we can use everywhere in the whole
+
+00:25:42.953 --> 00:25:44.420 
+memory system that we have.
+
+00:25:45.020 --> 00:25:51.940 
+OK, yeah, these lectures you can check if you're interested.
+
+00:25:51.940 --> 00:25:52.940 
+I'm just flashing them.
+
+00:25:55.140 --> 00:25:59.540 
+But I just want to also mention that why is important to study emerging memory technologies.
+
+00:26:00.060 --> 00:26:09.460 
+So flash memory that's today actually seems very, let's say, obvious technology that we need to use.
+
+00:26:09.460 --> 00:26:10.660 
+Like we use S, S, DS.
+
+00:26:10.860 --> 00:26:13.420 
+We have a lot of flash memory also in our smartphones.
+
+00:26:14.180 --> 00:26:18.380 
+But this technology actually was a very doubtful technology for several decades.
+
+00:26:18.940 --> 00:26:24.693 
+And there were some, you know, persistent people and intelligent people that they really work hard
+
+00:26:24.693 --> 00:26:26.220 
+on it to make it possible.
+
+00:26:27.220 --> 00:26:31.900 
+And now we are seeing, you know, our system with flash memory, without flash memory.
+
+00:26:31.900 --> 00:26:37.691 
+For example, we should have like carry a smartphone with a large DRAM or some let's say HT DS, which
+
+00:26:37.691 --> 00:26:39.660 
+is not really interesting to have.
+
+00:26:40.220 --> 00:26:47.833 
+But flash memory actually provides this possibility that people can store reasonably high amount of
+
+00:26:47.833 --> 00:26:50.140 
+data in a in a lower capacity.
+
+00:26:50.780 --> 00:26:57.955 
+And so that actually caused some would actually cause revolution in the phone, mobile phone
+
+00:26:57.955 --> 00:26:58.980 
+technologies.
+
+00:27:01.300 --> 00:27:01.580 
+OK.
+
+00:27:01.580 --> 00:27:07.273 
+So in this paper actually, we discussed a lot about, you know, we characterize different errors and
+
+00:27:07.273 --> 00:27:12.220 
+how people mitigate them and how we can recover in flash memory base papers from 2017.
+
+00:27:13.900 --> 00:27:14.140 
+OK.
+
+00:27:14.820 --> 00:27:20.868 
+And I should say that actually flash memory, we, it's very actually has a lot of issues and it's
+
+00:27:20.868 --> 00:27:21.940 
+very interesting.
+
+00:27:22.500 --> 00:27:29.264 
+And in our SSD, we have SSD controller which is designed around flash memory to make sure that would
+
+00:27:29.264 --> 00:27:35.826 
+basically all these difficulties and problems of flash memory are not exposed to the, to the host
+
+00:27:35.826 --> 00:27:36.300 
+system.
+
+00:27:36.700 --> 00:27:42.951 
+So as a, as ACPO or the operating system, you, you really don't know, you don't need to deal with
+
+00:27:42.951 --> 00:27:44.820 
+difficulties of flash memory.
+
+00:27:44.820 --> 00:27:50.137 
+There is this interesting system designed around it, which would solve all these problems, but you
+
+00:27:50.137 --> 00:27:51.820 
+can check if you're interested.
+
+00:27:52.380 --> 00:27:52.660 
+OK.
+
+00:27:52.660 --> 00:27:57.340 
+And also we have some lectures in flash memory that's in our advanced course.
+
+00:27:57.820 --> 00:28:05.720 
+We also have a course as a bachelor course PNS, which this semester also, we have a version of it
+
+00:28:05.720 --> 00:28:13.540 
+SSD course that Rakesh is teaching that he's not here, I guess, but yeah, so you can check this.
+
+00:28:13.660 --> 00:28:15.940 
+We're going to also have this course next semester as well.
+
+00:28:15.940 --> 00:28:17.820 
+So if you're interested, you can follow that as well.
+
+00:28:19.660 --> 00:28:19.980 
+OK.
+
+00:28:20.900 --> 00:28:24.820 
+And there are also a lot of talks on on these different topics.
+
+00:28:25.500 --> 00:28:29.780 
+I will also mention that processing memory is another important thing.
+
+00:28:29.780 --> 00:28:32.900 
+So so we discuss about the problems of the memory.
+
+00:28:32.900 --> 00:28:37.448 
+So it's kind of, I'm concluding, you know, the, the part of the memory technology for, you know, the
+
+00:28:37.448 --> 00:28:38.540 
+section of this lecture.
+
+00:28:39.180 --> 00:28:45.867 
+But essentially we discuss about the problems of the DRAM and how memory DRAM is fundamental to our
+
+00:28:45.867 --> 00:28:46.340 
+system.
+
+00:28:46.340 --> 00:28:48.100 
+Like there are a lot of problems of DRAM.
+
+00:28:48.660 --> 00:28:54.020 
+And so the to solve these problems, one way would be look into some other technologies.
+
+00:28:54.020 --> 00:28:56.900 
+And that's why looking to emerging memory technology is important.
+
+00:28:57.540 --> 00:29:03.130 
+But another important way of solving this problem is actually also changing the paradigm or the
+
+00:29:03.130 --> 00:29:04.660 
+perspective of our design.
+
+00:29:05.380 --> 00:29:11.787 
+So we've seen that essentially we you actually there was a slide in the previous lecture that we
+
+00:29:11.787 --> 00:29:17.060 
+discussed about how costly to bring data from the main memory to the processor.
+
+00:29:17.580 --> 00:29:23.060 
+And so that's actually we want to minimise data movement in our system.
+
+00:29:23.060 --> 00:29:28.317 
+And a lot of this problem is actually coming from the fact the way that we are doing computation
+
+00:29:28.317 --> 00:29:33.738 
+following a fun human model that we bring data from the storage from the memory to the processor to
+
+00:29:33.738 --> 00:29:36.860 
+do computation and then we store back to the main memory.
+
+00:29:37.060 --> 00:29:40.380 
+So we are very much processor centric in this.
+
+00:29:41.420 --> 00:29:44.420 
+I would say actually kind of book now because it's actually very long.
+
+00:29:45.020 --> 00:29:51.356 
+We discussed how the changing the paradigm by doing more memory centric and doing computation in
+
+00:29:51.356 --> 00:29:57.560 
+memory or where data resides essentially would provide much higher performance and also energy
+
+00:29:57.560 --> 00:29:59.540 
+efficiency and sustainability.
+
+00:30:00.060 --> 00:30:05.830 
+So it's also very interesting to look into that way of designing systems because that would give us
+
+00:30:05.830 --> 00:30:10.260 
+much better perspective and how we can change the system as we go in future.
+
+00:30:12.380 --> 00:30:17.340 
+We also have some courses specificating for PIM processing memory in in our group.
+
+00:30:17.340 --> 00:30:18.580 
+If you're interested, you can check.
+
+00:30:19.260 --> 00:30:24.580 
+OK, so with that, I conclude the the first part of this lecture and now I want to get to memory
+
+00:30:24.580 --> 00:30:25.140 
+hierarchy.
+
+00:30:25.140 --> 00:30:32.180 
+But any question OK, I'm not seeing any hands.
+
+00:30:32.180 --> 00:30:39.100 
+So, so memory hierarchy in is actually something that we have in our all our system.
+
+00:30:40.580 --> 00:30:45.140 
+And I think by now you can actually guess why we need memory hierarchy.
+
+00:30:45.140 --> 00:30:51.220 
+So we have different we've essentially we want to get to the ideal memory, which is let's say 0
+
+00:30:51.220 --> 00:30:52.180 
+access latency.
+
+00:30:52.180 --> 00:30:58.423 
+But I would say, I would say that small or low memory access latency, but at the same time you
+
+00:30:58.423 --> 00:31:02.740 
+really want a huge memory and these two are actually conflicting.
+
+00:31:02.740 --> 00:31:06.900 
+There are also many other metrics or parameters that they're also conflicting.
+
+00:31:07.460 --> 00:31:10.780 
+And in order to work around it, people are designing memory hierarchy.
+
+00:31:11.700 --> 00:31:14.260 
+You've seen actually hierarchy before in this course as well.
+
+00:31:14.260 --> 00:31:19.996 
+When we discussing about register file, we have some registers in order to store some temporary
+
+00:31:19.996 --> 00:31:20.540 
+variable.
+
+00:31:20.980 --> 00:31:26.359 
+So we don't go to the to the main memory like for all these access, we try to have some registers
+
+00:31:26.359 --> 00:31:30.020 
+and try to capture some intermediate variables in those registers.
+
+00:31:30.500 --> 00:31:35.596 
+And so that's actually kind of a memory hierarchy that you know by now also you have register file
+
+00:31:35.596 --> 00:31:37.260 
+and then you have a main memory.
+
+00:31:37.660 --> 00:31:42.600 
+But in fact, actually memory hierarchy is much more, we have several layers levels of caches which
+
+00:31:42.600 --> 00:31:45.020 
+we're going to see much more in today's lecture.
+
+00:31:45.500 --> 00:31:50.460 
+So these are some, you know, the chips from different, you know, different systems.
+
+00:31:51.140 --> 00:31:57.111 
+And so here we have a core which has registered for L1 cache and also you have L2 cache and then you
+
+00:31:57.111 --> 00:32:02.963 
+have some DRAM interface and you have this DRAM S And as you can see that DRAM is actually kind of
+
+00:32:02.963 --> 00:32:03.740 
+dis disjoint.
+
+00:32:03.740 --> 00:32:05.540 
+It's separated from the processor chip.
+
+00:32:06.580 --> 00:32:13.980 
+And these caches are mostly actually SRAM because of the, you know, faster access latencies.
+
+00:32:15.940 --> 00:32:16.180 
+Yeah.
+
+00:32:16.180 --> 00:32:21.420 
+And this is also another example from Apple and it's also from Apple M1.
+
+00:32:22.260 --> 00:32:28.460 
+And in the past, actually processor like L2 was, was a separate chip from the processor chip.
+
+00:32:28.820 --> 00:32:36.623 
+But as the advancement in the real SI technology, people basically integrate L2 and now also L3 in
+
+00:32:36.623 --> 00:32:44.187 
+the processor chip to make, you know, provide much higher bandwidth caches and much higher also
+
+00:32:44.187 --> 00:32:45.860 
+higher density cache.
+
+00:32:46.620 --> 00:32:46.940 
+OK.
+
+00:32:48.540 --> 00:32:52.620 
+So yeah, these are some example from other different system, AMD Ryzen.
+
+00:32:53.780 --> 00:33:03.085 
+They also now doing this 3D level cache as well in AMD systems in I, I guess in Ryzen, actually in
+
+00:33:03.085 --> 00:33:04.700 
+Ryzen 7000 or so.
+
+00:33:05.260 --> 00:33:11.540 
+And after that, they have a 3D level of SRAM, which provides much higher capacity for caches.
+
+00:33:12.420 --> 00:33:16.580 
+OK, Yeah.
+
+00:33:16.580 --> 00:33:20.799 
+These are also some things about L1 and scratchpad which we're going to get back to that actually
+
+00:33:20.799 --> 00:33:21.060 
+later.
+
+00:33:21.060 --> 00:33:22.860 
+So I don't want to go into it now.
+
+00:33:23.340 --> 00:33:23.580 
+OK.
+
+00:33:23.940 --> 00:33:29.307 
+So the reason we are designing hierarchy actually is because of this that we cannot really get these
+
+00:33:29.307 --> 00:33:30.220 
+metrics together.
+
+00:33:30.980 --> 00:33:32.700 
+We cannot get any of them also.
+
+00:33:33.620 --> 00:33:36.260 
+But to work around it, we design Hierarchy.
+
+00:33:37.300 --> 00:33:42.720 
+So ideal memories requirement oppose each other, bigger is slow and faster is also more expensive
+
+00:33:42.720 --> 00:33:45.180 
+and higher bandwidth is also more expensive.
+
+00:33:45.660 --> 00:33:52.380 
+So when your memory is bigger it takes longer to determine the location and also from the.
+
+00:33:53.420 --> 00:33:59.824 
+So when you want to design A faster memory, even for one technology, you, you may you pay much more
+
+00:33:59.824 --> 00:34:00.860 
+like for a SLAM.
+
+00:34:00.860 --> 00:34:05.100 
+Actually there are different ways of designing a SLAM from which transistor we are using.
+
+00:34:05.380 --> 00:34:11.459 
+We have a high performance transistor, we have low power transistors and if you use high performance
+
+00:34:11.459 --> 00:34:17.295 
+transistor you're actually you know paying more for lower latency for DRAM, SSC and so on and so
+
+00:34:17.295 --> 00:34:17.660 
+forth.
+
+00:34:17.860 --> 00:34:24.265 
+So but even if, but by also from the perspective of memory technology, different technology actually
+
+00:34:24.265 --> 00:34:30.542 
+provides different latency and different cost as you've seen before also and from higher bandwidth
+
+00:34:30.542 --> 00:34:36.755 
+is also is more expensive because when you want to increase the bandwidth, you need to add banks,
+
+00:34:36.755 --> 00:34:42.840 
+you need to have more ports, more channels and higher frequency or faster technology and all of
+
+00:34:42.840 --> 00:34:47.260 
+them would actually contribute in higher in more cost in that memory.
+
+00:34:48.780 --> 00:34:57.160 
+So here are some numbers actually from the 2020 circa 2023 or so that essentially, you know, I don't
+
+00:34:57.160 --> 00:34:59.340 
+expect you to actually to.
+
+00:34:59.580 --> 00:35:00.460 
+Memorize any of them.
+
+00:35:00.900 --> 00:35:05.740 
+But just to give you some perspective, we actually have a yeah, we also have a table view.
+
+00:35:06.340 --> 00:35:07.540 
+So yeah.
+
+00:35:07.540 --> 00:35:14.340 
+So with different memory devices, RAM, you know the you can have a smallest Rams and that would
+
+00:35:14.340 --> 00:35:17.060 
+provide latency of sub sub nanosecond.
+
+00:35:17.420 --> 00:35:24.561 
+You can also have around KB or MB of SRAM that they provide some latency around like in order of
+
+00:35:24.561 --> 00:35:25.380 
+nanosecond.
+
+00:35:26.700 --> 00:35:28.980 
+And here also you can see the cost per MB.
+
+00:35:29.620 --> 00:35:34.140 
+So for SRAM actually the the cost is much higher compared to you know, other memories.
+
+00:35:34.940 --> 00:35:41.220 
+DRAM you can have capacity of gigabytes, latency is around 50 nanosecond or more or so.
+
+00:35:41.940 --> 00:35:50.324 
+And also the cost per is lower compared to SRAM PCMD, which is actually Intel obtained that is
+
+00:35:50.324 --> 00:35:58.977 
+actually longer access latency of that is longer compared to DRAM, but is less costly compared to
+
+00:35:58.977 --> 00:35:59.780 
+the data.
+
+00:36:00.740 --> 00:36:08.400 
+You can also use this technology for SSD, as I said that provides higher, you know gigabytes of
+
+00:36:08.400 --> 00:36:10.900 
+memory and also in order of TB.
+
+00:36:11.900 --> 00:36:17.327 
+But you can see that the latency now we are actually in territory of microseconds, so it can be 10
+
+00:36:17.327 --> 00:36:18.380 
+microseconds or so.
+
+00:36:19.220 --> 00:36:24.412 
+Flash memory provide much higher capacity, but they are also much slower, like 50 to 100
+
+00:36:24.412 --> 00:36:25.180 
+microseconds.
+
+00:36:25.540 --> 00:36:31.136 
+And hard disk are also much you can they can provide much higher capacity, but they are also much
+
+00:36:31.136 --> 00:36:31.540 
+slower.
+
+00:36:32.220 --> 00:36:39.717 
+So basically this table shows you that bigger is a slower and the cost is actually also decreasing
+
+00:36:39.717 --> 00:36:41.860 
+as we go to this technology.
+
+00:36:42.140 --> 00:36:43.940 
+So faster is also more expensive.
+
+00:36:47.740 --> 00:36:53.375 
+There's also this, you know, data from the energies perspective, which I'm not going into detail of
+
+00:36:53.375 --> 00:36:53.660 
+that.
+
+00:36:54.180 --> 00:37:00.955 
+But for that also you can see that we need to spend much higher energy when we want to get data from
+
+00:37:00.955 --> 00:37:07.392 
+these, you know, other like bigger memory technologies which they are far also further from us,
+
+00:37:07.392 --> 00:37:14.100 
+like getting data from the DRAM, you know, you need to consume much higher energy compared to SRAM.
+
+00:37:14.300 --> 00:37:20.317 
+And that's why by processing memory, we try to argue that basically it's not really it's not
+
+00:37:20.317 --> 00:37:24.700 
+beneficial, it's not good or efficient to move that data that much.
+
+00:37:25.140 --> 00:37:31.204 
+So if you if you, if your data actually storing SYSI in flash memory and you want to bring that data
+
+00:37:31.204 --> 00:37:37.087 
+to your SRAM and then to the processor, you need to consume a lot of energy, which is not really,
+
+00:37:37.087 --> 00:37:38.300 
+you know, efficient.
+
+00:37:38.780 --> 00:37:43.100 
+So it's better to do computation where data resides as much as possible.
+
+00:37:44.740 --> 00:37:45.060 
+OK.
+
+00:37:47.460 --> 00:37:50.620 
+And here is also the the slide from 2011.
+
+00:37:50.980 --> 00:37:55.289 
+So you can also check numbers are a bit different, but just for your perspective you can also check
+
+00:37:55.289 --> 00:37:55.420 
+it.
+
+00:37:55.740 --> 00:38:01.473 
+OK, so we want both fast and large memory, but we cannot achieve both with the single level of
+
+00:38:01.473 --> 00:38:01.900 
+memory.
+
+00:38:01.940 --> 00:38:08.357 
+And the idea is that we want to have multiple levels of storage that progressively they are coming
+
+00:38:08.357 --> 00:38:14.513 
+bigger and slower as the levels are farther from the processor and ensure most of the data the
+
+00:38:14.513 --> 00:38:17.460 
+processor needs is kept in the faster levels.
+
+00:38:18.220 --> 00:38:24.636 
+So if you can make sure that most of your data actually or ideally all of your data can be accessed
+
+00:38:24.636 --> 00:38:31.052 
+from the cache from that small memory which we have, then the processor is going to experience only
+
+00:38:31.052 --> 00:38:33.580 
+the access latency of that fast memory.
+
+00:38:34.180 --> 00:38:40.006 
+By the same time you have huge memory to back that small memory, which in the end provides, you
+
+00:38:40.006 --> 00:38:43.380 
+know, larger space for, for the programmer and also us.
+
+00:38:44.100 --> 00:38:49.842 
+So the memory system looks like something like that, that you have actually some caches, some levels
+
+00:38:49.842 --> 00:38:52.140 
+of caches which they are small and fast.
+
+00:38:52.140 --> 00:38:58.670 
+But then you also have main memory, there can be other memory, you know, the hierarchy, you can also
+
+00:38:58.670 --> 00:39:01.740 
+think of SSDSHDDS, tape and so on and so forth.
+
+00:39:01.740 --> 00:39:04.540 
+But essentially we have a hierarchy in the memory system.
+
+00:39:06.300 --> 00:39:12.636 
+So we want to basically we want to move what we want to use here to the fast and small memory, which
+
+00:39:12.636 --> 00:39:18.592 
+hopefully with the good locality of references, we're going to talk about different, you know,
+
+00:39:18.592 --> 00:39:19.860 
+aspects of locality.
+
+00:39:20.260 --> 00:39:27.161 
+But as much as hopefully we have locality in memory accesses, we can hopefully, you know, the access
+
+00:39:27.161 --> 00:39:33.648 
+the memory as fast as the small, you know, the small memory and also have as large as the, you
+
+00:39:33.648 --> 00:39:36.340 
+know, the big large, but a slow memory.
+
+00:39:38.140 --> 00:39:42.578 
+You're going to see that in order to make it effective, you actually need to, you know, add more
+
+00:39:42.578 --> 00:39:45.260 
+levels in the pipeline in sorry, in your memory hierarchy.
+
+00:39:45.700 --> 00:39:47.260 
+So it's not only one level of cache.
+
+00:39:47.260 --> 00:39:49.540 
+We're going to have different levels in the memory hierarchy.
+
+00:39:50.100 --> 00:39:55.993 
+And again, as we go down the hierarchy, we're going to get, you know, memory that they are larger,
+
+00:39:55.993 --> 00:39:58.700 
+but they're also slower and also less costly.
+
+00:40:01.060 --> 00:40:01.460 
+OK.
+
+00:40:01.500 --> 00:40:04.700 
+So, yeah, that's the fundamental trade of that.
+
+00:40:04.700 --> 00:40:10.586 
+We're going to see that essentially fast memory is small, large memory is slow, and we design memory
+
+00:40:10.586 --> 00:40:11.940 
+hierarchy for that, OK.
+
+00:40:12.340 --> 00:40:13.980 
+And you've seen register file as well.
+
+00:40:13.980 --> 00:40:16.980 
+So register file is also part of your memory hierarchy.
+
+00:40:18.260 --> 00:40:23.634 
+But that register file is backed by some levels of caches and then main memory, hard disk and so on
+
+00:40:23.634 --> 00:40:24.340 
+and so forth.
+
+00:40:25.020 --> 00:40:31.560 
+OK, in this slide also you see different levels of cache as an example and the capacity that they
+
+00:40:31.560 --> 00:40:32.100 
+provide.
+
+00:40:32.100 --> 00:40:39.500 
+So L1 cache provides capacity around 10s of KB and we want to access L1 cache around 1 nanosecond.
+
+00:40:40.700 --> 00:40:48.299 
+L2 is hundreds of KB and access latency around let's say 5 nanosecond and L3 is several MB, but the
+
+00:40:48.299 --> 00:40:55.898 
+access latency is around 10 nanosecond and main memory is several GB which is access latency of 100
+
+00:40:55.898 --> 00:40:56.820 
+nanoseconds.
+
+00:40:57.060 --> 00:41:00.380 
+And you can actually continue that by talking about s s, DS and St.
+
+00:41:00.380 --> 00:41:00.700 
+DS.
+
+00:41:02.540 --> 00:41:05.180 
+So these are some numbers from this also paper.
+
+00:41:05.460 --> 00:41:12.074 
+Nowadays numbers might be a little bit different, but overall you got the idea that, you know, we
+
+00:41:12.074 --> 00:41:15.620 
+have fast at the top level and slower at the bottom.
+
+00:41:16.660 --> 00:41:19.460 
+OK, so why this memory hierarchy works?
+
+00:41:19.660 --> 00:41:26.943 
+The reason is actually because locality principle that essentially in general, without talking about
+
+00:41:26.943 --> 00:41:32.260 
+the memory one's recent past is a very good predictor of the near future.
+
+00:41:33.260 --> 00:41:38.900 
+And we've seen that a lot actually, you know, in our also everyday life.
+
+00:41:40.620 --> 00:41:44.340 
+And I would also, you know, defining two different ways.
+
+00:41:44.340 --> 00:41:46.220 
+So locality can be temporal.
+
+00:41:47.020 --> 00:41:51.180 
+So if you just did something, it is very likely that you will do the same thing again soon.
+
+00:41:51.820 --> 00:41:58.216 
+Like, like if you are sorry, in our, in our lecture, actually in DDC lecture, there are some
+
+00:41:58.216 --> 00:42:02.180 
+students that they are attending almost all the lectures.
+
+00:42:02.620 --> 00:42:07.077 
+So if, if you're attending, there is really, you know, high chance that you're also attending
+
+00:42:07.077 --> 00:42:08.420 
+hopefully the next lectures.
+
+00:42:08.820 --> 00:42:10.380 
+And, and we've seen that actually a lot.
+
+00:42:10.860 --> 00:42:15.580 
+And there are, if you're not attending, you're, you're going to continue not attending as well.
+
+00:42:16.060 --> 00:42:20.965 
+So that's the kind of temporal locality that you can think of and or for example, if you're
+
+00:42:20.965 --> 00:42:24.900 
+listening now, there is a chance that you're going to continue listening.
+
+00:42:25.220 --> 00:42:30.238 
+If you're not listening now, there is a chance that you're not you're not listening very soon as
+
+00:42:30.238 --> 00:42:30.500 
+well.
+
+00:42:31.100 --> 00:42:32.500 
+So that's temporal locality.
+
+00:42:33.700 --> 00:42:37.660 
+Since you are here today, there is a good chance that you will be here again and again regularly.
+
+00:42:39.540 --> 00:42:45.525 
+We also have a special locality, which if you did something, it's very likely you will do something
+
+00:42:45.525 --> 00:42:47.460 
+similar or related in the space.
+
+00:42:48.300 --> 00:42:53.918 
+Meaning that every time I find you in this room, you are probably sitting close to the same people
+
+00:42:53.918 --> 00:42:59.193 
+and or in close by seats like, I don't know, you can think of maybe you have some, you know,
+
+00:42:59.193 --> 00:43:04.754 
+regions that you're sitting mostly in the lectures and that's kind of a special locality that you
+
+00:43:04.754 --> 00:43:05.500 
+can think of.
+
+00:43:07.020 --> 00:43:07.340 
+OK.
+
+00:43:08.340 --> 00:43:14.199 
+But we also have memory locality, which we're going to use actually in order to make this memory
+
+00:43:14.199 --> 00:43:15.420 
+hierarchy effective.
+
+00:43:15.860 --> 00:43:18.900 
+So a typical program has a lot of locality in memory references.
+
+00:43:19.780 --> 00:43:23.380 
+And first of all, typical programs are components of loops.
+
+00:43:23.820 --> 00:43:27.260 
+So you have a loop and you're going to, you know, iterate on that loop.
+
+00:43:27.980 --> 00:43:37.420 
+So like instructions that you have inside your loops, you're going to access them right iteratively.
+
+00:43:37.700 --> 00:43:40.820 
+So you're going to have temporal locality in those accesses.
+
+00:43:41.260 --> 00:43:46.167 
+And there are some references, some let's say for example, you have a contour and you want to
+
+00:43:46.167 --> 00:43:51.286 
+increment that contour, you know, so that contour, which is a memory address, a variable that you
+
+00:43:51.286 --> 00:43:56.351 
+store in memory, you have some locality for that which you're going to access that and increment
+
+00:43:56.351 --> 00:43:57.460 
+that again and again.
+
+00:43:59.660 --> 00:44:02.060 
+So that's the kind of a temporal locality that you can think of.
+
+00:44:02.100 --> 00:44:04.500 
+Also in terms of a special locality.
+
+00:44:05.300 --> 00:44:09.020 
+Most of we are we are operating a lot on arrays, OK.
+
+00:44:09.020 --> 00:44:15.315 
+And in arrays, actually memory references are, you know, close by or so think about SIMD also
+
+00:44:15.315 --> 00:44:17.820 
+lecture that we discuss about stride.
+
+00:44:18.260 --> 00:44:20.420 
+So memory accesses can be a stride of 1.
+
+00:44:20.820 --> 00:44:23.620 
+So you're going to have a special locality in your memory accesses.
+
+00:44:23.740 --> 00:44:29.667 
+OK, So that's the kind of special locality that we have in data access because we are working on
+
+00:44:29.667 --> 00:44:30.100 
+arrays.
+
+00:44:30.940 --> 00:44:37.497 
+But from the perspective of instructions also, if you think about MIPS for example, instructions are
+
+00:44:37.497 --> 00:44:40.580 
+usually the previous instruction plus 4, right?
+
+00:44:41.060 --> 00:44:45.820 
+So you always have this kind of a special locality in your accessing instructions.
+
+00:44:46.460 --> 00:44:51.260 
+Sometimes we don't have because of the branches, but overall instructions are continued.
+
+00:44:52.260 --> 00:44:57.419 
+So temporary program tends to reference the same memory location many times and all within a small
+
+00:44:57.419 --> 00:44:59.420 
+window of time and especially program.
+
+00:44:59.580 --> 00:45:05.591 
+Tends to tends to reference nearby memory location within a window of time, and we've seen that from
+
+00:45:05.591 --> 00:45:09.620 
+instruction memory references and references to arrays and vectors.
+
+00:45:09.860 --> 00:45:12.860 
+OK, so it's a good place to stop.
+
+00:45:13.340 --> 00:45:20.380 
+We will continue after the break, so let's get back at 3:15 when the ring bells when the bell rings.
+
+00:45:22.891 --> 00:45:24.491 
+OK, let's let's continue.
+
+00:45:25.331 --> 00:45:34.278 
+So we discuss about temporal and special locality and and essentially caching is, you know it's
+
+00:45:34.278 --> 00:45:38.611 
+designing based on this locality that we have.
+
+00:45:39.731 --> 00:45:43.331 
+So we design caching based on to exploit temporal locality.
+
+00:45:43.331 --> 00:45:50.331 
+So the idea is that we want to store recently access data in automatically managed fast memory.
+
+00:45:50.331 --> 00:45:55.895 
+So you automatically managed, meaning that this programmer transparent that we usually call as
+
+00:45:55.895 --> 00:45:56.251 
+cache.
+
+00:45:56.611 --> 00:46:03.568 
+There is also, you know, software managed of, you know, design for cache that people call it usually
+
+00:46:03.568 --> 00:46:04.891 
+scratch pad memory.
+
+00:46:05.771 --> 00:46:09.749 
+So when you when you talk about cache, we usually mean that it's actually hardware managed or
+
+00:46:09.749 --> 00:46:10.691 
+automatically managed.
+
+00:46:11.811 --> 00:46:16.107 
+And so essentially the anticipation here is that the same memory location will be accessed again
+
+00:46:16.107 --> 00:46:16.331 
+soon.
+
+00:46:17.371 --> 00:46:21.251 
+And here we are actually benefiting from temporal locality principle.
+
+00:46:22.851 --> 00:46:25.091 
+And this is actually what's also Maurice Wigs.
+
+00:46:25.531 --> 00:46:32.521 
+Wigs had in mind, if you know about him is the is the one that also designed this micro code micro
+
+00:46:32.521 --> 00:46:35.731 
+architecture, multi cycle micro architecture.
+
+00:46:35.731 --> 00:46:42.632 
+And so, so basically this is, you know the writing from from this paper that the use the uses
+
+00:46:42.632 --> 00:46:49.979 
+discuss of a fast core memory of say 32,000 words, which is quite a small compared to the you know,
+
+00:46:49.979 --> 00:46:52.651 
+the memory sizes that we have today.
+
+00:46:54.051 --> 00:47:00.345 
+So this 32,000 words as a slave to a slower core memory of say 1,000,000 words in such a way that in
+
+00:47:00.345 --> 00:47:06.450 
+practical cases the effective access time is nearer that of the fast memory than that of the slow
+
+00:47:06.450 --> 00:47:06.891 
+memory.
+
+00:47:06.931 --> 00:47:13.026 
+So essentially you know there is a small memory as cache which people have designed long time ago as
+
+00:47:13.026 --> 00:47:13.331 
+well.
+
+00:47:14.611 --> 00:47:20.457 
+Also we want to exploit the special locality so we store data in addresses adjacent to the recently
+
+00:47:20.457 --> 00:47:23.411 
+accessed one in automatically managed fast memory.
+
+00:47:24.331 --> 00:47:30.395 
+So essentially we logically divide memory into equal size blocks and we fetch to cache the access
+
+00:47:30.395 --> 00:47:31.771 
+block in its entirety.
+
+00:47:32.251 --> 00:47:37.785 
+So whenever, for example, the program has a memory access, which can be like byte, you know, you
+
+00:47:37.785 --> 00:47:43.377 
+want to fetch a byte or you want to fetch a word, you don't only bring that byte or word from the
+
+00:47:43.377 --> 00:47:44.531 
+memory to the cache.
+
+00:47:44.651 --> 00:47:49.651 
+You basically bring that word and also around that word.
+
+00:47:50.051 --> 00:47:55.051 
+You know, I said the whole block, which can be several words like 64 bytes.
+
+00:47:55.771 --> 00:48:01.506 
+And with that you can, you're trying to benefit from the special locality by saying that I, I
+
+00:48:01.506 --> 00:48:03.171 
+already accessed this byte.
+
+00:48:03.371 --> 00:48:08.491 
+So hope probably I'm going to access the neighboring bytes as well in near future.
+
+00:48:08.491 --> 00:48:13.933 
+So I'm bringing the whole cache block or the whole these equal size blocks to the to the cache in
+
+00:48:13.933 --> 00:48:16.571 
+order to, you know, access them fast in future.
+
+00:48:17.331 --> 00:48:20.731 
+And that's if you, if you, if you can benefit from them, that's a bingo.
+
+00:48:20.731 --> 00:48:21.571 
+Like it's great.
+
+00:48:22.491 --> 00:48:25.531 
+We can, you know, have this access in the cache.
+
+00:48:26.931 --> 00:48:32.282 
+So, and that's especially because the principle that nearby data in memory will be accessing in the
+
+00:48:32.282 --> 00:48:32.931 
+near future.
+
+00:48:33.971 --> 00:48:38.291 
+And we've seen that in accessing the instruction and also error traversal.
+
+00:48:38.731 --> 00:48:47.971 
+And this is also what in IBM36085 also implemented that they had 16 KB cache with 64 byte blocks.
+
+00:48:48.891 --> 00:48:53.451 
+Now it is also still block sizes around 64 is actually 64.
+
+00:48:53.451 --> 00:49:01.211 
+GPU might use longer cache blocks like 128 or so, but still the idea is the same.
+
+00:49:01.211 --> 00:49:04.891 
+So you bring that block in order to benefit from special locality.
+
+00:49:07.331 --> 00:49:13.312 
+So by temporal locality, you bring the memory access, the basic, the location that you want that you
+
+00:49:13.312 --> 00:49:13.731 
+access.
+
+00:49:13.731 --> 00:49:17.771 
+You're saying that near future I'm going to access that location as well.
+
+00:49:17.891 --> 00:49:19.731 
+So I'm going to bring that to the cache.
+
+00:49:20.931 --> 00:49:25.127 
+But for special locality, you're saying that I'm bringing that location and also around that
+
+00:49:25.127 --> 00:49:29.051 
+location because I'm in near future I'm going to access the neighboring bytes as well.
+
+00:49:30.491 --> 00:49:34.011 
+So I also like this bookshelf analogy that you can think of.
+
+00:49:34.411 --> 00:49:36.451 
+You might have, you have some books in your hand.
+
+00:49:36.451 --> 00:49:37.891 
+That's a computer architecture book.
+
+00:49:39.091 --> 00:49:43.415 
+And that's the book that you're taking your hand and you're operating on it, which you can think of
+
+00:49:43.415 --> 00:49:45.731 
+as your hand can be as a register, register file, OK.
+
+00:49:46.211 --> 00:49:51.251 
+And you also have a desk and that your desk, you can think of some like caches.
+
+00:49:52.051 --> 00:49:58.202 
+And so you put computer architecture books and some other books from your class that you need in
+
+00:49:58.202 --> 00:49:58.971 
+near future.
+
+00:49:59.451 --> 00:50:04.131 
+And then at some point your your desk gets full and then you put adjacent books in the shelf.
+
+00:50:05.211 --> 00:50:07.731 
+I mean, other books in the shelf and so on and so forth.
+
+00:50:08.371 --> 00:50:13.331 
+Also in the in the shelf, the way that you map your book is actually important, interesting.
+
+00:50:13.331 --> 00:50:19.431 
+Like those books that they are relating to the same topic, let's say computer architecture, you try
+
+00:50:19.431 --> 00:50:20.171 
+to put them.
+
+00:50:20.251 --> 00:50:25.220 
+I mean the, you know, the around same location in that shelf, because with that you can actually
+
+00:50:25.220 --> 00:50:26.411 
+fetch them much faster.
+
+00:50:26.851 --> 00:50:35.279 
+So that's also the way that we do try to, you know, exploit a special locality, you know, in our
+
+00:50:35.279 --> 00:50:43.356 
+daily routine as well, OK, So caching actually needs to be nicely integrated in the pipeline
+
+00:50:43.356 --> 00:50:43.971 
+design.
+
+00:50:43.971 --> 00:50:49.299 
+So the cache needs to be tightly integrated in the pipeline and ideally we want to access in one
+
+00:50:49.299 --> 00:50:52.131 
+cycle so that load dependent operation do not stop.
+
+00:50:52.571 --> 00:50:57.580 
+So remember about, you know, the pipeline design that we had before, we're saying that the memory
+
+00:50:57.580 --> 00:50:59.491 
+stage is going to take one cycle, OK.
+
+00:50:59.811 --> 00:51:03.291 
+So that can be handled actually if we consider we have some caches, OK.
+
+00:51:04.091 --> 00:51:09.891 
+But The thing is that that on one cycle then makes the cache actually quite a small.
+
+00:51:10.091 --> 00:51:15.171 
+So or in other way round, the processor needs to have high frequency.
+
+00:51:15.851 --> 00:51:20.280 
+And because if you want to have a cache which can be accessed with that higher frequency, you really
+
+00:51:20.280 --> 00:51:22.451 
+need to, you cannot make your cache large enough.
+
+00:51:23.011 --> 00:51:29.051 
+So you need large caches, but at the same time you really need to be able to access your cache fast.
+
+00:51:29.451 --> 00:51:36.474 
+So that's why people, you know, design cache hierarchy similarly with the same reason that we have a
+
+00:51:36.474 --> 00:51:43.357 
+level 1 cache which you can actually small and can be accessed quite fast, you know, in one or two
+
+00:51:43.357 --> 00:51:44.411 
+or four cycles.
+
+00:51:45.531 --> 00:51:50.371 
+And then you have some other levels of cache in order to provide much higher capacity for caches.
+
+00:51:51.131 --> 00:51:51.491 
+OK.
+
+00:51:52.571 --> 00:51:55.251 
+And that's cache hierarchy, which we're going to see that today as well.
+
+00:51:56.411 --> 00:51:59.891 
+Also a very quick note on manual versus automatic management.
+
+00:52:00.011 --> 00:52:05.971 
+So it can be the management of cache can be manual that programmer manages data movement across
+
+00:52:05.971 --> 00:52:06.411 
+levels.
+
+00:52:06.491 --> 00:52:08.931 
+So programmer decide where to put data.
+
+00:52:09.411 --> 00:52:13.171 
+And that's something that which is also called as scratch pad memory.
+
+00:52:14.251 --> 00:52:19.484 
+So that memory actually or cache if you if you will, needs to be actually part of the memory
+
+00:52:19.484 --> 00:52:24.491 
+addresses space such that you can decide where to put your memory at the software layer.
+
+00:52:24.931 --> 00:52:30.097 
+And it can be programmer or compiler that can, you know, help with that, but essentially is at some
+
+00:52:30.097 --> 00:52:34.011 
+point is going to be too painful for programmers on substantial programmes.
+
+00:52:34.011 --> 00:52:40.634 
+So it's actually has been used in processor that they have very specialised use or some specific
+
+00:52:40.634 --> 00:52:41.531 
+applications.
+
+00:52:41.891 --> 00:52:48.162 
+Like if you think about embedded processors, you have very specific applications that you're running
+
+00:52:48.162 --> 00:52:49.291 
+on that processor.
+
+00:52:49.611 --> 00:52:54.609 
+So you may not you may not need actually caches and you can actually handle everything on a scratch
+
+00:52:54.609 --> 00:52:54.811 
+pad.
+
+00:52:54.811 --> 00:52:59.451 
+Memory or GPU is actually NVIDIA call them shared memory.
+
+00:53:00.611 --> 00:53:05.387 
+But later on also they realise that relying only on the scratch pad memory or shared memory is not
+
+00:53:05.387 --> 00:53:07.971 
+good enough because of the program programmer issues.
+
+00:53:08.451 --> 00:53:15.495 
+And they also introduce L1 and shared memory which can be used alternatively or in combination and a
+
+00:53:15.495 --> 00:53:19.651 
+lot of accelerators also they are using scratch pad memory.
+
+00:53:21.731 --> 00:53:27.427 
+Also, managing cache can be automatic, which hardware manages data movement across levels completely
+
+00:53:27.427 --> 00:53:29.251 
+transparently to the programmer.
+
+00:53:29.571 --> 00:53:31.451 
+So that makes the programming life easier.
+
+00:53:31.571 --> 00:53:35.571 
+And now the average programming doesn't need to know about caches.
+
+00:53:36.171 --> 00:53:37.451 
+And here is also very interesting.
+
+00:53:37.451 --> 00:53:42.251 
+So as a programmer, you don't need to know about caches if you only care about writing a correct
+
+00:53:42.251 --> 00:53:42.651 
+program.
+
+00:53:43.331 --> 00:53:49.427 
+But if you really want to also write a fast program, then, OK, then you may need to know about
+
+00:53:49.427 --> 00:53:55.783 
+caches because then you the way that you map your data, the way you access your data, you may, you
+
+00:53:55.783 --> 00:54:02.009 
+know, just reorder your operations in order to make sure that you can maximise the hit rate, for
+
+00:54:02.009 --> 00:54:03.371 
+example, in L1 cache.
+
+00:54:03.931 --> 00:54:08.611 
+So then if you really about care about the speed of your program, you do need to care about caches,
+
+00:54:08.611 --> 00:54:09.651 
+the size of the cache.
+
+00:54:10.331 --> 00:54:16.074 
+But but if if you only care about the correctness of the program, you don't really need to do care
+
+00:54:16.074 --> 00:54:17.891 
+about it care about the caches.
+
+00:54:18.171 --> 00:54:26.604 
+OK, so here also some example that essentially in in some architectures we use caches and scratch
+
+00:54:26.604 --> 00:54:30.691 
+pad which is a software managed cache together.
+
+00:54:30.691 --> 00:54:37.216 
+So in GPU actually initially they have only scratch pad but later on as they want to run more
+
+00:54:37.216 --> 00:54:42.971 
+general purpose application in GPUs which they call it GPGPU general purpose GPUs.
+
+00:54:43.891 --> 00:54:51.521 
+They basically they realise that having only scratch pad is not enough and they also added L1 cache
+
+00:54:51.521 --> 00:54:58.844 
+and there is a shared memory capacity in this architecture in amper 2020 is actually 192 KB per
+
+00:54:58.844 --> 00:55:00.771 
+streaming multiprocessor.
+
+00:55:01.051 --> 00:55:08.261 
+And the programmer can decide how much of this space want to allocate to L1 cache and how much to
+
+00:55:08.261 --> 00:55:15.546 
+scratchpad memory or shared memory in other technologies also and other, you know, versions of GPU
+
+00:55:15.546 --> 00:55:17.851 
+like this one in Hopper 22,022.
+
+00:55:18.011 --> 00:55:20.171 
+They also have, you know, larger size.
+
+00:55:20.571 --> 00:55:26.904 
+So they keep this, you know, this flexibility that we can decide between L1 cache and scratcher
+
+00:55:26.904 --> 00:55:27.371 
+memory.
+
+00:55:27.691 --> 00:55:32.531 
+And at the same time they also make it larger because of the memory bottleneck problems.
+
+00:55:33.491 --> 00:55:40.091 
+OK, this is also a Cervus which you have seen that also in previous lectures.
+
+00:55:40.451 --> 00:55:48.579 
+And they also have a, you know, a huge on chip memory, 18 GB of on chip memory, which provide 9
+
+00:55:48.579 --> 00:55:50.291 
+petabyte per second.
+
+00:55:50.291 --> 00:55:53.131 
+And this is also considered as a scratch pad memory.
+
+00:55:53.131 --> 00:55:56.731 
+And you can, you know, program the the programming.
+
+00:55:59.251 --> 00:56:06.171 
+OK, I just want to also quickly give you some historical perspective.
+
+00:56:06.571 --> 00:56:13.415 
+This actually a magnetic drone memory, which was the the main memory of this, you know, of these
+
+00:56:13.415 --> 00:56:17.051 
+years, 1950s to 1960s and later on people designed.
+
+00:56:17.051 --> 00:56:18.411 
+So this is actually quite huge.
+
+00:56:18.491 --> 00:56:19.051 
+It's not.
+
+00:56:19.211 --> 00:56:24.811 
+So that's why computers in the past were also very huge for the memory perspective aspect.
+
+00:56:25.291 --> 00:56:30.948 
+And they designed this magnetic core memory which was if you look at into it actually it's very
+
+00:56:30.948 --> 00:56:36.844 
+much, you know, again, you can see this structure of array which the cell is different is magnetic,
+
+00:56:36.844 --> 00:56:42.562 
+but the structure of the array is very much similar to what we, you know, use today's in DRAM or
+
+00:56:42.562 --> 00:56:44.051 
+memory arrays in general.
+
+00:56:44.731 --> 00:56:49.091 
+So this core memory was the main memory of the year 1960s to 1970s.
+
+00:56:49.651 --> 00:56:55.211 
+And then there is a writing here which I can quickly actually read it.
+
+00:56:55.571 --> 00:57:04.331 
+So using a smaller cores and wires, the memory density of core slowly increased and by late 1960s a
+
+00:57:04.331 --> 00:57:10.171 
+density of about 32 kilobits per cubic per cubic foot was typical.
+
+00:57:10.171 --> 00:57:15.602 
+However, reaching this density required extremely careful manufacture and actually currently is also
+
+00:57:15.602 --> 00:57:16.091 
+the same.
+
+00:57:16.491 --> 00:57:20.811 
+When you want to increase density, you need to put a lot of effort in manufacturing.
+
+00:57:23.411 --> 00:57:30.161 
+And yeah, which was almost always carried out by hand in spite of repeated major efforts to automate
+
+00:57:30.161 --> 00:57:30.971 
+the process.
+
+00:57:31.931 --> 00:57:34.411 
+So yeah, there are also some writing about the cost.
+
+00:57:34.491 --> 00:57:41.881 
+And then essentially the introduction of the first semi inductor memory chips in the late 1916,
+
+00:57:41.881 --> 00:57:49.272 
+which is initially created static random access memory, SRAM, and later on DRAM, which has been
+
+00:57:49.272 --> 00:57:51.451 
+used in Intel 11-O3 in 1970.
+
+00:57:51.451 --> 00:57:55.291 
+They actually slowly, slowly replace the core memory.
+
+00:57:55.291 --> 00:57:59.451 
+And nowadays we have DRAM memory as the main memory of the system.
+
+00:58:00.171 --> 00:58:07.091 
+So that's before 1970 or so people have, you know, have other memories to use as a main memory.
+
+00:58:09.211 --> 00:58:12.651 
+OK, so this also the the paper that I talked about it previously.
+
+00:58:13.051 --> 00:58:18.691 
+And here also they call it as a slave memory, which basically this, you know, Maurice Wilkes say
+
+00:58:18.691 --> 00:58:24.507 
+that by a slave memory, I mean one which automatically accumulates to itself words that come from a
+
+00:58:24.507 --> 00:58:30.207 
+slower main memory and keeps them available for subsequent use without it being necessary for the
+
+00:58:30.207 --> 00:58:32.851 
+penalty of main memory access to be incurred.
+
+00:58:32.851 --> 00:58:38.291 
+Again, essentially benefiting from temporal locality, you know, in that slave memory.
+
+00:58:39.931 --> 00:58:40.251 
+OK.
+
+00:58:40.251 --> 00:58:45.604 
+And there are also some other papers from the past because caching actually has been an idea from
+
+00:58:45.604 --> 00:58:48.971 
+long time ago, which you can also check if you're interested.
+
+00:58:49.451 --> 00:58:56.213 
+And here is a picture from this paper that basically I'm going to show that in the cache structure
+
+00:58:56.213 --> 00:58:58.491 
+we have data store and tag store.
+
+00:58:58.491 --> 00:59:00.691 
+We're going to learn about both of them very soon.
+
+00:59:01.331 --> 00:59:05.771 
+But essentially data store is the location is the memory that you store.
+
+00:59:06.171 --> 00:59:12.431 
+You know, cache blocks or data itself, like the the exact data that you really you want to fetch,
+
+00:59:12.431 --> 00:59:14.691 
+you put them in your in data store.
+
+00:59:15.091 --> 00:59:20.131 
+But tag store actually provides some metadata that help you find your data essentially.
+
+00:59:20.571 --> 00:59:27.121 
+So when you want to understand which address is stored in your cache, you need to check your tag
+
+00:59:27.121 --> 00:59:27.531 
+store.
+
+00:59:27.971 --> 00:59:28.691 
+We're going to see that.
+
+00:59:28.691 --> 00:59:33.433 
+So tag store is kind of a metadata and data store is, you know, your actual data that you want to
+
+00:59:33.433 --> 00:59:33.971 
+operate on.
+
+00:59:36.411 --> 00:59:36.731 
+OK.
+
+00:59:36.771 --> 00:59:42.651 
+And this is a kind of a modern memory hierarchy that we have register file, L1L2L3 main memory and
+
+00:59:42.651 --> 00:59:43.251 
+also this.
+
+00:59:43.611 --> 00:59:49.011 
+So some of these levels are actually handled manually like register file is manual or compiler.
+
+00:59:49.171 --> 00:59:55.436 
+So compiler decides, you know how to map variables to registers and also compiler needs to you know,
+
+00:59:55.436 --> 00:59:58.131 
+put those instruction of register spinning.
+
+00:59:58.131 --> 01:00:02.011 
+When you don't have enough register, you need to for example use your stack.
+
+01:00:02.051 --> 01:00:08.353 
+You know, you write spin some registers to the memory to free some registers and then you use it
+
+01:00:08.353 --> 01:00:10.651 
+for, you know, for other use cases.
+
+01:00:11.291 --> 01:00:18.580 
+But other levels like L1L2L3 and these are actually automatic hardware cache management is most of
+
+01:00:18.580 --> 01:00:19.771 
+today's systems.
+
+01:00:21.251 --> 01:00:26.731 
+And then you have main memory, which is, you know, handled by the disk.
+
+01:00:27.091 --> 01:00:30.971 
+And this is actually based on the, your operating system is working on it.
+
+01:00:31.211 --> 01:00:35.411 
+So we're going to learn about it in a virtual memory lecture, hopefully in future.
+
+01:00:35.811 --> 01:00:41.043 
+I don't, I, I guess in the last lecture or the one lecture before the last, we're going to learn
+
+01:00:41.043 --> 01:00:44.531 
+about it, how we can manage this main memory and, and swap disk.
+
+01:00:45.091 --> 01:00:49.571 
+But this part is actually let's say controlled by software or I would say the operating system.
+
+01:00:50.811 --> 01:00:55.971 
+But these levels of cash or cash hierarchy is managed by hardware mostly in today's systems.
+
+01:01:00.076 --> 01:01:01.036 
+Yeah, yeah, yeah.
+
+01:01:01.036 --> 01:01:01.916 
+That's a very good question.
+
+01:01:01.916 --> 01:01:03.236 
+We're going to get to that.
+
+01:01:03.236 --> 01:01:06.916 
+That's that needs a policy, which we call it right policy and we're going to get to that.
+
+01:01:07.676 --> 01:01:07.996 
+Very good.
+
+01:01:09.156 --> 01:01:10.116 
+Any other questions?
+
+01:01:11.596 --> 01:01:15.596 
+OK, so now let's see.
+
+01:01:15.756 --> 01:01:18.956 
+We want to analyse the performance of cache with some examples.
+
+01:01:19.796 --> 01:01:28.209 
+So a given memory hierarchy level, think about layer one, for example, L1 cache, which you can think
+
+01:01:28.209 --> 01:01:31.996 
+of level I has a intrinsic access time of TI.
+
+01:01:32.276 --> 01:01:38.373 
+So it's going to going to take some time when you want to access that memory either of L1 register
+
+01:01:38.373 --> 01:01:38.996 
+file L2L3.
+
+01:01:39.196 --> 01:01:43.276 
+So you have some access latency associated only with that memory layer.
+
+01:01:44.116 --> 01:01:51.347 
+You also have perceived access time, which is T capital I that is longer than TI, which actually
+
+01:01:51.347 --> 01:01:58.804 
+causing, you know, the the fact that if you cannot find your data in that memory layer, you need to
+
+01:01:58.804 --> 01:02:01.516 
+bring data from other layers, right?
+
+01:02:01.836 --> 01:02:05.556 
+And that's TI, which actually the the big TI.
+
+01:02:07.356 --> 01:02:13.219 
+So now you have this probability, you know the case that when you access your layer memory layer,
+
+01:02:13.219 --> 01:02:15.516 
+you might or might not find your data.
+
+01:02:16.156 --> 01:02:21.356 
+So a chance, which we call it hit rate HI that you hit.
+
+01:02:21.556 --> 01:02:24.676 
+And then you have going to have access time of TI.
+
+01:02:25.836 --> 01:02:31.316 
+And there is a chance that you miss in your that layer of memory or level of memory, sorry.
+
+01:02:31.436 --> 01:02:37.476 
+And access time is going to be TI plus TI plus one the other layers.
+
+01:02:37.876 --> 01:02:43.156 
+So you need to expand TI because you already accessed that level, you know, cache.
+
+01:02:43.876 --> 01:02:47.596 
+And then since you don't find it, you need to bring it from other levels.
+
+01:02:47.796 --> 01:02:55.571 
+So you basically add the latency, you know, perceived latency of accessing the the next level of the
+
+01:02:55.571 --> 01:02:56.116 
+memory.
+
+01:02:57.316 --> 01:02:58.556 
+So that's TI plus one.
+
+01:02:59.516 --> 01:03:03.076 
+And this hit rate plus miss rate should be 1, of course.
+
+01:03:03.596 --> 01:03:06.596 
+So now we can actually write this recursive function.
+
+01:03:07.116 --> 01:03:15.676 
+TI for each layer is going to be hit rate times TI which is the intrinsic access.
+
+01:03:16.276 --> 01:03:23.749 
+And then if you miss in that level, you need to already pay the, you know, the penalty of accessing
+
+01:03:23.749 --> 01:03:30.996 
+that level and also the perceived access time of the other the next level, which is TI plus one.
+
+01:03:31.596 --> 01:03:37.944 
+And if you work around this equation, you're going to get to TI equals to TI plus miss rate times TI
+
+01:03:37.944 --> 01:03:38.516 
+plus one.
+
+01:03:38.836 --> 01:03:40.996 
+OK, which makes sense, right?
+
+01:03:41.196 --> 01:03:45.556 
+So that's that's basically the the recursive function that you have here.
+
+01:03:46.836 --> 01:03:54.163 
+And the H hit rate and miss rate are defined to be the hit rate and miss rate of only the references
+
+01:03:54.163 --> 01:03:55.556 
+that miss at Li -1.
+
+01:03:56.036 --> 01:04:04.461 
+So essentially when you so when you say that, so at the at the layer one like L1 cache, you, you,
+
+01:04:04.461 --> 01:04:07.676 
+you see 100% percent of accesses, OK.
+
+01:04:07.716 --> 01:04:16.815 
+And if you're hit mist rate is for example 10%, then you're going to service 90% of accesses in L1
+
+01:04:16.815 --> 01:04:23.036 
+and then 10% of that 100% of requests going to get to other levels.
+
+01:04:24.076 --> 01:04:29.178 
+And for other levels, you define mistreat and hit rate again with respect to the amount of
+
+01:04:29.178 --> 01:04:31.956 
+references requests that they're going to get to.
+
+01:04:32.436 --> 01:04:39.985 
+So if you say that the level 2 heat trade, for example, is 50%, which means that you're going to
+
+01:04:39.985 --> 01:04:47.456 
+heat half of the requests that are going to filter that are going to pass L1, that they are not
+
+01:04:47.456 --> 01:04:48.636 
+filtered by L1.
+
+01:04:49.116 --> 01:04:55.116 
+So that's the definition of heat rate and mistreat if you want to have this equation correctly.
+
+01:04:56.716 --> 01:05:00.756 
+OK, now we have this recursive latency equation and the goal is that we want to achieve.
+
+01:05:00.956 --> 01:05:05.996 
+Desired T1, which is the access latency of L1 cache within allowed cost.
+
+01:05:06.396 --> 01:05:15.276 
+So basically we want to have this TI equals to, you know, intrinsic TI, which is a desirable moment.
+
+01:05:15.516 --> 01:05:22.956 
+So of course the ideally if miss rate is 0, you're going to get to that TI equals to T, the small I.
+
+01:05:23.876 --> 01:05:28.464 
+But the the moment that you have some misses, you're not going to get to that, but you want to
+
+01:05:28.464 --> 01:05:29.636 
+minimise the difference.
+
+01:05:31.476 --> 01:05:31.796 
+OK.
+
+01:05:31.796 --> 01:05:35.836 
+So we want to, in order to achieve that, you essentially have two trade off.
+
+01:05:36.356 --> 01:05:38.156 
+You can keep miss rate low.
+
+01:05:38.196 --> 01:05:40.796 
+So you want to reduce miss rate as much as possible.
+
+01:05:41.316 --> 01:05:49.279 
+And that is by increasing, you know, the capacity of lawyers and also by yeah, exactly by increasing
+
+01:05:49.279 --> 01:05:49.996 
+capacity.
+
+01:05:50.436 --> 01:05:55.716 
+But we should also be aware that increasing capacity would also increase the intrinsic latency.
+
+01:05:56.316 --> 01:06:02.163 
+So this actually very important, we can provide higher capacity and providing lower miss rate, but
+
+01:06:02.163 --> 01:06:07.116 
+that would also comes at the price of longer access latency for that level of cash.
+
+01:06:08.116 --> 01:06:13.996 
+So we should be careful about that and we can also lower miss rate by smarter cash management.
+
+01:06:13.996 --> 01:06:17.596 
+So we're going to see how we can design the cash and how we can make it smarter.
+
+01:06:18.036 --> 01:06:24.426 
+But essentially that would also need, you know, a lot of management to decide how to replace, how
+
+01:06:24.426 --> 01:06:30.883 
+what to not replace, what to not inserting the cash and also whether or not we want to prefetch in
+
+01:06:30.883 --> 01:06:31.476 
+the cash.
+
+01:06:31.916 --> 01:06:35.956 
+We're going to learn about all of these actually later today and also in other lectures.
+
+01:06:37.076 --> 01:06:45.636 
+Another way to, you know, achieve that is that we want to keep TT big TI plus one actually low.
+
+01:06:45.716 --> 01:06:48.276 
+So we want to make this one also low as much as possible.
+
+01:06:48.556 --> 01:06:53.627 
+So for that we have we need to have faster outer hierarchy levels and that's why we actually make a
+
+01:06:53.627 --> 01:06:54.396 
+cash hierarchy.
+
+01:06:54.396 --> 01:06:55.956 
+We have a deep cash hierarchy.
+
+01:06:55.956 --> 01:07:00.996 
+That's one of the reason to make this TI plus one, you know, as low as possible.
+
+01:07:03.156 --> 01:07:06.836 
+Yeah, introduce intermediate hierarchy device as a as a compromise.
+
+01:07:07.756 --> 01:07:12.764 
+OK, we're going to see an example actually and the size of the caches that we're going to assume is
+
+01:07:12.764 --> 01:07:14.636 
+actually coming from Intel Pentium 4.
+
+01:07:14.876 --> 01:07:18.836 
+We're going to consider 16 KB L1 cache and one MB L2 cache.
+
+01:07:21.036 --> 01:07:23.356 
+OK, so here is an example.
+
+01:07:23.636 --> 01:07:28.636 
+This is a processor Intel Intel Pentium 4 L1 data cache is 16 KB.
+
+01:07:28.636 --> 01:07:30.796 
+Access latency of that is 4 cycle.
+
+01:07:30.796 --> 01:07:37.454 
+Actually because of the you know the the because the frequency of the processor is actually 3.6
+
+01:07:37.454 --> 01:07:44.253 
+which if you have considered one nanosecond access latency for your cache you really need several
+
+01:07:44.253 --> 01:07:45.796 
+cycles to access that.
+
+01:07:46.556 --> 01:07:50.756 
+And L2 is 1 megabyte and it takes 18 cycles.
+
+01:07:51.156 --> 01:07:58.862 
+And main memory we are considering 1550 nanosecond which actually kind of idealise here or 180
+
+01:07:58.862 --> 01:07:59.436 
+cycles.
+
+01:07:59.876 --> 01:08:02.876 
+There are also some notice here that best case latency is not one.
+
+01:08:03.276 --> 01:08:06.116 
+So we cannot access L11 cycle.
+
+01:08:06.116 --> 01:08:07.316 
+So the best case is not one.
+
+01:08:07.916 --> 01:08:12.676 
+And also worst case access latency can be actually much more than 500.
+
+01:08:14.236 --> 01:08:18.676 
+And here we are actually simplifying the the the problem for for this example.
+
+01:08:19.596 --> 01:08:23.796 
+OK, so this is the essentially the the equation that we are looking at.
+
+01:08:25.196 --> 01:08:33.121 
+So assuming that miss rate of L1 cache is 0.1 and miss rate of L2 cache is 0.1, you can calculate T1
+
+01:08:33.121 --> 01:08:33.676 
+and T2.
+
+01:08:34.116 --> 01:08:39.383 
+So T1 actually is the is the most important latency for this case because that's the latency that
+
+01:08:39.383 --> 01:08:40.796 
+processor is going to see.
+
+01:08:40.876 --> 01:08:44.716 
+OK, T2 is going to be the latency for L2.
+
+01:08:44.836 --> 01:08:51.436 
+You know, when L2 needs to, you know, fill that's going to be the latency that we're going to see.
+
+01:08:51.436 --> 01:08:55.716 
+But L but at L1T1 is the one that trusts or cares much.
+
+01:08:57.756 --> 01:09:04.636 
+So when mistake is 0.1, meaning that 90% of the requests are going to hit in L1 cache.
+
+01:09:04.796 --> 01:09:12.120 
+So for 90% of the requests we're going to see only four cycle and for 10% of request we're going to
+
+01:09:12.120 --> 01:09:14.636 
+access the other levels of memory.
+
+01:09:15.756 --> 01:09:24.486 
+So out of this 10%, 90% is going to hit in L2 and the rest is going to we need to access the main
+
+01:09:24.486 --> 01:09:25.116 
+memory.
+
+01:09:25.316 --> 01:09:28.236 
+So that's the meaning of this different miss rate that we're going to see.
+
+01:09:28.596 --> 01:09:30.556 
+And with that you can calculate that.
+
+01:09:30.796 --> 01:09:34.356 
+Unfortunately, we don't have time to calculate today, but you can also do it easily.
+
+01:09:36.676 --> 01:09:47.090 
+If we consider that miss rate is actually 0.01, meaning that hit rate is 99% and also the miss rate
+
+01:09:47.090 --> 01:09:52.876 
+of the L2 is also 0.01, then the T1 is going to be 4.2.
+
+01:09:53.076 --> 01:09:53.476 
+OK.
+
+01:09:54.076 --> 01:10:00.036 
+Which yeah, which is actually really, really good, so.
+
+01:10:00.836 --> 01:10:04.116 
+Here actually I want to show a trade off with these two numbers.
+
+01:10:04.556 --> 01:10:11.831 
+So one way would be like the miss rate of I can relax you know the because getting 99% hit rate in
+
+01:10:11.831 --> 01:10:13.316 
+L1 is not that easy.
+
+01:10:13.596 --> 01:10:21.236 
+So one way would be basically we relax the miss rate of L1 to have like 95% hit rate.
+
+01:10:21.996 --> 01:10:28.714 
+And then if we have a very good L2 that can provide 99% hit rate, then we're going to have a latency
+
+01:10:28.714 --> 01:10:32.276 
+of five cycle cycles, which is relatively close to 4.
+
+01:10:33.396 --> 01:10:40.773 
+But another way is that if you have a very good L1 which provide 99% hit rate, then actually at L2
+
+01:10:40.773 --> 01:10:44.236 
+we can actually have a much relaxed L2 design.
+
+01:10:44.516 --> 01:10:46.196 
+So that gives you a trade off.
+
+01:10:46.276 --> 01:10:52.236 
+If I do a really good job at L1, I can be actually relaxed at L2L3 and other layers.
+
+01:10:52.356 --> 01:10:59.010 
+So having AL 2 with hit rate of 50% again going to give us the the same number of overall the same
+
+01:10:59.010 --> 01:11:01.116 
+number as the previous example.
+
+01:11:01.476 --> 01:11:06.275 
+So that's a trade off that people try, you know how much they're going to pay effort on making L1
+
+01:11:06.275 --> 01:11:10.036 
+better and how much they're going to pay effort to make other levels better.
+
+01:11:10.276 --> 01:11:15.708 
+Because in the end the cost is limited and we want to essentially we want to design intelligently
+
+01:11:15.708 --> 01:11:17.836 
+considering the the cost that we have.
+
+01:11:19.934 --> 01:11:21.694 
+This does not, no.
+
+01:11:21.694 --> 01:11:23.974 
+But you have techniques to hide memory latencies.
+
+01:11:25.014 --> 01:11:30.574 
+You have techniques in your in your processor to hide memory access latencies as much as possible.
+
+01:11:30.894 --> 01:11:38.409 
+Like we have ILP, we have TLP and with those actually you that hopefully you can actually tolerate
+
+01:11:38.409 --> 01:11:41.094 
+that 1% that you are missing in L1.
+
+01:11:41.934 --> 01:11:42.294 
+OK.
+
+01:11:42.614 --> 01:11:43.134 
+But I agree.
+
+01:11:43.134 --> 01:11:48.401 
+I mean, yes, at some point you we need to if you care about for example the you know, the tail
+
+01:11:48.401 --> 01:11:53.724 
+latency, there might be some cases that you're going to have very long latency and that can you
+
+01:11:53.724 --> 01:11:56.694 
+know cost some quality of service for example for us.
+
+01:11:57.854 --> 01:11:59.654 
+But that's yeah, that can be a problem.
+
+01:11:59.854 --> 01:12:03.614 
+But in general purpose application, I would say that that's not a problem, Yes.
+
+01:12:06.574 --> 01:12:11.939 
+OK, so I'm going to go into detail, a bit more detail of how we design caches and we see some
+
+01:12:11.939 --> 01:12:12.574 
+operations.
+
+01:12:13.214 --> 01:12:19.330 
+So cache essentially any structure that memorized use or produce data to avoid repeating the long
+
+01:12:19.330 --> 01:12:23.934 
+latency operations required to reproduce and fetch the data from scratch.
+
+01:12:24.254 --> 01:12:24.974 
+So that's the cache.
+
+01:12:25.334 --> 01:12:31.385 
+And actually the idea has been used not only in, you know, in computer architecture and processor,
+
+01:12:31.385 --> 01:12:37.065 
+but also in other domains like web cache for example, that you know your browser actually is
+
+01:12:37.065 --> 01:12:40.894 
+caching a lot of data while you are browsing, you know, pages.
+
+01:12:42.694 --> 01:12:48.337 
+So most commonly in the processor design contest and automatically manage memory structure basically
+
+01:12:48.337 --> 01:12:53.698 
+memorising fastest RAM, the most frequently or recently accessed DRAM memory locations to avoid
+
+01:12:53.698 --> 01:12:56.294 
+repeatedly paying for the DRAM access latency.
+
+01:12:56.854 --> 01:13:03.634 
+So we've seen already all of this, this is a conceptual picture of a cache that essentially in your
+
+01:13:03.634 --> 01:13:05.894 
+cache you're storing cache block.
+
+01:13:07.174 --> 01:13:11.374 
+The reason we have cache block is actually to benefit from a special locality.
+
+01:13:11.974 --> 01:13:14.854 
+And then in each of your associated.
+
+01:13:15.094 --> 01:13:20.574 
+So each of your cache block is actually have 64 byte of data assuming your block is 64 byte.
+
+01:13:21.134 --> 01:13:26.938 
+And also you need to have some some tag which is a metadata information about the cache block like
+
+01:13:26.938 --> 01:13:31.854 
+the address or part of the address and some other metadata that we're going to see.
+
+01:13:32.014 --> 01:13:34.054 
+So that's what we store in the cache.
+
+01:13:36.334 --> 01:13:42.298 
+So now the question is that the logical organization of a cache, we need to ask this question how to
+
+01:13:42.298 --> 01:13:46.414 
+map chunks of the main memory addresses space to blocks in the cache.
+
+01:13:46.734 --> 01:13:51.235 
+So we know that we need to divide the memory addresses space or physical addresses space into
+
+01:13:51.235 --> 01:13:51.574 
+chunks.
+
+01:13:52.134 --> 01:13:54.694 
+So how are we going to map these chunks into the cache?
+
+01:13:54.854 --> 01:13:56.454 
+That's the question that we want to answer.
+
+01:13:56.974 --> 01:14:01.894 
+So essentially which location in cache can a given main memory chunk be placing?
+
+01:14:03.894 --> 01:14:07.014 
+And with that we can have a different, you know, strategy.
+
+01:14:07.294 --> 01:14:15.443 
+One way would be fully associative that especially like essentially each chunk can be placed in any
+
+01:14:15.443 --> 01:14:17.254 
+location in the cache.
+
+01:14:17.574 --> 01:14:20.614 
+So any each chunk can be basically.
+
+01:14:20.694 --> 01:14:23.134 
+Mapped to any location your in your cache.
+
+01:14:23.134 --> 01:14:24.574 
+So that's fully associated.
+
+01:14:25.294 --> 01:14:33.344 
+Another strategy could be direct mapped, which essentially by your chunk that has a has an address
+
+01:14:33.344 --> 01:14:37.534 
+and you basically use that address by some hashing.
+
+01:14:37.934 --> 01:14:44.167 
+And then it say that OK, I'm going to that address with that hashing point to some location specific
+
+01:14:44.167 --> 01:14:45.414 
+location your cache.
+
+01:14:45.774 --> 01:14:52.131 
+So that chunk can be is going to be placed only in one option one location in the in the cache and
+
+01:14:52.131 --> 01:14:53.494 
+that's direct mapped.
+
+01:14:54.454 --> 01:14:56.974 
+And another way would be something between these two, right.
+
+01:14:57.094 --> 01:15:01.374 
+So you can have you can divide your cache into some sets.
+
+01:15:02.254 --> 01:15:09.734 
+So each chunk will be mapped to one specific set using similar strategy of direct mapped.
+
+01:15:10.054 --> 01:15:14.534 
+But in that set you you're actually storing in a fully associative cache.
+
+01:15:14.974 --> 01:15:19.454 
+So in each set you are fully associative, but among sets you're direct mapped.
+
+01:15:19.694 --> 01:15:20.054 
+OK.
+
+01:15:20.334 --> 01:15:23.694 
+And that's the that's the way people design set associative cash.
+
+01:15:23.694 --> 01:15:24.774 
+We're going to also see that.
+
+01:15:25.134 --> 01:15:28.414 
+So these are three strategies that we're going to look into details of that.
+
+01:15:29.014 --> 01:15:30.494 
+But any question from this high level?
+
+01:15:33.574 --> 01:15:41.614 
+OK, so one of the terminology here is block, like cash block or line.
+
+01:15:41.614 --> 01:15:43.094 
+Also people call it cash line.
+
+01:15:43.534 --> 01:15:45.134 
+That's the unit of a storage in the cache.
+
+01:15:45.134 --> 01:15:50.759 
+And memory is logically divided into blocks that map to potential local location in the cache on a
+
+01:15:50.759 --> 01:15:51.334 
+reference.
+
+01:15:51.814 --> 01:15:59.334 
+It can be so hit if in cache use cache data instead of accessing memory.
+
+01:15:59.334 --> 01:16:05.965 
+So if if you access your cache and you have a you encounter a hit, then basically use your data and
+
+01:16:05.965 --> 01:16:12.262 
+you don't access other memory layers if it's miss, if not in the cache, then you need to bring
+
+01:16:12.262 --> 01:16:16.014 
+block into the cache and that's would cause some plenty.
+
+01:16:17.614 --> 01:16:20.454 
+And when you do that you may have to evict some other block.
+
+01:16:20.454 --> 01:16:26.970 
+Essentially the reason is that like for example, direct mapped, if the another cache block that
+
+01:16:26.970 --> 01:16:33.692 
+you're bringing to your cache is is also mapped to the same cache block, then essentially you need
+
+01:16:33.692 --> 01:16:38.494 
+to evict the cache block that is already stored and store the new one.
+
+01:16:38.814 --> 01:16:44.037 
+And also instead associated, you may not have free, you know, you in your sets, you may not have
+
+01:16:44.037 --> 01:16:44.854 
+free locations.
+
+01:16:44.974 --> 01:16:47.014 
+So you need to, you know, replace something.
+
+01:16:49.454 --> 01:16:54.885 
+OK, so there are some important cache design decisions which we're going to see that actually most
+
+01:16:54.885 --> 01:17:00.261 
+some of them today, some of them in the later lecture that one of them is placement where and how
+
+01:17:00.261 --> 01:17:02.534 
+to place and find the block in the cache.
+
+01:17:03.014 --> 01:17:09.134 
+So that's more or less, you know the question about direct map set associative or fully associative.
+
+01:17:10.014 --> 01:17:15.458 
+Another problem is replacement what data to remove to make room in cache when the when your set is
+
+01:17:15.458 --> 01:17:19.014 
+full or even the whole cache is full in fully associative cache.
+
+01:17:19.334 --> 01:17:24.814 
+So where what do you want to how do you make room for the new, you know for the new data?
+
+01:17:26.054 --> 01:17:28.334 
+Also granularity of management.
+
+01:17:28.374 --> 01:17:32.094 
+Are we operating on large or small blocks or even we have sub blocks?
+
+01:17:32.534 --> 01:17:38.546 
+We're going to see that you can have a cash flow, you can divide it to some sub blocks and which has
+
+01:17:38.546 --> 01:17:41.854 
+been using some caches called sector cache for example.
+
+01:17:42.134 --> 01:17:44.734 
+And then you can operate on smaller sub blocks.
+
+01:17:45.334 --> 01:17:46.494 
+We're going to see that later.
+
+01:17:47.094 --> 01:17:51.214 
+And how you manage with rights, which one of your colleague asked which is right policy?
+
+01:17:51.214 --> 01:17:52.574 
+What do we do about rights?
+
+01:17:53.174 --> 01:17:57.094 
+And are we also treating instructions and data separately?
+
+01:17:57.094 --> 01:18:04.582 
+Like do we have separate instruction cache and data cache or the others, you know, managed to get
+
+01:18:04.582 --> 01:18:04.814 
+OK.
+
+01:18:04.814 --> 01:18:07.694 
+So that's again cache abstraction and metrics.
+
+01:18:07.694 --> 01:18:16.129 
+So essentially for your address, you have A tag store, which we use to see to basically, you know,
+
+01:18:16.129 --> 01:18:18.454 
+do some bookkeeping for us.
+
+01:18:19.374 --> 01:18:25.214 
+And also we use tag store to to answer this question that is the address in in the cache or not.
+
+01:18:25.814 --> 01:18:31.094 
+So basically by checking tag store, we can decide whether or not it's hit or miss, OK?
+
+01:18:31.734 --> 01:18:35.174 
+And if it's heat, then we can fetch the data from the data store.
+
+01:18:35.454 --> 01:18:41.294 
+So that's data store that we actually store the date, OK.
+
+01:18:43.574 --> 01:18:49.682 
+And these are the terminology that you are already seeing like cache heat rate is number of heats
+
+01:18:49.682 --> 01:18:55.854 
+divided by total accesses or number of heats plus number of misses and average memory access time.
+
+01:18:56.574 --> 01:19:04.054 
+Aim at it's going to be hit rate times hit latency plus miss rate times miss latency.
+
+01:19:04.254 --> 01:19:10.230 
+So this miss latency is going to be that, you know, the latency that you're observing from the
+
+01:19:10.230 --> 01:19:16.524 
+other, you know, from the immediate next level and hit latency is going to be the access latency of
+
+01:19:16.524 --> 01:19:19.894 
+that specific, you know, level that you're accessing.
+
+01:19:22.334 --> 01:19:22.654 
+OK.
+
+01:19:22.654 --> 01:19:27.939 
+There is also a site here that we're going to get to that hopefully later today which we're going to
+
+01:19:27.939 --> 01:19:28.574 
+get to that.
+
+01:19:28.574 --> 01:19:33.402 
+But basically we are want to answer this question is reducing a mat always beneficial for
+
+01:19:33.402 --> 01:19:34.054 
+performance?
+
+01:19:34.494 --> 01:19:35.334 
+We're going to get to that.
+
+01:19:35.334 --> 01:19:39.054 
+But you can start thinking about this question from now.
+
+01:19:39.134 --> 01:19:39.454 
+That's it.
+
+01:19:42.294 --> 01:19:42.614 
+OK.
+
+01:19:42.614 --> 01:19:45.094 
+So let's start with the basic design.
+
+01:19:47.334 --> 01:19:52.654 
+So main memory is logically divided into blocks and cache can house only a limited number of blocks.
+
+01:19:56.654 --> 01:20:02.704 
+So each block address maps to potential location, the cache determined by the index bits of the
+
+01:20:02.704 --> 01:20:03.214 
+address.
+
+01:20:03.214 --> 01:20:09.705 
+So we're going to start with the, you know, this kind of a design for direct maps that essentially
+
+01:20:09.705 --> 01:20:11.494 
+this is your 8 bit address.
+
+01:20:11.934 --> 01:20:16.774 
+You have some bits, so you use different bits in your address for different use cases.
+
+01:20:17.414 --> 01:20:22.854 
+Like for example, if you're in your cache, you have 8 locations that you can store your data.
+
+01:20:23.774 --> 01:20:29.734 
+You're going to, you need 3 bits in order to, you know, map find your location in that cache.
+
+01:20:29.854 --> 01:20:31.334 
+Kind of a trick map actually.
+
+01:20:31.614 --> 01:20:35.854 
+So you use three bits for that because 2 to the power 3 is 8.
+
+01:20:36.694 --> 01:20:47.374 
+And then in your caches you store blocks and each block can be in this example can be like 8 bytes.
+
+01:20:48.414 --> 01:20:50.334 
+So your block is 8 in this example.
+
+01:20:50.334 --> 01:20:52.534 
+So that's why you store for example 3 bits for that.
+
+01:20:52.534 --> 01:20:54.454 
+That's the offset in your cache block.
+
+01:20:55.014 --> 01:21:01.114 
+And you need to store the rest of the address as tag in your tag array and that will be used as a
+
+01:21:01.114 --> 01:21:04.134 
+comparison to make sure that we are heat or not.
+
+01:21:05.014 --> 01:21:10.669 
+So when we want to access cache, we index into the tag and data store with index bits in the address
+
+01:21:10.669 --> 01:21:13.214 
+and then we check valid bit in the tag store.
+
+01:21:13.294 --> 01:21:17.254 
+So we can associate one bit as a valid bit in each for each block.
+
+01:21:17.774 --> 01:21:22.894 
+Just to say that is this block that you're checking is empty or not.
+
+01:21:22.934 --> 01:21:28.429 
+OK, so if it's valid, then you're checking something you know valid and then you can see if it's hit
+
+01:21:28.429 --> 01:21:28.814 
+or not.
+
+01:21:29.534 --> 01:21:33.734 
+And we compare tag bits in address with the store tag in tag store.
+
+01:21:33.734 --> 01:21:38.974 
+And if the store tag is valid and matches the tag of the block, then we have cache hit.
+
+01:21:40.374 --> 01:21:41.894 
+OK, let's start with direct map.
+
+01:21:41.894 --> 01:21:47.306 
+And we're going to see so direct map a given main memory block can be placed in only one possible
+
+01:21:47.306 --> 01:21:48.534 
+location in the cache.
+
+01:21:49.854 --> 01:21:54.094 
+And in our toy example, we're going to consider a memory which is 256 byte.
+
+01:21:54.774 --> 01:22:00.094 
+And so our cache also is 64 byte and our blocks is 8 bytes.
+
+01:22:02.974 --> 01:22:03.254 
+OK.
+
+01:22:03.814 --> 01:22:11.322 
+So since we have 256 bytes in total and our blocks is 8 bytes then we we can store essentially in
+
+01:22:11.322 --> 01:22:12.174 
+our memory.
+
+01:22:12.174 --> 01:22:20.014 
+We have 32 blocks in memory but our cache actually store only eight blocks in this example.
+
+01:22:20.814 --> 01:22:24.134 
+So direct map is saying that the block can go to only one location.
+
+01:22:25.174 --> 01:22:27.254 
+So we have tag store and data store.
+
+01:22:27.734 --> 01:22:31.934 
+Data store is 8 locations and for tag store as well.
+
+01:22:32.934 --> 01:22:34.734 
+In tag store you have valid bit and tag.
+
+01:22:35.934 --> 01:22:39.454 
+So whenever you provide an address which is 8 bit.
+
+01:22:40.614 --> 01:22:46.054 
+You need some bits in order to point to your tag store and data store.
+
+01:22:47.254 --> 01:22:51.694 
+Since we have 8 locations, we need 3 bits to index.
+
+01:22:51.694 --> 01:23:00.630 
+You know, the data store and tag store and we also, since our blocks is is 8 bytes, we need also 3
+
+01:23:00.630 --> 01:23:09.294 
+bits in order to, you know, as offset which bytes are we locate are we accessing in that block.
+
+01:23:09.854 --> 01:23:15.264 
+So that's why we also need to use three bits of the address as a offset for that block and the rest
+
+01:23:15.264 --> 01:23:17.014 
+is going to be two bit as A tag.
+
+01:23:18.254 --> 01:23:24.374 
+So each memory address, you essentially you store the tag in your tag store.
+
+01:23:26.734 --> 01:23:28.574 
+And yeah, you store the tag.
+
+01:23:28.614 --> 01:23:30.814 
+And then you also need to set the valid bit.
+
+01:23:31.374 --> 01:23:37.342 
+When you have another access, you just you know, the tag of your address, the the two most
+
+01:23:37.342 --> 01:23:41.454 
+significant bits, you access the tag store with the index bit.
+
+01:23:42.254 --> 01:23:47.254 
+There is A tag store in your tag store and check the tag with your tag.
+
+01:23:47.934 --> 01:23:50.814 
+If, if these two are equal, then that's the hit.
+
+01:23:51.334 --> 01:23:52.214 
+If also a valid.
+
+01:23:52.214 --> 01:23:56.654 
+So if valid and also this tag and these two, this tag is equal, then it's a hit.
+
+01:23:57.814 --> 01:23:59.934 
+And then you can essentially fetch your data.
+
+01:24:00.094 --> 01:24:04.920 
+And here also we have a multiplexer which we're going to use, see which byte in that block we're
+
+01:24:04.920 --> 01:24:05.574 
+going to use.
+
+01:24:05.654 --> 01:24:06.774 
+So that's an offset.
+
+01:24:08.134 --> 01:24:08.694 
+Makes sense.
+
+01:24:09.614 --> 01:24:12.974 
+So that's direct map, which is actually pretty easy to understand.
+
+01:24:14.654 --> 01:24:20.614 
+OK, so The thing is that here blocks with the same index content for the same cache.
+
+01:24:20.694 --> 01:24:27.792 
+Location So in direct map all blocks that they have index of 000, they're going to be mapped to the
+
+01:24:27.792 --> 01:24:32.094 
+same location and which means that they're going to contend.
+
+01:24:32.094 --> 01:24:35.894 
+So some of them are going to, you know, kick out the previous one.
+
+01:24:36.334 --> 01:24:42.494 
+So for example, if you're accessing so previously initially you access block 0, this full zero and
+
+01:24:42.494 --> 01:24:44.254 
+then you put into the cache.
+
+01:24:44.974 --> 01:24:54.816 
+Later on you have this, you access block 01000, so this one also has the same index as the previous
+
+01:24:54.816 --> 01:24:55.214 
+one.
+
+01:24:55.214 --> 01:24:59.814 
+So you're going to access your cache and it's not a hit because your tag is different.
+
+01:24:59.814 --> 01:25:03.494 
+This one is 00 and this one is 01, so these are not the same.
+
+01:25:05.134 --> 01:25:08.294 
+I should also say that in this memory I'm showing the address for the block.
+
+01:25:08.494 --> 01:25:11.934 
+I'm kind of ignoring the three bits for the opposite.
+
+01:25:12.694 --> 01:25:17.254 
+So since they are not the same, you're that's a miss and you need to store this block.
+
+01:25:17.494 --> 01:25:17.854 
+OK.
+
+01:25:18.294 --> 01:25:21.894 
+So when you want to store this block, there is no other location.
+
+01:25:21.894 --> 01:25:24.974 
+You need to store it here, OK, in direct mapped.
+
+01:25:25.134 --> 01:25:30.294 
+So you need to kick out the block 0 that you had here to make room for the next block.
+
+01:25:31.054 --> 01:25:35.534 
+And that's a direct map problem that essentially you're going to have a lot of conflict.
+
+01:25:35.654 --> 01:25:36.614 
+We call it conflict.
+
+01:25:36.654 --> 01:25:40.414 
+Conflict misses question.
+
+01:25:44.184 --> 01:25:44.424 
+OK.
+
+01:25:47.734 --> 01:25:50.134 
+OK, Yeah.
+
+01:25:50.134 --> 01:25:55.258 
+So in direct map cache, two blocks in memory that map to the same index in the cache cannot be
+
+01:25:55.258 --> 01:26:00.437 
+present in the cache at the same time, one index, one entry and can lead to 0% hit rate if more
+
+01:26:00.437 --> 01:26:04.254 
+than one block access in an interleaved manner, map to the same index.
+
+01:26:04.574 --> 01:26:08.454 
+Like for example, you have these two block A&B and they are mapping to the same index.
+
+01:26:08.454 --> 01:26:14.189 
+If you're basically accessing A/B, A/B, A/B, A/B, you're going to have always conflict in your
+
+01:26:14.189 --> 01:26:18.094 
+direct map cache and your hit rate is going to be 0 essentially.
+
+01:26:20.214 --> 01:26:26.925 
+So for that people provide, you know, comes with this idea of set associativity that basically we
+
+01:26:26.925 --> 01:26:32.254 
+enable blocks with the same index to map to basically more than one location.
+
+01:26:34.014 --> 01:26:40.324 
+So we can have instead of 1 location, we can store in let's say 2, you know, locations or we can
+
+01:26:40.324 --> 01:26:42.494 
+store in eight or four locations.
+
+01:26:45.574 --> 01:26:51.974 
+OK, so this is our tag store and data store.
+
+01:26:51.974 --> 01:26:57.964 
+So in in set associative cache, you have two locations in this is actually I'm showing two ways set
+
+01:26:57.964 --> 01:26:59.054 
+associative cache.
+
+01:26:59.894 --> 01:27:05.654 
+So since your cache capacity is fixed, now you are you have less number of sets.
+
+01:27:05.654 --> 01:27:12.539 
+You don't have eight in the in the direct map we had eight locations vertically but now we have 4
+
+01:27:12.539 --> 01:27:12.894 
+sets.
+
+01:27:13.214 --> 01:27:15.094 
+But each set has two locations.
+
+01:27:15.294 --> 01:27:21.508 
+So you need to restore tag for both of them and when you want to check the heat you need to check
+
+01:27:21.508 --> 01:27:23.174 
+the tag of both locations.
+
+01:27:23.174 --> 01:27:29.134 
+So based on your address you are using two bits as an index because now you have only four sets.
+
+01:27:30.054 --> 01:27:35.894 
+Then you access your tag store for that and then you read these two valid bits and tags.
+
+01:27:36.374 --> 01:27:41.734 
+You also have A tag of your address which is 3 bits and you need to compare with your tag.
+
+01:27:42.374 --> 01:27:49.345 
+If either one of them is is heat, then they're going to be heat and you can get your data out from
+
+01:27:49.345 --> 01:27:52.974 
+data store and it's going to again your data store.
+
+01:27:52.974 --> 01:27:54.294 
+You also have two locations.
+
+01:27:54.934 --> 01:28:01.464 
+So this tells you which way in your set associative cache you are heating and you're getting data
+
+01:28:01.464 --> 01:28:01.734 
+out.
+
+01:28:02.134 --> 01:28:07.374 
+So this two way set associated cache question makes sense.
+
+01:28:09.974 --> 01:28:15.654 
+OK, yeah.
+
+01:28:15.654 --> 01:28:20.364 
+So with this idea, now you have you can accommodate conflicts better because you have fewer conflict
+
+01:28:20.364 --> 01:28:20.694 
+misses.
+
+01:28:22.134 --> 01:28:26.991 
+Now you have two locations, but if you need more, you need, for example, you can think of, OK, I'm
+
+01:28:26.991 --> 01:28:28.974 
+going to have four ways set associative.
+
+01:28:30.174 --> 01:28:36.094 
+But now I have 4 locations in my tag store in each row.
+
+01:28:36.254 --> 01:28:38.934 
+And then I'm going to also have only two sets.
+
+01:28:40.134 --> 01:28:45.056 
+And whenever you want to check the heat, you need to compare 4 tags essentially to see if it's heat
+
+01:28:45.056 --> 01:28:45.454 
+or miss.
+
+01:28:46.294 --> 01:28:50.974 
+And your data store also you need to Multiplex out four locations essentially.
+
+01:28:51.094 --> 01:28:53.854 
+So that's four set, four ways set associative cache.
+
+01:28:55.934 --> 01:29:03.118 
+So here if you think about the address, since you have only two sets, you're going to have only one
+
+01:29:03.118 --> 01:29:08.054 
+bit as an index because you only need to specify one among two sets.
+
+01:29:08.534 --> 01:29:12.834 
+And your tag is going to be 4 bits because, I mean, the rest of address is going to be used as A
+
+01:29:12.834 --> 01:29:13.014 
+tag.
+
+01:29:13.414 --> 01:29:15.614 
+So your tag array is actually becoming larger.
+
+01:29:17.374 --> 01:29:21.214 
+OK, just let me.
+
+01:29:21.934 --> 01:29:22.294 
+Yeah.
+
+01:29:22.534 --> 01:29:28.267 
+And full associativity, you're going to have actually the whole only one set and everything is going
+
+01:29:28.267 --> 01:29:29.414 
+to be used as a way.
+
+01:29:29.814 --> 01:29:34.134 
+So in this example, eight way set associative is going to be fully associative.
+
+01:29:34.614 --> 01:29:38.814 
+And whenever you see the heat, you need to check all these locations.
+
+01:29:38.814 --> 01:29:45.892 
+So we need to compare all a tax and that's fully associativity, which is the, you know, the extreme
+
+01:29:45.892 --> 01:29:47.894 
+case of designing this cash.
+
+01:29:48.694 --> 01:29:48.974 
+OK.
+
+01:29:48.974 --> 01:29:51.574 
+So I think it's a good place to stop.
+
+01:29:52.454 --> 01:29:57.698 
+Next week we're going to continue, you know, regarding this trade off between for the associativity
+
+01:29:57.698 --> 01:30:00.294 
+and the problems and challenges that it provides.
+
+01:30:02.054 --> 01:30:04.654 
+Have a nice weekend and I see you next week.
+
+01:30:04.774 --> 01:30:05.134 
+Thank you.
+
