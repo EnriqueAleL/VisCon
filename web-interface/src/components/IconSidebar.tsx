@@ -17,11 +17,11 @@ import { CoursePicker } from './CoursePicker';
 import { ArenaIcon } from './ArenaIcon';
 
 interface IconSidebarProps {
-  view: 'questions' | 'library' | 'saved';
+  view: 'questions' | 'library' | 'saved' | 'documents';
   selectedCourse: CourseSelection | null;
   pickerRequest: number;
   history: QuestionHistoryEntry[];
-  onNavigate: (view: 'questions' | 'library' | 'saved') => void;
+  onNavigate: (view: 'questions' | 'library' | 'saved' | 'documents') => void;
   onNewChat: () => void;
   onSelectCourse: (selection: CourseSelection) => void;
   onClearCourse: () => void;
@@ -275,6 +275,15 @@ export function IconSidebar({
           onClick={() => navigate('saved')}
         >
           <Bookmark size={20} />
+        </button>
+        <button
+          className={`rail-button ${view === 'documents' ? 'active' : ''}`}
+          title="Dokumente"
+          aria-label="Dokumente"
+          aria-current={view === 'documents' ? 'page' : undefined}
+          onClick={() => navigate('documents')}
+        >
+          <BookOpen size={20} />
         </button>
         <button
           className="rail-button"

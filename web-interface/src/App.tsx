@@ -19,6 +19,7 @@ import {
 import { LectureCard } from './components/LectureCard';
 import { LectureViewer } from './components/LectureViewer';
 import { IconSidebar } from './components/IconSidebar';
+import { DocumentViewer } from './components/DocumentViewer';
 import { courses, lectures, searchLectureMatches, searchLectures } from './data/lectures';
 import {
   isCourseSelection,
@@ -31,12 +32,13 @@ import {
 import { useLocalStorage } from './hooks/useLocalStorage';
 import type { CourseId, CourseSelection, Lecture, QuestionHistoryEntry, Segment } from './types';
 
-type View = 'questions' | 'library' | 'saved';
+type View = 'questions' | 'library' | 'saved' | 'documents';
 type Sort = 'relevance' | 'newest' | 'shortest';
 const viewNames: Record<View, string> = {
   questions: 'Chat',
   library: 'Meine Vorlesungen',
   saved: 'Gespeicherte Stellen',
+  documents: 'Dokumente',
 };
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string');
@@ -249,7 +251,7 @@ export function App() {
         onHelp={() => setHelpOpen(true)}
       />
 
-      <div className="main-shell">
+      <div className={`main-shell ${view === 'documents' ? 'documents-shell' : ''}`}>
         <header className="topbar">
           <div className="breadcrumbs">
             <span>Lernraum</span>
@@ -263,8 +265,10 @@ export function App() {
           </div>
         </header>
 
-        <main id="main" className={`main-content ${isQuestionLanding ? 'chat-landing' : ''}`}>
-          {view === 'questions' ? (
+        <main id="main" className={`main-content ${isQuestionLanding ? 'chat-landing' : ''} ${view === 'documents' ? 'document-content' : ''}`}>
+          {view === 'documents' ? (
+            <DocumentViewer />
+          ) : view === 'questions' ? (
             <div className="question-workspace">
               {selectedCourseDetails && (
                 <h1 className="chat-prompt">Stell eine Frage zu {selectedCourseDetails.name}</h1>
@@ -386,7 +390,7 @@ export function App() {
             </>
           )}
 
-          {(view !== 'questions' || submittedQuestion) && (
+          {view !== 'documents' && (view !== 'questions' || submittedQuestion) && (
             <section
               className="results-section"
               aria-label={view === 'questions' ? 'Passende Vorlesungen' : viewNames[view]}

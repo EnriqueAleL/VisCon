@@ -392,6 +392,21 @@ try {
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('.help-dialog[open]').count(), 0);
 
+  await page.getByRole('button', { name: 'Dokumente', exact: true }).click();
+  const documentFrame = page.frameLocator('.document-viewer');
+  await documentFrame.locator('.pdf-page[aria-busy="false"]').first().waitFor();
+  assert.equal(await documentFrame.locator('.pdf-page').count(), 357);
+  assert.equal(await page.locator('.results-section').count(), 0);
+  assert.equal(await documentFrame.locator('header, footer, nav').count(), 0);
+  await documentFrame.locator('#viewer').evaluate((viewer) => {
+    viewer.scrollTop = viewer.querySelectorAll('.page-row')[2].offsetTop + 100;
+  });
+  await documentFrame.locator('#viewer[data-current-page="3"]').waitFor();
+  await documentFrame.locator('.pdf-page[data-page-number="3"][aria-busy="false"]').waitFor();
+  await page.screenshot({ path: 'artifacts/documents.png', fullPage: true });
+  await page.getByRole('button', { name: 'Chat', exact: true }).click();
+  assert.equal(await page.locator('.document-viewer').count(), 0);
+
   for (const width of [390, 320, 768]) {
     const mobileContext = await browser.newContext({
       viewport: { width, height: 844 },
@@ -485,6 +500,11 @@ try {
       await mobile.getByRole('button', { name: 'Meine Vorlesungen', exact: true }).click();
       await expect(mobile.locator('.lecture-card')).toHaveCount(8);
       await expect(mobile.locator('.sidebar')).toBeVisible();
+      await mobile.getByRole('button', { name: 'Dokumente', exact: true }).click();
+      await mobile.frameLocator('.document-viewer').locator('.pdf-page[aria-busy="false"]').first().waitFor();
+      await expect(mobile.locator('.sidebar')).toBeVisible();
+      assert.equal(await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+      await mobile.screenshot({ path: 'artifacts/documents-mobile.png', fullPage: true });
     }
     await mobileContext.close();
   }
@@ -596,10 +616,10 @@ try {
   await legacyContext.close();
   assert.deepEqual(errors, []);
   console.log(
-    'Interface checks passed: icon navigation, chat history hover and restore, panel transitions and mouseleave despite focus, year/semester/degree/study year/subject steps and empty periods, subject heading and scoped search, context changes, timestamps, bookmarks and persistence, preview, library, sorting, touch/click panels, invalid storage.',
+    'Interface checks passed: icon navigation, chat history hover and restore, panel transitions and mouseleave despite focus, year/semester/degree/study year/subject steps and empty periods, subject heading and scoped search, context changes, timestamps, bookmarks and persistence, preview, library, sorting, touch/click panels, invalid storage, document rendering and continuous scrolling.',
   );
   console.log(
-    'Screenshots: artifacts/desktop{,-landing,-picker,-history}.png and artifacts/mobile{,-picker}-{390,320,768}.png',
+    'Screenshots: artifacts/desktop{,-landing,-picker,-history}.png, artifacts/documents{,-mobile}.png and artifacts/mobile{,-picker}-{390,320,768}.png',
   );
 } finally {
   await browser.close();

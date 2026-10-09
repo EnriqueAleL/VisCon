@@ -95,3 +95,17 @@ im ignorierten Ordner `artifacts/`. Fuer einen anderen Server kann
 
 Am 09.10.2026 wurden Produktionsbuild und Browserpruefung erfolgreich ausgefuehrt.
 Die Desktop- und Mobil-Screenshots wurden auf Lesbarkeit und Ueberlappungen geprueft.
+
+## Dokumentansicht
+
+Die Sidebar unter **Dokumente** öffnet den eigenen PDF.js-Viewer mit fortlaufendem Scrollen und Textauswahl. Das Dokument bleibt ohne zusätzliche Toolbar oder Rahmen im Inhaltsbereich. Andere lokale PDFs lassen sich in die Dokumentansicht ziehen. Text markieren zeigt eine Übersetzung in einer kleinen Box neben der Auswahl.
+
+Die Quelldateien liegen in `../translation/`. `npm run dev` und `npm run build` kopieren den Viewer samt PDF und PDF.js-Ressourcen automatisch nach `public/translation/`. Der Produktionsbuild enthält alle benötigten Dateien; ein zusätzlicher Webserver für die statischen Dateien ist nicht erforderlich.
+
+Die Übersetzung selbst braucht den eigenständigen Python-Dienst aus `../translation/` (siehe dessen README für Setup): er muss separat laufen, während `npm run dev` bzw. `npm run preview` aktiv ist.
+
+```sh
+cd ../translation && .venv/bin/python -m viscon_translate serve   # Port 8788
+```
+
+`vite.config.ts` leitet `/api/*`-Anfragen aus dem eingebetteten Viewer (selber Ursprung wie die React-App) an `http://127.0.0.1:8788` weiter, für `npm run dev` und `npm run preview` gleichermassen. Läuft der Python-Dienst nicht, bleibt der Viewer nutzbar; markierter Text zeigt dann eine Fehlermeldung statt einer Übersetzung.
