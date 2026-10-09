@@ -1,0 +1,4586 @@
+WEBVTT
+
+00:00:01.277 --> 00:00:01.877 
+All right.
+
+00:00:03.077 --> 00:00:06.077 
+Since there is no bell, you don't know that it's time.
+
+00:00:07.517 --> 00:00:08.837 
+That's the function of a bell.
+
+00:00:11.597 --> 00:00:15.757 
+Ivan Paulo figured that out more than a century ago with dogs.
+
+00:00:16.877 --> 00:00:19.597 
+Do you guys know about that reinforcement learning principles?
+
+00:00:20.517 --> 00:00:27.597 
+He fed the dogs after a bell, and dogs started expecting food to come after a bell.
+
+00:00:28.237 --> 00:00:35.414 
+In the past in this lecture room, there was a bell that used to ring after when the class was
+
+00:00:35.414 --> 00:00:42.437 
+supposed to start and everybody expected to expected the class to start when the bell rang.
+
+00:00:43.677 --> 00:00:47.117 
+So we're all the reinforcement learning agents as you can see, right?
+
+00:00:48.077 --> 00:00:48.637 
+That's true.
+
+00:00:48.677 --> 00:00:53.830 
+And there are some psychologists who believe that we're only reinforcement learning agents, like BF
+
+00:00:53.830 --> 00:00:56.277 
+Skinner, who was a very prominent psychologist.
+
+00:00:56.797 --> 00:00:58.597 
+These are behavioural psychologists.
+
+00:00:59.077 --> 00:01:06.190 
+It's a bit hard to sustain that probably, but it's good to think about it anyway, especially in this
+
+00:01:06.190 --> 00:01:10.317 
+time when people are trying to make machines learn things.
+
+00:01:10.717 --> 00:01:15.019 
+It's not clear what kind of models that humans follow to learn, but reinforcement learning is
+
+00:01:15.019 --> 00:01:16.037 
+certainly one of them.
+
+00:01:16.677 --> 00:01:20.917 
+And reinforcement learning is very different from what people are doing with LLMS today.
+
+00:01:21.157 --> 00:01:28.264 
+Reinforcement learning could be a part of it, but LLMS are more based on Transformers, neural
+
+00:01:28.264 --> 00:01:29.717 
+networks, etcetera.
+
+00:01:29.717 --> 00:01:31.197 
+So it's good to think about it anyway.
+
+00:01:31.397 --> 00:01:33.477 
+This, it just reminded me.
+
+00:01:34.157 --> 00:01:38.277 
+Digression came because of the bell, as you can see, right?
+
+00:01:38.877 --> 00:01:44.037 
+But computing principles are very much related to life principles that we follow, especially today.
+
+00:01:44.677 --> 00:01:44.957 
+OK.
+
+00:01:44.997 --> 00:01:50.860 
+You're here not for machine learning lecture, which I'm incapable of delivering anyway because
+
+00:01:50.860 --> 00:01:52.357 
+that's not my expertise.
+
+00:01:52.997 --> 00:01:54.757 
+You can take someone else's class for that.
+
+00:01:54.757 --> 00:01:57.517 
+You're here for digital design and computer architecture, right?
+
+00:01:59.717 --> 00:02:00.277 
+I'm not sure.
+
+00:02:00.277 --> 00:02:04.597 
+OK, Some people say yes, who's not here for digital design and computer architecture?
+
+00:02:06.277 --> 00:02:07.197 
+I don't see any hands.
+
+00:02:07.197 --> 00:02:07.877 
+So that's good.
+
+00:02:08.237 --> 00:02:10.357 
+You can go out if you don't have to stay here, you know.
+
+00:02:10.997 --> 00:02:15.517 
+But I mean, you can also listen and maybe you'll get excited, who knows?
+
+00:02:16.197 --> 00:02:22.071 
+Because this is an area of investigation, a topic in computing that I believe is going to be even
+
+00:02:22.071 --> 00:02:27.825 
+more exciting and even more important going into the future because some areas of computing are
+
+00:02:27.825 --> 00:02:31.157 
+relatively easier to offload to machines in my opinion.
+
+00:02:31.157 --> 00:02:36.237 
+And as we are seeing also in systems like programming debugging you can of course.
+
+00:02:36.437 --> 00:02:39.997 
+Offload more and more to machines and machines will get better and better at that.
+
+00:02:40.477 --> 00:02:45.213 
+But it's not clear if this area is going to be as easy to offload, especially when we try to
+
+00:02:45.213 --> 00:02:50.206 
+manufacture very advanced semiconductor technologies and we when we try to come up different with
+
+00:02:50.206 --> 00:02:51.957 
+different principles of execution.
+
+00:02:52.717 --> 00:02:54.957 
+So that's what we're going to talk about in this lecture.
+
+00:02:54.957 --> 00:02:57.997 
+We're going to learn how computers really work from the ground up.
+
+00:02:58.117 --> 00:03:03.731 
+This is not a programming course, although you will do some programming of real hardware and you
+
+00:03:03.731 --> 00:03:08.117 
+will learn how how computer is, how a computer is built from the ground up.
+
+00:03:08.517 --> 00:03:09.277 
+Does that sound good?
+
+00:03:10.717 --> 00:03:15.237 
+OK, and we'll discuss why that is important later as well in this lecture.
+
+00:03:15.557 --> 00:03:21.423 
+So this lecture is really an introductory lecture to discuss essentially what computer architecture
+
+00:03:21.423 --> 00:03:21.957 
+is about.
+
+00:03:22.397 --> 00:03:26.837 
+And we will at the very end hopefully start with transistor as a building block.
+
+00:03:27.517 --> 00:03:33.108 
+Essentially all computers you have are made of what is called Metaloc side semiconductor transistors
+
+00:03:33.108 --> 00:03:37.637 
+and usually it's with complementary Metaloc side semiconductor transistors, CMOS.
+
+00:03:37.997 --> 00:03:43.542 
+You will hopefully see that by the end of today, tomorrow and essentially A transistor we're going
+
+00:03:43.542 --> 00:03:48.579 
+to, we're going to treat that the circuit or this device, we're going to treat that as an
+
+00:03:48.579 --> 00:03:50.277 
+abstraction for digital logic.
+
+00:03:50.677 --> 00:03:54.557 
+We're going to keep it open or closed, like this wall switch over there.
+
+00:03:54.797 --> 00:03:58.867 
+I don't want to turn off the lights, but if I press one of those lights, it'll turn off the light,
+
+00:03:58.867 --> 00:03:59.117 
+right?
+
+00:03:59.917 --> 00:04:05.557 
+Essentially, we'll treat transistors, a wall switch, and build circuits on top of that.
+
+00:04:06.277 --> 00:04:06.957 
+Does that sound good?
+
+00:04:07.957 --> 00:04:14.070 
+So we'll demystify all of the magic, all of this abstraction that you have in software, LLMS,
+
+00:04:14.070 --> 00:04:20.118 
+etcetera, are running on these things called transistors that are connected together to form
+
+00:04:20.118 --> 00:04:25.837 
+certain functions, in particular, for example, addition, multiplication, memory access.
+
+00:04:25.837 --> 00:04:30.037 
+And we're going to see all of those and demystify all of those during the course of this lecture.
+
+00:04:30.037 --> 00:04:35.902 
+We're going to actually see how existing GPUs are built in Lecture 20 or so or maybe earlier, how
+
+00:04:35.902 --> 00:04:40.317 
+existing machine learning exercises are built, 5 existing CPUs are built.
+
+00:04:41.117 --> 00:04:41.837 
+Does that sound good?
+
+00:04:43.237 --> 00:04:43.637 
+OK.
+
+00:04:44.117 --> 00:04:49.246 
+And some of these things that we are going to discuss are going to be quite interesting, quite
+
+00:04:49.246 --> 00:04:51.157 
+advanced, but we'll build up to it.
+
+00:04:51.157 --> 00:04:56.877 
+Basically, we'll, we'll not leave off any level that will hopefully be unclear.
+
+00:04:57.277 --> 00:04:59.397 
+If there's something unclear, please write to us.
+
+00:04:59.397 --> 00:05:00.437 
+Please ask questions.
+
+00:05:00.877 --> 00:05:01.837 
+We encourage that a lot.
+
+00:05:02.717 --> 00:05:05.637 
+OK, With that said, let's get into some of the material over here.
+
+00:05:05.757 --> 00:05:07.837 
+I have a lot of slides, but I'm going to skip some of them.
+
+00:05:07.837 --> 00:05:09.477 
+So all these are introduction to us.
+
+00:05:10.077 --> 00:05:12.717 
+I see some people over here who are part of my teaching team.
+
+00:05:13.077 --> 00:05:13.557 
+So who am I?
+
+00:05:13.557 --> 00:05:15.757 
+I'm a professor at ETH.
+
+00:05:15.797 --> 00:05:23.597 
+I've been here 10 years now, too long, longer than anywhere else I've been in my life, basically.
+
+00:05:25.117 --> 00:05:30.783 
+And I before this, I was at Carnegie Mellon University as a professor, and before that I was at
+
+00:05:30.783 --> 00:05:31.917 
+Microsoft Research.
+
+00:05:31.917 --> 00:05:36.696 
+And I found that the Computer Architecture research group at Microsoft Research, which did a lot of
+
+00:05:36.696 --> 00:05:38.917 
+exciting things over the course of many years.
+
+00:05:39.917 --> 00:05:42.997 
+Before that, I was a PhD student at the University of Texas at Austin.
+
+00:05:44.717 --> 00:05:45.437 
+What does that sound?
+
+00:05:45.597 --> 00:05:47.797 
+OK, it's gone, not from me.
+
+00:05:48.557 --> 00:05:53.345 
+And I did my PhD in computer architecture, and we're going to see some of those topics in Lecture 24
+
+00:05:53.345 --> 00:05:55.117 
+or so when we talk about prefetching.
+
+00:05:56.037 --> 00:06:02.637 
+Prefetching is the idea of a processor, a microprocessor, hardware, predicting what you're going to
+
+00:06:02.637 --> 00:06:06.437 
+access next and getting that data early to the processor.
+
+00:06:06.597 --> 00:06:08.517 
+This will become all clear later on.
+
+00:06:09.157 --> 00:06:14.170 
+And before that, I was a bachelor student like you guys at the University of Michigan, where I
+
+00:06:14.170 --> 00:06:16.517 
+studied computer engineering and psychology.
+
+00:06:17.357 --> 00:06:19.917 
+I did a lot of stints at industry.
+
+00:06:20.037 --> 00:06:25.677 
+I spent a lot of time at Intel, AMD, building their microprocessors, doing research on them.
+
+00:06:26.237 --> 00:06:31.916 
+Some of the prefetching ideas that may be employed on some of the computers may be inside there in
+
+00:06:31.916 --> 00:06:33.597 
+the things that you're using.
+
+00:06:34.677 --> 00:06:41.667 
+I spent a lot of time at Google VM Ware and of course Microsoft Research, right, and Stanford for my
+
+00:06:41.667 --> 00:06:42.437 
+sabbatical.
+
+00:06:43.477 --> 00:06:48.124 
+So if you have questions about industry, we're going to cover a lot of industry relevant things also
+
+00:06:48.124 --> 00:06:48.357 
+here.
+
+00:06:48.357 --> 00:06:54.597 
+A lot of the things that we're going to cover are what really drives computing hardware today.
+
+00:06:54.957 --> 00:06:57.437 
+But computing software is always built on computing hardware.
+
+00:06:57.797 --> 00:07:03.557 
+So the AI evolution is enabled today because of the computing hardware that we're going to study.
+
+00:07:04.157 --> 00:07:06.517 
+So I work on computer architecture, computing systems.
+
+00:07:06.677 --> 00:07:11.317 
+I have very broad interests, hardware, security, bioinformatics.
+
+00:07:11.597 --> 00:07:14.471 
+I'm not going to bore you with all of these things because we're going to talk about some of these
+
+00:07:14.471 --> 00:07:14.677 
+things.
+
+00:07:15.077 --> 00:07:17.277 
+Let me introduce some other people over here.
+
+00:07:17.277 --> 00:07:20.237 
+Mohammed, who's sitting over there is my Co instructor.
+
+00:07:20.677 --> 00:07:21.677 
+He is part of my group.
+
+00:07:21.677 --> 00:07:28.275 
+He's been with us for 9 plus years, right, for both visiting and then more recently a senior
+
+00:07:28.275 --> 00:07:29.997 
+researcher and lecturer.
+
+00:07:30.437 --> 00:07:36.157 
+He's got his degrees from the top school at Iran.
+
+00:07:36.637 --> 00:07:41.145 
+Sheriff, University of Technology, and he's done a lot of outstanding research in computer
+
+00:07:41.145 --> 00:07:41.797 
+architecture.
+
+00:07:42.637 --> 00:07:45.917 
+People from University of Tehran may contest that and that's fine.
+
+00:07:47.077 --> 00:07:48.677 
+OK, you can talk to him.
+
+00:07:49.037 --> 00:07:50.957 
+He's going to deliver a bunch of lectures.
+
+00:07:50.997 --> 00:07:57.757 
+Also, he's the Co instructor and our head teaching assistant is over there, Konstantina.
+
+00:07:58.877 --> 00:08:05.034 
+She's also a senior lecturer and researcher in my group, and she's got her PhD from the top school
+
+00:08:05.034 --> 00:08:10.814 
+at Greece, although some people may contest that, including some people sitting close to her
+
+00:08:10.814 --> 00:08:11.317 
+perhaps.
+
+00:08:12.077 --> 00:08:14.837 
+And she's been with us for two years, right?
+
+00:08:15.797 --> 00:08:19.277 
+And she works, she does research on hardware, software, code design also.
+
+00:08:19.877 --> 00:08:25.917 
+So if you have a lot of questions on assignments, Constantina is the person to ask.
+
+00:08:27.357 --> 00:08:27.917 
+Be nice.
+
+00:08:28.437 --> 00:08:29.197 
+She's very nice.
+
+00:08:29.597 --> 00:08:29.957 
+OK.
+
+00:08:30.757 --> 00:08:38.837 
+And Jihang, who is not here right now, is our other head teaching assistant.
+
+00:08:40.157 --> 00:08:44.317 
+He joined my group recently from Tsinghua, which is a top school in China.
+
+00:08:44.917 --> 00:08:45.637 
+Is Jihang here?
+
+00:08:45.837 --> 00:08:47.517 
+I think he's in China right now, so.
+
+00:08:47.837 --> 00:08:48.237 
+OK.
+
+00:08:48.277 --> 00:08:48.437 
+Yeah.
+
+00:08:49.157 --> 00:08:51.317 
+So if you have questions, you can e-mail right now.
+
+00:08:52.997 --> 00:08:53.477 
+OK.
+
+00:08:53.477 --> 00:08:54.397 
+And then labs.
+
+00:08:54.397 --> 00:08:57.397 
+We have labs in this course.
+
+00:08:57.557 --> 00:08:59.237 
+How many people are aware that we have labs?
+
+00:09:00.197 --> 00:09:00.997 
+OK, that's good.
+
+00:09:01.317 --> 00:09:02.397 
+People are paying attention.
+
+00:09:02.917 --> 00:09:10.557 
+And Ottabach, who is over there smiling, is our senior, well, teaching Ed, teaching assistant.
+
+00:09:10.557 --> 00:09:12.757 
+He's a pH senior PhD student in my group.
+
+00:09:13.397 --> 00:09:17.277 
+He's going to graduate soon, so I get the best of him before he graduates.
+
+00:09:18.877 --> 00:09:21.197 
+And he's been doing a lot of work on computer architecture.
+
+00:09:21.197 --> 00:09:24.933 
+So you can talk to these people about their research also because they're doing a lot of impactful
+
+00:09:24.933 --> 00:09:25.277 
+research.
+
+00:09:25.837 --> 00:09:30.797 
+And finally, last but not least, Mayank is in the back over there in purple.
+
+00:09:31.397 --> 00:09:32.357 
+It's easier to find.
+
+00:09:33.037 --> 00:09:34.797 
+He's also a head teaching assistant.
+
+00:09:34.797 --> 00:09:36.237 
+He's recently joined my group.
+
+00:09:36.557 --> 00:09:42.060 
+He's he's one of the younger PhD students and he's doing a lot of work on homomorphic encryption,
+
+00:09:42.060 --> 00:09:46.997 
+privacy preserving technologies and how to accelerate them and how to make them better.
+
+00:09:47.757 --> 00:09:50.957 
+So you can see that we touch a lot of topics in the group.
+
+00:09:50.957 --> 00:09:54.357 
+And computer architecture and digital design actually touches a lot of these topics.
+
+00:09:54.597 --> 00:09:59.517 
+How do you compute on encrypted data is a fascinating area that Mayank is working on, for example.
+
+00:10:01.317 --> 00:10:02.637 
+OK, does that sound good?
+
+00:10:03.357 --> 00:10:05.677 
+Now you know whom to contact, At least the major people.
+
+00:10:05.677 --> 00:10:12.019 
+I'm going to introduce some of the other people later on because we have a large group of teaching
+
+00:10:12.019 --> 00:10:18.427 
+assistants, student assistants, student assistants, students who have taken this course in the past
+
+00:10:18.427 --> 00:10:24.317 
+and they've enjoyed it so much that they want to actually help future generations like you.
+
+00:10:25.077 --> 00:10:29.077 
+So those are actually the people who have gone through the course, some of them multiple times.
+
+00:10:29.517 --> 00:10:35.477 
+Maria, for example, over here is one of them, but you will see some of them over time as well.
+
+00:10:35.997 --> 00:10:37.557 
+OK, so this is my research group.
+
+00:10:37.557 --> 00:10:38.877 
+I'm going to skip some of these slides.
+
+00:10:38.877 --> 00:10:43.557 
+If you want to learn more about us, there's a lot of information online or ask people over here.
+
+00:10:43.917 --> 00:10:45.677 
+We put put out newsletters.
+
+00:10:45.677 --> 00:10:51.899 
+You can see how a research group operates if you're interested in that at some point in the future,
+
+00:10:51.899 --> 00:10:52.277 
+maybe.
+
+00:10:52.757 --> 00:10:58.077 
+So we held one of our conferences recently, and this is our newsletter recently.
+
+00:10:58.597 --> 00:11:00.037 
+We have a lot of material online.
+
+00:11:00.077 --> 00:11:01.677 
+Again, I'm not going to bore you with this.
+
+00:11:01.957 --> 00:11:04.597 
+We are very proud of our PhD and postdoc alumni.
+
+00:11:05.997 --> 00:11:06.557 
+Are they here?
+
+00:11:06.637 --> 00:11:07.117 
+Any of them?
+
+00:11:08.197 --> 00:11:08.757 
+They will come.
+
+00:11:08.757 --> 00:11:10.517 
+Some of them are travelling for conferences.
+
+00:11:10.997 --> 00:11:15.677 
+So we have 25 alumni and PhD and they are all decorated with a lot of awards.
+
+00:11:16.117 --> 00:11:16.837 
+Well deserved.
+
+00:11:17.797 --> 00:11:20.397 
+And we have a lot of computing future interviews.
+
+00:11:20.397 --> 00:11:23.357 
+So if you're interested in the future of computing, you can find a lot of materials.
+
+00:11:23.957 --> 00:11:28.740 
+These are actually some recent interviews that I did with IEEE Computer Society, and I'm going to
+
+00:11:28.740 --> 00:11:31.157 
+talk about some of these later in later lectures.
+
+00:11:31.317 --> 00:11:33.037 
+Actually, today we're going to talk about processing in memory.
+
+00:11:33.037 --> 00:11:37.717 
+Very little bit to discuss what's happening today in computing.
+
+00:11:38.637 --> 00:11:38.877 
+OK.
+
+00:11:38.877 --> 00:11:40.637 
+If you're interested in suggestions, I have a lot of them.
+
+00:11:40.757 --> 00:11:42.117 
+You can watch them or ask me.
+
+00:11:42.597 --> 00:11:43.597 
+OK, So what do we do?
+
+00:11:43.597 --> 00:11:48.317 
+As I said, our core focusing is to enable fundamentally better computers.
+
+00:11:48.717 --> 00:11:53.357 
+And it's that's the core of digital design, actually digital design and computer architecture.
+
+00:11:53.717 --> 00:11:55.077 
+What is the goal of what we're doing?
+
+00:11:55.197 --> 00:11:59.597 
+Enable a computing device that can do something better, right.
+
+00:12:00.037 --> 00:12:04.197 
+If you're going to do something worse than before, there is not much point in it.
+
+00:12:04.517 --> 00:12:08.437 
+Maybe you can make money, but you're not advancing the state-of-the-art.
+
+00:12:08.437 --> 00:12:12.797 
+Our goal is really to advance state-of-the-art, so come up with new ways of designing computers.
+
+00:12:13.157 --> 00:12:18.107 
+So that's going to be the focus of this course, this mindset of growth or enabling, doing something
+
+00:12:18.107 --> 00:12:19.157 
+fundamentally better.
+
+00:12:19.837 --> 00:12:25.477 
+So there was, for example, in 1980s, how many people are as old as 1980s here?
+
+00:12:26.597 --> 00:12:27.677 
+I guess I may be the only one.
+
+00:12:28.437 --> 00:12:29.237 
+OK, some of them.
+
+00:12:29.237 --> 00:12:29.677 
+That's good.
+
+00:12:30.037 --> 00:12:30.237 
+Yeah.
+
+00:12:30.237 --> 00:12:31.397 
+We don't discriminate on age.
+
+00:12:31.397 --> 00:12:32.637 
+You can learn at any age.
+
+00:12:33.197 --> 00:12:36.237 
+In fact, some people have formed Some of the most powerful companies did that after.
+
+00:12:36.317 --> 00:12:41.717 
+After, after they were 65 years old, People retire here when they're 65 years old.
+
+00:12:42.157 --> 00:12:43.957 
+Anyway, that's a joke, kind of.
+
+00:12:46.237 --> 00:12:53.797 
+OK, so basically in 1980s when people were designing the MIPS architecture, MIPS computers that
+
+00:12:53.797 --> 00:13:01.357 
+you're going to actually do some studies on MIPS and I'm going to ask what that means later on.
+
+00:13:01.637 --> 00:13:08.166 
+Not today you can think about it, but the MIPS architecture, the people designed the MIPS R2000 and
+
+00:13:08.166 --> 00:13:14.497 
+you're going to you're going to actually design something very similar to what MIPS R 2000 is in
+
+00:13:14.497 --> 00:13:15.157 
+your labs.
+
+00:13:15.597 --> 00:13:17.757 
+Well, in, in, in also the lectures.
+
+00:13:18.437 --> 00:13:24.669 
+And this was an in order processor, very simple, a few stages pipelined and people said this is the
+
+00:13:24.669 --> 00:13:26.117 
+best computing machine.
+
+00:13:26.117 --> 00:13:31.197 
+We should not design anything higher performance than this because nobody needs it.
+
+00:13:33.237 --> 00:13:34.037 
+This was actually said.
+
+00:13:34.037 --> 00:13:36.397 
+People say it, In fact, engineers say it sometimes.
+
+00:13:37.117 --> 00:13:42.649 
+And this is a terrible mindset because if we actually stop there, then we wouldn't be having
+
+00:13:42.649 --> 00:13:45.717 
+anything, any of the technology that we have today.
+
+00:13:45.997 --> 00:13:47.957 
+So this course would stop at lecture.
+
+00:13:48.037 --> 00:13:49.197 
+I don't know, 10 maybe.
+
+00:13:49.917 --> 00:13:50.437 
+Do you agree?
+
+00:13:51.757 --> 00:13:57.499 
+But we're going to go to lecture 26 and we're going to enable new things because we're going to
+
+00:13:57.499 --> 00:13:59.797 
+actually always push for doing better.
+
+00:14:00.197 --> 00:14:06.997 
+And doing better is really the enabling function of innovation, research, development.
+
+00:14:08.157 --> 00:14:11.677 
+Once you do something better, then somebody else wants to do something better also.
+
+00:14:11.677 --> 00:14:14.557 
+That's how you actually design better systems in general.
+
+00:14:15.077 --> 00:14:17.037 
+Of course, better in different many aspects, right?
+
+00:14:17.037 --> 00:14:18.637 
+Then the question becomes what is better, right?
+
+00:14:18.997 --> 00:14:21.797 
+There are many metrics and we're going to talk about that also in this course.
+
+00:14:21.797 --> 00:14:23.357 
+Performance is 1 metric.
+
+00:14:24.237 --> 00:14:26.517 
+Energy is very important metric.
+
+00:14:26.517 --> 00:14:28.597 
+We're going to talk about that robustness.
+
+00:14:29.197 --> 00:14:31.637 
+How do you design a system that is actually very robust.
+
+00:14:31.877 --> 00:14:39.597 
+Robustness has a lot of aspects, secure, private, safe, reliable, available.
+
+00:14:39.717 --> 00:14:41.397 
+All of these are predictable.
+
+00:14:41.517 --> 00:14:43.997 
+All of these are aspects of robustness that are really important.
+
+00:14:43.997 --> 00:14:48.477 
+When we are going to cover some of these in this course, a lot of our focus will be performance.
+
+00:14:48.477 --> 00:14:52.437 
+Cost will be another metric, ease of use will be another metric.
+
+00:14:53.557 --> 00:14:54.717 
+So there will be a lot of metrics.
+
+00:14:54.717 --> 00:15:01.034 
+So this is not, these are not things that we do research on, but these are things that are actually
+
+00:15:01.034 --> 00:15:02.757 
+at the core of this course.
+
+00:15:03.517 --> 00:15:07.938 
+That's why I think this fundamental course at freshman level course is very exciting to teach
+
+00:15:07.938 --> 00:15:11.837 
+because it really cuts to the core concepts of how you actually enable a computer.
+
+00:15:12.277 --> 00:15:17.650 
+Because if you, for example, if your hardware is not robust whenever you do computation, the
+
+00:15:17.650 --> 00:15:18.877 
+computation is wrong.
+
+00:15:19.597 --> 00:15:24.397 
+Sometimes, maybe not always, let's say 95% it's correct, 5% wrong.
+
+00:15:25.277 --> 00:15:26.557 
+How do you design software for it?
+
+00:15:27.717 --> 00:15:28.837 
+It's good to think about it, right?
+
+00:15:29.277 --> 00:15:31.277 
+5% of the time you're going to get wrong results.
+
+00:15:33.557 --> 00:15:39.117 
+Maybe one idea could be to not design that hardware that sounds good.
+
+00:15:39.957 --> 00:15:42.357 
+Or if you design that hardware, how do you fix the problem right?
+
+00:15:42.557 --> 00:15:47.523 
+If the hardware tells you that the computation is wrong, maybe you repeat the computation that
+
+00:15:47.523 --> 00:15:48.157 
+sounds good.
+
+00:15:48.397 --> 00:15:50.317 
+You design hardware that tells you when it's wrong.
+
+00:15:51.197 --> 00:15:54.277 
+That's a very good principle of robust system design.
+
+00:15:54.437 --> 00:15:59.507 
+If you cannot design hardware that's always correct, at least design something that tells you when
+
+00:15:59.507 --> 00:16:00.077 
+it's wrong.
+
+00:16:00.357 --> 00:16:06.951 
+This is called fail fast, meaning it tells you that it's wrong or it fails and doesn't give you
+
+00:16:06.951 --> 00:16:07.437 
+result.
+
+00:16:08.357 --> 00:16:13.526 
+The worst thing, well, maybe not the worst thing, but one of the worst things that can happen is the
+
+00:16:13.526 --> 00:16:18.231 
+hardware computes something incorrectly and you assume that it's correct, but the result is
+
+00:16:18.231 --> 00:16:19.317 
+actually not correct.
+
+00:16:19.437 --> 00:16:21.557 
+And you written software assuming that it's correct, right?
+
+00:16:21.917 --> 00:16:22.837 
+So how do you fix that?
+
+00:16:23.477 --> 00:16:28.012 
+Well, you can play the probability game assuming the hardware is not nice, meaning it doesn't tell
+
+00:16:28.012 --> 00:16:29.077 
+you that's not correct.
+
+00:16:29.917 --> 00:16:35.677 
+You can say, OK, I'm going to execute the same program 10 times and I'm going to vote among them.
+
+00:16:36.837 --> 00:16:37.757 
+So this is actually done.
+
+00:16:37.757 --> 00:16:39.397 
+Also, that's called redundant execution.
+
+00:16:39.717 --> 00:16:44.917 
+You redundantly execute the same program many times and take the most popular result.
+
+00:16:46.557 --> 00:16:47.277 
+Sounds good, right?
+
+00:16:48.117 --> 00:16:53.357 
+Maybe you reduce the probability of incorrect result, but you don't eliminate it completely.
+
+00:16:53.997 --> 00:16:59.276 
+You can start playing the probability game and execute the same program a million times and
+
+00:16:59.276 --> 00:17:01.597 
+hopefully you'll get the result correct.
+
+00:17:01.837 --> 00:17:05.757 
+But again, there's always a probability that you may not be correct, right?
+
+00:17:06.277 --> 00:17:10.629 
+So it's good to think about these design decisions and what we do in this course is that really at
+
+00:17:10.629 --> 00:17:12.717 
+the core of how we design this sort of systems.
+
+00:17:14.557 --> 00:17:16.557 
+I was going to say something about that a million times.
+
+00:17:16.557 --> 00:17:22.317 
+So a million times you execute the same program, Let's assume that you're querying your LLM and you
+
+00:17:22.317 --> 00:17:28.018 
+do it a million times as opposed to once because you you're not sure if it's going to the hardware
+
+00:17:28.018 --> 00:17:31.917 
+that's executing the LLM inference, large language model inference.
+
+00:17:31.917 --> 00:17:33.317 
+Is that actually going to get it correct?
+
+00:17:34.277 --> 00:17:36.157 
+Now you're expanding a lot of energy, right?
+
+00:17:36.357 --> 00:17:40.626 
+These things are actually consuming a lot of energy to begin with, as we will see, and for
+
+00:17:40.626 --> 00:17:45.227 
+redundancy, for redundancy, for robust execution to get the correct result, you're expanding even
+
+00:17:45.227 --> 00:17:45.797 
+more energy.
+
+00:17:47.157 --> 00:17:52.489 
+So the design choices that you make in hardware critically affect what happens to what we really
+
+00:17:52.489 --> 00:17:57.876 
+care about energy and energy directly impacts sustainability, and sustainability all of us should
+
+00:17:57.876 --> 00:18:03.319 
+really care about, even if these huge companies don't care about them and pay lip service to them,
+
+00:18:03.319 --> 00:18:06.597 
+you guys should care about because you guys are the future.
+
+00:18:07.957 --> 00:18:13.870 
+Those old people who are dominating the world are not the future, they're the past and they're going
+
+00:18:13.870 --> 00:18:14.757 
+to be the past.
+
+00:18:14.757 --> 00:18:19.874 
+You guys should really take care of it and really enable the design of much more energy efficient,
+
+00:18:19.874 --> 00:18:22.277 
+high performance and also sustainable systems.
+
+00:18:23.237 --> 00:18:29.976 
+The sustainability was not a component of computing design until recently when we actually started
+
+00:18:29.976 --> 00:18:34.997 
+building very large scale systems, partly due to machine learning and AI.
+
+00:18:35.637 --> 00:18:41.476 
+And this has actually become very dangerous in my opinion, because we're really building systems
+
+00:18:41.476 --> 00:18:45.917 
+that are tapping into the resources of the world in a very intensive way.
+
+00:18:45.917 --> 00:18:51.517 
+And as a result, we may be actually destroying the world more than we should with computers.
+
+00:18:51.837 --> 00:18:56.612 
+So if you think about it, we're our goal is to really design something that enable a better, enables
+
+00:18:56.612 --> 00:18:59.477 
+a better future, but it should not destroy that future also.
+
+00:19:00.237 --> 00:19:05.681 
+OK, so I digress, but this is actually the, the perfect time to discuss these introductory materials
+
+00:19:05.681 --> 00:19:08.077 
+because we're going to see a lot of designs.
+
+00:19:08.477 --> 00:19:11.397 
+It's good to think about what is the performance of the design?
+
+00:19:11.477 --> 00:19:12.557 
+What is the cost of the design?
+
+00:19:12.557 --> 00:19:13.717 
+What is the energy of the design?
+
+00:19:14.237 --> 00:19:15.797 
+What is the sustainability impact?
+
+00:19:16.077 --> 00:19:21.277 
+I'm not going to tell you exactly what that is because that's actually still a research topic.
+
+00:19:21.277 --> 00:19:24.957 
+How do you actually quantify the sustainability cost of a machine?
+
+00:19:24.957 --> 00:19:28.677 
+For example, partly how much hardware goes into the machine.
+
+00:19:28.677 --> 00:19:32.437 
+Bigger hardware is actually in general not nice for sustainability.
+
+00:19:32.717 --> 00:19:35.317 
+Partly what kind of materials go into the machine.
+
+00:19:35.917 --> 00:19:40.517 
+Expensive or scarce materials that require a lot of impact on the world are not good.
+
+00:19:41.197 --> 00:19:44.637 
+Partly how much energy is needed to power up the machine.
+
+00:19:44.637 --> 00:19:46.597 
+How much energy does the machine consume?
+
+00:19:46.597 --> 00:19:51.517 
+Partly how much power is needed to power up the machine, like total design power.
+
+00:19:51.517 --> 00:19:55.077 
+So there are a lot of metrics that actually combine to design a system.
+
+00:19:55.237 --> 00:20:01.217 
+And hopefully what you will get out of this course is to really try to tease out the complexity that
+
+00:20:01.217 --> 00:20:07.138 
+goes into these decisions because there's not only one metric, unfortunately, sometimes there's one
+
+00:20:07.138 --> 00:20:07.557 
+metric.
+
+00:20:07.637 --> 00:20:12.988 
+Like if you design a high performance supercomputer, people say, OK, the only thing I care about is
+
+00:20:12.988 --> 00:20:13.637 
+performance.
+
+00:20:14.197 --> 00:20:15.397 
+Unfortunately, that's not true.
+
+00:20:16.077 --> 00:20:20.677 
+If you look at supercomputers today, it's also energy, it's also cost.
+
+00:20:20.837 --> 00:20:22.517 
+It's also whether you can power this thing.
+
+00:20:23.837 --> 00:20:30.016 
+So even in domains where traditionally people have considered performance is the biggest metric,
+
+00:20:30.016 --> 00:20:33.557 
+that performance is not necessarily the biggest metric.
+
+00:20:33.557 --> 00:20:36.357 
+Energy and other metrics are becoming much more important.
+
+00:20:36.677 --> 00:20:39.517 
+So that's why when we design computers, we should think about different metrics.
+
+00:20:39.757 --> 00:20:42.157 
+And when we design computers, there are a lot of components also.
+
+00:20:42.357 --> 00:20:44.437 
+We're going to cover some of these in this lecture.
+
+00:20:44.437 --> 00:20:48.277 
+I'm not going to go through them right now, but this is what we do in our research as well.
+
+00:20:49.317 --> 00:20:52.557 
+OK, I, I use that slide to talk about a lot of things as you can see.
+
+00:20:56.197 --> 00:20:59.837 
+OK, so these are some of the research topics that we do in my group.
+
+00:20:59.837 --> 00:21:03.677 
+You will, you will get exposed to some of these in later lectures, especially auto design.
+
+00:21:03.677 --> 00:21:08.903 
+Fundamentally robust, secure, reliable, safe, available, predictable architectures, fundamentally
+
+00:21:08.903 --> 00:21:12.837 
+energy efficient architectures, low latency and predictable architecture.
+
+00:21:12.837 --> 00:21:13.637 
+That's important.
+
+00:21:14.037 --> 00:21:18.077 
+And we also look a lot, about a lot into intelligent architectures that can self learn.
+
+00:21:18.677 --> 00:21:20.197 
+Basically, you design some hardware.
+
+00:21:20.277 --> 00:21:21.117 
+It's not static.
+
+00:21:21.277 --> 00:21:26.326 
+So if you look at this hardware, for example, there are some decisions that are made in this
+
+00:21:26.326 --> 00:21:28.357 
+hardware that are dictated by humans.
+
+00:21:28.837 --> 00:21:30.037 
+Humans taught something.
+
+00:21:30.357 --> 00:21:31.597 
+They built the hardware.
+
+00:21:31.717 --> 00:21:38.232 
+And the hardware that's actually almost six years old, the six year old hardware is doing the same
+
+00:21:38.232 --> 00:21:41.357 
+thing every nanosecond for all of its lifetime.
+
+00:21:41.477 --> 00:21:42.437 
+It didn't learn anything.
+
+00:21:43.237 --> 00:21:45.957 
+It's kind of dumb, pretty dumb actually.
+
+00:21:45.957 --> 00:21:48.277 
+In most decisions there is no learning.
+
+00:21:48.997 --> 00:21:51.157 
+You put it in some environment, it it doesn't learn.
+
+00:21:51.157 --> 00:21:52.237 
+Basically it doesn't understand.
+
+00:21:52.237 --> 00:21:53.437 
+It's not self aware.
+
+00:21:53.477 --> 00:21:57.837 
+Even so, our goal is to design systems that are actually much more data-driven.
+
+00:21:57.837 --> 00:22:00.917 
+They can interact with the environment and they can learn and they can do better.
+
+00:22:00.917 --> 00:22:02.517 
+Over time they get better.
+
+00:22:02.517 --> 00:22:02.917 
+Actually.
+
+00:22:03.077 --> 00:22:06.117 
+In fact, this hardware gets worse over time because it ages.
+
+00:22:06.717 --> 00:22:08.477 
+Can we get better with experience, basically?
+
+00:22:08.637 --> 00:22:09.757 
+That's actually very important.
+
+00:22:09.757 --> 00:22:16.945 
+And we're going to see some small pieces of how this is done in microprocessors today when we cover
+
+00:22:16.945 --> 00:22:19.197 
+the topic of branch prediction.
+
+00:22:19.917 --> 00:22:21.797 
+But there's a lot more to be done in this area.
+
+00:22:22.317 --> 00:22:27.544 
+And then there's a lot of architecture designed for important applications like machine learning,
+
+00:22:27.544 --> 00:22:30.077 
+genomics, medicine, and health that we do that.
+
+00:22:30.077 --> 00:22:36.237 
+I will at some point talk about how many people have seen this picture in a prior course.
+
+00:22:36.357 --> 00:22:38.117 
+OK, Where did you see it?
+
+00:22:38.237 --> 00:22:38.997 
+Maybe someone?
+
+00:22:39.037 --> 00:22:39.357 
+Yes.
+
+00:22:39.357 --> 00:22:40.077 
+Where did you see it?
+
+00:22:40.557 --> 00:22:43.837 
+Sorry to pick on you, but a course or?
+
+00:22:43.837 --> 00:22:47.397 
+Yeah, And And a course in another university.
+
+00:22:47.397 --> 00:22:48.277 
+OK, another university.
+
+00:22:48.317 --> 00:22:50.677 
+How many people have seen this picture in this university?
+
+00:22:51.917 --> 00:22:52.877 
+OK, Which course?
+
+00:22:52.877 --> 00:22:54.357 
+This one.
+
+00:22:54.357 --> 00:22:54.757 
+This one.
+
+00:22:54.757 --> 00:22:55.477 
+OK, this course.
+
+00:22:55.477 --> 00:22:57.797 
+OK, Thank you.
+
+00:22:57.797 --> 00:22:58.517 
+I'll come back.
+
+00:23:00.357 --> 00:23:03.077 
+So basically this is the transformation hierarchy.
+
+00:23:03.117 --> 00:23:04.717 
+We're going to look at this a lot.
+
+00:23:05.517 --> 00:23:07.957 
+I'm going to actually introduce this a little bit more later on.
+
+00:23:08.197 --> 00:23:11.197 
+We have problems to solve and humans are always have problems.
+
+00:23:11.197 --> 00:23:12.797 
+Humans are great problem generators.
+
+00:23:14.557 --> 00:23:19.232 
+Sometimes useful problems like understanding intelligence, understanding the fundamentals of
+
+00:23:19.232 --> 00:23:23.197 
+science, physics, etcetera, how we nature operates, those are useful problems.
+
+00:23:23.197 --> 00:23:28.997 
+Sometimes they're human generated problems like congestion, right, or sustainable tissues, for
+
+00:23:28.997 --> 00:23:31.157 
+example, that we are talking about.
+
+00:23:31.477 --> 00:23:35.077 
+You have some problems to solve and you need to actually communicate it to the electrons.
+
+00:23:36.397 --> 00:23:37.917 
+In the technologies that we built.
+
+00:23:38.037 --> 00:23:40.477 
+Unfortunately we don't yet speak the electron language.
+
+00:23:41.437 --> 00:23:43.237 
+How many people speak the electron language here?
+
+00:23:44.157 --> 00:23:44.597 
+Not yet.
+
+00:23:44.597 --> 00:23:45.837 
+If you're speaking it, let me know.
+
+00:23:46.357 --> 00:23:47.597 
+I have a start up idea for you.
+
+00:23:49.597 --> 00:23:53.557 
+I am hoping that this will change with more and more intelligent learning.
+
+00:23:53.557 --> 00:23:58.082 
+Maybe we can actually get to speak that language at some point, but that requires a lot of many
+
+00:23:58.082 --> 00:23:58.797 
+years probably.
+
+00:23:59.237 --> 00:24:03.280 
+So as a result, people have developed this hierarchy to communicate with the electrons, and we're
+
+00:24:03.280 --> 00:24:06.157 
+going to see how those electrons work toward the end of this lecture.
+
+00:24:06.477 --> 00:24:09.677 
+If I keep digressing, we're not going to reach that, but let's see.
+
+00:24:10.437 --> 00:24:11.317 
+Hopefully you're having fun.
+
+00:24:11.317 --> 00:24:13.677 
+At least with the electrons.
+
+00:24:13.677 --> 00:24:17.557 
+We build devices, logic, micro architecture, that's the hardware.
+
+00:24:17.637 --> 00:24:19.197 
+And then we have some interface to it.
+
+00:24:19.837 --> 00:24:24.723 
+And with the problem, we, we transform the problem into an algorithm, right, In a programming
+
+00:24:24.723 --> 00:24:28.717 
+language executed on some system software which interacts with the hardware.
+
+00:24:29.237 --> 00:24:35.572 
+So this is the transformation hierarchy, and in this course we're going to especially focus on these
+
+00:24:35.572 --> 00:24:38.677 
+two, although we'll actually focus on logic also.
+
+00:24:38.677 --> 00:24:46.200 
+This is the computer architecture narrow view today because these difficulties in design are not
+
+00:24:46.200 --> 00:24:53.488 
+easy to solve just by thinking about the hardware or the computer architecture in this narrow
+
+00:24:53.488 --> 00:24:54.037 
+manner.
+
+00:24:54.197 --> 00:25:01.064 
+A lot of people are looking at Co designing or designing entire systems, building algorithms for
+
+00:25:01.064 --> 00:25:01.637 
+devices.
+
+00:25:01.637 --> 00:25:08.298 
+So you see a lot of companies for example or researchers both looking into computer architecture as
+
+00:25:08.298 --> 00:25:10.317 
+a more in a more holistic way.
+
+00:25:10.517 --> 00:25:15.437 
+How can we how can I design the entire stack so that I can solve my problem in a better way?
+
+00:25:15.717 --> 00:25:18.277 
+You see this a lot in machine learning systems for example.
+
+00:25:18.277 --> 00:25:22.317 
+People are not saying how can I design the best processor That's good.
+
+00:25:22.437 --> 00:25:28.020 
+I want to design the best processor, but also I want to adapt my software to the best processor so
+
+00:25:28.020 --> 00:25:31.837 
+that I can execute this machine learning application in a fast way.
+
+00:25:32.837 --> 00:25:35.437 
+You can maybe specialized that application to some health.
+
+00:25:35.517 --> 00:25:40.557 
+For example, you, you want to do AI for medicine and a particular area of medicine.
+
+00:25:40.557 --> 00:25:43.997 
+Even you can design systems that are actually much more specialized that way.
+
+00:25:43.997 --> 00:25:45.797 
+So it's good to think about it this way.
+
+00:25:45.797 --> 00:25:47.517 
+And I'm going to give you some examples of this.
+
+00:25:48.117 --> 00:25:52.677 
+So this is called cross layer design and the goal is to achieve the highest metric.
+
+00:25:53.197 --> 00:25:55.997 
+Metric can be efficiency, performance, robustness, security.
+
+00:25:56.557 --> 00:26:02.211 
+And we should really take the expanded view of computer architecture and Co design across the
+
+00:26:02.211 --> 00:26:04.157 
+hierarchy algorithms to devices.
+
+00:26:04.717 --> 00:26:07.477 
+And this is kind of the research approach we're taking in my group.
+
+00:26:08.037 --> 00:26:11.997 
+And you'll see some examples of this that this that's already happening in industry as well.
+
+00:26:12.997 --> 00:26:15.077 
+OK, It's another principle that is really important to me.
+
+00:26:15.077 --> 00:26:19.407 
+Actually, that's why I teach the I love teaching the freshman course because I believe teaching and
+
+00:26:19.407 --> 00:26:21.157 
+research are two sides of the same coin.
+
+00:26:22.117 --> 00:26:22.957 
+What does this mean?
+
+00:26:23.117 --> 00:26:26.117 
+Research is discovering something that no one has discovered before.
+
+00:26:26.717 --> 00:26:28.077 
+That's the ideal research.
+
+00:26:28.197 --> 00:26:31.797 
+You discover something, you invent something, no one has thought of it before.
+
+00:26:31.797 --> 00:26:33.117 
+It's innovative novel.
+
+00:26:33.997 --> 00:26:36.917 
+And teaching is basically teaching that to everyone else.
+
+00:26:37.997 --> 00:26:41.117 
+You basically discovered something and you educate everyone else.
+
+00:26:41.317 --> 00:26:49.610 
+Teaching in a more broader form is education or telling, telling other people what anyone can know,
+
+00:26:49.610 --> 00:26:54.637 
+researchers finding something what that no one found before.
+
+00:26:55.757 --> 00:27:01.397 
+But once you've found something you educate, it becomes a domain of teaching makes sense.
+
+00:27:01.397 --> 00:27:03.397 
+And this becomes an endless loop.
+
+00:27:04.477 --> 00:27:08.877 
+This is my unfortunate animation and it should be a loop actually that way.
+
+00:27:09.597 --> 00:27:16.997 
+So if it's an endless loop, and So what was research 10 years ago is teaching material for me today.
+
+00:27:17.477 --> 00:27:20.037 
+Somebody discovered something like systolic arrays, for example.
+
+00:27:20.037 --> 00:27:20.877 
+That was 50 years ago.
+
+00:27:20.877 --> 00:27:24.597 
+Actually, it's what I did for my PhD.
+
+00:27:24.757 --> 00:27:28.597 
+My PhD thesis was research that no one did before.
+
+00:27:28.797 --> 00:27:29.757 
+But now it's teaching.
+
+00:27:30.237 --> 00:27:31.917 
+I can teach it because anyone can teach it.
+
+00:27:31.917 --> 00:27:33.077 
+Actually, it's no.
+
+00:27:33.797 --> 00:27:36.277 
+So that's why we care a lot about both teaching and.
+
+00:27:36.317 --> 00:27:41.820 
+Research and I think if you actually take the right mindset, you can turn teaching into research
+
+00:27:41.820 --> 00:27:47.037 
+also because you question everything and we're going to question everything in this course.
+
+00:27:47.597 --> 00:27:48.917 
+So these are our courses.
+
+00:27:48.917 --> 00:27:54.797 
+This the website is updated so you can actually go and find spring 2026 and fall 2025 lectures.
+
+00:27:54.797 --> 00:27:56.917 
+Also, we have a bunch of courses.
+
+00:27:58.077 --> 00:27:59.717 
+You can find them on YouTube also.
+
+00:27:59.717 --> 00:28:02.037 
+Probably there are some people who are watching us on YouTube.
+
+00:28:02.837 --> 00:28:06.117 
+You can also watch us on YouTube if you want to drink your beer and watch a lecture.
+
+00:28:07.037 --> 00:28:08.357 
+Probably you cannot do that here.
+
+00:28:09.477 --> 00:28:12.837 
+OK, so this is just to give you a more broader perspective.
+
+00:28:13.477 --> 00:28:15.837 
+This is the digital design and computer architecture course.
+
+00:28:15.917 --> 00:28:17.637 
+We have the older editions online also.
+
+00:28:17.637 --> 00:28:21.677 
+I'm going to talk about them if you're interested in learning more later.
+
+00:28:22.317 --> 00:28:26.477 
+We also have a fundamental of computer architecture course which I don't recommend taking.
+
+00:28:26.477 --> 00:28:30.263 
+If you actually take digital design and computer Architecture, I would recommend taking the advanced
+
+00:28:30.263 --> 00:28:31.437 
+Computer Architecture directly.
+
+00:28:31.757 --> 00:28:36.237 
+This is really a course for electrical engineering students, ECE students, electrical and computer
+
+00:28:36.237 --> 00:28:37.197 
+engineering students.
+
+00:28:37.197 --> 00:28:42.072 
+I would say Advanced Computer Architecture delves into more topics and we have a seminar also which
+
+00:28:42.072 --> 00:28:45.717 
+a lot of students take if they're interested in the topics in this course.
+
+00:28:46.277 --> 00:28:47.797 
+OK, this is just to give you the lay of land.
+
+00:28:47.837 --> 00:28:50.437 
+These are these are links to last year's materials.
+
+00:28:50.837 --> 00:28:53.117 
+You will see that we're going to follow a very similar structure.
+
+00:28:53.677 --> 00:28:58.952 
+Course materials like lectures will slightly change, like the stories I tell will change probably,
+
+00:28:58.952 --> 00:29:03.797 
+although some of them also will remain the same because some of them are very fundamental.
+
+00:29:05.197 --> 00:29:10.877 
+But if you're interested in knowing what will come ahead, you can look at last year's materials.
+
+00:29:12.637 --> 00:29:13.277 
+Does that sound good?
+
+00:29:13.997 --> 00:29:18.197 
+Predictability is good, but we always keep improving the slides.
+
+00:29:18.197 --> 00:29:24.034 
+So this year's slides may contain more up to date information because things are changing quickly in
+
+00:29:24.034 --> 00:29:24.677 
+this field.
+
+00:29:25.517 --> 00:29:26.717 
+Fundamentals remain the same though.
+
+00:29:27.517 --> 00:29:30.517 
+OK, let me go a little bit into what do you want in this course.
+
+00:29:30.597 --> 00:29:34.797 
+Basically, as I said, we we're going to learn how computers work from the ground up.
+
+00:29:36.477 --> 00:29:39.197 
+This is a computing system that may be in your pocket.
+
+00:29:39.357 --> 00:29:44.317 
+This is called a system on a chip SoC and in the middle you have chiplets.
+
+00:29:44.517 --> 00:29:46.597 
+It's actually called the compute chip.
+
+00:29:47.117 --> 00:29:49.997 
+It has a lot of computation capability and a lot of caches.
+
+00:29:50.277 --> 00:29:51.797 
+You will learn about caches later.
+
+00:29:52.477 --> 00:29:58.184 
+And then there's data storage, main memory, and then there's even non volatile data storage like
+
+00:29:58.184 --> 00:29:58.957 
+flash memory.
+
+00:29:59.437 --> 00:30:00.437 
+And then there are sensors.
+
+00:30:00.437 --> 00:30:02.597 
+So we will study how something like this works.
+
+00:30:02.597 --> 00:30:04.317 
+And we're going to start with the compute engine.
+
+00:30:04.877 --> 00:30:08.525 
+Actually, we're going to start with digital design, how to actually build basic blocks, basic
+
+00:30:08.525 --> 00:30:08.957 
+components.
+
+00:30:08.957 --> 00:30:13.511 
+And then later in the course we're going to talk a lot about memory memories because memory is
+
+00:30:13.511 --> 00:30:15.837 
+actually one of the biggest components of today.
+
+00:30:16.637 --> 00:30:21.854 
+You may have realised that memory prices are rising for a good reason, because memory is really
+
+00:30:21.854 --> 00:30:23.557 
+important component of systems.
+
+00:30:25.357 --> 00:30:26.917 
+So what are the high level goals?
+
+00:30:26.917 --> 00:30:29.237 
+Basically, we're going to understand the basics.
+
+00:30:29.237 --> 00:30:33.934 
+That's why we start with the basic components like transistors, and we're going to understand the
+
+00:30:33.934 --> 00:30:38.197 
+principles of design, how to build much more complex systems from very basic components.
+
+00:30:38.957 --> 00:30:43.717 
+And we're going to also understand precedence, meaning what came before, what people did, right.
+
+00:30:43.717 --> 00:30:45.957 
+And we're going to actually do a lot of what people did.
+
+00:30:46.877 --> 00:30:50.477 
+But while studying that, it's also good to question what people didn't.
+
+00:30:51.517 --> 00:30:53.877 
+And this is what I would like to instill in this course.
+
+00:30:53.877 --> 00:30:58.134 
+And you may not be very used to it because once you go through a middle school, high school,
+
+00:30:58.134 --> 00:31:01.837 
+etcetera, you're always given what people did, what people did, what people did.
+
+00:31:02.397 --> 00:31:04.917 
+But it's good to also think about what people didn't do.
+
+00:31:05.357 --> 00:31:10.837 
+Because what people didn't do is what is going to be the biggest innovation that may come, right?
+
+00:31:12.157 --> 00:31:17.277 
+And you guys are all capable of thinking critically and figuring out what can you do better, right?
+
+00:31:17.917 --> 00:31:21.945 
+OK, so based on such understanding, we're going to learn how the modern computer works, actually how
+
+00:31:21.945 --> 00:31:23.597 
+multiple different modern computers work.
+
+00:31:23.597 --> 00:31:27.317 
+We're going to learn how to evaluate trade-offs of different designs and ideas.
+
+00:31:27.317 --> 00:31:30.157 
+This is going to be really important in the lab.
+
+00:31:30.197 --> 00:31:32.277 
+We're going to implement a principle design.
+
+00:31:32.277 --> 00:31:33.877 
+It's very simple microprocessor.
+
+00:31:34.077 --> 00:31:36.477 
+Unfortunately, our time doesn't allow us to do more.
+
+00:31:37.237 --> 00:31:42.557 
+This course is already actually pretty intense, I would say, in terms of the coverage of material.
+
+00:31:42.837 --> 00:31:46.797 
+But labs cannot be that intense because you need to actually debug things.
+
+00:31:47.797 --> 00:31:50.637 
+Although with LLMS today you can do a lot more, I think, right.
+
+00:31:52.237 --> 00:31:53.517 
+Can you do the labs in one day?
+
+00:31:55.437 --> 00:31:55.637 
+Yeah.
+
+00:31:55.637 --> 00:31:55.997 
+OK.
+
+00:31:56.557 --> 00:32:01.350 
+The head TA says one day, yes, but I wouldn't recommend doing that with LLMS, Ben, you won't
+
+00:32:01.350 --> 00:32:04.477 
+understand it and we're going to ask you questions about it.
+
+00:32:04.477 --> 00:32:07.877 
+So don't do it with LLMS, OK.
+
+00:32:07.877 --> 00:32:12.777 
+And you're going to learn to systematically debug increasingly complex systems and hopefully we will
+
+00:32:12.777 --> 00:32:15.277 
+enable you to develop novel out-of-the-box designs.
+
+00:32:15.277 --> 00:32:17.277 
+That's the part what people didn't do.
+
+00:32:18.197 --> 00:32:23.258 
+And the focus is really on basics, precedence principles and how to use them to create and implement
+
+00:32:23.258 --> 00:32:23.917 
+good designs.
+
+00:32:24.477 --> 00:32:31.373 
+So I, I cover a lot of basics, but I also give a lot of examples from existing like state-of-the-art
+
+00:32:31.373 --> 00:32:32.477 
+implementations.
+
+00:32:32.477 --> 00:32:33.597 
+And we're going to talk about that.
+
+00:32:34.117 --> 00:32:34.877 
+So why do you?
+
+00:32:35.357 --> 00:32:36.117 
+Why are you here?
+
+00:32:37.037 --> 00:32:42.071 
+I would say because you're here for a computer science degree and computer science degrees are
+
+00:32:42.071 --> 00:32:47.319 
+important, and this course is actually even more important going into the future because as I said
+
+00:32:47.319 --> 00:32:52.568 
+earlier, it's very hard to replace this course with programming LLM, let's say, although maybe the
+
+00:32:52.568 --> 00:32:57.709 
+labs can be replaced, although that's a very simple lab, a very complex microprocessor design is
+
+00:32:57.709 --> 00:32:59.477 
+going to be very hard to replace.
+
+00:33:00.037 --> 00:33:04.784 
+So you want to know how a computer works if you want a computer science degree, At least that's my
+
+00:33:04.784 --> 00:33:05.317 
+contention.
+
+00:33:05.517 --> 00:33:10.917 
+You may disagree and more importantly maybe regards of your future direction.
+
+00:33:11.197 --> 00:33:15.859 
+Learning the principles that we cover in this course could be useful to design better hardware if
+
+00:33:15.859 --> 00:33:17.157 
+that's what you want to do.
+
+00:33:17.317 --> 00:33:21.844 
+If you know the hardware, you can do better software and better Co design, better system design,
+
+00:33:21.844 --> 00:33:23.637 
+which we really need in systems today.
+
+00:33:24.077 --> 00:33:28.437 
+It can enable you to make better trade-offs in design, whatever you design, in my opinion.
+
+00:33:29.557 --> 00:33:32.957 
+I gave you some example early on, but there are a lot of examples in life.
+
+00:33:32.957 --> 00:33:37.921 
+But you're designing something, and if you actually have designed a computer, the fact that you
+
+00:33:37.921 --> 00:33:42.728 
+designed a computer helps you design that something in a better way and of course, hopefully
+
+00:33:42.728 --> 00:33:45.237 
+understand why computers behave the way they do.
+
+00:33:46.437 --> 00:33:48.197 
+If you're lucky, you will understand some of this.
+
+00:33:48.477 --> 00:33:51.877 
+Sometimes you may not be able to understand because of the complexity of the stack.
+
+00:33:52.517 --> 00:33:54.677 
+Hopefully this will enable you to solve problems better.
+
+00:33:54.677 --> 00:33:56.397 
+These are more general skills, right?
+
+00:33:56.397 --> 00:33:57.397 
+Think in parallel.
+
+00:33:57.517 --> 00:34:01.317 
+Especially doing hardware programming enables you to think in parallel.
+
+00:34:02.157 --> 00:34:07.106 
+That's why using LLMS to actually do your design is not very good because that doesn't enable you to
+
+00:34:07.106 --> 00:34:07.997 
+think in parallel.
+
+00:34:08.237 --> 00:34:13.096 
+Whereas if you go and design the hardware, you will actually need to think about many signals that
+
+00:34:13.096 --> 00:34:16.717 
+are happening at the same time and that enables you to think in parallel.
+
+00:34:16.837 --> 00:34:22.745 
+Whereas LLM is like a human, well, I'm not going to make any more analogy than that, but it's very
+
+00:34:22.745 --> 00:34:25.157 
+serial interaction with all that, right?
+
+00:34:26.277 --> 00:34:27.157 
+And think critically.
+
+00:34:27.397 --> 00:34:31.037 
+So these are the most important things actually, I, I hope you will get out of this course.
+
+00:34:31.957 --> 00:34:33.557 
+So what are the components that we have?
+
+00:34:33.557 --> 00:34:34.637 
+Clearly we have lectures.
+
+00:34:34.677 --> 00:34:39.117 
+Lectures are good for understanding concepts, stories, maybe trade-offs.
+
+00:34:39.117 --> 00:34:45.145 
+So I can convey my experience to you much better through lectures and you will not find a lot of the
+
+00:34:45.145 --> 00:34:47.437 
+experience conveyance in the readings.
+
+00:34:47.677 --> 00:34:50.317 
+Readings are good for reinforcing and going deeper.
+
+00:34:50.317 --> 00:34:55.717 
+We have very good books, but they don't really tell a whole lot of stories about trade-offs as much.
+
+00:34:56.437 --> 00:35:00.677 
+We have homeworks and we're going to do those homeworks in some of the sessions.
+
+00:35:01.037 --> 00:35:04.357 
+We have labs, we have exam test of understanding.
+
+00:35:04.357 --> 00:35:07.557 
+We're going to talk more about that and we'll have some extra credit assignments.
+
+00:35:07.597 --> 00:35:12.864 
+And I don't want you to use our lamps, large language models for them because you won't be able to
+
+00:35:12.864 --> 00:35:14.477 
+understand anything otherwise.
+
+00:35:15.117 --> 00:35:17.917 
+In all, you have the freedom to adapt to your learning style.
+
+00:35:17.917 --> 00:35:20.877 
+So we're very heterogeneous in that sense.
+
+00:35:21.117 --> 00:35:25.157 
+In that sense, my advice is really focus on learning and scholarship and understanding.
+
+00:35:26.317 --> 00:35:27.197 
+Read another way.
+
+00:35:27.757 --> 00:35:30.637 
+Don't worry about the exam when you're in the lecture.
+
+00:35:30.717 --> 00:35:34.437 
+If all you're doing is worrying about the exam, you're not going to learn a whole lot.
+
+00:35:36.997 --> 00:35:38.557 
+Yes, you have an exam, unfortunately.
+
+00:35:38.557 --> 00:35:41.637 
+But if it were up to me, that exam wouldn't be there.
+
+00:35:41.877 --> 00:35:43.477 
+That would be replaced with something else.
+
+00:35:44.237 --> 00:35:45.957 
+It's there because it's there, you know.
+
+00:35:47.037 --> 00:35:51.317 
+OK, so we will enable you to learn and prepare you for the exam.
+
+00:35:52.237 --> 00:35:56.757 
+As I said, focus on understanding, learning and mastering the material in that sense.
+
+00:35:56.877 --> 00:35:59.277 
+Don't take the lectures that way.
+
+00:35:59.477 --> 00:36:05.348 
+Lectures are basics and they will actually they are, they have a lot of concepts connected to the
+
+00:36:05.348 --> 00:36:06.317 
+exam in the end.
+
+00:36:06.637 --> 00:36:11.357 
+But lectures are there to really enable all of these, I would say.
+
+00:36:13.237 --> 00:36:18.557 
+So lectures have a value that's much beyond the exam or the grade you will get in this course.
+
+00:36:19.637 --> 00:36:22.677 
+OK, so reinforced problem solving skills with homeworks.
+
+00:36:22.997 --> 00:36:27.357 
+And I already said this, and I should also say that most of you will pass this course.
+
+00:36:27.917 --> 00:36:31.437 
+This is not the worst weeder course in the freshman year.
+
+00:36:32.117 --> 00:36:35.277 
+Our pass rate is 8283%, maybe more.
+
+00:36:36.477 --> 00:36:38.397 
+So most of you don't need to worry about it.
+
+00:36:39.117 --> 00:36:44.321 
+Of course, if you're in the 16%, you may need to worry about it, but at least you will learn a lot,
+
+00:36:44.321 --> 00:36:44.637 
+right?
+
+00:36:44.997 --> 00:36:46.997 
+At least it's not 50% or 40%.
+
+00:36:46.997 --> 00:36:48.557 
+It's OK.
+
+00:36:48.597 --> 00:36:51.757 
+And we will release a lot of material to help you for the help you with the exam.
+
+00:36:52.717 --> 00:36:53.997 
+OK, we're going to see a lot of this.
+
+00:36:53.997 --> 00:37:00.517 
+So you can see from past lectures, these are Spring 2023 and Spring 2025 websites.
+
+00:37:00.517 --> 00:37:04.957 
+There are a lot of problem solving sessions and we keep adding them to this.
+
+00:37:07.597 --> 00:37:10.077 
+So summary, basically, learning is for life.
+
+00:37:10.077 --> 00:37:17.157 
+It never ends exam studies until you pass and it ends so the pain goes away after the exam.
+
+00:37:17.797 --> 00:37:19.757 
+But learning is an enjoyable process.
+
+00:37:20.437 --> 00:37:23.197 
+An exam could be an enjoyable process also if you have the right mindset.
+
+00:37:23.197 --> 00:37:28.517 
+So focus on learning and scholarship because that's what will matter in if.
+
+00:37:28.797 --> 00:37:35.797 
+I know it's easier to say, but 30 years down the road when you're doing something great.
+
+00:37:36.317 --> 00:37:40.237 
+Will ask you what, what grade did you get for course X?
+
+00:37:41.117 --> 00:37:42.277 
+It's good to have that perspective.
+
+00:37:42.357 --> 00:37:48.517 
+You know, I, I give that perspective to my graduate students also when they choose a research topic.
+
+00:37:48.957 --> 00:37:54.157 
+It's good to think about 30 years down the road, where will this idea be?
+
+00:37:54.197 --> 00:37:55.717 
+Where will this research be right?
+
+00:37:56.557 --> 00:37:59.317 
+You cannot of course predict the future easily, but you can.
+
+00:37:59.317 --> 00:38:05.003 
+This thought exercise is very useful in deciding what kind of things to research and what kind of
+
+00:38:05.003 --> 00:38:06.117 
+things to focus on.
+
+00:38:07.757 --> 00:38:09.597 
+OK so basically this is my summary.
+
+00:38:09.997 --> 00:38:11.877 
+Approach this course of the learning experience.
+
+00:38:12.077 --> 00:38:17.236 
+Develop your long term trade off analysis and critical thinking and decision making skills and while
+
+00:38:17.236 --> 00:38:20.797 
+doing so, find and choose the learning style that works best for you.
+
+00:38:21.477 --> 00:38:24.917 
+We have a lot of ways of attending lectures, as you have seen.
+
+00:38:26.077 --> 00:38:26.877 
+So what will we learn?
+
+00:38:27.317 --> 00:38:31.797 
+Well, we've already said this, but let's look at some more depth and why we care.
+
+00:38:31.797 --> 00:38:33.717 
+Hopefully we'll discuss why we care also.
+
+00:38:34.517 --> 00:38:35.717 
+So why do we have computers?
+
+00:38:35.717 --> 00:38:36.877 
+I think I've already said this.
+
+00:38:37.277 --> 00:38:38.397 
+Or why do we do computing?
+
+00:38:38.397 --> 00:38:40.397 
+In other words, we want to solve problems, right?
+
+00:38:40.797 --> 00:38:45.344 
+And we have a lot of problems we're going to see If you reword the sensor, maybe you don't solve the
+
+00:38:45.344 --> 00:38:46.117 
+complete problem.
+
+00:38:46.117 --> 00:38:47.397 
+You have a big problem in mind.
+
+00:38:47.757 --> 00:38:50.717 
+Computers can help you gain insight to solve this problem.
+
+00:38:51.277 --> 00:38:53.557 
+And this is what Richard Hamming had in mind.
+
+00:38:53.557 --> 00:38:54.917 
+How many people know about Richard Hamming?
+
+00:38:55.157 --> 00:38:55.917 
+Hamming quotes.
+
+00:38:55.957 --> 00:38:57.197 
+OK, error correcting quotes.
+
+00:38:57.437 --> 00:38:57.717 
+Yeah.
+
+00:38:58.317 --> 00:38:58.557 
+OK.
+
+00:38:58.557 --> 00:39:00.317 
+This coming from some lectures, probably.
+
+00:39:00.637 --> 00:39:06.576 
+And he basically said that computing is the goal of computing is to gain insight, not to crunch
+
+00:39:06.576 --> 00:39:07.077 
+numbers.
+
+00:39:08.237 --> 00:39:12.597 
+So you can think of this as machine learning, for example, today, it's crunching numbers, right?
+
+00:39:12.637 --> 00:39:13.877 
+It's crunching a lot of data.
+
+00:39:14.077 --> 00:39:15.837 
+It's doing a lot of matrix multiplications.
+
+00:39:15.837 --> 00:39:17.237 
+Matrix vector multiplications.
+
+00:39:17.717 --> 00:39:20.117 
+And the goal is to get the insight out of it.
+
+00:39:20.237 --> 00:39:24.037 
+So a good LLM will give you the insight in a correct way, robust way.
+
+00:39:24.797 --> 00:39:28.277 
+The crunching numbers is a means to an end, right?
+
+00:39:29.077 --> 00:39:30.597 
+OK, so why do we want this?
+
+00:39:30.597 --> 00:39:31.957 
+To enable a better life and future.
+
+00:39:31.957 --> 00:39:34.757 
+Hopefully any technology can be used for good or bad.
+
+00:39:35.117 --> 00:39:36.557 
+Hopefully we're on the good side here.
+
+00:39:37.277 --> 00:39:40.637 
+And morality is orthogonal to technology, unfortunately.
+
+00:39:42.077 --> 00:39:45.397 
+Now, OK, we're going back to the transformation arc.
+
+00:39:45.397 --> 00:39:46.637 
+How do we solve these problems?
+
+00:39:47.237 --> 00:39:51.437 
+And in modern technologies, we solve these problems by orchestrating electrons.
+
+00:39:52.597 --> 00:39:56.637 
+Essentially computers move electrons so that this problem is solved.
+
+00:39:57.037 --> 00:40:03.383 
+And we already said that solving the problems by electrons is not easy because we don't, we're not
+
+00:40:03.383 --> 00:40:06.557 
+able to currently communicate with the electrons.
+
+00:40:06.557 --> 00:40:10.837 
+We cannot say electron go from here to here and do this addition, right?
+
+00:40:11.317 --> 00:40:12.437 
+Or set of electrons.
+
+00:40:12.917 --> 00:40:15.717 
+So people have built this transformation hierarchy, which you have seen.
+
+00:40:15.717 --> 00:40:17.197 
+You've taken an algorithms course, right?
+
+00:40:17.957 --> 00:40:22.917 
+OK, so you know what an algorithm is and you implement that algorithm in some programming language.
+
+00:40:22.917 --> 00:40:29.709 
+And there are many, many programming languages and you execute that on some sort of system software
+
+00:40:29.709 --> 00:40:33.277 
+which interacts with the hardware with an interface.
+
+00:40:33.277 --> 00:40:36.597 
+And then there's the micro architecture that implements that interface.
+
+00:40:36.597 --> 00:40:42.503 
+We're going to see the distinction between especially the lower parts later on, which executes using
+
+00:40:42.503 --> 00:40:47.996 
+logic principles, logic gates, which are built on devices, which we're going to hopefully see
+
+00:40:47.996 --> 00:40:50.477 
+toward the later end of this course today.
+
+00:40:51.677 --> 00:40:55.277 
+And computer architecture, as I said, is the expanded view looks like this.
+
+00:40:56.197 --> 00:40:57.917 
+OK, so Richard Taming said this.
+
+00:40:58.197 --> 00:40:59.917 
+This is his, him and his cat.
+
+00:41:03.557 --> 00:41:05.157 
+So this is the hierarchy.
+
+00:41:05.157 --> 00:41:06.957 
+Again, I'm not going to go through this.
+
+00:41:06.957 --> 00:41:08.037 
+This is for your reference.
+
+00:41:08.157 --> 00:41:10.037 
+This is really what an algorithm is.
+
+00:41:10.357 --> 00:41:11.997 
+Hopefully everyone knows what an algorithm is.
+
+00:41:11.997 --> 00:41:15.077 
+I'm not going to test you on this, but this is for your reference.
+
+00:41:15.077 --> 00:41:20.943 
+This is a background algorithm needs to have specific properties like it should be finite, it should
+
+00:41:20.943 --> 00:41:22.117 
+be definite precise.
+
+00:41:22.117 --> 00:41:30.117 
+It's going to be, it should be effectively computable by the by the hardware and the language ISA.
+
+00:41:30.117 --> 00:41:32.197 
+I'm going to talk about that because you may not have seen it.
+
+00:41:32.197 --> 00:41:34.357 
+How many people have seen ISA before?
+
+00:41:34.437 --> 00:41:37.157 
+OK, some people, not a lot, not as many as algorithms.
+
+00:41:37.437 --> 00:41:39.797 
+So this is the contract between the software and the hardware.
+
+00:41:40.437 --> 00:41:46.056 
+What the programmer assumes hardware will satisfy and vice versa, meaning what the hardware will
+
+00:41:46.056 --> 00:41:47.637 
+promise will happen, right?
+
+00:41:48.157 --> 00:41:49.117 
+We're going to see this a lot.
+
+00:41:49.237 --> 00:41:53.277 
+Micro architecture is a specific implementation of the ISA itself.
+
+00:41:53.797 --> 00:41:57.357 
+Basically, we're going to see many, many micro architectures that are part of the same ISA.
+
+00:41:57.357 --> 00:41:59.397 
+For example, X86 ISA, We're going to see this.
+
+00:41:59.637 --> 00:42:01.117 
+There could be many implementations.
+
+00:42:01.357 --> 00:42:02.957 
+Intel has many implementations.
+
+00:42:03.037 --> 00:42:08.685 
+IMD has many implementations logic, essentially digital logic circuits are building blocks of the
+
+00:42:08.685 --> 00:42:10.957 
+micro architecture, for example, gates.
+
+00:42:11.037 --> 00:42:16.686 
+Hopefully by the end of today you'll see some example of gates and devices are actually physical
+
+00:42:16.686 --> 00:42:17.157 
+devices.
+
+00:42:18.037 --> 00:42:25.499 
+Transistors, for example, are devices on top of which logic gates are built and devices operate
+
+00:42:25.499 --> 00:42:31.077 
+based on principles of physics which govern the operation of electrons.
+
+00:42:31.397 --> 00:42:33.677 
+That actually completes the picture in the end.
+
+00:42:34.277 --> 00:42:36.237 
+So we're going to focus a lot on these three.
+
+00:42:36.317 --> 00:42:42.582 
+Parts in the first part of this first half of this course, actually most of this course I would say,
+
+00:42:42.582 --> 00:42:48.346 
+but we're going to touch upon the upper parts also impact, for example, effect of the design
+
+00:42:48.346 --> 00:42:53.797 
+decisions that you may do over here on the system software, the language, the compiler.
+
+00:42:53.797 --> 00:43:00.288 
+I didn't talk about compiler over here, but there's some some software, some piece of software that
+
+00:43:00.288 --> 00:43:06.321 
+takes the language the program is written in and that compiles it into the language that the
+
+00:43:06.321 --> 00:43:08.157 
+hardware understands, right?
+
+00:43:08.157 --> 00:43:11.757 
+That there's some step, a lot of these can be automated with LL Ms.
+
+00:43:11.757 --> 00:43:12.677 
+nicely today.
+
+00:43:13.837 --> 00:43:23.239 
+And in my opinion, at least, the language debugging, programming, compilation parts can be
+
+00:43:23.239 --> 00:43:29.717 
+relatively easily optimised and maybe done mostly by machines.
+
+00:43:30.037 --> 00:43:35.397 
+Not right now, today, it can be aided a lot, but maybe in a few years.
+
+00:43:35.877 --> 00:43:40.748 
+Of course, if you want to do, if you want to do something complex, for example, if you want to
+
+00:43:40.748 --> 00:43:45.620 
+design something over here and also something over here at the same time, that may not be that
+
+00:43:45.620 --> 00:43:50.751 
+easily done by the machines because the machine may not know well machine meaning the AI engine may
+
+00:43:50.751 --> 00:43:53.757 
+not actually know what's going to happen over here, right?
+
+00:43:54.277 --> 00:43:55.437 
+Because that could be something new.
+
+00:43:56.157 --> 00:43:58.757 
+OK, So what is computer architecture?
+
+00:43:59.037 --> 00:43:59.997 
+Let's do it a little bit.
+
+00:43:59.997 --> 00:44:01.357 
+Officially it is.
+
+00:44:01.357 --> 00:44:04.637 
+It is really the science and art of designing computing platforms.
+
+00:44:05.157 --> 00:44:06.397 
+And this is the broad definition.
+
+00:44:07.077 --> 00:44:11.747 
+Computing platform includes the interface between the hardware and the software, the hardware, the
+
+00:44:11.747 --> 00:44:13.797 
+system software, and the programming model.
+
+00:44:14.357 --> 00:44:17.437 
+And I say science and arts because it is science.
+
+00:44:17.437 --> 00:44:25.559 
+Clearly, we need to, we do engineering and we actually develop based on scientific method, things
+
+00:44:25.559 --> 00:44:26.397 
+that work.
+
+00:44:27.117 --> 00:44:31.707 
+But it's also hard because there are a lot of unknowns in the process because it interacts with the
+
+00:44:31.707 --> 00:44:32.357 
+humans, right?
+
+00:44:32.477 --> 00:44:37.772 
+For example, when you design A computing platform, you don't know what workload will be executed on
+
+00:44:37.772 --> 00:44:41.677 
+it because that computing platform will be used five years down the road.
+
+00:44:42.757 --> 00:44:43.477 
+Is that the bell?
+
+00:44:44.597 --> 00:44:45.397 
+That's a new bell, huh?
+
+00:44:46.037 --> 00:44:46.877 
+So why didn't it?
+
+00:44:46.917 --> 00:44:47.957 
+Why didn't it ring earlier?
+
+00:44:49.277 --> 00:44:49.997 
+OK, interesting.
+
+00:44:49.997 --> 00:44:51.637 
+Maybe you have a robustness problem with the bell.
+
+00:44:51.637 --> 00:44:53.557 
+As you can see, right, It didn't ring earlier.
+
+00:44:53.877 --> 00:44:55.917 
+So let me finish this slide and we're going to take a break.
+
+00:44:57.237 --> 00:44:59.877 
+Essentially, what is the goal of the design?
+
+00:45:00.197 --> 00:45:02.517 
+Our goal is to achieve a set of design goals.
+
+00:45:02.797 --> 00:45:05.837 
+This platform, we want to achieve a set of design goals.
+
+00:45:05.837 --> 00:45:06.797 
+What what are the goals?
+
+00:45:06.917 --> 00:45:13.594 
+So for example, a supercomputer may be designed to get the highest performance on Earth on workload
+
+00:45:13.594 --> 00:45:17.237 
+XYZ, let's say your favorite LLM large language model.
+
+00:45:17.237 --> 00:45:20.037 
+That's a very specific specialised supercomputer, right?
+
+00:45:21.877 --> 00:45:27.492 
+Or you may want the longest battery life at a form factor that fits in your pocket with cost less
+
+00:45:27.492 --> 00:45:28.477 
+than some amount.
+
+00:45:29.237 --> 00:45:34.716 
+Now you can see that multiple metrics came in, and there are multiple metrics even in the first one,
+
+00:45:34.716 --> 00:45:37.237 
+but that's not actually spelled out very well.
+
+00:45:37.237 --> 00:45:38.717 
+So this is more of a mobile system.
+
+00:45:39.317 --> 00:45:45.234 
+Or you want the best average performance across all known workloads or all workloads that you care
+
+00:45:45.234 --> 00:45:48.677 
+about catering to at the best performance and cost ratio.
+
+00:45:48.877 --> 00:45:50.397 
+This is more general purpose computing.
+
+00:45:51.517 --> 00:45:58.057 
+So super computing, mobile computing, general purpose computing with one single line liner if you
+
+00:45:58.057 --> 00:46:00.957 
+will, and there could be many other things.
+
+00:46:02.037 --> 00:46:07.490 
+Now, designing each of these is different from designing the other one, but fundamental principles
+
+00:46:07.490 --> 00:46:08.437 
+are all the same.
+
+00:46:08.837 --> 00:46:13.477 
+They're all built on transistors and they're all built on this transformation hierarchy.
+
+00:46:14.077 --> 00:46:18.923 
+It's just the design decisions of how you connect the components, what kind of architecture you
+
+00:46:18.923 --> 00:46:21.117 
+design, what kind of techniques you employ.
+
+00:46:21.117 --> 00:46:24.757 
+Those are the things that are different and that's what we're going to see in this course.
+
+00:46:25.757 --> 00:46:28.517 
+Like before we take a break, let me show you a couple of examples of this.
+
+00:46:29.197 --> 00:46:30.837 
+You can see these are computing machines.
+
+00:46:30.837 --> 00:46:33.037 
+This is a computing machine.
+
+00:46:33.597 --> 00:46:34.877 
+How many people know about this one?
+
+00:46:35.477 --> 00:46:35.837 
+Mr.
+
+00:46:35.837 --> 00:46:37.677 
+Bean, Is he still popular?
+
+00:46:38.357 --> 00:46:39.237 
+OK, I'm not that old.
+
+00:46:39.877 --> 00:46:40.677 
+OK, this is Mr.
+
+00:46:40.677 --> 00:46:43.797 
+Bean's self driving car in 1992.
+
+00:46:45.197 --> 00:46:48.157 
+Of course, he's pulling some things to make it self drive, right?
+
+00:46:48.917 --> 00:46:52.877 
+And then this is an old self driving car from 2008 or so.
+
+00:46:52.957 --> 00:46:57.599 
+You can see that there is a computing device that enables it to drive and modern self driving cars
+
+00:46:57.599 --> 00:46:58.357 
+are much better.
+
+00:46:58.597 --> 00:46:59.677 
+This is a data centre.
+
+00:46:59.797 --> 00:47:06.041 
+This is one of the supercomputers, Tianhe 2, I think from China, this is from Japan, Fukaku, You can
+
+00:47:06.041 --> 00:47:11.037 
+see that these are huge platforms and you have different design goals over here.
+
+00:47:11.797 --> 00:47:14.837 
+This is a systolic array machine learning accelerator that we're going to see.
+
+00:47:14.917 --> 00:47:18.437 
+We're going to see the fundamental principles of it in one of the lectures in the future.
+
+00:47:18.437 --> 00:47:23.074 
+I'm not going to talk about that right now, but Google has introduced it and many other companies
+
+00:47:23.074 --> 00:47:26.277 
+are building accelerators like this to accelerate machine learning.
+
+00:47:26.317 --> 00:47:28.557 
+These are very specialised machines, as we will see.
+
+00:47:29.117 --> 00:47:30.037 
+It's called TPU.
+
+00:47:30.077 --> 00:47:31.317 
+As you can see, there are many generations.
+
+00:47:31.317 --> 00:47:34.917 
+I cannot keep up with these generations, so I stopped at TP UV4.
+
+00:47:34.997 --> 00:47:36.277 
+I think they're at V6 right now.
+
+00:47:37.077 --> 00:47:43.469 
+This is Tesla self driving cars that are essentially also mostly machine learning accelerators that
+
+00:47:43.469 --> 00:47:46.117 
+are designed in a slightly different way.
+
+00:47:46.797 --> 00:47:47.997 
+And this is their chip.
+
+00:47:48.037 --> 00:47:49.517 
+Again, I'm not going to go through the details.
+
+00:47:49.517 --> 00:47:54.393 
+We're going to see some of the basic principles of it in systolic arrays later on and GP us and you
+
+00:47:54.393 --> 00:47:56.117 
+can see that the goal is to design.
+
+00:47:56.117 --> 00:48:00.757 
+They actually have training clusters that have these chips and many, many of these chips.
+
+00:48:01.517 --> 00:48:05.330 
+And this is this is one of my favorite pictures because they actually say that we're not designing
+
+00:48:05.330 --> 00:48:07.237 
+just a chip, we're not designing just a software.
+
+00:48:07.397 --> 00:48:12.454 
+We're designing everything across the stack, the chip, the system cluster software, and they
+
+00:48:12.454 --> 00:48:17.677 
+actually built compilers and the system software to make sure this is very efficient, etcetera.
+
+00:48:17.917 --> 00:48:19.197 
+Of course, improvements can be made.
+
+00:48:19.757 --> 00:48:20.757 
+This is a GPU.
+
+00:48:21.597 --> 00:48:24.637 
+These are more recent GPUs included also.
+
+00:48:24.717 --> 00:48:28.397 
+And you can see that it's not just a compute chip, but also interconnects over here.
+
+00:48:28.877 --> 00:48:30.397 
+Again, I will not go through the details of it.
+
+00:48:30.597 --> 00:48:32.997 
+We'll see interconnects later in the course.
+
+00:48:33.557 --> 00:48:39.314 
+And the reason people are building bigger and bigger of these things probably is AI, as you can see,
+
+00:48:39.314 --> 00:48:42.597 
+and you can put multiple GPUs together in different ways.
+
+00:48:42.597 --> 00:48:47.677 
+So these are different ways of interconnecting different chips, both compute chips and memories.
+
+00:48:47.677 --> 00:48:52.901 
+So you can see that interconnection technologies, how you connect components is actually also
+
+00:48:52.901 --> 00:48:58.239 
+important on how you partition a problem and communicate between different processors executing
+
+00:48:58.239 --> 00:49:00.037 
+different pieces of the problem.
+
+00:49:00.517 --> 00:49:05.442 
+So these are all fundamental, these are all computer architectures and the designs as you make
+
+00:49:05.442 --> 00:49:07.277 
+actually affect performance energy.
+
+00:49:07.397 --> 00:49:10.877 
+All of the metrics we talked about, this is a wafer scale chip.
+
+00:49:10.877 --> 00:49:15.754 
+It's like this big and people have designed this, Seribus has designed this so that they can
+
+00:49:15.754 --> 00:49:19.837 
+accelerate machine learning, lots of memory and lots of compute put together.
+
+00:49:20.197 --> 00:49:22.477 
+Again, this is not the biggest one.
+
+00:49:22.477 --> 00:49:27.677 
+The bigger one is I guess WSE 2/3, which is the process generation.
+
+00:49:27.837 --> 00:49:30.757 
+You can see that there are 4 trillion transistors on this thing.
+
+00:49:30.957 --> 00:49:31.797 
+You can, this is real.
+
+00:49:31.797 --> 00:49:32.677 
+This is a real picture.
+
+00:49:33.357 --> 00:49:34.437 
+The person is holding it.
+
+00:49:34.677 --> 00:49:39.598 
+Now imagine how to power up this thing, imagine how to make it robust, reduce it from faults,
+
+00:49:39.598 --> 00:49:41.557 
+etcetera, reduce to faults, etcetera.
+
+00:49:42.197 --> 00:49:45.437 
+And you can see that there's a lot of memory on top of this chip.
+
+00:49:45.557 --> 00:49:49.237 
+Not enough, not enough to do huge things, OK.
+
+00:49:49.237 --> 00:49:52.477 
+There are many, many other AI and ML chips that are being built also.
+
+00:49:53.517 --> 00:49:56.797 
+These are some different platforms for genomics that we do a lot of work on.
+
+00:49:57.197 --> 00:49:58.797 
+These are processing in memory platforms.
+
+00:49:58.797 --> 00:50:01.517 
+You can find this in our lab at ETC building.
+
+00:50:02.637 --> 00:50:05.117 
+This is a system where you have memory.
+
+00:50:05.557 --> 00:50:07.437 
+Inside the memory chip, you have computation.
+
+00:50:08.277 --> 00:50:11.037 
+This is something that we've been working on for 15 years or so.
+
+00:50:11.157 --> 00:50:12.557 
+And now it's it's happening.
+
+00:50:12.877 --> 00:50:14.117 
+We have these real systems.
+
+00:50:14.557 --> 00:50:15.797 
+We're going to talk about that later.
+
+00:50:16.277 --> 00:50:19.517 
+And many different companies are doing something of this sort.
+
+00:50:20.157 --> 00:50:22.317 
+This is actually what you can see in memory.
+
+00:50:22.797 --> 00:50:25.717 
+And inside the memory you have computation, OK.
+
+00:50:26.077 --> 00:50:29.157 
+There are many companies that are doing this will at some point talk about this.
+
+00:50:29.357 --> 00:50:34.993 
+And the goal is to again accelerate important applications because moving data from memory to the
+
+00:50:34.993 --> 00:50:37.957 
+processor consumes a lot of energy and performance.
+
+00:50:40.117 --> 00:50:47.805 
+OK, so I think I'm going to stop here because these are examples of how to do a hardware software
+
+00:50:47.805 --> 00:50:48.757 
+code design.
+
+00:50:49.877 --> 00:50:55.437 
+Now let's take a 1514 minute break, 1520.
+
+00:50:55.717 --> 00:50:58.077 
+That's a good round Number to come back at.
+
+00:50:59.197 --> 00:51:04.187 
+Let's see if the bell will ring 4 minutes after the bell, assuming it rings and assuming it rings on
+
+00:51:04.187 --> 00:51:04.437 
+time.
+
+00:51:07.256 --> 00:51:09.656 
+OK, cool.
+
+00:51:09.656 --> 00:51:14.983 
+I went over some of these slides relatively fast just to give you an idea of what's happening in
+
+00:51:14.983 --> 00:51:15.816 
+industry today.
+
+00:51:16.056 --> 00:51:20.136 
+So these are processing in memory chips, which is a fascinating idea.
+
+00:51:20.856 --> 00:51:27.696 
+Put the memory together with processing, or put processing inside the memory chip.
+
+00:51:27.896 --> 00:51:28.976 
+We're going to talk about that.
+
+00:51:29.096 --> 00:51:33.856 
+Usually these things are designed separately, but people are breaking that barrier today.
+
+00:51:33.856 --> 00:51:38.096 
+You can see that many different companies are building their own memory chips that can compute.
+
+00:51:39.176 --> 00:51:41.096 
+So remember the axiom?
+
+00:51:41.096 --> 00:51:42.856 
+We had this expanded view.
+
+00:51:43.336 --> 00:51:44.136 
+It's already happening.
+
+00:51:44.576 --> 00:51:49.983 
+Basically all of these systems that you have seen are really trying to design some hardware and
+
+00:51:49.983 --> 00:51:55.390 
+design the software on top of it together with the hardware and also all of the system stack so
+
+00:51:55.390 --> 00:51:58.976 
+they they can get better and better efficiency and performance.
+
+00:51:59.616 --> 00:52:06.776 
+So that way for scale system for example, it's designed to put a lot of memory and compute together.
+
+00:52:06.776 --> 00:52:10.938 
+There's some hardware design inside it, which we will cover in a later lecture, like SIMD
+
+00:52:10.938 --> 00:52:13.136 
+processing, vector processing, as you will see.
+
+00:52:13.336 --> 00:52:19.263 
+But there needs to be a lot of software components like compilers, programming models, programming
+
+00:52:19.263 --> 00:52:25.010 
+mechanisms such that the programmer can take advantage of the underlying hardware, trillions of
+
+00:52:25.010 --> 00:52:28.216 
+transistors such that they can actually make it work.
+
+00:52:29.216 --> 00:52:34.340 
+Make it work at high performance and also make it work in the sense that if one of these processing
+
+00:52:34.340 --> 00:52:38.896 
+elements fail, fails, how do you actually make sure that you don't get the wrong result?
+
+00:52:39.296 --> 00:52:42.616 
+So there are mechanisms inside that wafer scale chip that enable that.
+
+00:52:44.136 --> 00:52:45.696 
+OK, why do we study computer architecture?
+
+00:52:45.696 --> 00:52:47.096 
+I think some of this we already covered.
+
+00:52:47.096 --> 00:52:48.896 
+So I'll go through this relatively quickly.
+
+00:52:49.016 --> 00:52:55.616 
+This is actually a little bit more detailed description of what what computer architecture is.
+
+00:52:55.656 --> 00:52:56.536 
+Let me go over it.
+
+00:52:56.896 --> 00:53:01.287 
+It's a science and art of designing, selecting, and interconnecting hardware components and
+
+00:53:01.287 --> 00:53:05.727 
+designing the hardware software interface to create a computing system that meets functional
+
+00:53:05.727 --> 00:53:08.816 
+performance, energy consumption, cost, and other specific goals.
+
+00:53:09.136 --> 00:53:14.431 
+This is restricting itself to the hardware and the hardware software interface, a more traditional
+
+00:53:14.431 --> 00:53:17.296 
+definition, but we're taking a more broader approach.
+
+00:53:18.096 --> 00:53:19.136 
+So why do we want this?
+
+00:53:19.136 --> 00:53:20.376 
+We want to enable better systems.
+
+00:53:20.376 --> 00:53:26.209 
+We've already discussed enough of this, so I'm not going to harp on that more, but one thing I will
+
+00:53:26.209 --> 00:53:30.216 
+mention is a way of designing better system is looking at workloads.
+
+00:53:30.216 --> 00:53:32.496 
+So you want to actually customise to the workload.
+
+00:53:32.496 --> 00:53:35.376 
+That's the upper part of the hierarchy, problems, algorithms, right?
+
+00:53:35.616 --> 00:53:38.096 
+And then there's a lower part which is technology.
+
+00:53:38.376 --> 00:53:39.736 
+Technology also changes.
+
+00:53:39.776 --> 00:53:41.616 
+People actually develop new hardware.
+
+00:53:42.136 --> 00:53:47.294 
+And if you don't have a way of incorporating that into a processor, you may not be able to actually
+
+00:53:47.294 --> 00:53:50.056 
+take advantage of that new technology, new materials.
+
+00:53:50.056 --> 00:53:55.876 
+For example, if you come up with a new material that can move electrons much faster, then you can
+
+00:53:55.876 --> 00:53:58.456 
+actually like superconducting technologies.
+
+00:53:58.456 --> 00:54:03.736 
+If you can actually take advantage of superconducting technologies or quantum technologies to build
+
+00:54:03.736 --> 00:54:08.056 
+an architecture that can be much more efficient, much faster, much more parallel.
+
+00:54:08.456 --> 00:54:09.856 
+You can also enable better systems.
+
+00:54:09.856 --> 00:54:13.776 
+So I can exploit advanced and change the underlying technology and circuits.
+
+00:54:14.656 --> 00:54:16.176 
+You can enable new applications.
+
+00:54:16.456 --> 00:54:21.008 
+And I think I don't need to give you examples of this, especially with the AI generation today,
+
+00:54:21.008 --> 00:54:21.296 
+right?
+
+00:54:21.616 --> 00:54:29.016 
+These LLMS were not there if it weren't for the GPUs initially, more recently TPUS, etcetera.
+
+00:54:29.696 --> 00:54:34.936 
+But there are other applications like 3D visualisation, virtual reality, self driving cars.
+
+00:54:34.936 --> 00:54:38.616 
+All of these are enabled by better and better computing systems.
+
+00:54:39.056 --> 00:54:45.092 
+You can enable better solutions to problems and software innovation has built has been built on
+
+00:54:45.092 --> 00:54:51.002 
+these trends and changes in computer architecture and over many, many, many, many decades the
+
+00:54:51.002 --> 00:54:55.896 
+performance improvements of each generation of hardware has been 50% or more.
+
+00:54:57.136 --> 00:55:02.176 
+This is actually continuing with specialised architectures, with general purpose architectures.
+
+00:55:02.176 --> 00:55:07.445 
+It's very difficult to sustain this for reasons we will see later in this course, but enabling
+
+00:55:07.445 --> 00:55:12.939 
+better solutions come because of faster and better hardware also and also understand why computers
+
+00:55:12.939 --> 00:55:17.256 
+work the way do, which is going to be a core component of what we will study.
+
+00:55:18.176 --> 00:55:23.580 
+I should also say that today is a very exciting time to study this because this is at the core of
+
+00:55:23.580 --> 00:55:25.976 
+how you can actually innovate today, right?
+
+00:55:26.656 --> 00:55:28.936 
+And also industry as well as academia.
+
+00:55:28.936 --> 00:55:32.536 
+When I say industry, industry is important because academia is always ahead, right?
+
+00:55:32.816 --> 00:55:39.040 
+When we do research, we do research 10/15/20 years, sometimes 30 years down the road and we are
+
+00:55:39.040 --> 00:55:40.416 
+patient as academics.
+
+00:55:40.856 --> 00:55:45.296 
+We believe in what we do, and we show demonstrates using scientific method engineering.
+
+00:55:45.856 --> 00:55:50.416 
+Implementations, prototypes, that this is a good thing to do and industry at some point picks it up.
+
+00:55:50.696 --> 00:55:55.488 
+Some smart person in the industry says, oh this is great research, let me pick it up and it happens,
+
+00:55:55.488 --> 00:55:55.776 
+right?
+
+00:55:55.776 --> 00:55:59.856 
+Or you create a start up and you actually make it happen yourself.
+
+00:56:00.216 --> 00:56:05.382 
+So today actually industry is following some of this and there's a large paradigm shift to novel
+
+00:56:05.382 --> 00:56:06.136 
+architectures.
+
+00:56:06.136 --> 00:56:08.776 
+There are many different potential system designs possible.
+
+00:56:09.136 --> 00:56:14.488 
+Again, there's a laundry list, but there are many difficult problems motivating and caused by the
+
+00:56:14.488 --> 00:56:16.696 
+shift, like data intensive applications.
+
+00:56:16.976 --> 00:56:21.976 
+Power is a big issue today, Energy, thermal constraints, complexity of design.
+
+00:56:21.976 --> 00:56:27.256 
+As you will see, we will build increasingly complex microprocessors in this course.
+
+00:56:27.256 --> 00:56:30.416 
+Build meaning look at the design principles of that.
+
+00:56:31.136 --> 00:56:35.702 
+There are difficulties in technology scaling as we will see, meaning reducing the size of the
+
+00:56:35.702 --> 00:56:38.256 
+circuits, size of the transistor, memory bottleneck.
+
+00:56:38.496 --> 00:56:43.414 
+This is why people are putting memory and compute closer to each other so that they don't move the
+
+00:56:43.414 --> 00:56:47.980 
+data from a sensor to the storage device to main memory, to caches on the processor, to the
+
+00:56:47.980 --> 00:56:52.096 
+register file, and eventually compute units and back and forth and back and forth.
+
+00:56:52.496 --> 00:56:58.139 
+If you put processing next to the sensor or next to the storage or next to the memory, you can move
+
+00:56:58.139 --> 00:56:59.336 
+the data very little.
+
+00:56:59.416 --> 00:57:04.463 
+And Data moment actually consumes a lot of energy today, as we will also see, there are reliability
+
+00:57:04.463 --> 00:57:06.656 
+problems, there are programmability issues.
+
+00:57:06.656 --> 00:57:08.456 
+There are many, many issues, basically security issues.
+
+00:57:08.456 --> 00:57:12.554 
+For example, how do you actually do private computation on data that you don't want to expose to
+
+00:57:12.554 --> 00:57:12.896 
+someone?
+
+00:57:13.376 --> 00:57:18.160 
+You put your computation to the cloud, you don't want anyone to see it, and you want to actually
+
+00:57:18.160 --> 00:57:19.656 
+guarantee that no one sees it.
+
+00:57:19.936 --> 00:57:21.336 
+How do you actually guarantee that?
+
+00:57:21.536 --> 00:57:22.576 
+Very difficult to do.
+
+00:57:23.736 --> 00:57:29.179 
+And this is where actually privacy preserving technologies like homomorphic encryption comes in, but
+
+00:57:29.179 --> 00:57:30.976 
+they're actually very slow today.
+
+00:57:31.616 --> 00:57:34.176 
+So there are no clear definitive answers to these problems.
+
+00:57:34.176 --> 00:57:37.216 
+So computing landscape is very different from 10 to 20 years ago.
+
+00:57:37.656 --> 00:57:41.296 
+I've been studying computers since 1997 or so.
+
+00:57:42.136 --> 00:57:48.779 
+I don't consider what I studied in high school studying it was interesting, but I took a version of
+
+00:57:48.779 --> 00:57:54.416 
+this course in winter 1998 from who would become my PhD advisor, Professor Yale Pat.
+
+00:57:54.776 --> 00:57:59.176 
+And I was fascinated by how a computer works from the ground up before.
+
+00:57:59.176 --> 00:58:00.976 
+In high school, I programmed, for example.
+
+00:58:01.496 --> 00:58:02.616 
+Programming is interesting.
+
+00:58:02.616 --> 00:58:03.416 
+Yes, sure.
+
+00:58:03.576 --> 00:58:05.856 
+But you really don't know what's going on underneath, right?
+
+00:58:06.416 --> 00:58:08.376 
+I programmed in BASIC, for example.
+
+00:58:08.376 --> 00:58:10.096 
+How many program people program in BASIC?
+
+00:58:11.296 --> 00:58:12.456 
+Nobody These days, yes.
+
+00:58:13.016 --> 00:58:16.176 
+OK, maybe one a few people over here don't.
+
+00:58:16.216 --> 00:58:17.776 
+OK, we're not going to talk about your ages.
+
+00:58:18.936 --> 00:58:21.496 
+Yeah, but Basic is a fun language, no question about that.
+
+00:58:21.496 --> 00:58:23.176 
+But you don't understand what's going on.
+
+00:58:23.176 --> 00:58:28.684 
+When I took the course in winter 1998 at the University of Michigan for meal, Pat, who's actually
+
+00:58:28.684 --> 00:58:34.135 
+one of the authors of the book that you have, one of the books that you that I assigned for you,
+
+00:58:34.135 --> 00:58:37.656 
+it's actually, it becomes like the magic goes away, basically.
+
+00:58:37.696 --> 00:58:38.776 
+How does it work, Right.
+
+00:58:39.576 --> 00:58:44.576 
+But when I took it and when I did my PhD, computing landscape was very different.
+
+00:58:44.856 --> 00:58:46.536 
+There was no AI, basically.
+
+00:58:46.576 --> 00:58:52.030 
+I mean, there was AI, of course, but there was no hype or no big investment in AI because people
+
+00:58:52.030 --> 00:58:56.576 
+didn't believe in it, because sophisticated processes didn't exist at that time.
+
+00:58:56.576 --> 00:58:59.336 
+People were pushing for general purpose computation, for example.
+
+00:58:59.776 --> 00:59:01.896 
+But today everything is changing applications.
+
+00:59:02.136 --> 00:59:03.136 
+AI is one example.
+
+00:59:03.536 --> 00:59:05.136 
+I believe genomics is another example.
+
+00:59:05.536 --> 00:59:07.016 
+Technology is changing.
+
+00:59:07.096 --> 00:59:13.051 
+There's a lot of different technological changes, like how do you actually design memories that can
+
+00:59:13.051 --> 00:59:14.856 
+compute and also requirements.
+
+00:59:15.136 --> 00:59:20.576 
+So these three things are really important actually, if you want to have a paradigm change.
+
+00:59:20.936 --> 00:59:25.717 
+Sometimes the conditions need to be right, and in this case, applications are changing, technology
+
+00:59:25.717 --> 00:59:27.816 
+is changing, and requirements are changing.
+
+00:59:27.816 --> 00:59:29.176 
+Requirements are also very important.
+
+00:59:29.896 --> 00:59:37.730 
+Like people when they design computers in the 1950s, sixties, the biggest concerns were cost and
+
+00:59:37.730 --> 00:59:40.016 
+reliability and performance.
+
+00:59:40.976 --> 00:59:45.535 
+Usually performance was the most one, the most biggest one because they could solve the other issues
+
+00:59:45.535 --> 00:59:47.496 
+because they were designing supercomputers.
+
+00:59:48.016 --> 00:59:49.896 
+Overtime energy became a big concern.
+
+00:59:51.176 --> 00:59:53.176 
+Overtime power became a big concern.
+
+00:59:53.176 --> 00:59:54.856 
+Can we actually power these chips?
+
+00:59:55.536 --> 00:59:58.936 
+And more recently, right now, what's becoming a concern is sustainability.
+
+00:59:59.296 --> 01:00:02.256 
+And I think sustainability is going to be very important into the future.
+
+01:00:03.096 --> 01:00:08.435 
+So basically as these change, every component, its interfaces as well as entire system designs are
+
+01:00:08.435 --> 01:00:09.416 
+being re examined.
+
+01:00:09.416 --> 01:00:12.256 
+So you're at a point where people are re examining things.
+
+01:00:12.256 --> 01:00:14.256 
+That's why you see the wafer scale chip, right?
+
+01:00:14.776 --> 01:00:21.440 
+That thing appeared in 2019 or so, not before people had the idea, but nobody was brave enough to
+
+01:00:21.440 --> 01:00:26.456 
+actually design that wafer scale chip and put it as a commercial product.
+
+01:00:27.496 --> 01:00:30.496 
+OK, So this is an example system in your pocket.
+
+01:00:30.496 --> 01:00:32.016 
+We're going to see different components of it.
+
+01:00:32.536 --> 01:00:35.896 
+I've already said that I should also give you this story very quickly.
+
+01:00:37.176 --> 01:00:42.776 
+So we are taking this expanded view, but we're not taking sides on the top versus bottom.
+
+01:00:43.416 --> 01:00:44.496 
+It's good to mention this.
+
+01:00:45.336 --> 01:00:50.432 
+So there's top, you can have improvements on the top, right, which is algorithms, software,
+
+01:00:50.432 --> 01:00:50.936 
+etcetera.
+
+01:00:51.456 --> 01:00:55.979 
+There's bottom, you can have improvements on the bottom also like devices, how do you build better
+
+01:00:55.979 --> 01:00:57.456 
+devices that can do computation?
+
+01:00:58.296 --> 01:01:03.385 
+So there's this sometimes tension between the software and hardware, which I don't like to view of
+
+01:01:03.385 --> 01:01:04.216 
+view as tension.
+
+01:01:04.216 --> 01:01:05.336 
+It's more of a cooperation.
+
+01:01:05.736 --> 01:01:07.936 
+We want to actually build a better cooperation between them.
+
+01:01:08.416 --> 01:01:11.016 
+So this is Richard Feynman's.
+
+01:01:11.016 --> 01:01:12.416 
+There's plenty of room at the bottom.
+
+01:01:12.416 --> 01:01:14.656 
+He gave a lecture how many people know about Feynman?
+
+01:01:15.456 --> 01:01:16.376 
+OK, that's good.
+
+01:01:16.656 --> 01:01:22.936 
+Feynman's a famous physicist who who was very clear in how he explains concepts of physics.
+
+01:01:24.296 --> 01:01:28.940 
+And he gave this lecture saying that there's plenty of room at the bottom, meaning when people were
+
+01:01:28.940 --> 01:01:33.443 
+thinking, oh, technology is not going to improve that much, we're not going to build transistors
+
+01:01:33.443 --> 01:01:34.616 
+that are small, etcetera.
+
+01:01:34.816 --> 01:01:40.096 
+He said, don't worry, we're going to build a lot of things and as long as we envision and we try to
+
+01:01:40.096 --> 01:01:40.896 
+make it happen.
+
+01:01:40.936 --> 01:01:45.628 
+So these are some of the things that he envisioned, for example, possibility of direct manipulation
+
+01:01:45.628 --> 01:01:46.576 
+of individual atoms.
+
+01:01:48.976 --> 01:01:51.616 
+And this enabled a lot of thinking in nanotechnology.
+
+01:01:51.856 --> 01:01:56.696 
+For example, he was interested in denser computer circuitry, quantum computing, etcetera.
+
+01:01:57.536 --> 01:01:59.336 
+He was also interested in the swallowing.
+
+01:01:59.336 --> 01:02:04.540 
+The doctor basically have a circuit that you swallow and looks at whatever has happening in your
+
+01:02:04.540 --> 01:02:05.896 
+body, medicine, etcetera.
+
+01:02:06.176 --> 01:02:09.576 
+So I can keep reading about this, it's actually good to think about this.
+
+01:02:09.576 --> 01:02:11.896 
+But I still believe there's plenty of room at the bottom.
+
+01:02:11.896 --> 01:02:16.856 
+This is, we've got, we've come like 60 years after Feynman talked about this, 60 plus years.
+
+01:02:17.576 --> 01:02:21.136 
+And sometimes people keep saying, oh, technology will not improve.
+
+01:02:21.296 --> 01:02:24.576 
+We're not going to come up with a better underlying hardware.
+
+01:02:25.216 --> 01:02:28.056 
+I'm not going to necessarily call transistors, but underlying hardware.
+
+01:02:28.296 --> 01:02:29.416 
+They could be transistors.
+
+01:02:30.056 --> 01:02:35.080 
+As long as you push forward and you innovate, you question, you come up with new materials, new
+
+01:02:35.080 --> 01:02:40.209 
+techniques, you're going to come up with better hardware and that can unleash and enable new ways
+
+01:02:40.209 --> 01:02:41.056 
+of doing things.
+
+01:02:43.376 --> 01:02:46.896 
+We're still, for example, very far away from doing robotics.
+
+01:02:47.136 --> 01:02:48.416 
+That is very human like.
+
+01:02:48.416 --> 01:02:53.047 
+There's a lot of innovation that has happened, but some of the materials that we use that are
+
+01:02:53.047 --> 01:02:57.827 
+computing device are actually limiting us in terms of how we can do robotics in a very seamless,
+
+01:02:57.827 --> 01:03:00.616 
+flexible fashion that's integrated with the environment.
+
+01:03:01.456 --> 01:03:04.936 
+Like I'm very, I feel at least very integrated with my environment, right?
+
+01:03:05.336 --> 01:03:06.936 
+Hopefully you guys feel that way too.
+
+01:03:07.336 --> 01:03:09.296 
+But robots are not that way today.
+
+01:03:09.536 --> 01:03:12.376 
+Their materials are not, let's say that similar.
+
+01:03:13.256 --> 01:03:14.136 
+It's good to think about it.
+
+01:03:14.696 --> 01:03:14.936 
+OK?
+
+01:03:14.936 --> 01:03:16.536 
+There's also plenty of room at the top.
+
+01:03:16.536 --> 01:03:23.106 
+These folks have basically written a paper that kind of states the obvious, which is known by many
+
+01:03:23.106 --> 01:03:23.576 
+people.
+
+01:03:23.576 --> 01:03:28.933 
+But as it becomes difficult to do things with hardware because at some point you need to change the
+
+01:03:28.933 --> 01:03:31.856 
+paradigm in hardware so that you can do bigger things.
+
+01:03:32.376 --> 01:03:37.422 
+But sometimes there's some business as usual where you actually have the same hardware and with the
+
+01:03:37.422 --> 01:03:38.136 
+same hardware.
+
+01:03:38.136 --> 01:03:40.976 
+If you want to get bigger improvements, you need to focus on the algorithms.
+
+01:03:41.416 --> 01:03:43.536 
+In the end, I think both of these are true.
+
+01:03:44.416 --> 01:03:49.260 
+There's plenty of room both at the top and the bottom as long as you innovate, but much more so if
+
+01:03:49.260 --> 01:03:50.496 
+you can communicate well.
+
+01:03:51.056 --> 01:03:53.496 
+Between and optimise between the top and the bottom.
+
+01:03:53.536 --> 01:03:58.576 
+So design the software such that it takes advantage of the underlying capabilities of the hardware.
+
+01:03:58.976 --> 01:04:05.056 
+And vice versa, design the hardware such that it caters to the requirements of the software.
+
+01:04:05.696 --> 01:04:09.536 
+And this is happening to some degree today, but there's more to be done.
+
+01:04:10.616 --> 01:04:10.856 
+OK?
+
+01:04:10.856 --> 01:04:12.256 
+That's why we take the expanded view.
+
+01:04:12.256 --> 01:04:17.128 
+So I'm harping on this, but there's a good reason because sometimes people say, OK, software is more
+
+01:04:17.128 --> 01:04:17.616 
+important.
+
+01:04:17.616 --> 01:04:21.936 
+Hardware is more important in the end, they're both important.
+
+01:04:23.136 --> 01:04:26.976 
+OK, now this brings me to hardware versus software in a different way.
+
+01:04:26.976 --> 01:04:32.616 
+This course might seem like it's only computer hardware, but it's not only computer hardware.
+
+01:04:32.616 --> 01:04:36.376 
+It's actually how to design computers more than hardware or software.
+
+01:04:36.376 --> 01:04:37.376 
+It's more conceptual.
+
+01:04:37.736 --> 01:04:44.072 
+Meaning we, we design, we, we, we basically talk about, study the concepts of how to design
+
+01:04:44.072 --> 01:04:45.256 
+computers, right?
+
+01:04:45.856 --> 01:04:51.999 
+A lot of the things that we talk about are going to be done in hardware, but all of these concepts
+
+01:04:51.999 --> 01:04:54.256 
+are actually applicable to software.
+
+01:04:54.536 --> 01:04:59.463 
+So we're going to see, for example, pipelining software use that also the same concept in a
+
+01:04:59.463 --> 01:05:03.416 
+different way, out of order execution software use that also prefetching.
+
+01:05:03.736 --> 01:05:07.096 
+Every concept that we actually are going to touch can be done in software also.
+
+01:05:07.936 --> 01:05:09.096 
+So it's good to think about that.
+
+01:05:09.696 --> 01:05:14.256 
+And certainly the ideas are broader than hardware and software.
+
+01:05:14.856 --> 01:05:19.486 
+And I, I should say that you will be much more capable if you master both hardware and software and
+
+01:05:19.486 --> 01:05:23.976 
+the interface between them, because there are relatively small number of people who can do that.
+
+01:05:24.456 --> 01:05:25.696 
+A lot of people can program.
+
+01:05:26.496 --> 01:05:28.336 
+In fact, these days it's becoming a lot easier.
+
+01:05:28.456 --> 01:05:32.682 
+As we discussed earlier, you can develop much better software if you actually understand the
+
+01:05:32.682 --> 01:05:33.096 
+hardware.
+
+01:05:33.816 --> 01:05:39.172 
+You can design better hardware if you understand the software, and you can design A better system
+
+01:05:39.172 --> 01:05:43.976 
+which is not hardware or software, but both if you actually understand both in the end.
+
+01:05:44.616 --> 01:05:45.296 
+And that's what we.
+
+01:05:45.336 --> 01:05:46.456 
+We want to do, in the end, we design.
+
+01:05:46.456 --> 01:05:47.496 
+We want to design systems.
+
+01:05:47.496 --> 01:05:50.536 
+We don't want to just design software for existing hardware.
+
+01:05:50.536 --> 01:05:52.536 
+It's possible to do, but it's limited.
+
+01:05:52.816 --> 01:05:53.776 
+And vice versa.
+
+01:05:54.576 --> 01:05:58.696 
+We really want to design a system such that something happens that doesn't exist today.
+
+01:05:59.816 --> 01:06:04.416 
+OK, so we will cover the interface hardware, software interface and the micro architecture a lot.
+
+01:06:04.576 --> 01:06:08.416 
+And I've already said this, we'll focus on trade-offs and how they affect software a lot.
+
+01:06:09.416 --> 01:06:13.496 
+And we, for example, you call the example chips and platforms we surveyed relatively quickly.
+
+01:06:13.496 --> 01:06:15.656 
+We're going to go into more depth in some of these.
+
+01:06:15.856 --> 01:06:19.456 
+So we'll have Electron GPUs, for example, we'll have Electron systolic arrays.
+
+01:06:19.456 --> 01:06:21.136 
+We'll have many lectures on CPUs.
+
+01:06:22.656 --> 01:06:23.936 
+And these are examples.
+
+01:06:25.176 --> 01:06:25.896 
+Any questions?
+
+01:06:27.136 --> 01:06:31.816 
+Otherwise, I'll give you some more logistics, and then we'll start with transistors if time permits.
+
+01:06:34.456 --> 01:06:36.136 
+OK, let me give you some more logistics.
+
+01:06:36.136 --> 01:06:38.976 
+Some of you asked questions, and I want to get these out of the way.
+
+01:06:39.216 --> 01:06:40.976 
+We've already introduced ourselves.
+
+01:06:43.856 --> 01:06:46.536 
+There are also other people who are here.
+
+01:06:46.536 --> 01:06:47.896 
+Maybe they can raise their hands.
+
+01:06:48.816 --> 01:06:52.336 
+OK, You can see some of my PhD and master's students.
+
+01:06:52.816 --> 01:06:53.656 
+Suguras is here.
+
+01:06:53.656 --> 01:06:54.536 
+Maria is there.
+
+01:06:55.216 --> 01:06:56.376 
+Spiros is there.
+
+01:06:56.736 --> 01:06:59.456 
+Andreas who is there?
+
+01:06:59.736 --> 01:07:02.856 
+Harsh Harshita, did I miss anyone?
+
+01:07:04.936 --> 01:07:05.656 
+Oh, OK.
+
+01:07:05.656 --> 01:07:10.872 
+Irini is there also so you can see that we have a quiet international group of folks who are there
+
+01:07:10.872 --> 01:07:12.256 
+who are there to help you.
+
+01:07:12.456 --> 01:07:15.976 
+And they like sitting on that side for some reason, and that side is empty.
+
+01:07:17.496 --> 01:07:19.216 
+OK, So they're here to help you.
+
+01:07:19.216 --> 01:07:22.576 
+They're key assistants and guest lectures.
+
+01:07:22.976 --> 01:07:28.738 
+And as I said, we have a lot of student assistants who have taken this course, some of them multiple
+
+01:07:28.738 --> 01:07:29.776 
+times in the past.
+
+01:07:30.216 --> 01:07:31.336 
+I think Maria is a veteran.
+
+01:07:31.336 --> 01:07:37.136 
+For example, didn't she get the best TA award at some point?
+
+01:07:37.296 --> 01:07:41.136 
+Yeah, she got the best TA award at some point for the for TA ING this course.
+
+01:07:41.136 --> 01:07:41.976 
+Congratulations.
+
+01:07:42.856 --> 01:07:47.056 
+So you can take advantage of the fact that they have a lot of experience.
+
+01:07:48.416 --> 01:07:53.296 
+You can meet them at some lab assigned lab times.
+
+01:07:53.656 --> 01:07:55.656 
+These locations will be determined.
+
+01:07:56.056 --> 01:08:02.096 
+Labs do not start yet and if you need help, Moodle is a good place to ask your questions.
+
+01:08:02.176 --> 01:08:08.496 
+For technical questions, please send ask it on Moodle because a lot of people monitor Moodle.
+
+01:08:08.776 --> 01:08:12.216 
+If you send me e-mail, my e-mail is like a leaky bucket.
+
+01:08:12.856 --> 01:08:14.016 
+You get a lot of faults.
+
+01:08:15.056 --> 01:08:20.296 
+I may be able to see it, but sometimes I don't see it and I get a lot of e-mail unfortunately.
+
+01:08:20.736 --> 01:08:27.567 
+If you have a personal e-mail, definitely contact me and Mohammed and the head assistants, for
+
+01:08:27.567 --> 01:08:34.762 
+example, if you cannot come to an important lab, for example, if you're going to miss labs for some
+
+01:08:34.762 --> 01:08:37.016 
+reason, we need to handle that.
+
+01:08:37.776 --> 01:08:40.056 
+But if you have technical questions, this is the best place.
+
+01:08:40.696 --> 01:08:44.376 
+And there are office hours, and you can also write an e-mail.
+
+01:08:45.096 --> 01:08:49.374 
+I guess e-mail is also OK, but Moodle may be easier because Moodle automatically sends e-mail
+
+01:08:49.374 --> 01:08:49.696 
+anyway.
+
+01:08:49.696 --> 01:08:51.376 
+Is that correct?
+
+01:08:52.096 --> 01:08:53.656 
+OK, OK.
+
+01:08:53.656 --> 01:08:56.256 
+There are office hours and we'll provide these locations.
+
+01:08:56.256 --> 01:08:56.736 
+Doom links.
+
+01:08:57.176 --> 01:08:58.616 
+Our website is up.
+
+01:08:58.776 --> 01:09:03.351 
+You can find a lot of information including links to all of the previous incarnations of this
+
+01:09:03.351 --> 01:09:03.696 
+course.
+
+01:09:04.176 --> 01:09:10.003 
+And the one that's going to be the most similar is going to be Spring 2025, and we'll have a slide
+
+01:09:10.003 --> 01:09:10.776 
+on that also.
+
+01:09:11.056 --> 01:09:15.416 
+Essentially, this is your single point of access to all the resources as well as your e-mail.
+
+01:09:16.296 --> 01:09:21.056 
+We're going to send you more information about labs, etcetera, how to sign up soon.
+
+01:09:22.016 --> 01:09:23.136 
+So we have lectures.
+
+01:09:23.656 --> 01:09:24.856 
+There's no attendance taken.
+
+01:09:24.856 --> 01:09:25.776 
+It's for your benefit.
+
+01:09:25.776 --> 01:09:30.226 
+I would recommend attending so that you can learn and broaden your perspective, but I don't take
+
+01:09:30.226 --> 01:09:30.736 
+attendance.
+
+01:09:30.736 --> 01:09:37.456 
+Sometimes we may have guest lectures as you see over here, and you can attend at your convenience.
+
+01:09:37.456 --> 01:09:38.976 
+Also, lab sessions.
+
+01:09:38.976 --> 01:09:40.576 
+You should definitely attend the lab sessions.
+
+01:09:40.896 --> 01:09:43.256 
+And I think this date is correct, right?
+
+01:09:43.256 --> 01:09:45.336 
+March 3rd is when the labs will start.
+
+01:09:46.536 --> 01:09:50.776 
+OK, correct.
+
+01:09:50.776 --> 01:09:51.136 
+Mayank.
+
+01:09:51.576 --> 01:09:51.936 
+OK.
+
+01:09:52.496 --> 01:09:56.340 
+I don't I don't look at the right place because I was expecting someone over there and they're not
+
+01:09:56.340 --> 01:09:56.576 
+there.
+
+01:09:59.536 --> 01:10:07.856 
+OK, lab organization, you can choose your preferred group and again, these slides are online.
+
+01:10:07.856 --> 01:10:09.536 
+You can figure out how to do this.
+
+01:10:09.536 --> 01:10:10.656 
+You can choose your partner.
+
+01:10:12.416 --> 01:10:12.696 
+OK.
+
+01:10:12.736 --> 01:10:17.936 
+If you have questions, ask Mayank or Atabach and any of the other Tasmania.
+
+01:10:18.816 --> 01:10:21.296 
+And if you don't fill the form, we'll randomly assign you a partner.
+
+01:10:21.696 --> 01:10:26.176 
+We don't have enough FPGA boards to do the lab, so he cannot do it individually.
+
+01:10:28.696 --> 01:10:30.576 
+OK, any, anything to add here?
+
+01:10:35.976 --> 01:10:39.336 
+OK, so these will be available starting from tomorrow.
+
+01:10:39.336 --> 01:10:44.536 
+So if you go to the links and you don't find anything, wait until tomorrow.
+
+01:10:45.696 --> 01:10:47.536 
+OK, grades from previous years.
+
+01:10:49.016 --> 01:10:51.736 
+Again, there is a form that will be announced with Moodle.
+
+01:10:52.296 --> 01:10:56.696 
+You can choose one of these options over here and again, I'll let you read these.
+
+01:10:56.696 --> 01:11:02.636 
+You can use your grade from last year if you've taken it or if you want to improve it, you redo the
+
+01:11:02.636 --> 01:11:02.936 
+labs.
+
+01:11:04.056 --> 01:11:06.576 
+There's a final exam again, don't worry about it right now.
+
+01:11:06.696 --> 01:11:13.756 
+Don't worry about it during the lectures, but optional homeworks and solving past exams will
+
+01:11:13.756 --> 01:11:17.056 
+definitely be useful for final examination.
+
+01:11:17.336 --> 01:11:21.256 
+They'll be useful for reinforcing the concepts that we cover in lectures.
+
+01:11:21.256 --> 01:11:25.456 
+Anyways, so these are some reading assignments for this and next week.
+
+01:11:26.216 --> 01:11:29.056 
+So this I will give you a reading assignments.
+
+01:11:29.216 --> 01:11:31.216 
+You're welcome to do them and they will help you.
+
+01:11:31.416 --> 01:11:32.496 
+No question about that.
+
+01:11:34.776 --> 01:11:40.591 
+You don't have to do them, but they will definitely help you to reinforce the concepts because
+
+01:11:40.591 --> 01:11:44.056 
+clearly I cannot go into all the detail in the lectures.
+
+01:11:44.056 --> 01:11:46.736 
+I'll give you the basic concepts and the most important things.
+
+01:11:47.136 --> 01:11:51.336 
+But if you want to learn more, these two books are actually very useful.
+
+01:11:51.736 --> 01:11:54.936 
+And these are the chapters that are assigned initially.
+
+01:11:54.936 --> 01:11:59.732 
+We will have a lot of reading assignments in the first half of the course, and then we will have
+
+01:11:59.732 --> 01:12:04.428 
+almost no reading assignments from these books in the second-half of this course because these
+
+01:12:04.428 --> 01:12:07.776 
+books actually don't, in my opinion, cover what we intend to cover.
+
+01:12:07.776 --> 01:12:11.976 
+They're not up to date enough to cover things like systolic arrays, for example.
+
+01:12:11.976 --> 01:12:14.096 
+You will not find systolic arrays in this book.
+
+01:12:14.216 --> 01:12:16.216 
+You'll not find enough information about GPUs.
+
+01:12:16.456 --> 01:12:21.042 
+You'll not find enough information about memories, the most important things that are happening in
+
+01:12:21.042 --> 01:12:23.616 
+computer architecture or computing system design today.
+
+01:12:24.176 --> 01:12:28.256 
+But they're very good at the fundamentals that we will cover in the first half of the course.
+
+01:12:29.416 --> 01:12:30.976 
+How many people know binary numbers?
+
+01:12:32.176 --> 01:12:34.416 
+OK, That's why we don't teach them in this course anymore.
+
+01:12:35.736 --> 01:12:36.176 
+That's good.
+
+01:12:36.896 --> 01:12:38.896 
+If you don't know binary numbers, you can learn easily.
+
+01:12:40.016 --> 01:12:42.056 
+OK, these are the reading assignments.
+
+01:12:42.056 --> 01:12:44.256 
+Again, I'm going to skip this, but you can find these online.
+
+01:12:45.216 --> 01:12:47.976 
+And within two to three weeks, we will be done with a lot of chapters.
+
+01:12:47.976 --> 01:12:50.696 
+Actually, at least the lecture material will cover them.
+
+01:12:51.096 --> 01:12:53.456 
+And you're welcome to do these readings.
+
+01:12:55.176 --> 01:13:02.158 
+And you're, it's OK to get help from LLMS at your own risk, at your own risk is always a good thing
+
+01:13:02.158 --> 01:13:03.216 
+to think about.
+
+01:13:03.896 --> 01:13:05.136 
+We have an extra credit assignment.
+
+01:13:05.136 --> 01:13:11.536 
+Also, this is a research talk that I delivered a couple of years ago for 30 minutes.
+
+01:13:12.176 --> 01:13:14.056 
+And I'll give you a 1% extra credit.
+
+01:13:14.056 --> 01:13:19.936 
+LLM, no AI use permitted and you'll get a 0 if you use AI.
+
+01:13:22.816 --> 01:13:24.776 
+If you want to get a zero, you can use AI of course.
+
+01:13:25.216 --> 01:13:26.616 
+So it's permitted in that sense.
+
+01:13:27.096 --> 01:13:30.696 
+But if you want to get the extra credit, it's not permitted, let's say.
+
+01:13:31.056 --> 01:13:38.216 
+So basically, I would like you to watch this lecture and think about what are your key takeaways.
+
+01:13:38.296 --> 01:13:39.176 
+What did you learn?
+
+01:13:39.736 --> 01:13:41.416 
+What surprised you about the content?
+
+01:13:41.656 --> 01:13:42.576 
+What excited you?
+
+01:13:43.216 --> 01:13:44.056 
+What may be interesting?
+
+01:13:44.056 --> 01:13:45.856 
+What do you think the future solutions could be?
+
+01:13:45.856 --> 01:13:51.652 
+I'm not going to talk about this, but this is a phenomenon, multiple phenomena that we discovered in
+
+01:13:51.652 --> 01:13:52.696 
+my research group.
+
+01:13:53.176 --> 01:13:56.096 
+It's the fact that you can induce bit flips in DRAM chips.
+
+01:13:56.096 --> 01:14:02.236 
+It's called Row Hammer and I gave a talk about it 10 years after its publication, so I'll not spoil
+
+01:14:02.236 --> 01:14:04.656 
+the means so you can take a look at it.
+
+01:14:04.976 --> 01:14:07.576 
+OK, so future lectures and assignments.
+
+01:14:07.576 --> 01:14:12.296 
+You can also have a look at last year's website and plan for future lectures.
+
+01:14:12.696 --> 01:14:14.376 
+These are the links for your convenience.
+
+01:14:14.896 --> 01:14:20.323 
+Essentially, we're going to follow what we did in the past, but of course the content may change a
+
+01:14:20.323 --> 01:14:23.536 
+little bit and this is an example of last time prediction.
+
+01:14:23.536 --> 01:14:27.656 
+That's a concept that we will develop and examine in these lectures.
+
+01:14:28.096 --> 01:14:33.536 
+The microprocessors that you yous are all doing some sort of last time prediction.
+
+01:14:33.856 --> 01:14:35.176 
+That's a very basic prediction.
+
+01:14:35.976 --> 01:14:40.816 
+It's an example of speculative execution, meaning speculative execution means you speculate.
+
+01:14:41.496 --> 01:14:47.176 
+In other words, it's the concept of doing something before knowing that what you're doing is needed.
+
+01:14:48.176 --> 01:14:50.696 
+So you do something before knowing that it's needed.
+
+01:14:50.816 --> 01:14:54.776 
+For example, you take your umbrella before knowing that it's raining.
+
+01:14:55.416 --> 01:14:56.656 
+You anticipate that it's raining.
+
+01:14:56.656 --> 01:15:02.177 
+You predict that it's raining because last time you looked at the sky and it looked like this, it
+
+01:15:02.177 --> 01:15:02.576 
+rained.
+
+01:15:03.376 --> 01:15:09.128 
+So basically you're exercising speculative execution by participating in the action of taking the
+
+01:15:09.128 --> 01:15:11.856 
+umbrella based on the conditions that you see.
+
+01:15:12.656 --> 01:15:19.718 
+So again, similar things, similar concept were here in 2026, Other people were here in 2025, and I
+
+01:15:19.718 --> 01:15:21.736 
+was giving the same lecture.
+
+01:15:22.136 --> 01:15:27.776 
+And you go back to the 2025 website and you can see that similar things may happen.
+
+01:15:27.776 --> 01:15:29.976 
+You anticipate that similar things will happen, right?
+
+01:15:30.336 --> 01:15:31.496 
+That's last time prediction.
+
+01:15:31.856 --> 01:15:32.896 
+Existing machines do that.
+
+01:15:32.896 --> 01:15:34.816 
+And we're going to cover this key concept.
+
+01:15:34.816 --> 01:15:39.616 
+But as you can see, this key concept spans much beyond the design of microprocessors.
+
+01:15:40.216 --> 01:15:41.776 
+It's a very fundamental principle.
+
+01:15:42.016 --> 01:15:45.256 
+It's a fundamental principle of learning actually also if you think.
+
+01:15:45.336 --> 01:15:51.616 
+About reinforcement learning, it's kind of based on this predictability that happens, right?
+
+01:15:51.616 --> 01:15:54.736 
+Remember Yvonne Paulo and the dogs and the bell?
+
+01:15:55.776 --> 01:15:59.336 
+Whenever the bell rings, food comes and the dogs get used to it.
+
+01:16:00.056 --> 01:16:04.296 
+Last time, last time, last time, every time, and it becomes reinforced many times.
+
+01:16:05.336 --> 01:16:08.416 
+OK, so these are actually the older editions.
+
+01:16:08.416 --> 01:16:13.016 
+As you go back, you will see that maybe the predictability reduces.
+
+01:16:13.736 --> 01:16:14.656 
+It's good to think about it.
+
+01:16:16.936 --> 01:16:18.256 
+Any questions on logistics?
+
+01:16:22.416 --> 01:16:22.976 
+OK, none.
+
+01:16:23.736 --> 01:16:28.216 
+So now let's go into some fundamental material, very basic things.
+
+01:16:28.416 --> 01:16:31.216 
+To begin with, we're going to cover some fundamental concept.
+
+01:16:31.216 --> 01:16:34.136 
+Essentially, we need to understand the fundamentals to do better, right?
+
+01:16:34.576 --> 01:16:39.616 
+Our goal eventually is to do better because we can change the world only if you understand it well
+
+01:16:39.616 --> 01:16:39.976 
+enough.
+
+01:16:40.336 --> 01:16:45.345 
+And especially the basics, fundamentals, because fundamentals never change or they stay there
+
+01:16:45.345 --> 01:16:45.776 
+forever.
+
+01:16:47.376 --> 01:16:50.846 
+And if you understand the past and present dominant paradigms, and we're going to look at that,
+
+01:16:50.846 --> 01:16:52.856 
+we're going to look at their advances and shortcomings.
+
+01:16:53.696 --> 01:16:56.656 
+And there are things that remain fundamental across many, many generations.
+
+01:16:56.656 --> 01:16:58.656 
+It's good to identify these patterns.
+
+01:16:59.256 --> 01:17:04.780 
+And there are techniques that people have developed that are actually very useful for some of the
+
+01:17:04.780 --> 01:17:05.976 
+fundamental problems.
+
+01:17:06.136 --> 01:17:10.256 
+And these techniques appear many times and we're going to see some of those techniques.
+
+01:17:11.176 --> 01:17:12.016 
+So what's a computer?
+
+01:17:12.016 --> 01:17:14.056 
+That's a good thing to start with, basically, right?
+
+01:17:14.216 --> 01:17:20.782 
+This is von Neumann who and we're going to look at the von Neumann principles of design in lecture 9
+
+01:17:20.782 --> 01:17:21.176 
+or so.
+
+01:17:22.056 --> 01:17:27.736 
+There are three key components to computing, computation, communication and storage and memory.
+
+01:17:27.816 --> 01:17:31.456 
+You need to compute do addition, multiplication, etcetera.
+
+01:17:32.056 --> 01:17:36.296 
+You need to store data in some sort of storage.
+
+01:17:36.536 --> 01:17:40.296 
+You need to communicate data between processors and also memories.
+
+01:17:41.056 --> 01:17:43.296 
+So a computing system looks kind of like this.
+
+01:17:44.616 --> 01:17:46.096 
+And we'll cover all three components.
+
+01:17:46.096 --> 01:17:50.536 
+Actually, we'll especially focus on processing in the first part of the course.
+
+01:17:50.696 --> 01:17:55.968 
+We'll focus increasingly on memory and IO will be in a lot of things we cover because communication
+
+01:17:55.968 --> 01:18:00.336 
+is very fundamental whenever you do process data and also communicate with memory.
+
+01:18:01.976 --> 01:18:05.256 
+OK, so let me give you a lay of the land of what we will cover.
+
+01:18:05.256 --> 01:18:07.936 
+So we will start with transistors today and tomorrow.
+
+01:18:08.336 --> 01:18:14.238 
+Tomorrow we will cover combination logic design, circuits that can do computation but cannot
+
+01:18:14.238 --> 01:18:14.816 
+remember.
+
+01:18:15.776 --> 01:18:17.656 
+That sounds like a terrible thing, right?
+
+01:18:18.016 --> 01:18:21.296 
+And then we're going to add memory to it, sequential logic design.
+
+01:18:21.536 --> 01:18:24.536 
+And also we're going to cover hardware description languages, how to describe hardware.
+
+01:18:24.536 --> 01:18:27.216 
+Basically these are specialised languages to describe hardware.
+
+01:18:27.216 --> 01:18:33.073 
+And we're going to cover timing and verification, how to make the circuits work essentially so that
+
+01:18:33.073 --> 01:18:38.693 
+they don't produce wrong results because you didn't give it enough time or you didn't do enough
+
+01:18:38.693 --> 01:18:39.936 
+testing to verify it.
+
+01:18:40.816 --> 01:18:43.136 
+So these are the digital design parts of the course.
+
+01:18:43.136 --> 01:18:48.616 
+So and then we're going to go into architecture and talk more about the hardware software interface.
+
+01:18:48.976 --> 01:18:51.856 
+We can get two different kind of instructions and architectures.
+
+01:18:51.856 --> 01:18:58.693 
+We're going to talk about assembly programming, how to program using ones and zeros, and also how to
+
+01:18:58.693 --> 01:19:03.616 
+abstract them using a little bit more, let's say, human friendly things.
+
+01:19:04.936 --> 01:19:07.416 
+And then we'll kind of cover a lot of things in micro architecture.
+
+01:19:07.496 --> 01:19:12.422 
+I'm not going to go through every single things of it, every single thing that's written here, but
+
+01:19:12.422 --> 01:19:16.998 
+all of these concepts are essentially used in existing CP US, out of order execution, super
+
+01:19:16.998 --> 01:19:18.456 
+execution, branch prediction.
+
+01:19:19.096 --> 01:19:24.534 
+And we're going to talk about other paradigms that are actually used in different ways in different
+
+01:19:24.534 --> 01:19:26.896 
+specialised architectures, including GP US.
+
+01:19:28.536 --> 01:19:30.016 
+And then we will jump into memory.
+
+01:19:30.016 --> 01:19:31.336 
+And we're going to cover a lot of memory.
+
+01:19:31.576 --> 01:19:37.856 
+We're going to talk about memory, but we're not going to focus on it a lot in the first parts of the
+
+01:19:37.856 --> 01:19:38.296 
+course.
+
+01:19:38.656 --> 01:19:42.386 
+But in the latter part of the course, we're going to talk a lot about memory because this is
+
+01:19:42.386 --> 01:19:44.536 
+actually one of the major ball necks today in memory.
+
+01:19:44.576 --> 01:19:49.888 
+That's one of the reasons why memory prices are increasing, because existing workloads demand a lot
+
+01:19:49.888 --> 01:19:51.176 
+of memory to store data.
+
+01:19:51.736 --> 01:19:56.376 
+They also demand a lot of memory to actually do things with the data.
+
+01:19:56.376 --> 01:20:00.896 
+So today we can build processors very, very fast.
+
+01:20:01.296 --> 01:20:03.296 
+We cannot build memories very fast.
+
+01:20:03.296 --> 01:20:07.788 
+So if you want to actually move data, move a lot of data from the memory to the processor, you need
+
+01:20:07.788 --> 01:20:11.736 
+to design memories that are much more expensive, that are higher bandwidth essentially.
+
+01:20:12.296 --> 01:20:14.816 
+So that's one of the reasons why the cost of memory is increasing.
+
+01:20:14.816 --> 01:20:19.496 
+The other reason is demand is increasing and it's importance is huge today.
+
+01:20:20.336 --> 01:20:23.816 
+More than 60% of the cost of a data centre system today is memory.
+
+01:20:25.096 --> 01:20:28.656 
+OK, so memory is important, but we're still going to cover it later.
+
+01:20:28.816 --> 01:20:33.216 
+If you take the Advanced Computer Architecture course, you will see that we will start with memory
+
+01:20:33.216 --> 01:20:36.136 
+because that's the problem today and that's the problem to solve.
+
+01:20:36.136 --> 01:20:39.456 
+If you want to actually innovate, that's the Advanced Computer Architecture course.
+
+01:20:40.256 --> 01:20:41.256 
+But here we are.
+
+01:20:41.256 --> 01:20:41.736 
+Basics.
+
+01:20:42.456 --> 01:20:44.616 
+OK, these are some of the processing paradigms you will cover.
+
+01:20:44.616 --> 01:20:45.256 
+And again, all of.
+
+01:20:45.336 --> 01:20:50.949 
+Of these are used in existing systems today and you will learn hopefully all of these and these
+
+01:20:50.949 --> 01:20:55.736 
+actually I kind of have these pictures, but these paradigms pan across the stack.
+
+01:20:56.176 --> 01:21:01.069 
+They have programming languages associated with some of these paradigms and they actually design
+
+01:21:01.069 --> 01:21:05.096 
+logic so that they can and they they designed the entire stack to make it work.
+
+01:21:05.136 --> 01:21:11.106 
+GPUs, for example, GPUs have their own programming languages, own hardware design, own logic, type
+
+01:21:11.106 --> 01:21:15.736 
+of gates to do computation, and also all of the interface in between, right?
+
+01:21:15.976 --> 01:21:17.816 
+Systolic arrays are another example for that.
+
+01:21:19.656 --> 01:21:22.536 
+OK, so we're going to cover combination logic first, as I said.
+
+01:21:22.856 --> 01:21:27.136 
+So this is the plan for the rest of today and also tomorrow.
+
+01:21:28.016 --> 01:21:32.096 
+So we will learn the basic building blocks, transistors from transistors.
+
+01:21:32.096 --> 01:21:33.616 
+We're going to cover logic gates.
+
+01:21:33.856 --> 01:21:35.376 
+We're going to talk about Boolean algebra.
+
+01:21:35.376 --> 01:21:37.016 
+How many people learn about Boolean algebra?
+
+01:21:37.696 --> 01:21:40.696 
+OK, how many people did not learn about Boolean algebra?
+
+01:21:42.096 --> 01:21:43.816 
+OK, that's good or bad?
+
+01:21:43.816 --> 01:21:44.336 
+I don't know.
+
+01:21:44.856 --> 01:21:49.033 
+Usually most people know, so I'm going to go through it relatively quickly, but it's going to be
+
+01:21:49.033 --> 01:21:50.296 
+important to design circuits.
+
+01:21:51.216 --> 01:21:56.746 
+OK, I've already said this combination logic circuits, and we're going to use Boolean algebra to
+
+01:21:56.746 --> 01:21:58.936 
+represent and minimise logic circuits.
+
+01:21:59.896 --> 01:22:05.042 
+OK, Before I move on, let me say, let me give you the distinction between general purpose and
+
+01:22:05.042 --> 01:22:06.536 
+special purpose processing.
+
+01:22:06.936 --> 01:22:08.616 
+We're going to talk about general purpose processing.
+
+01:22:08.616 --> 01:22:09.496 
+These are flexible.
+
+01:22:09.736 --> 01:22:12.496 
+Ideally they can execute any program you throw at it.
+
+01:22:12.976 --> 01:22:14.536 
+They're easy to program and use.
+
+01:22:14.896 --> 01:22:20.034 
+Unfortunately, because they're so general, they don't provide the best performance and efficiency or
+
+01:22:20.034 --> 01:22:21.576 
+best of any metric, let's say.
+
+01:22:22.376 --> 01:22:27.858 
+And then there are very specialised processors that are designed for a particular application like
+
+01:22:27.858 --> 01:22:29.816 
+an LLM, a specific LLM for example.
+
+01:22:30.296 --> 01:22:33.216 
+They are very efficient and high performance in executing that application.
+
+01:22:33.816 --> 01:22:38.496 
+Unfortunately, they're usually difficult to program and use and they're inflexible.
+
+01:22:38.616 --> 01:22:42.096 
+They can execute a limited set of application, and the extreme K is only one application.
+
+01:22:42.376 --> 01:22:45.656 
+So existing machine learning accelerators are examples of special purpose machines.
+
+01:22:45.656 --> 01:22:51.936 
+For example, existing general purpose CPUs are examples of general purpose machines.
+
+01:22:52.176 --> 01:22:53.016 
+And this is a trade off.
+
+01:22:53.016 --> 01:22:55.776 
+Basically today people are designing all kinds of machines.
+
+01:22:56.376 --> 01:23:01.329 
+If you look at a system on a chip, there is a general purpose component in it, CPU, and then there
+
+01:23:01.329 --> 01:23:05.828 
+is AGPU in it, and then there are machine learning accelerators, and then there are video
+
+01:23:05.828 --> 01:23:07.496 
+accelerators, audio accelerators.
+
+01:23:07.496 --> 01:23:12.815 
+Today, basically we have a heterogeneous system on a chip that consists of general purpose versus
+
+01:23:12.815 --> 01:23:14.296 
+special purpose components.
+
+01:23:15.216 --> 01:23:16.576 
+We're going to see this picture again.
+
+01:23:17.176 --> 01:23:21.256 
+So this is my old, old school picture of a general purpose thing.
+
+01:23:22.176 --> 01:23:23.536 
+It's an adjustable wrench.
+
+01:23:23.536 --> 01:23:25.496 
+How many people used it at some point?
+
+01:23:25.696 --> 01:23:26.496 
+Do people still use it?
+
+01:23:26.496 --> 01:23:29.096 
+OK, you cannot have AI use it yet.
+
+01:23:30.096 --> 01:23:32.456 
+A robot, a robot will have trouble with this, by the way.
+
+01:23:33.176 --> 01:23:39.216 
+OK, so that's an adjustable wrench, general purpose, and these are special purpose wrenches.
+
+01:23:39.216 --> 01:23:40.496 
+General purpose is flexible.
+
+01:23:40.536 --> 01:23:42.336 
+It can work with any bolt, easy to use.
+
+01:23:42.576 --> 01:23:45.616 
+Unfortunately, if you use that, you'll figure out that it's not the best fit.
+
+01:23:46.056 --> 01:23:50.296 
+It doesn't give you the best results or efficiency, especially if you're a mechanic, right?
+
+01:23:51.296 --> 01:23:54.216 
+And sometimes you try to get it fit and it doesn't work right?
+
+01:23:54.216 --> 01:23:58.736 
+And then you give up and then you go to the store and get one that actually fits right.
+
+01:23:59.256 --> 01:24:03.872 
+And these are special purpose and you can see that it's efficient and high performance, but it only
+
+01:24:03.872 --> 01:24:07.136 
+works for the thing for the bolt that is designed to work with, right?
+
+01:24:07.936 --> 01:24:09.536 
+And it's usually difficult to use.
+
+01:24:10.096 --> 01:24:12.496 
+Now, especially if you don't get it to work, it's very difficult to use.
+
+01:24:12.496 --> 01:24:13.816 
+You need to find something else, right?
+
+01:24:14.096 --> 01:24:15.016 
+It's inflexible, right?
+
+01:24:15.456 --> 01:24:16.656 
+So this is my example.
+
+01:24:16.736 --> 01:24:22.654 
+This analogy spends to hardware and software LLMS are general popular LMS that are chained with
+
+01:24:22.654 --> 01:24:28.697 
+everything and the kitchen sink and they may not be very good at your task, which may actually be
+
+01:24:28.697 --> 01:24:34.802 
+getting a recommendation for what kind of drug you may want to use, especially if you're a doctor,
+
+01:24:34.802 --> 01:24:35.176 
+right?
+
+01:24:35.536 --> 01:24:37.216 
+For or give to a patient, right?
+
+01:24:37.616 --> 01:24:41.056 
+So training in a specialised manner helps.
+
+01:24:41.416 --> 01:24:43.856 
+And in my opinion, they're the same thing basically.
+
+01:24:44.456 --> 01:24:48.533 
+OK, modern general purpose processors, I already said this, but you essentially have a lot of
+
+01:24:48.533 --> 01:24:49.016 
+components.
+
+01:24:49.016 --> 01:24:54.235 
+If you look at this is Apple's M1 processor, you have a lot of GP, US performance course, high
+
+01:24:54.235 --> 01:24:56.456 
+performance, general purpose processors.
+
+01:24:56.776 --> 01:25:02.676 
+They have also efficiency course, lower performance or low energy general purpose processors, neural
+
+01:25:02.676 --> 01:25:06.216 
+engine, machine learning, accelerators and caches, etcetera.
+
+01:25:06.456 --> 01:25:09.496 
+So all of the processors look like that basically.
+
+01:25:09.496 --> 01:25:15.609 
+Again, I will not go through these in detail, but the key take away is today you're living in a
+
+01:25:15.609 --> 01:25:16.896 
+heterogeneous world.
+
+01:25:17.376 --> 01:25:25.000 
+When I when I was studying computer architecture in 19 nineties, 2000s, there was only CPU, that's
+
+01:25:25.000 --> 01:25:25.856 
+it, C1 CPU.
+
+01:25:26.376 --> 01:25:30.696 
+Fast forward to 2020, you have all kinds of components on the chip.
+
+01:25:30.696 --> 01:25:34.536 
+And this has been enabled by the ability to integrate lots of transistors.
+
+01:25:34.536 --> 01:25:38.136 
+And if you have lots of transistors, you can use them for different things.
+
+01:25:38.136 --> 01:25:44.517 
+So a chip is really eating other chips so that you can actually put a lot of different types of
+
+01:25:44.517 --> 01:25:45.256 
+processing.
+
+01:25:45.336 --> 01:25:51.672 
+Units and we're going to see a lot of these modern GPUs are also quite heterogeneous internally and
+
+01:25:51.672 --> 01:25:52.696 
+these are Fpgas.
+
+01:25:52.696 --> 01:25:58.177 
+This is the FPGA board that you're going to use to do your labs and these are some other modern
+
+01:25:58.177 --> 01:26:03.832 
+Fpgas, special purpose processors and these are machine learning X rators are also special purpose
+
+01:26:03.832 --> 01:26:09.256 
+processors and there are other machine learning accelerators like we have seen there are also.
+
+01:26:09.416 --> 01:26:13.626 
+So just to make sure that it's not only about machine learning, there are a lot of important
+
+01:26:13.626 --> 01:26:14.816 
+applications in the world.
+
+01:26:14.816 --> 01:26:15.736 
+I mentioned genomics.
+
+01:26:16.136 --> 01:26:22.326 
+There's also a video, for example, right now we're exercising YouTube a lot and there's a lot of
+
+01:26:22.326 --> 01:26:26.776 
+video encoding and decoding that's happening across the data centres.
+
+01:26:26.776 --> 01:26:32.962 
+And they're going through some of these specialised accelerators that are designed to efficiently
+
+01:26:32.962 --> 01:26:39.021 
+compress, decompress and stream video content because video has very special characteristics in
+
+01:26:39.021 --> 01:26:40.616 
+terms of compressibility.
+
+01:26:41.056 --> 01:26:45.296 
+Different frames, for example, that are streaming are very similar to each other.
+
+01:26:45.296 --> 01:26:50.353 
+And while the frames are coming, you can do compression and decompression and storage at the same
+
+01:26:50.353 --> 01:26:54.576 
+time so that you can minimise the amount of data that you're moving or streaming.
+
+01:26:54.976 --> 01:26:59.216 
+And people like Google, for example, have been designing video accelerators for this purpose.
+
+01:26:59.216 --> 01:27:04.688 
+And some of these accelerators are actually on your on, on something like this as a system on a
+
+01:27:04.688 --> 01:27:04.976 
+chip.
+
+01:27:05.696 --> 01:27:09.416 
+Well, not necessarily this type, but there could be similar types.
+
+01:27:10.336 --> 01:27:14.816 
+OK, So we're going to cover a lot of these microprocessors, Fpgas, ASICS.
+
+01:27:15.216 --> 01:27:16.056 
+What are the differences?
+
+01:27:16.056 --> 01:27:21.902 
+So microprocessors are general purpose, Fpgas are reconfigurable and you will figure that out very
+
+01:27:21.902 --> 01:27:23.096 
+quickly in the labs.
+
+01:27:23.096 --> 01:27:29.012 
+You can actually we're going to talk about that one in a lab lecture and you'll see that you can
+
+01:27:29.012 --> 01:27:34.867 
+reconfigure connections and can essentially implement different types of execution models on an
+
+01:27:34.867 --> 01:27:35.176 
+FPGA.
+
+01:27:36.096 --> 01:27:38.896 
+It's very flexible in that sense, but it's not very efficient.
+
+01:27:39.856 --> 01:27:47.683 
+And in ASICS you customise every single hardware piece for executing an application faster, ML or
+
+01:27:47.683 --> 01:27:49.136 
+video for example.
+
+01:27:50.416 --> 01:27:56.068 
+So because microprocessors are general purpose and easy programmable, you can write a Java programme
+
+01:27:56.068 --> 01:27:58.216 
+or Python And you can do it very fast.
+
+01:27:58.416 --> 01:28:05.781 
+With LMS you can do it even faster maybe if you know how to use an LMFPGAS take much longer usually
+
+01:28:05.781 --> 01:28:12.923 
+because as you will also see, ASICS usually take longer because you need to customise the design
+
+01:28:12.923 --> 01:28:13.816 
+performance.
+
+01:28:14.376 --> 01:28:17.416 
+Usually microprocessors are not that good because they're a general purpose.
+
+01:28:17.576 --> 01:28:22.496 
+Remember they're designed to provide the best average performance that cost many applications.
+
+01:28:22.896 --> 01:28:25.736 
+They don't claim to be the best in any application.
+
+01:28:26.016 --> 01:28:26.176 
+Right?
+
+01:28:26.656 --> 01:28:27.736 
+Fpgas can be good.
+
+01:28:27.736 --> 01:28:28.176 
+Depends.
+
+01:28:28.176 --> 01:28:30.016 
+So this is debatable actually.
+
+01:28:30.056 --> 01:28:33.736 
+But ASICS are usually very high performance Fpgas.
+
+01:28:33.736 --> 01:28:35.816 
+Depends on whether the application fits or not.
+
+01:28:37.136 --> 01:28:38.736 
+OK, So what is it good for?
+
+01:28:38.736 --> 01:28:43.416 
+Usually we use CP US to do anything.
+
+01:28:43.416 --> 01:28:44.456 
+You can do anything with them.
+
+01:28:44.736 --> 01:28:51.473 
+Fpgas are usually good for prototyping or acceleration of applications that fit, and ASICS are good
+
+01:28:51.473 --> 01:28:53.856 
+for maximum performance in general.
+
+01:28:53.856 --> 01:28:59.176 
+That's why they're very, very much used for machine learning acceleration today.
+
+01:29:00.456 --> 01:29:02.736 
+OK, I will not go through these in more detail.
+
+01:29:02.736 --> 01:29:06.854 
+You will see this, but essentially there, there are a lot of differences in terms of what kind of
+
+01:29:06.854 --> 01:29:07.576 
+languages we use.
+
+01:29:07.576 --> 01:29:11.176 
+You will see this especially when we talk about hardware description languages.
+
+01:29:11.376 --> 01:29:16.905 
+We needed, we need a language to describe the hardware because hardware has some characteristics
+
+01:29:16.905 --> 01:29:22.320 
+that need to be conveyed or described that really doesn't exist in general purpose programming
+
+01:29:22.320 --> 01:29:22.896 
+languages.
+
+01:29:23.296 --> 01:29:27.216 
+For example, the notion of a clock, as you will see, that's going to be fun to see.
+
+01:29:28.136 --> 01:29:36.656 
+OK, so in this course you're actually going to start with microprocessors, learning how these work.
+
+01:29:37.496 --> 01:29:43.576 
+And we're going to program Fpgas, meaning we're going to implement a small microprocessor on an
+
+01:29:43.576 --> 01:29:43.896 
+FPGA.
+
+01:29:43.896 --> 01:29:47.096 
+So you're going to get kind of kill two boards with one stone.
+
+01:29:47.096 --> 01:29:48.816 
+You're going to get both of those.
+
+01:29:49.576 --> 01:29:49.976 
+That's good.
+
+01:29:49.976 --> 01:29:55.875 
+Unfortunately, we don't have time to do ASICS, but you're going to learn a lot of principles of
+
+01:29:55.875 --> 01:29:56.496 
+ASICS, OK?
+
+01:29:56.496 --> 01:29:58.456 
+We're going to use the Verilog language.
+
+01:29:59.576 --> 01:30:00.896 
+OK, Let me take a look at time.
+
+01:30:03.656 --> 01:30:08.979 
+This seems like a perfect place to stop because we're going to start transistors and I don't think I
+
+01:30:08.979 --> 01:30:10.896 
+can give you the idea in one minute.
+
+01:30:12.176 --> 01:30:13.416 
+So I'm going to see you tomorrow.
+
+01:30:14.256 --> 01:30:15.816 
+Have a good rest of the day.
+

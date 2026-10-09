@@ -1,0 +1,4691 @@
+WEBVTT
+
+00:00:01.191 --> 00:00:02.951 
+OK, let's get started.
+
+00:00:03.711 --> 00:00:10.951 
+You heard the bell and you know about Paolo's dogs and humans are reinforcement learning agents.
+
+00:00:10.951 --> 00:00:12.271 
+You remember that from yesterday.
+
+00:00:12.711 --> 00:00:13.911 
+So let's get started.
+
+00:00:14.431 --> 00:00:19.611 
+So we have an exciting lecture ahead of us because we're going to do some of what we couldn't do
+
+00:00:19.611 --> 00:00:20.151 
+yesterday.
+
+00:00:20.911 --> 00:00:25.938 
+We just start with transistors, and then we're going to build up to logic gates, and then we're
+
+00:00:25.938 --> 00:00:27.791 
+going to do a combination of logic.
+
+00:00:28.271 --> 00:00:32.617 
+In the meantime, we're going to introduce Boolean algebra, but probably many of you know what that
+
+00:00:32.617 --> 00:00:32.751 
+is.
+
+00:00:34.231 --> 00:00:34.991 
+Does that sound good?
+
+00:00:35.991 --> 00:00:38.031 
+All right, let's jump into it.
+
+00:00:38.711 --> 00:00:40.271 
+This is your extra credit assignment.
+
+00:00:40.511 --> 00:00:46.191 
+So for your reminder, deadline's March 21st, but no AI.
+
+00:00:46.511 --> 00:00:47.991 
+I'll remind you of that.
+
+00:00:48.711 --> 00:00:50.911 
+If we see AI, you'll get a 0.
+
+00:00:53.151 --> 00:00:53.911 
+I want you to learn.
+
+00:00:53.911 --> 00:00:59.258 
+That's why it's not like I don't want you to use AII think people should be using AI when whenever
+
+00:00:59.258 --> 00:01:03.351 
+it improves their productivity and makes them better at what they're doing.
+
+00:01:03.791 --> 00:01:08.791 
+But if the goal is to learn how something works, you don't start with AI, right?
+
+00:01:08.791 --> 00:01:12.551 
+Because unfortunately, it abstracts away some things.
+
+00:01:12.671 --> 00:01:14.551 
+And that's the whole purpose of this course.
+
+00:01:14.751 --> 00:01:20.231 
+Get rid of this magic that happens in how computers work, right?
+
+00:01:21.071 --> 00:01:26.581 
+Computers work because we built some things like transistors and we put them together in certain
+
+00:01:26.581 --> 00:01:28.591 
+ways so that we can do computation.
+
+00:01:28.951 --> 00:01:33.372 
+And all of the infrastructure, all of the higher level abstractions, AI, high level languages,
+
+00:01:33.372 --> 00:01:34.831 
+they're all built on top of it.
+
+00:01:35.351 --> 00:01:36.791 
+That's why I know AI over here.
+
+00:01:38.031 --> 00:01:43.631 
+And there are some reading assignments that I covered yesterday so you can take a look.
+
+00:01:44.111 --> 00:01:45.431 
+So this is the plan for today.
+
+00:01:45.951 --> 00:01:47.431 
+Let's see how much we can cover.
+
+00:01:47.711 --> 00:01:53.511 
+My hope is at least we'll cover some combinational logic circuits, maybe most of them.
+
+00:01:53.711 --> 00:01:54.231 
+Let's see.
+
+00:01:55.191 --> 00:01:55.711 
+Sounds good.
+
+00:01:56.431 --> 00:01:57.871 
+And we have an attentive set of people.
+
+00:01:57.871 --> 00:02:01.271 
+Because people who don't come on Fridays didn't come.
+
+00:02:02.511 --> 00:02:04.631 
+There's always a set of people who don't come on Fridays.
+
+00:02:05.631 --> 00:02:06.911 
+It's part of the weekend, I guess.
+
+00:02:07.911 --> 00:02:10.551 
+OK, so you've seen these slides.
+
+00:02:10.551 --> 00:02:12.751 
+All computers are built using the same building blocks.
+
+00:02:12.751 --> 00:02:14.591 
+But I see some people are online, so that's good.
+
+00:02:15.551 --> 00:02:17.591 
+I think we have a good following on YouTube.
+
+00:02:17.751 --> 00:02:22.551 
+Hopefully they're asking good questions and we don't have AI chat bots asking questions.
+
+00:02:23.511 --> 00:02:28.512 
+OK, Anyway, so we're going to cover the building blocks of modern computers, and we're going to
+
+00:02:28.512 --> 00:02:32.671 
+start with transistors because all modern computers are built with transistors.
+
+00:02:33.271 --> 00:02:37.151 
+And you can imagine modern computers built with mechanical components also.
+
+00:02:37.151 --> 00:02:38.191 
+We're not going to cover that.
+
+00:02:38.391 --> 00:02:43.685 
+You can imagine modern computers built with biological cells, which we don't know how to do at this
+
+00:02:43.685 --> 00:02:48.071 
+point, but that's a good area of investigation, and we're not going to cover that.
+
+00:02:48.431 --> 00:02:51.871 
+We're going to cover what we know how to build, which is transistors.
+
+00:02:51.991 --> 00:02:58.882 
+And semiconductor revolution has happened because people were able to fabricate these transistors
+
+00:02:58.882 --> 00:03:01.511 
+well, robustly, cheaply, efficiently.
+
+00:03:01.871 --> 00:03:06.711 
+And as a result, we can put trillions of these transistors on a wafer today.
+
+00:03:07.751 --> 00:03:08.751 
+And it's fascinating.
+
+00:03:08.751 --> 00:03:09.351 
+So we will see.
+
+00:03:09.511 --> 00:03:10.511 
+So what's the transistor?
+
+00:03:10.511 --> 00:03:13.111 
+Basically, these are what computers are built from.
+
+00:03:13.111 --> 00:03:14.431 
+So we're going to get get into that.
+
+00:03:14.711 --> 00:03:17.791 
+And these are relatively simple structures, simple to understand.
+
+00:03:18.311 --> 00:03:23.530 
+If you go into the lower level abstraction that we're not going to go into, there's a lot of
+
+00:03:23.530 --> 00:03:29.090 
+analogue operational properties of transistors, but we're going to draw a boundary of what we will
+
+00:03:29.090 --> 00:03:29.431 
+cover.
+
+00:03:29.991 --> 00:03:37.672 
+So just to give you an idea of what things were, the first microprocessor, Intel 404-4000, four in
+
+00:03:37.672 --> 00:03:39.711 
+1971 had 2300 transistors.
+
+00:03:41.511 --> 00:03:46.151 
+29 years later, Intel Pentium 4 had 42,000,000.
+
+00:03:47.151 --> 00:03:54.871 
+And more recently, 22 years later after that, Apple's M2 Max had 67 billion transistors.
+
+00:03:55.431 --> 00:03:57.871 
+These are mostly logic, actually.
+
+00:03:57.871 --> 00:04:03.196 
+You will see that these are chips that do computation, but then we also have chips that can store
+
+00:04:03.196 --> 00:04:03.471 
+data.
+
+00:04:03.791 --> 00:04:06.471 
+Here the transistor density is even larger.
+
+00:04:06.791 --> 00:04:12.419 
+Just to give you an example, the flash memory, one of the flash memories that was introduced in
+
+00:04:12.419 --> 00:04:18.226 
+2022, where dyes are stacked on top of each other, you had five trillion transistors on that chip,
+
+00:04:18.226 --> 00:04:19.471 
+which is fascinating.
+
+00:04:20.311 --> 00:04:21.551 
+This is larger than a wafer.
+
+00:04:21.551 --> 00:04:22.751 
+How much you can put on a wafer?
+
+00:04:22.751 --> 00:04:24.791 
+And these flash memories are really small actually.
+
+00:04:25.271 --> 00:04:26.711 
+So we're going to cover memory later on.
+
+00:04:27.471 --> 00:04:33.539 
+So in this lecture, we're going to look at how the MOS transistor works, metaloxide semiconductor as
+
+00:04:33.539 --> 00:04:34.511 
+a logic element.
+
+00:04:35.551 --> 00:04:39.671 
+And we're going to, this is the only lecture where we will touch the devices a little bit.
+
+00:04:40.031 --> 00:04:46.086 
+Actually, we may touch it a little bit in the timing and verification, but this is really going to
+
+00:04:46.086 --> 00:04:46.951 
+be the basics.
+
+00:04:47.751 --> 00:04:49.391 
+And then we're going to build logic on top of that.
+
+00:04:49.391 --> 00:04:53.751 
+So we're going to use these transistors to form logic gates and building.
+
+00:04:54.191 --> 00:04:59.031 
+On that, we're going to use these logic gates to build essentially A microprocessor over time.
+
+00:04:59.031 --> 00:05:02.071 
+Of course, combination logic first, sequential logic later.
+
+00:05:03.071 --> 00:05:03.791 
+Does that sound good?
+
+00:05:04.111 --> 00:05:05.591 
+So we're going to walk up essentially.
+
+00:05:07.071 --> 00:05:10.535 
+I mean, we could have started with the electron abstraction, but then this lecture will be much
+
+00:05:10.535 --> 00:05:10.791 
+longer.
+
+00:05:11.351 --> 00:05:14.391 
+It's better to draw the abstraction layer as a transistor.
+
+00:05:14.951 --> 00:05:18.976 
+And if you're really interested in how a transistor really works, you need to take a
+
+00:05:18.976 --> 00:05:23.672 
+microelectronics course offered by the Etet department, or you can find actually very good courses
+
+00:05:23.672 --> 00:05:24.391 
+online as well.
+
+00:05:24.391 --> 00:05:26.711 
+If you want recommendations, I'm happy to provide that.
+
+00:05:27.751 --> 00:05:29.471 
+OK, So what is this transistor thing?
+
+00:05:29.711 --> 00:05:38.200 
+Basically, people have figured out that by combining conductors, metals, insulators, oxide usually,
+
+00:05:38.200 --> 00:05:42.831 
+and semiconductors, you can come up with a transistor.
+
+00:05:43.031 --> 00:05:46.671 
+And this is a structure that can actually that looks kind of like this.
+
+00:05:46.671 --> 00:05:48.431 
+This is a real picture, an old one.
+
+00:05:49.551 --> 00:05:54.903 
+There's a gate through which you apply voltage and there's a source and drain that are essentially
+
+00:05:54.903 --> 00:05:55.231 
+wires.
+
+00:05:55.231 --> 00:05:56.271 
+You can think of them as well.
+
+00:05:56.631 --> 00:05:57.511 
+You can think of it that way.
+
+00:05:58.031 --> 00:06:04.106 
+And based on the voltage that you apply to the gate and based on the type of the transistor,
+
+00:06:04.106 --> 00:06:10.446 
+depending on how much voltage you apply, the source and drain get connected to each other or not
+
+00:06:10.446 --> 00:06:12.031 
+connected to each other.
+
+00:06:12.431 --> 00:06:20.089 
+So the wire, the transistor acts like a wire or an open circuit where the source and drain are not
+
+00:06:20.089 --> 00:06:20.871 
+connected.
+
+00:06:21.111 --> 00:06:25.495 
+That's the whole point of operation and that's what I'm going to go into in the next 10 slides or
+
+00:06:25.495 --> 00:06:25.631 
+so.
+
+00:06:26.511 --> 00:06:27.911 
+So why is this useful?
+
+00:06:27.911 --> 00:06:31.231 
+Essentially, we can combine these based on this operational principles.
+
+00:06:31.551 --> 00:06:36.557 
+We can combine different transistors and multiple of these transistors to realise simple logic
+
+00:06:36.557 --> 00:06:41.511 
+functions, For example, a knot function, inversion function, which we're going to start with.
+
+00:06:42.111 --> 00:06:48.911 
+And then we can do NANT or and NOR or XOR, And on top of that we can build addition.
+
+00:06:49.231 --> 00:06:52.311 
+On top of that we can build multiplication, etcetera.
+
+00:06:52.311 --> 00:06:56.452 
+And on top of that we can do matrix multiplication, which everybody's trying to optimise right now
+
+00:06:56.452 --> 00:06:56.791 
+with AI.
+
+00:06:57.871 --> 00:06:59.951 
+So essentially this is how things are built.
+
+00:07:01.191 --> 00:07:02.071 
+It's fascinating, right?
+
+00:07:02.071 --> 00:07:04.591 
+The simple thing, it was invented in 1950s.
+
+00:07:06.511 --> 00:07:11.791 
+OK, the electrical properties of metal oxide semiconductors, how do you fabricate them?
+
+00:07:12.191 --> 00:07:14.111 
+All of those are beyond the scope of this course.
+
+00:07:14.191 --> 00:07:16.911 
+They're actually courses by themselves in microelectronics.
+
+00:07:16.911 --> 00:07:21.332 
+If you take that course, you will go into electronic electrical properties of many, many, many
+
+00:07:21.332 --> 00:07:22.791 
+different types of transistors.
+
+00:07:23.431 --> 00:07:25.351 
+Fabrication is a totally different type of course.
+
+00:07:25.351 --> 00:07:26.511 
+How do you fabricate these?
+
+00:07:26.831 --> 00:07:28.031 
+How do you get these materials?
+
+00:07:28.031 --> 00:07:34.112 
+Then you go into the wet nut load, you go into a lab, and you actually potentially fabricate these
+
+00:07:34.112 --> 00:07:34.671 
+yourself.
+
+00:07:35.151 --> 00:07:37.031 
+So those are not our subject.
+
+00:07:37.111 --> 00:07:42.190 
+Our subject is assuming that these operate the way we're going to describe them to operate and build
+
+00:07:42.190 --> 00:07:43.511 
+a computer on top of that.
+
+00:07:44.351 --> 00:07:46.911 
+So there's a lot more at the lower level, basically, as you can see.
+
+00:07:48.271 --> 00:07:50.551 
+OK, yeah, that's where we draw the abstraction level.
+
+00:07:50.991 --> 00:07:56.452 
+But if you want to your textbook, Harris and Harris, which is actually a very nice textbook, I think
+
+00:07:56.452 --> 00:08:00.111 
+sections 1.6 and 1.7 go into a little bit lower abstraction levels.
+
+00:08:00.111 --> 00:08:04.947 
+If you're interested, I'm going to cover them a little bit because we need to touch some of these
+
+00:08:04.947 --> 00:08:07.191 
+things like power consumption, so stay tuned.
+
+00:08:08.151 --> 00:08:12.591 
+So there are two different types of MOS transistors, N type and P type.
+
+00:08:14.671 --> 00:08:15.671 
+N type looks like this.
+
+00:08:15.671 --> 00:08:17.551 
+We're going to go into a little bit more detail later.
+
+00:08:19.151 --> 00:08:21.311 
+And P type is usually denoted like this.
+
+00:08:21.711 --> 00:08:23.191 
+So there's some difference over here.
+
+00:08:23.191 --> 00:08:28.311 
+There's a little dot over here that's applied before the gate.
+
+00:08:28.311 --> 00:08:29.951 
+Dot means inversion usually.
+
+00:08:30.711 --> 00:08:31.911 
+So let's take a look at N type.
+
+00:08:31.911 --> 00:08:34.951 
+Both operate logically very similar to the way wall switches work.
+
+00:08:35.031 --> 00:08:38.831 
+So when I actually go to this wall switch, I'm scared of doing it.
+
+00:08:39.231 --> 00:08:39.871 
+What will happen?
+
+00:08:40.751 --> 00:08:42.551 
+IO, it says OK, it worked.
+
+00:08:43.871 --> 00:08:48.671 
+So the transistor is off right now, and the transistor is on right now.
+
+00:08:48.951 --> 00:08:49.911 
+I'm going to show you that.
+
+00:08:50.551 --> 00:08:53.511 
+So a wall switch can be constructed with a transistor actually.
+
+00:08:54.551 --> 00:08:57.431 
+So basically this is the N type transistor.
+
+00:08:57.751 --> 00:09:03.495 
+You have a gate and remember that we apply some voltage to the gate and if you apply high voltage,
+
+00:09:03.495 --> 00:09:07.951 
+let's say it's 3 volts, that's the maximum voltage for this type of circuit.
+
+00:09:09.111 --> 00:09:14.311 
+Then the circuit is closed or the transistor is turned on.
+
+00:09:14.311 --> 00:09:18.271 
+Let's say circuit is closed, meaning there this drain and source.
+
+00:09:18.271 --> 00:09:21.831 
+The transistor acts like a wire, it acts like a conductor basically.
+
+00:09:21.831 --> 00:09:26.351 
+It conducts whatever current there is between the drain and the source.
+
+00:09:26.831 --> 00:09:27.391 
+Make sense?
+
+00:09:28.231 --> 00:09:31.471 
+OK, now this is the P type.
+
+00:09:31.911 --> 00:09:38.304 
+For P type, for this transistor to get turned on, or for the circuit to be closed, the gate needs to
+
+00:09:38.304 --> 00:09:40.031 
+be supplied with voltage 0.
+
+00:09:40.151 --> 00:09:42.271 
+So it's exactly opposite of N type.
+
+00:09:42.951 --> 00:09:46.671 
+For the N type to turn on, you need to apply high voltage, 3 volts.
+
+00:09:46.671 --> 00:09:49.911 
+For the P type to turn on, you need to apply low voltage 0 volts.
+
+00:09:50.591 --> 00:09:51.591 
+Sounds good right?
+
+00:09:53.271 --> 00:09:54.151 
+Why does it work this way?
+
+00:09:54.191 --> 00:09:57.031 
+This way take a micro electronics design course.
+
+00:09:57.471 --> 00:09:59.231 
+But you can build things that work this way.
+
+00:09:59.511 --> 00:10:06.671 
+Yes, voltage may be relative to the source, but that's also below our level of abstraction.
+
+00:10:06.711 --> 00:10:13.475 
+Yes, for this to work correctly, your voltage needs to be above some level to turn on the
+
+00:10:13.475 --> 00:10:14.311 
+transistor.
+
+00:10:14.511 --> 00:10:19.034 
+That depends on how the circuit is designed, how large is the transistor, what kind of fabrication
+
+00:10:19.034 --> 00:10:19.911 
+technology you use.
+
+00:10:19.911 --> 00:10:23.751 
+A lot of things that are well beyond what we want to study.
+
+00:10:23.751 --> 00:10:25.631 
+Then this will become a microelectronics course.
+
+00:10:25.751 --> 00:10:29.071 
+But those are very good questions if you want to learn more microelectronics.
+
+00:10:30.551 --> 00:10:31.151 
+Makes sense.
+
+00:10:32.071 --> 00:10:34.311 
+OK, so how does a wall switch work?
+
+00:10:34.351 --> 00:10:39.231 
+As I showed you, there's a power supply and there's some lamp.
+
+00:10:39.231 --> 00:10:40.991 
+There's one lamp over here in this picture.
+
+00:10:41.311 --> 00:10:45.431 
+And if I go turn that off, the wall switch is not.
+
+00:10:45.751 --> 00:10:51.769 
+There's basically some line, some wire that's not connected that doesn't connect the power supply to
+
+00:10:51.769 --> 00:10:52.311 
+the lamp.
+
+00:10:52.431 --> 00:10:58.913 
+Basically the, the, the wires open and if I press the, in order for the lamp to glow, the electrons
+
+00:10:58.913 --> 00:11:02.711 
+must flow and they flow from the power supply to the lamp.
+
+00:11:03.231 --> 00:11:07.436 
+For that to happen, there needs to be a closed circuit from the power supply to the lamp and back to
+
+00:11:07.436 --> 00:11:08.151 
+the power supply.
+
+00:11:08.711 --> 00:11:12.705 
+And the lamp can be turned on and off by pressing that button over there, right, which is the wall
+
+00:11:12.705 --> 00:11:12.991 
+switch.
+
+00:11:14.031 --> 00:11:16.791 
+So I I press that button and the circuit is closed, right?
+
+00:11:17.791 --> 00:11:23.522 
+So basically instead of the wall switch, we could use an N type or P type transistor to make or
+
+00:11:23.522 --> 00:11:25.031 
+break the closed circuit.
+
+00:11:26.031 --> 00:11:27.791 
+So let's take the N type.
+
+00:11:28.671 --> 00:11:31.031 
+This is the schematic of an N type transistor.
+
+00:11:31.351 --> 00:11:35.431 
+If the gate of the N type transistor is supplied with high voltage, the circuit is closed.
+
+00:11:35.671 --> 00:11:39.231 
+Essentially the the connection from the source to drain acts like a piece of wire.
+
+00:11:39.231 --> 00:11:44.111 
+As I said earlier, depending on the technology, voltage can be.
+
+00:11:44.511 --> 00:11:46.231 
+So this kind of relates to your question.
+
+00:11:46.471 --> 00:11:49.071 
+Voltage can be high, 3 volts, 0.3 volts.
+
+00:11:49.071 --> 00:11:49.991 
+I'm going to assume 3 volts.
+
+00:11:49.991 --> 00:11:50.631 
+It doesn't matter.
+
+00:11:50.791 --> 00:11:51.711 
+That's not important.
+
+00:11:52.111 --> 00:11:54.631 
+You have a high voltage level and a low voltage level, right?
+
+00:11:55.311 --> 00:12:00.670 
+We're going to get to that when we talk about power consumption because voltage effects power a lot,
+
+00:12:00.670 --> 00:12:00.831 
+OK.
+
+00:12:00.871 --> 00:12:06.498 
+If the gate is supplied with 0 voltage, then the connection between the drain and source is broken,
+
+00:12:06.498 --> 00:12:09.511 
+so the circuit is open so you don't conduct anything.
+
+00:12:10.711 --> 00:12:13.751 
+OK, so transistors, a switch, this is the abstraction that we're going to work with.
+
+00:12:13.911 --> 00:12:18.311 
+So this is now I replace the wall switch with an N type transistor as you can see over here.
+
+00:12:19.311 --> 00:12:24.911 
+And when I apply 0 volts, the circuit is open so the light doesn't turn on.
+
+00:12:25.751 --> 00:12:31.436 
+When I apply high voltage, 3 volts to the gate, the circuit is closed, electrons flow and go back to
+
+00:12:31.436 --> 00:12:33.711 
+the power supply and the flow continues.
+
+00:12:33.991 --> 00:12:35.591 
+That's why the light turns on.
+
+00:12:36.391 --> 00:12:37.031 
+Makes sense, right?
+
+00:12:37.751 --> 00:12:38.191 
+OK, good.
+
+00:12:38.871 --> 00:12:40.711 
+This is the short time notation we're going to use.
+
+00:12:41.111 --> 00:12:42.951 
+It actually matters where you put things.
+
+00:12:43.351 --> 00:12:50.460 
+So this is the power supply, this is the lamp and this is the transistor, N type transistor over
+
+00:12:50.460 --> 00:12:50.831 
+here.
+
+00:12:51.871 --> 00:12:52.911 
+So we're going to get back to this.
+
+00:12:52.911 --> 00:12:53.831 
+We're going to form gates.
+
+00:12:53.831 --> 00:12:59.140 
+We're going to get rid of the lamp soon because lamp is something that we want to turn on, but we
+
+00:12:59.140 --> 00:13:01.111 
+want to do functions with it, right?
+
+00:13:02.151 --> 00:13:05.431 
+We want to multiply multiplication with lamps.
+
+00:13:05.991 --> 00:13:08.511 
+Possible, but maybe not so easy.
+
+00:13:08.511 --> 00:13:13.791 
+OK, so AP type transistor works in exactly opposite fashion from N type transistor.
+
+00:13:14.151 --> 00:13:21.671 
+Essentially this is N type and we already discussed this and P type is the opposite.
+
+00:13:21.951 --> 00:13:28.031 
+If you apply low voltage 0 volts to the gate, the circuit acts like a closed circuit.
+
+00:13:28.431 --> 00:13:34.751 
+The transistor turns on OK, and the circuit is yeah, I, I already said this basically.
+
+00:13:34.951 --> 00:13:36.191 
+And vice versa.
+
+00:13:38.231 --> 00:13:38.911 
+OK, makes sense.
+
+00:13:39.351 --> 00:13:41.751 
+It'll become more clear why we have two types.
+
+00:13:42.071 --> 00:13:43.511 
+Why not do everything with one type?
+
+00:13:43.511 --> 00:13:50.271 
+Because again, below the level of our abstraction, N type is good at pulling down the voltage, but
+
+00:13:50.271 --> 00:13:53.031 
+it's terrible at pulling up the voltage.
+
+00:13:53.351 --> 00:13:58.111 
+So if you want to construct a circuit with only N type transistors, you cannot do that.
+
+00:13:58.311 --> 00:14:00.831 
+You'll get a lot of noise and signal integrity issues.
+
+00:14:01.511 --> 00:14:02.591 
+Same with P type.
+
+00:14:02.591 --> 00:14:06.708 
+P type is very good at pulling up the voltage, but terrible at pulling down the voltage because of
+
+00:14:06.708 --> 00:14:07.591 
+the way they operate.
+
+00:14:07.991 --> 00:14:11.111 
+If you go underneath, again, take a microelectronics course, you will see that.
+
+00:14:11.911 --> 00:14:15.951 
+So you won't be able to construct a reliable circuit if you just use P type transistors.
+
+00:14:16.031 --> 00:14:20.866 
+That's why we have the CMOS or complementary metal oxide semiconductors, and I'm going to introduce
+
+00:14:20.866 --> 00:14:21.111 
+that.
+
+00:14:21.631 --> 00:14:23.911 
+So logic gates are one level higher in the abstraction.
+
+00:14:24.111 --> 00:14:28.031 
+Now that we know how a transistor works, we can go a little bit up.
+
+00:14:28.071 --> 00:14:29.391 
+How do we build logic gates?
+
+00:14:32.391 --> 00:14:38.511 
+OK, these logical units that's they're composed of individual transistors are called logic gates.
+
+00:14:38.871 --> 00:14:41.351 
+And they, they're going to implement simple Boolean functions.
+
+00:14:41.351 --> 00:14:46.231 
+That's where Boolean algebra comes in, because we're going to operate in the Boolean binary domain.
+
+00:14:47.151 --> 00:14:53.221 
+And George Bull has developed a mathematical logic that has been very useful in developing logic
+
+00:14:53.221 --> 00:14:53.791 
+circuits.
+
+00:14:54.511 --> 00:14:57.351 
+So let's take a look at how do we do these logic blocks.
+
+00:14:57.791 --> 00:15:02.234 
+Basically I said to this earlier, modern computers use both N type and P type transistors because
+
+00:15:02.234 --> 00:15:06.311 
+either of them alone is not good enough because of their analogue operational properties.
+
+00:15:06.711 --> 00:15:11.531 
+So we call this complementary medaloxide semiconductor technology CMOS, essentially all of the
+
+00:15:11.531 --> 00:15:14.711 
+technology that has been quite successful in the last decades.
+
+00:15:15.471 --> 00:15:17.191 
+So NMOS plus PMOS or CMOS.
+
+00:15:17.831 --> 00:15:23.351 
+So let's start with the simplest structure that exists in a CMOS technology looks like this.
+
+00:15:25.631 --> 00:15:32.824 
+You need basically an N type transistor at the bottom and AP type transistor over here, a power
+
+00:15:32.824 --> 00:15:35.551 
+supply 3 volts and a ground 0 volts.
+
+00:15:36.111 --> 00:15:41.671 
+And this is the input A connected to both the P type at the top and N type at the bottom.
+
+00:15:41.871 --> 00:15:42.751 
+And this is the output.
+
+00:15:44.391 --> 00:15:46.711 
+And yeah, I've already said that.
+
+00:15:47.111 --> 00:15:51.271 
+And a good question to ask is what does the circuit do Anybody.
+
+00:15:51.471 --> 00:15:51.671 
+Yes.
+
+00:15:51.671 --> 00:15:52.951 
+It's not gate.
+
+00:15:53.231 --> 00:15:53.791 
+Not gate.
+
+00:15:53.791 --> 00:15:54.151 
+OK.
+
+00:15:54.191 --> 00:15:55.751 
+Did you know it before or did you figure it out?
+
+00:15:55.751 --> 00:15:57.791 
+Figured it out.
+
+00:15:57.791 --> 00:16:02.631 
+OK, High voltage, SO3 volts.
+
+00:16:03.271 --> 00:16:12.271 
+Then the top one is open and the bottom one, it's closed, Yes.
+
+00:16:12.391 --> 00:16:16.231 
+So then the 0 volts is what gets outputted.
+
+00:16:16.231 --> 00:16:16.551 
+That's right.
+
+00:16:16.551 --> 00:16:19.391 
+If the input is 0 volts, then it's the other way.
+
+00:16:19.391 --> 00:16:19.831 
+Exactly.
+
+00:16:19.831 --> 00:16:20.671 
+Yes, exactly.
+
+00:16:20.671 --> 00:16:22.911 
+So logically, we can define as a not gate.
+
+00:16:23.591 --> 00:16:27.351 
+Your colleague explained it very nicely, but I'll explain it again for everyone.
+
+00:16:27.951 --> 00:16:31.831 
+So basically, let's take a look at what happens when the input is connected to 0 volts.
+
+00:16:31.831 --> 00:16:33.711 
+This guy is the input connector.
+
+00:16:34.671 --> 00:16:37.831 
+When this is 0 volts, this is what the circuit looks like.
+
+00:16:37.831 --> 00:16:39.911 
+Remember, open or closed.
+
+00:16:40.431 --> 00:16:47.708 
+If you're let's take a look at the P type transistor, the 0 volts, the P type transistor gets turned
+
+00:16:47.708 --> 00:16:54.912 
+on and the N type transistor gets turned off because the only way N type transistor will get turned
+
+00:16:54.912 --> 00:16:57.751 
+on is when it gets high voltage, right?
+
+00:16:58.151 --> 00:16:59.231 
+But it gets 0 volts.
+
+00:16:59.911 --> 00:17:04.425 
+This means that the power supply 3 volts gets connected to the output and 0 volts doesn't get
+
+00:17:04.425 --> 00:17:05.591 
+connected to the output.
+
+00:17:05.591 --> 00:17:06.271 
+That's a good thing.
+
+00:17:07.031 --> 00:17:08.791 
+And the output becomes 3 volts.
+
+00:17:09.751 --> 00:17:13.271 
+OK, so when you input 0 volts, you get 3 volts.
+
+00:17:13.471 --> 00:17:14.671 
+That's one input.
+
+00:17:15.671 --> 00:17:17.431 
+So P type transistor pulls up the output.
+
+00:17:17.431 --> 00:17:21.751 
+This is also, it's also good to remember P up and down.
+
+00:17:22.591 --> 00:17:27.206 
+You can easily confuse these things because if you don't know the fundamentals of how these operate,
+
+00:17:27.206 --> 00:17:27.991 
+that's how it is.
+
+00:17:27.991 --> 00:17:31.191 
+But it's good to remember there's a little bit of memorisation.
+
+00:17:31.351 --> 00:17:33.591 
+P type transistors are good at pulling up the voltage.
+
+00:17:35.071 --> 00:17:37.431 
+OK, what happens when the input is connected to three volts?
+
+00:17:37.431 --> 00:17:38.671 
+Exactly opposite thing.
+
+00:17:38.671 --> 00:17:45.911 
+Basically, the N type transistor gets turned on and ground gets connected to the output.
+
+00:17:46.031 --> 00:17:50.511 
+So output is pulled down to 0 volts and the P type transistor gets turned off.
+
+00:17:50.911 --> 00:17:52.351 
+As a result, you get 0 volts.
+
+00:17:52.991 --> 00:17:55.431 
+And N type transistors are good at pulling down the voltage.
+
+00:17:55.431 --> 00:17:56.751 
+That's why they're at the bottom.
+
+00:17:56.951 --> 00:17:58.111 
+They're connected to the ground.
+
+00:17:58.351 --> 00:18:05.734 
+P type transistors are connected to the power supply or power rail power line, and this is our NOT
+
+00:18:05.734 --> 00:18:06.111 
+gate.
+
+00:18:06.271 --> 00:18:07.831 
+It's a basic logical function.
+
+00:18:07.831 --> 00:18:08.671 
+It's an inverter.
+
+00:18:09.031 --> 00:18:11.271 
+In other words, it takes a complement of a.
+
+00:18:12.751 --> 00:18:13.431 
+Sounds good, right?
+
+00:18:13.951 --> 00:18:14.391 
+Beautiful.
+
+00:18:15.191 --> 00:18:16.151 
+Why do we call it not?
+
+00:18:16.151 --> 00:18:20.191 
+Because it takes an input 0 volts and the outputs 3 volts.
+
+00:18:20.591 --> 00:18:23.431 
+It takes an input 3 volts and outputs 0 volts.
+
+00:18:23.711 --> 00:18:31.440 
+It basically inverts and one possible interpretation of 0 volts and three volts in a digital circuit
+
+00:18:31.440 --> 00:18:38.551 
+is interpret 0 volts as a logical binary 0 value and interpret 3 volts as a logical 1 value.
+
+00:18:39.591 --> 00:18:44.111 
+Now we can actually have a truth table that looks like this.
+
+00:18:44.551 --> 00:18:48.671 
+Input over here, Output over here, input is A, output is.
+
+00:18:48.671 --> 00:18:53.831 
+YA truth table enumerates all possible input combinations and their corresponding output.
+
+00:18:55.031 --> 00:19:03.697 
+So I've already said this, but if a IS0P is, the P type transistor is turned on and N type is turned
+
+00:19:03.697 --> 00:19:05.431 
+off and output is 1.
+
+00:19:06.191 --> 00:19:14.407 
+Otherwise, if A is 1, you get the opposite effects and output becomes 0 and this is the
+
+00:19:14.407 --> 00:19:19.791 
+representation or boolean representation of the NOT gate.
+
+00:19:19.911 --> 00:19:21.871 
+Y = a bar complement.
+
+00:19:22.431 --> 00:19:22.951 
+Makes sense.
+
+00:19:23.111 --> 00:19:24.751 
+You've probably seen that representation.
+
+00:19:26.311 --> 00:19:28.391 
+So this is the logical representation.
+
+00:19:28.391 --> 00:19:29.231 
+This is a NOT gate.
+
+00:19:30.151 --> 00:19:35.871 
+Whenever you see logical representation of gates, inversion is signalled with this bubble.
+
+00:19:36.871 --> 00:19:43.391 
+If you don't have this bubble, then this triangle is a buffer, meaning Y is equal to A.
+
+00:19:43.911 --> 00:19:49.391 
+If you have this bubble after a triangle, then Y is equal to, not a complement of the A.
+
+00:19:50.271 --> 00:19:51.831 
+So a bubble always indicates inversion.
+
+00:19:53.511 --> 00:19:53.831 
+OK.
+
+00:19:54.311 --> 00:19:58.711 
+And truth table shows the logical output of the circuit for each possible input combination.
+
+00:19:58.711 --> 00:20:05.622 
+In this case, you have only one input, which is a, which means that there are only two possible
+
+00:20:05.622 --> 00:20:11.151 
+combinations in binary, zero or one, and the output is the opposite of that.
+
+00:20:11.871 --> 00:20:12.791 
+OK, that's our truth table.
+
+00:20:12.791 --> 00:20:13.671 
+Very simple truth table.
+
+00:20:13.671 --> 00:20:17.111 
+We're going to build more complex truth tables for other gates later on.
+
+00:20:18.551 --> 00:20:20.591 
+OK, so this sounds good.
+
+00:20:20.991 --> 00:20:21.991 
+We have the knot gate.
+
+00:20:22.791 --> 00:20:24.671 
+We can do only so much with not now.
+
+00:20:24.671 --> 00:20:28.951 
+Let's build some other things and we can do that based on the principles that we have seen.
+
+00:20:30.231 --> 00:20:31.471 
+So let's take a look at this one.
+
+00:20:33.111 --> 00:20:34.271 
+This is another gate.
+
+00:20:34.311 --> 00:20:40.998 
+You can see that the power line is over here, ground is over here, and I've connected 2 N type
+
+00:20:40.998 --> 00:20:45.551 
+transistors in series to the ground line and then to the output.
+
+00:20:46.151 --> 00:20:49.631 
+And then the input A goes to N1, input B goes to N 2.
+
+00:20:50.031 --> 00:20:56.042 
+And then I've connected 2P type transistors in parallel to the power line and they all are also
+
+00:20:56.042 --> 00:20:58.511 
+connected to the output line over here.
+
+00:20:58.991 --> 00:21:01.391 
+And input A goes to one, input B goes to 1.
+
+00:21:01.391 --> 00:21:03.791 
+And what does this do?
+
+00:21:04.791 --> 00:21:05.871 
+Yes, you have the answer.
+
+00:21:07.551 --> 00:21:08.031 
+It's what?
+
+00:21:10.151 --> 00:21:10.951 
+Not exactly.
+
+00:21:13.351 --> 00:21:15.031 
+Yes, I think it's a NAND.
+
+00:21:15.591 --> 00:21:16.111 
+OK.
+
+00:21:16.751 --> 00:21:18.111 
+So who votes for NAND?
+
+00:21:19.871 --> 00:21:24.351 
+OK, who votes for OR, who votes for and?
+
+00:21:25.471 --> 00:21:33.973 
+OK, then who votes for NOR just to be complete, OK, I think the NAND folks win, so let's go through
+
+00:21:33.973 --> 00:21:34.231 
+it.
+
+00:21:37.071 --> 00:21:40.031 
+So we're going to activate the inputs.
+
+00:21:40.511 --> 00:21:41.471 
+This is our truth table.
+
+00:21:41.991 --> 00:21:46.391 
+Because there are two inputs A&B, there are only four possible outputs, 2 to the two, right?
+
+00:21:46.391 --> 00:21:47.191 
+Because this is binary.
+
+00:21:47.191 --> 00:21:55.191 
+Again, each input can take 2 values, 00011011, and we're going to look at what happens to the output
+
+00:21:55.191 --> 00:21:55.351 
+Y.
+
+00:21:56.271 --> 00:22:01.431 
+So let's take a case of 00, basically, or or you can also actually think of it this way, right?
+
+00:22:01.791 --> 00:22:03.231 
+P1 and P2 are in parallel.
+
+00:22:03.231 --> 00:22:07.071 
+Only one must be on to pull up the output to three volts, right?
+
+00:22:08.391 --> 00:22:14.685 
+And one and N 2 are in series both and one and N2 should be on to pull down the output to 0 volts,
+
+00:22:14.685 --> 00:22:15.071 
+right?
+
+00:22:17.751 --> 00:22:21.631 
+But let's go through each case you the the result will be what I just said.
+
+00:22:21.711 --> 00:22:30.573 
+But so if A&B are both 0P1 and P2 are both on and one and N 2 are off, so output is 3 volts which is
+
+00:22:30.573 --> 00:22:30.751 
+1.
+
+00:22:32.471 --> 00:22:39.431 
+If a IS0B is 1P1 is ON, P2 is off and two is ON and one is off.
+
+00:22:39.591 --> 00:22:45.021 
+So this circuit is open, meaning that output is not connected to 0 volts, but output is connected to
+
+00:22:45.021 --> 00:22:49.311 
+three volts because 1 of this meaning P1 is on, so the output is 3 volts again.
+
+00:22:50.351 --> 00:22:56.591 
+If A is 1B is 0P2 becomes ON, P1 becomes off and one becomes ON and two becomes off.
+
+00:22:56.711 --> 00:23:01.791 
+The same situation happens and as a result output is still 3 volts 1.
+
+00:23:02.431 --> 00:23:11.049 
+The only different case is when N1 and N2 are both on, meaning A&B are one and one and N 2 are both
+
+00:23:11.049 --> 00:23:11.311 
+on.
+
+00:23:11.551 --> 00:23:17.393 
+So the output is connected to 0 volts and P1 and P2 are both off in this case because this is
+
+00:23:17.393 --> 00:23:23.551 
+complementary as you can see and output is not connected to three volts so output must be 0 right?
+
+00:23:24.671 --> 00:23:25.231 
+So this is it.
+
+00:23:25.231 --> 00:23:26.191 
+Basically this is a function.
+
+00:23:26.991 --> 00:23:33.271 
+In logical terms, Y is equal to 0 only if A&B are both one, right?
+
+00:23:35.391 --> 00:23:44.131 
+And this is an AND gate because it's the inverted and if A&B are AND means that output is 1 only if
+
+00:23:44.131 --> 00:23:45.191 
+A&B are one.
+
+00:23:47.271 --> 00:23:49.951 
+But what we want to get a zero only if A&B are one.
+
+00:23:49.951 --> 00:23:53.551 
+So that's the inverted version of and you get an inverter after an and.
+
+00:23:53.951 --> 00:23:54.671 
+Makes sense, right?
+
+00:23:56.951 --> 00:23:58.711 
+You can think about it if, but it's.
+
+00:23:58.911 --> 00:24:03.871 
+That's how the logic operates and this is how we denote it in our.
+
+00:24:04.111 --> 00:24:12.391 
+Basically dot indicates and A&B complement or or sometimes we omit dot AB.
+
+00:24:12.391 --> 00:24:14.471 
+If you put them together, that means A&B.
+
+00:24:15.071 --> 00:24:20.751 
+So complement of A&B which is and complemented which is NAND.
+
+00:24:20.991 --> 00:24:22.831 
+So Y is equal to NAND of A&B.
+
+00:24:24.111 --> 00:24:24.791 
+Makes sense, right?
+
+00:24:26.031 --> 00:24:26.511 
+OK, good.
+
+00:24:26.911 --> 00:24:27.791 
+This is basic logic.
+
+00:24:27.791 --> 00:24:37.122 
+Now we built NAND by adding one PMOS transistor in parallel to the PMOS transistor that we had in
+
+00:24:37.122 --> 00:24:46.165 
+the inverter and another NMOS transistor in series to the to the NMOS transistor we had in the
+
+00:24:46.165 --> 00:24:47.031 
+inverter.
+
+00:24:48.111 --> 00:24:53.871 
+So if you want to make a three input NT you add an N3IN series and AP3.
+
+00:24:54.431 --> 00:24:57.391 
+In parallel to the top right and three to the bottom.
+
+00:24:57.391 --> 00:25:02.071 
+So we can make actually three input 4 input 10 input million input things.
+
+00:25:02.551 --> 00:25:06.094 
+But now your latency may increase because you're going to, you're going to string a lot of things,
+
+00:25:06.094 --> 00:25:06.311 
+right?
+
+00:25:06.471 --> 00:25:07.551 
+We're going to talk about that also.
+
+00:25:09.231 --> 00:25:10.111 
+OK, sounds good.
+
+00:25:11.191 --> 00:25:19.297 
+So this is how NAND is denoted again, the bubble without the bubble, this Anand A&B, and with the
+
+00:25:19.297 --> 00:25:21.471 
+bubble this becomes Anand.
+
+00:25:22.271 --> 00:25:24.391 
+And this is the truth table that we just constructed.
+
+00:25:24.911 --> 00:25:27.031 
+And yeah, truth table on net.
+
+00:25:29.991 --> 00:25:32.471 
+OK, how do you build the end gate?
+
+00:25:32.631 --> 00:25:39.591 
+Before I go, actually I should say that if you want to do a NOR, you should put the P transistors.
+
+00:25:39.591 --> 00:25:45.572 
+If you want a 2 input NOR, put the P transistors in series over here and put the end transistors in
+
+00:25:45.572 --> 00:25:48.231 
+parallel at the bottom and you'll get a NOR.
+
+00:25:50.111 --> 00:25:51.111 
+OK, Yes.
+
+00:25:51.871 --> 00:25:58.431 
+What would happen if you were to connect the three volts to the 0 volts?
+
+00:25:58.431 --> 00:25:58.551 
+Yeah.
+
+00:25:58.551 --> 00:26:00.231 
+Meaning all of the circuits are turned on.
+
+00:26:00.471 --> 00:26:00.831 
+Yeah.
+
+00:26:00.831 --> 00:26:02.911 
+You don't want that because that's called a short circuit.
+
+00:26:03.191 --> 00:26:04.151 
+We're going to cover that.
+
+00:26:04.671 --> 00:26:06.111 
+You don't want a circuit where?
+
+00:26:07.111 --> 00:26:08.191 
+Yeah, Yeah.
+
+00:26:08.191 --> 00:26:08.831 
+We'll get to that.
+
+00:26:09.911 --> 00:26:10.671 
+Very good question.
+
+00:26:11.871 --> 00:26:13.471 
+OK, So how do you build the AND gate?
+
+00:26:13.671 --> 00:26:16.671 
+Now We have the NAND gate, which is this.
+
+00:26:17.111 --> 00:26:17.391 
+Sorry.
+
+00:26:17.391 --> 00:26:17.991 
+This is the AND gate.
+
+00:26:17.991 --> 00:26:25.340 
+This is the truth table for AND the truth table for NAND is exactly opposite of this, right And and
+
+00:26:25.340 --> 00:26:26.231 
+is this one.
+
+00:26:26.271 --> 00:26:27.631 
+So how do we get the AND gate?
+
+00:26:28.631 --> 00:26:30.791 
+And gate is actually inverted Nat, right?
+
+00:26:31.631 --> 00:26:36.271 
+So why don't we put a inverter to the output of Nat output of Nat.
+
+00:26:37.391 --> 00:26:39.831 
+So it looks like this and this is what I just did.
+
+00:26:40.111 --> 00:26:41.551 
+I just show you what I just said.
+
+00:26:42.431 --> 00:26:43.831 
+This is the NAND gate that we built.
+
+00:26:43.831 --> 00:26:46.071 
+This is the inverter that we first built.
+
+00:26:46.831 --> 00:26:52.871 
+And if you have NAND over here, this output over here is the NAND of A&B.
+
+00:26:52.991 --> 00:26:55.071 
+And if you invert it, you get the end of A&B.
+
+00:26:56.511 --> 00:26:57.191 
+Make sense, right.
+
+00:26:58.911 --> 00:26:59.271 
+OK.
+
+00:26:59.511 --> 00:27:00.871 
+So this is the NAND gate we have.
+
+00:27:03.511 --> 00:27:08.551 
+So we make an AND gate using one NAND gate and one NOT gate for a NAND gate, 6 transistors.
+
+00:27:08.551 --> 00:27:09.271 
+That's a lot, right?
+
+00:27:09.951 --> 00:27:10.391 
+OK, yes.
+
+00:27:10.391 --> 00:27:16.911 
+Could we also change where the P gates are to north and P&P?
+
+00:27:18.711 --> 00:27:20.191 
+You could, but it wouldn't work very well.
+
+00:27:22.551 --> 00:27:23.031 
+That's good.
+
+00:27:23.191 --> 00:27:24.471 
+That's the food for thought I had.
+
+00:27:24.471 --> 00:27:25.791 
+So you prefetched my question.
+
+00:27:26.351 --> 00:27:27.951 
+Can we not use fewer transistors?
+
+00:27:27.951 --> 00:27:29.191 
+That's what you're arguing for, right?
+
+00:27:29.191 --> 00:27:37.349 
+Basically, you put the N transistors connected to the three volts and the P transistors connected to
+
+00:27:37.349 --> 00:27:39.471 
+the 0 volts at the bottom.
+
+00:27:41.031 --> 00:27:41.831 
+You could do that.
+
+00:27:42.191 --> 00:27:44.111 
+There's nothing that prevents you from doing it.
+
+00:27:44.111 --> 00:27:47.911 
+The problem is what I just said earlier, N transistors.
+
+00:27:48.231 --> 00:27:53.031 
+N type transistors are very poor at conducting electrons.
+
+00:27:53.831 --> 00:27:56.551 
+They basically cannot pull up the voltage.
+
+00:27:57.311 --> 00:28:04.282 
+So what you would get at the end will not be 3 volts, it will be more like maybe 1 1/2 volts because
+
+00:28:04.282 --> 00:28:07.071 
+they don't conduct very well at the top.
+
+00:28:07.191 --> 00:28:10.431 
+And this is if you ask why this is the microelectronics part.
+
+00:28:10.431 --> 00:28:12.551 
+Their analogue operational properties are that way.
+
+00:28:13.951 --> 00:28:16.231 
+They're very good at conducting holes, but not electrons.
+
+00:28:16.351 --> 00:28:19.111 
+OK, OK, we're going to get to that.
+
+00:28:19.911 --> 00:28:26.311 
+But that's the reason why we have to go through this hassle of doing NAND 1st and then inverting it.
+
+00:28:26.631 --> 00:28:29.311 
+This is why CMOS logic is called inverting logic.
+
+00:28:29.751 --> 00:28:32.111 
+You basically have to deal with inverting all the time.
+
+00:28:33.111 --> 00:28:35.511 
+You don't get non inversion inverted version immediately.
+
+00:28:35.511 --> 00:28:36.831 
+You get an inverter very easily.
+
+00:28:38.391 --> 00:28:39.831 
+OK, but that's very good.
+
+00:28:39.911 --> 00:28:45.791 
+You're thinking, OK, so these are the gates that we have built essentially.
+
+00:28:46.071 --> 00:28:48.951 
+This is not inverter, this is the truth table.
+
+00:28:49.231 --> 00:28:56.200 
+This is the transistor level representation, this is NAND, this is the truth table transistor level
+
+00:28:56.200 --> 00:29:01.551 
+representation, and this is and truth table transistor level representation.
+
+00:29:01.831 --> 00:29:03.191 
+No magic as you can see.
+
+00:29:04.351 --> 00:29:07.951 
+And with this NAND gate alone, you can build any circuit.
+
+00:29:09.031 --> 00:29:09.751 
+That's the beauty of it.
+
+00:29:09.751 --> 00:29:12.671 
+Because NAND is logically complete, we're going to introduce that notion.
+
+00:29:13.191 --> 00:29:18.871 
+NAND is enough basically or you just have AND AND not, but it's the same thing, NAND, right?
+
+00:29:20.111 --> 00:29:23.951 
+Similarly, NOR is also logically complete, but we're going to get to logical completeness later on.
+
+00:29:25.071 --> 00:29:30.383 
+OK, So this is the general CMOS gate structure, essentially the general form used to construct any
+
+00:29:30.383 --> 00:29:33.311 
+inverting logic gate like what we have seen, not NAND.
+
+00:29:33.311 --> 00:29:34.831 
+NOR looks like this.
+
+00:29:35.191 --> 00:29:40.631 
+You have inputs and then you have a PMOS pull up network because PMOS is very good at pulling up.
+
+00:29:41.031 --> 00:29:46.644 
+That's connected to the power rail at the top three volts and bottom to the output, and it's also
+
+00:29:46.644 --> 00:29:52.316 
+connected to the NMOS pull down network at the bottom, which inputs are also connected to, and the
+
+00:29:52.316 --> 00:29:54.111 
+pull down network is connected.
+
+00:29:54.191 --> 00:29:59.511 
+To the ground at the bottom, that's the structure you want to build with CMOS technology.
+
+00:30:00.031 --> 00:30:03.827 
+You don't want the NMOS at the top for the reasons that I just said, but we're going to look at that
+
+00:30:03.827 --> 00:30:04.511 
+a little bit more.
+
+00:30:04.951 --> 00:30:08.191 
+So the networks may consist of transistors in series or in parallel.
+
+00:30:08.191 --> 00:30:12.359 
+You could be, you could have transistors in series at the top, or in parallel at the top, and in
+
+00:30:12.359 --> 00:30:16.396 
+series over at the bottom or in parallel at the bottom, depending on the function you want to
+
+00:30:16.396 --> 00:30:16.831 
+implement.
+
+00:30:17.551 --> 00:30:19.991 
+When transistors are in parallel, the network is on.
+
+00:30:19.991 --> 00:30:24.191 
+If one of the transistors is on, at least one of the transistors is on.
+
+00:30:24.591 --> 00:30:29.746 
+When the transistors are in series, the network is on if, all if and only if all of the transistors
+
+00:30:29.746 --> 00:30:30.111 
+are on.
+
+00:30:30.911 --> 00:30:34.031 
+OK, that's series and parallel nature of things.
+
+00:30:34.031 --> 00:30:36.231 
+And you've probably seen this in circuits at some point, right?
+
+00:30:37.111 --> 00:30:37.431 
+Correct.
+
+00:30:37.551 --> 00:30:37.791 
+Yeah.
+
+00:30:38.671 --> 00:30:41.751 
+OK, So PMOS transistors are used for pull up.
+
+00:30:41.911 --> 00:30:47.851 
+NMOS transistors are used for pull down and exactly 1 network should be on and the other network
+
+00:30:47.851 --> 00:30:49.831 
+should be off at any given time.
+
+00:30:49.831 --> 00:30:51.231 
+Your question was related to this.
+
+00:30:51.231 --> 00:30:57.268 
+If both networks are on at the same time, there is a short circuit meaning that the output is driven
+
+00:30:57.268 --> 00:31:03.063 
+to three volts and also 0 volts at the same time and you don't know what the result would be and
+
+00:31:03.063 --> 00:31:04.271 
+you don't want that.
+
+00:31:05.351 --> 00:31:10.855 
+If both networks are off at the at the same time, then inputs are not connected to the output, so
+
+00:31:10.855 --> 00:31:11.991 
+output is undefined.
+
+00:31:12.191 --> 00:31:15.191 
+Whatever value was there before is not driven out.
+
+00:31:15.871 --> 00:31:20.871 
+So this is actually represented with AZ, as we will see in Boolean logic.
+
+00:31:21.071 --> 00:31:23.271 
+This is not necessarily bad if you know what you're doing.
+
+00:31:24.271 --> 00:31:28.071 
+The first one's bad because you cannot have 3 volts and 0 volts at the same time.
+
+00:31:28.071 --> 00:31:30.551 
+There are some conflicting thing that happens in the circuit.
+
+00:31:30.551 --> 00:31:34.071 
+Then you may actually burn the circuit potentially, depending on how things work.
+
+00:31:35.111 --> 00:31:39.060 
+The second one, if you know what you're doing, sometimes it's going to be useful, as we will see
+
+00:31:39.060 --> 00:31:39.431 
+later on.
+
+00:31:40.631 --> 00:31:42.271 
+OK, so why do we have the structure?
+
+00:31:42.271 --> 00:31:45.751 
+Addressing the question earlier, most transistors are imperfect switches.
+
+00:31:45.751 --> 00:31:46.951 
+They're not perfect switches.
+
+00:31:47.111 --> 00:31:50.191 
+So the abstraction that I had works only so much.
+
+00:31:51.431 --> 00:31:55.791 
+If you try to be smart about where to put things, then you need to know what's going on underneath.
+
+00:31:56.071 --> 00:32:01.656 
+So basically, if you really want to change how things work, at some point you need to know the
+
+00:32:01.656 --> 00:32:02.191 
+abstract.
+
+00:32:02.191 --> 00:32:03.711 
+You need to go down the abstraction level.
+
+00:32:04.351 --> 00:32:08.231 
+So essentially, PMOS transistors pass ones well, but zeros poorly.
+
+00:32:08.271 --> 00:32:10.871 
+Poles carry charge by the electrons don't move.
+
+00:32:10.951 --> 00:32:13.271 
+Their mobility is low because of the way they're constructed.
+
+00:32:13.271 --> 00:32:15.071 
+NMOS transistors are exactly opposite.
+
+00:32:15.071 --> 00:32:18.791 
+Electrons carry charge, they can move fast, but holes don't have enough mobility.
+
+00:32:19.391 --> 00:32:25.911 
+As a result, PMOS transistors are up, so they're at the power rail and NMOS transistors are down.
+
+00:32:26.031 --> 00:32:27.391 
+They're good at pulling down the output.
+
+00:32:28.391 --> 00:32:33.889 
+This is why we have an N that's built with NAND and NAND plus not as opposed to only four
+
+00:32:33.889 --> 00:32:34.631 
+transistors.
+
+00:32:36.471 --> 00:32:41.649 
+And if you want to learn more about this section 1.7 and H&H Harris, and Harris is very good in this
+
+00:32:41.649 --> 00:32:42.271 
+description.
+
+00:32:42.271 --> 00:32:43.271 
+This is a summary of it.
+
+00:32:44.551 --> 00:32:47.791 
+OK, so let's talk about latency and then we'll talk a little bit about power.
+
+00:32:49.071 --> 00:32:52.831 
+So which one's slower transition series or transition in parallel?
+
+00:32:54.351 --> 00:32:58.231 
+Anybody who says series, I hear series.
+
+00:32:58.431 --> 00:32:59.711 
+OK, who says in parallel?
+
+00:33:00.911 --> 00:33:02.551 
+OK, the series folks win.
+
+00:33:02.551 --> 00:33:08.522 
+And they're correct because series connections are slower than parallel connections because there
+
+00:33:08.522 --> 00:33:14.618 
+are multiple transistors that need to be turned on so that the entire series of transistors acts as
+
+00:33:14.618 --> 00:33:15.911 
+a single wire, right?
+
+00:33:16.551 --> 00:33:20.031 
+And if all of them need to be turned on, there's a lot more resistance on the wire.
+
+00:33:20.431 --> 00:33:25.592 
+And resistance is really what determines how long your latency is to move the voltage from one
+
+00:33:25.592 --> 00:33:29.711 
+location to or to move the electrons or holes from one location to another.
+
+00:33:30.151 --> 00:33:35.856 
+Whereas in parallel, what happens is if only if one transistor is on the source is connected, drain
+
+00:33:35.856 --> 00:33:40.351 
+and as a result you don't care what happens with the other transistors, right?
+
+00:33:40.471 --> 00:33:42.471 
+There's only that transistors resistance.
+
+00:33:44.111 --> 00:33:45.831 
+So how do you alleviate this latency?
+
+00:33:46.071 --> 00:33:48.431 
+Reduce the series connections as much as possible.
+
+00:33:50.271 --> 00:33:54.194 
+Again, there's some example from H&H which is not used in modern processors, so I'm not going to go
+
+00:33:54.194 --> 00:33:54.591 
+into that.
+
+00:33:54.831 --> 00:33:59.271 
+But people have experimented with using only NMOS type of logic.
+
+00:34:00.311 --> 00:34:04.031 
+It's called pseudo NMOS logic so that you can have only parallel connections.
+
+00:34:04.031 --> 00:34:05.791 
+But this is very difficult to do in general.
+
+00:34:06.231 --> 00:34:11.031 
+But people do play a lot of tricks to try to reduce the series connections as much as possible.
+
+00:34:11.911 --> 00:34:17.948 
+So you may want to actually have gates that have fewer transistors in series and you may want to
+
+00:34:17.948 --> 00:34:22.351 
+have gates build build other gates on top of that as much as possible.
+
+00:34:23.631 --> 00:34:27.951 
+OK, power consumption, this is very important to describe.
+
+00:34:28.391 --> 00:34:29.951 
+Not enough goes into it.
+
+00:34:29.951 --> 00:34:31.791 
+We're going to talk a lot more about power later.
+
+00:34:33.191 --> 00:34:35.911 
+So there are two types of power consumption that happens in circuits.
+
+00:34:36.471 --> 00:34:39.271 
+1 is the power that's used to charge the capacitance.
+
+00:34:39.271 --> 00:34:42.151 
+As signals change, signal changes from zero to 1, one to zero.
+
+00:34:42.551 --> 00:34:44.511 
+So whenever you're switching, you consume power.
+
+00:34:44.791 --> 00:34:49.311 
+If input is 0 and output becomes one, inverter consumes power.
+
+00:34:49.511 --> 00:34:51.231 
+If input is 1, output becomes zero.
+
+00:34:51.351 --> 00:34:53.471 
+They you consume power basically.
+
+00:34:54.591 --> 00:34:56.631 
+This is really a functional multiple things.
+
+00:34:57.071 --> 00:35:03.311 
+One is voltage in the middle over here 1 is capacitance of the circuit, which I will not get into.
+
+00:35:03.311 --> 00:35:08.535 
+But this depends on how much load you have on the circuit, how many the characteristics of the
+
+00:35:08.535 --> 00:35:12.871 
+transistors and how many transistors you have that's hanging off your circuit.
+
+00:35:13.311 --> 00:35:15.391 
+And F is the frequency of change.
+
+00:35:15.751 --> 00:35:17.351 
+How frequently do you change?
+
+00:35:17.391 --> 00:35:20.271 
+How fast do you change from zero to 1 and 1 to 0?
+
+00:35:21.351 --> 00:35:21.631 
+OK.
+
+00:35:22.871 --> 00:35:26.391 
+So I think I kind of said that or charging frequency of the capacitor.
+
+00:35:27.311 --> 00:35:32.651 
+So you can see that if you want to reduce the dynamic power consumption, you may want to reduce the
+
+00:35:32.651 --> 00:35:33.191 
+frequency.
+
+00:35:33.191 --> 00:35:35.031 
+We're going to talk about frequency later on.
+
+00:35:35.751 --> 00:35:41.144 
+You may want to reduce the voltage because there's a cubic relationship, there's a quadratic
+
+00:35:41.144 --> 00:35:43.431 
+relationship between power and voltage.
+
+00:35:43.831 --> 00:35:49.202 
+The higher the voltage, the much higher the power, and This is why exactly people are trying to
+
+00:35:49.202 --> 00:35:52.991 
+reduce the voltage as much as possible in existing microprocessors.
+
+00:35:52.991 --> 00:35:54.151 
+3 volts is actually too high.
+
+00:35:54.871 --> 00:35:56.911 
+You want to have 0.1 volts.
+
+00:35:56.911 --> 00:36:02.471 
+The problem is, as you go into lower voltages, it becomes harder to turn on the transistor, right.
+
+00:36:03.351 --> 00:36:05.111 
+There was a question related to this early on.
+
+00:36:06.391 --> 00:36:11.682 
+The transistor may not operate correctly, but lower voltage is good for power, lower voltage is not
+
+00:36:11.682 --> 00:36:12.591 
+good for latency.
+
+00:36:12.951 --> 00:36:19.719 
+So there's a fundamental tension between power consumption and performance, on the other hand, and
+
+00:36:19.719 --> 00:36:21.791 
+reliability on the other hand.
+
+00:36:22.431 --> 00:36:27.191 
+You may consume higher power and you get higher performance and higher reliability.
+
+00:36:27.431 --> 00:36:30.831 
+If you want to reduce power, you may get lower performance and lower reliability.
+
+00:36:31.191 --> 00:36:32.551 
+OK, this is very fundamental.
+
+00:36:33.271 --> 00:36:36.751 
+You will see this in many, many, many other ideas also.
+
+00:36:37.151 --> 00:36:38.831 
+Higher power, higher performance.
+
+00:36:39.511 --> 00:36:43.471 
+OK, what else do I want to say over here?
+
+00:36:43.471 --> 00:36:46.951 
+So more complex circuits increase C, the capacitance.
+
+00:36:47.231 --> 00:36:49.791 
+So that's also important to think about.
+
+00:36:49.791 --> 00:36:52.871 
+So lower complexity is good for power.
+
+00:36:52.871 --> 00:36:56.711 
+Also, another thing to think about is the frequency.
+
+00:36:56.711 --> 00:37:01.231 
+The charging frequency of the capacitor is dependent on voltage as well.
+
+00:37:01.391 --> 00:37:03.351 
+So that's you can there.
+
+00:37:03.351 --> 00:37:08.711 
+There's an equation which I'm not going to go into, but frequency is a function of voltage.
+
+00:37:09.191 --> 00:37:11.231 
+Frequency can become higher with voltage.
+
+00:37:11.631 --> 00:37:18.388 
+So if you replace F with a function of V, you will see that there is a cubic relationship between
+
+00:37:18.388 --> 00:37:19.991 
+power and voltage rate.
+
+00:37:21.231 --> 00:37:24.511 
+So voltage actually kills you in a sense in terms of power consumption.
+
+00:37:25.311 --> 00:37:25.871 
+Makes sense.
+
+00:37:26.511 --> 00:37:30.191 
+Ideally you want to reduce voltage, but we've seen the downsides also.
+
+00:37:30.231 --> 00:37:31.511 
+It's all trade off in the end.
+
+00:37:32.031 --> 00:37:37.491 
+There's also static power consumption, which is the power that's used when you don't change
+
+00:37:37.491 --> 00:37:38.031 
+anything.
+
+00:37:38.271 --> 00:37:42.704 
+The circuit is sitting there, you're not applying any input, or you've already applied your inputs
+
+00:37:42.704 --> 00:37:44.831 
+and nothing is changing in the circuit anymore.
+
+00:37:45.391 --> 00:37:50.351 
+But the circuit still consumes power because it's connected to some power source.
+
+00:37:50.991 --> 00:37:56.231 
+And this happens because there's leakage in the power supply.
+
+00:37:56.631 --> 00:37:59.791 
+So this power rail, and then there's a transistor connected to it.
+
+00:38:01.031 --> 00:38:03.911 
+There's some leakage current that keeps.
+
+00:38:05.271 --> 00:38:09.431 
+Flowing in the circuit, and this is very hard to minimise.
+
+00:38:10.191 --> 00:38:15.031 
+And with smaller technologies it becomes a bigger chunk of the power.
+
+00:38:15.471 --> 00:38:18.031 
+And this is essentially the equation.
+
+00:38:18.031 --> 00:38:20.071 
+This is the equation for the static power consumption.
+
+00:38:20.471 --> 00:38:22.591 
+It's voltage times the leakage current.
+
+00:38:24.551 --> 00:38:30.158 
+So right now, for example, my circuit may not be doing anything in my pocket, but it it's consuming
+
+00:38:30.158 --> 00:38:30.951 
+leakage power.
+
+00:38:31.751 --> 00:38:34.311 
+So how do you actually alleviate the sort of thing people do?
+
+00:38:34.311 --> 00:38:39.951 
+Power gating, meaning if a circuit is not used, you stop powering it.
+
+00:38:40.831 --> 00:38:45.911 
+OK, this is, you can think of it as I'm not using my computer, I'll unplug it completely, right?
+
+00:38:46.471 --> 00:38:49.151 
+You can do this at smaller parts of a chip.
+
+00:38:49.711 --> 00:38:52.951 
+If an adder is not being used, for example, you can power gate the adder.
+
+00:38:53.071 --> 00:38:55.071 
+If a multiplier is not used, you can power gate it.
+
+00:38:55.551 --> 00:38:57.311 
+OK, but this is important also.
+
+00:38:57.311 --> 00:39:04.601 
+So it's supply voltage, time leakage current, energy consumption, which we care about is essentially
+
+00:39:04.601 --> 00:39:10.871 
+power times time, or the integral of how much power you're consuming over time, right?
+
+00:39:11.831 --> 00:39:17.711 
+Maybe I can use this over here if you help me, because I don't know how to use these things.
+
+00:39:18.671 --> 00:39:21.191 
+This is why we need robots, as you can see.
+
+00:39:22.311 --> 00:39:24.631 
+Maybe I'll be replaced with a robot 10 years down the road.
+
+00:39:26.111 --> 00:39:27.031 
+Would you guys like that?
+
+00:39:28.871 --> 00:39:29.191 
+I don't know.
+
+00:39:29.191 --> 00:39:32.191 
+I think robots have a great role to play in education.
+
+00:39:33.591 --> 00:39:34.151 
+We haven't.
+
+00:39:36.831 --> 00:39:43.951 
+So basically power and energy are related, but different concepts.
+
+00:39:44.031 --> 00:39:45.391 
+You've probably seen it in physics.
+
+00:39:47.511 --> 00:39:48.271 
+OK, you can see it.
+
+00:39:48.831 --> 00:39:51.751 
+OK, zoom out.
+
+00:39:55.151 --> 00:39:58.791 
+OK, maybe I'll use this light because how do you zoom out even more?
+
+00:39:59.591 --> 00:40:00.991 
+OK, sounds good.
+
+00:40:01.871 --> 00:40:15.796 
+OK, so maybe this is so this is time your circuit is running and this is power, and your power may
+
+00:40:15.796 --> 00:40:16.791 
+change.
+
+00:40:17.671 --> 00:40:23.041 
+So there's some static power if you if you don't turn off the circuit, there's some static power
+
+00:40:23.041 --> 00:40:25.111 
+that you consume for a given circuit.
+
+00:40:25.751 --> 00:40:28.431 
+And then there's some dynamic power on top of that that you add.
+
+00:40:31.551 --> 00:40:35.071 
+And this power may change depending on the activity that happens in the circuit.
+
+00:40:35.591 --> 00:40:37.031 
+It may shoot up significantly.
+
+00:40:37.031 --> 00:40:41.671 
+It may shoot down OK, and maybe at some point you turn off everything, right?
+
+00:40:42.631 --> 00:40:43.471 
+And then you get to 0.
+
+00:40:43.911 --> 00:40:49.631 
+So energy is really the curve, the integral of this power curve over time, right?
+
+00:40:49.911 --> 00:40:52.991 
+That's the energy you consume and that's what determines your battery life.
+
+00:40:54.391 --> 00:40:55.151 
+Makes sense, right?
+
+00:40:55.391 --> 00:41:05.471 
+Energy determines your battery life and also essentially your how much your power bill as well.
+
+00:41:06.191 --> 00:41:11.791 
+But there's another thing that's important, which is the total power consumption.
+
+00:41:12.911 --> 00:41:18.631 
+So there is some amount of power you can supply to the circuit that the circuit can tolerate.
+
+00:41:19.351 --> 00:41:25.244 
+And if you if you, if the circuit requires much more power to do all of the computation, it may
+
+00:41:25.244 --> 00:41:26.671 
+actually not work well.
+
+00:41:27.351 --> 00:41:30.431 
+So this is called the total design power or maximum power.
+
+00:41:32.431 --> 00:41:38.851 
+So you don't want to get into a situation where the maximum power you can supply to the circuit is
+
+00:41:38.851 --> 00:41:45.272 
+smaller than the power draw of the circuit because so, so many activity is going on in the circuit
+
+00:41:45.272 --> 00:41:47.631 
+that you cannot supply enough power.
+
+00:41:48.031 --> 00:41:53.056 
+So when you design A processor today, we design processors and this maximum power is a big
+
+00:41:53.056 --> 00:41:53.671 
+constraint.
+
+00:41:54.231 --> 00:41:59.967 
+We have so many transistors that we can put on in a circuit and we have, if you actually power all
+
+00:41:59.967 --> 00:42:05.646 
+of them on at the same time, if all of them are switching at the same time, you will need a whole
+
+00:42:05.646 --> 00:42:07.871 
+lot more power to power up everything.
+
+00:42:08.591 --> 00:42:13.809 
+So when you look at the processor today, because we have billions of transistors, you don't power up
+
+00:42:13.809 --> 00:42:15.271 
+everything at the same time.
+
+00:42:15.591 --> 00:42:19.711 
+So a part of the processor is actually, most of the processor is actually kind of silent.
+
+00:42:19.711 --> 00:42:20.631 
+It's not doing anything.
+
+00:42:21.671 --> 00:42:27.623 
+And if you run into a situation like this, this is called essentially it could, it could be some
+
+00:42:27.623 --> 00:42:29.111 
+sort of power emergency.
+
+00:42:29.511 --> 00:42:34.730 
+Usually the processor takes some action or you don't need to or, or it has some mechanism so that
+
+00:42:34.730 --> 00:42:36.991 
+you don't actually exceed the total power.
+
+00:42:37.311 --> 00:42:37.671 
+OK.
+
+00:42:39.151 --> 00:42:44.228 
+So this is important to distinguish, this is the distinction between maximum power consumption or,
+
+00:42:44.228 --> 00:42:47.751 
+or it's also called total design power, sometimes TDP versus energy.
+
+00:42:48.071 --> 00:42:50.031 
+Energy is really what determines your battery life.
+
+00:42:51.151 --> 00:42:57.581 
+Maximum power or total design power is what really determines how much activity you can have in a
+
+00:42:57.581 --> 00:42:58.311 
+given chip.
+
+00:42:58.951 --> 00:43:02.911 
+And these are two very different things, but they're both related to power consumption in the end.
+
+00:43:04.711 --> 00:43:05.191 
+Makes sense.
+
+00:43:06.031 --> 00:43:06.391 
+OK.
+
+00:43:07.031 --> 00:43:12.471 
+So maybe we can go back to I don't want to touch it because there's an expert who can touch it.
+
+00:43:17.551 --> 00:43:24.927 
+On power, yes, yes, I mean it depends because people have come up with a lot of solutions but the
+
+00:43:24.927 --> 00:43:32.228 
+leakage also like power gating, but it could easily be 40% if you don't have any solution to the
+
+00:43:32.228 --> 00:43:39.757 
+problem because what happens is especially when the circuit becomes smaller, the technology scaling
+
+00:43:39.757 --> 00:43:42.191 
+then it's called Denard scaling.
+
+00:43:42.311 --> 00:43:49.982 
+It's ended for some time, but as the circuit becomes smaller, you can reduce the supply voltage, but
+
+00:43:49.982 --> 00:43:53.511 
+the leakage current actually becomes constant.
+
+00:43:53.911 --> 00:43:56.271 
+So a relatively or increases potentially.
+
+00:43:56.711 --> 00:44:01.669 
+A relatively the dynamic power consumption reduces, but the leakage power consumption, it becomes a
+
+00:44:01.669 --> 00:44:02.471 
+bigger fraction.
+
+00:44:04.111 --> 00:44:04.911 
+But these are changing.
+
+00:44:04.911 --> 00:44:09.151 
+These are it's become very difficult to scale the circuits going into the future.
+
+00:44:09.231 --> 00:44:11.311 
+So scaling the voltage has become difficult also.
+
+00:44:12.431 --> 00:44:15.791 
+OK, OK, so let's talk about more logic gates.
+
+00:44:15.951 --> 00:44:16.831 
+This was important.
+
+00:44:16.831 --> 00:44:23.305 
+I think power is something everybody needs to care about because it has a lot of implications on
+
+00:44:23.305 --> 00:44:26.071 
+cooling power up and also sustainability.
+
+00:44:26.071 --> 00:44:31.716 
+In the end, a lot of the sustainability issues are because of the hardware cost as well as the power
+
+00:44:31.716 --> 00:44:33.071 
+consumption of circuits.
+
+00:44:33.671 --> 00:44:35.271 
+OK, these are some of the common logic gates.
+
+00:44:35.271 --> 00:44:36.351 
+We've seen a lot of them.
+
+00:44:36.711 --> 00:44:39.591 
+Buffer is essentially non inverting inverter.
+
+00:44:40.071 --> 00:44:41.231 
+I like thinking of it that way.
+
+00:44:41.831 --> 00:44:45.031 
+It's kind of a oxymoron, but it's essentially A buffer.
+
+00:44:45.151 --> 00:44:49.311 
+It amplifies a signal, but it doesn't have a logical effect on the signal.
+
+00:44:50.391 --> 00:44:52.311 
+We've seen all of these XOR.
+
+00:44:52.311 --> 00:44:53.231 
+Have you seen XOR?
+
+00:44:54.191 --> 00:45:00.831 
+Point probably have seen OK, XOR is basically this function over here and there's XNOR over here.
+
+00:45:01.871 --> 00:45:03.151 
+So let's talk about larger gates.
+
+00:45:03.151 --> 00:45:03.871 
+I already said this.
+
+00:45:03.871 --> 00:45:08.351 
+This is the three input AND gates as you can see, sorry, three input NAND gate.
+
+00:45:08.951 --> 00:45:12.271 
+See I've three input NAND gate, but you can actually have a lot of these.
+
+00:45:12.271 --> 00:45:15.111 
+Let me cover Moore's Law and then we'll take a break.
+
+00:45:15.151 --> 00:45:15.951 
+This is very quick.
+
+00:45:16.351 --> 00:45:21.912 
+Moore's Law has enabled a lot of essentially the ability to reduce the size of these basic
+
+00:45:21.912 --> 00:45:25.991 
+transistors, has enabled us to put a lot of transistors on a chip.
+
+00:45:25.991 --> 00:45:30.647 
+And this enabled a lot of the techniques that are that are going to come up in the rest of this
+
+00:45:30.647 --> 00:45:30.991 
+course.
+
+00:45:31.911 --> 00:45:36.191 
+So this is what Moore originally plotted in 1965.
+
+00:45:36.511 --> 00:45:43.127 
+You can see that he looked at how many components you can put on an integrated circuit and he
+
+00:45:43.127 --> 00:45:46.471 
+figured out that it's increasing exponentially.
+
+00:45:46.791 --> 00:45:47.151 
+OK.
+
+00:45:47.631 --> 00:45:49.031 
+And there's another picture over here.
+
+00:45:49.471 --> 00:45:54.290 
+This actually the real economic aspect of Moore's Law, which is a number of components per
+
+00:45:54.290 --> 00:45:55.951 
+integrated circuits increasing.
+
+00:45:56.111 --> 00:45:58.311 
+And this is a relative manufacturing cost per component.
+
+00:45:58.671 --> 00:46:04.326 
+And over years, both both the number of components is increasing exponentially and the cost of
+
+00:46:04.326 --> 00:46:06.191 
+manufacturing is also reducing.
+
+00:46:06.551 --> 00:46:11.276 
+And as a result, the sweet spot of how many components you put on an integrated circuit is reducing
+
+00:46:11.276 --> 00:46:12.231 
+exponentially again.
+
+00:46:13.231 --> 00:46:15.911 
+And that's him and that's the graph.
+
+00:46:16.151 --> 00:46:18.391 
+So you can see a lot of graphs like this, which is good.
+
+00:46:18.551 --> 00:46:19.871 
+This is my recommended reading.
+
+00:46:20.511 --> 00:46:25.471 
+There are a lot of interesting things in this three page paper that he wrote in 1965 here.
+
+00:46:25.471 --> 00:46:31.639 
+Basically by 1975, economics may dictate squeezing as many as 65,000 components on a single silicon
+
+00:46:31.639 --> 00:46:31.951 
+chip.
+
+00:46:32.471 --> 00:46:33.231 
+It's kind of funny.
+
+00:46:33.391 --> 00:46:36.031 
+In 2022, it was 67 billion.
+
+00:46:37.991 --> 00:46:41.932 
+And another quote over here, will it be possible to remove the heat generated by 10s of thousands of
+
+00:46:41.932 --> 00:46:43.351 
+components in a single silicon chip?
+
+00:46:43.551 --> 00:46:45.031 
+So that's also related to power.
+
+00:46:45.351 --> 00:46:49.631 
+Power leads to heat, temperature increases and you need to cool down things, right?
+
+00:46:49.631 --> 00:46:54.111 
+So that's why you should not, you should reduce power and not operate at very high temperatures.
+
+00:46:54.631 --> 00:46:56.831 
+So how do you enable these smaller transistors?
+
+00:46:57.511 --> 00:47:01.191 
+Manufacturing lower level is important.
+
+00:47:01.191 --> 00:47:06.973 
+So there's a lot of innovation that has happened in manufacturing and semiconductor manufacturing is
+
+00:47:06.973 --> 00:47:11.311 
+actually one of the big political issues in the world today, unfortunately.
+
+00:47:11.871 --> 00:47:13.271 
+But that's how it is.
+
+00:47:14.231 --> 00:47:18.591 
+And it's going to become more and more difficult, probably using materials.
+
+00:47:18.591 --> 00:47:20.351 
+Materials has also been important.
+
+00:47:20.471 --> 00:47:22.431 
+Manufacturing is essential fabrication technologies.
+
+00:47:22.431 --> 00:47:27.028 
+How do you actually come up with a fabrication technology that can etch smaller and smaller and
+
+00:47:27.028 --> 00:47:29.351 
+smaller structures on a piece of silicon, right?
+
+00:47:30.351 --> 00:47:32.431 
+Using materials is better properties.
+
+00:47:32.431 --> 00:47:34.751 
+People have actually invented a lot in materials.
+
+00:47:34.751 --> 00:47:39.773 
+That's going to be even more important into the future, more manufacturing, precision manufacturing
+
+00:47:39.773 --> 00:47:40.991 
+machines for doing this.
+
+00:47:41.671 --> 00:47:44.271 
+People use light to actually pattern things.
+
+00:47:44.751 --> 00:47:47.591 
+And also a new device technologies like different types of transistors.
+
+00:47:47.591 --> 00:47:49.111 
+We covered some type of transistor.
+
+00:47:49.271 --> 00:47:55.162 
+These are all CMOS transistors in the end, but they they differ in how they put the gate, how they
+
+00:47:55.162 --> 00:47:59.551 
+fabricate the gate and how they fabricate the drain and source, etcetera.
+
+00:48:00.351 --> 00:48:04.511 
+Our picture was quiet old.
+
+00:48:04.951 --> 00:48:08.934 
+There are many different types of things, so if you're interested in these things, there are nice
+
+00:48:08.934 --> 00:48:09.551 
+videos on this.
+
+00:48:09.551 --> 00:48:10.351 
+This is one of them.
+
+00:48:10.991 --> 00:48:16.292 
+And you can see that this is the scale of the transistor today somewhere over here compared to
+
+00:48:16.292 --> 00:48:16.631 
+1970s.
+
+00:48:18.111 --> 00:48:18.471 
+OK.
+
+00:48:18.631 --> 00:48:20.951 
+This is one of the manufacturing technologies that's used today.
+
+00:48:20.951 --> 00:48:24.031 
+I'm not going to talk about this, but this is for your benefit if you're interested.
+
+00:48:24.031 --> 00:48:29.866 
+This is definitely below our lower level of abstraction, but my point is there's a lot of innovation
+
+00:48:29.866 --> 00:48:35.351 
+at the bottom, meaning lower levels like devices that we're not going to cover in this course.
+
+00:48:35.471 --> 00:48:37.911 
+And that is enabled what we're going to build on top.
+
+00:48:38.431 --> 00:48:39.431 
+Never forget that.
+
+00:48:39.751 --> 00:48:44.591 
+It's really important because sometimes people say, oh, there's nothing happening at the bottom, but
+
+00:48:44.591 --> 00:48:46.431 
+there's a lot happening at the bottom.
+
+00:48:46.711 --> 00:48:49.151 
+And that's why we have these very powerful devices today.
+
+00:48:49.471 --> 00:48:51.311 
+So this goes back to Feynman.
+
+00:48:52.431 --> 00:48:54.671 
+OK, this is a paper review for you.
+
+00:48:54.951 --> 00:48:56.911 
+This is an optional assignment, no extra credit.
+
+00:48:57.431 --> 00:49:04.231 
+Last year it was Extracred because we asked people to not use AI, but then a lot of people used AI
+
+00:49:04.231 --> 00:49:07.631 
+and we had to go through a lot of boring reviews.
+
+00:49:08.391 --> 00:49:13.120 
+We're going to find another solution to the Extracred assignments this year, but this is for your
+
+00:49:13.120 --> 00:49:13.511 
+benefit.
+
+00:49:14.591 --> 00:49:15.991 
+Reading that paper would enhance you.
+
+00:49:17.311 --> 00:49:18.831 
+This is a good place to take a break.
+
+00:49:20.111 --> 00:49:22.951 
+We'll start combination logic circuits today.
+
+00:49:22.951 --> 00:49:25.351 
+Let's take an 11 minute break because we're running late.
+
+00:49:26.151 --> 00:49:29.071 
+So when the bell rings, the food is here.
+
+00:49:30.711 --> 00:49:35.831 
+The food for the brain, not food for the digestive system.
+
+00:49:39.461 --> 00:49:43.061 
+Somehow the bell is it's not working.
+
+00:49:45.061 --> 00:49:45.941 
+I don't know what happened.
+
+00:49:47.181 --> 00:49:47.701 
+How about now?
+
+00:49:47.701 --> 00:49:48.141 
+All good.
+
+00:49:48.781 --> 00:49:55.960 
+OK, somehow the bell is not hearable by me or it's not working, but it's a flaky bell, like a flaky
+
+00:49:55.960 --> 00:49:56.541 
+circuit.
+
+00:49:57.861 --> 00:50:01.581 
+OK, so now we're going to talk about combinational logic circuits.
+
+00:50:02.761 --> 00:50:04.961 
+Actually, we have built some combinational logic circuits.
+
+00:50:04.961 --> 00:50:09.961 
+As you can see, we understand the workings of the basic logic gates.
+
+00:50:10.441 --> 00:50:11.321 
+What do we do next?
+
+00:50:12.121 --> 00:50:16.752 
+We are going to build some of the structures that are important components of the micro architecture
+
+00:50:16.752 --> 00:50:17.401 
+of a computer.
+
+00:50:18.201 --> 00:50:19.241 
+So what's a logic circuit?
+
+00:50:19.241 --> 00:50:25.143 
+The logic circuit is composed of some inputs, as you've seen, some outputs and some specification of
+
+00:50:25.143 --> 00:50:25.321 
+it.
+
+00:50:26.841 --> 00:50:31.289 
+There's a functional specification which we are concerned with in this lecture, and there's also a
+
+00:50:31.289 --> 00:50:33.241 
+timing specification, how long things take.
+
+00:50:33.281 --> 00:50:35.161 
+We're not going to talk about that for now.
+
+00:50:35.521 --> 00:50:40.101 
+There is a separate lecture we're where we're going to deal with timing, but functional
+
+00:50:40.101 --> 00:50:43.681 
+specification describes the relationship between inputs and outputs.
+
+00:50:43.881 --> 00:50:49.001 
+What does, how does the circuit take the inputs and transform them to the outputs?
+
+00:50:49.001 --> 00:50:51.481 
+What's the value of the outputs as a function of the inputs?
+
+00:50:52.561 --> 00:50:56.681 
+Timing specification describes a delay between inputs changing and the outputs responding.
+
+00:50:56.801 --> 00:50:58.161 
+So for now, ignore the timing.
+
+00:50:58.161 --> 00:51:00.721 
+We're going to look at only the functional specification.
+
+00:51:02.161 --> 00:51:03.921 
+So there are multiple different types of circuits.
+
+00:51:03.921 --> 00:51:05.921 
+We're going to start with combinational logic circuits.
+
+00:51:06.361 --> 00:51:07.521 
+These are memory lists.
+
+00:51:07.521 --> 00:51:13.227 
+As I mentioned yesterday, outputs are strictly dependent on the combination of input values that are
+
+00:51:13.227 --> 00:51:15.681 
+being applied to the circuit right now, OK?
+
+00:51:16.601 --> 00:51:18.561 
+They're not a function of what happened in the past.
+
+00:51:19.321 --> 00:51:26.588 
+Later we will learn sequential logic that has memory that can store what has happened in the past,
+
+00:51:26.588 --> 00:51:33.856 
+meaning history and outputs in a sequential circuit will be determined based on the current inputs
+
+00:51:33.856 --> 00:51:36.601 
+as well as historical or stored data.
+
+00:51:37.641 --> 00:51:38.281 
+Makes sense, right?
+
+00:51:40.881 --> 00:51:45.704 
+So sequential circuit is of course more powerful because it has a combination logic inside it as
+
+00:51:45.704 --> 00:51:46.961 
+well as storage elements.
+
+00:51:47.001 --> 00:51:48.761 
+So we're going to build storage elements next week.
+
+00:51:49.561 --> 00:51:51.281 
+For now, we're not going to store no memory.
+
+00:51:52.401 --> 00:51:54.321 
+So let's start with Boolean logic equations.
+
+00:51:54.801 --> 00:52:01.561 
+Functional specification is essentially it specifies the outputs in terms of inputs.
+
+00:52:02.361 --> 00:52:03.121 
+What is a function?
+
+00:52:03.841 --> 00:52:04.601 
+So a function.
+
+00:52:04.601 --> 00:52:06.841 
+You've seen mathematical definitions of function in the past.
+
+00:52:06.841 --> 00:52:09.921 
+Probably it's a unique mapping of input values to output values.
+
+00:52:10.321 --> 00:52:15.592 
+The same input values always produce the same output value every time, and there is no memory in
+
+00:52:15.592 --> 00:52:16.361 
+this function.
+
+00:52:16.721 --> 00:52:19.321 
+Output does not depend on past input values.
+
+00:52:20.001 --> 00:52:21.641 
+So this is a full one bit adder.
+
+00:52:23.161 --> 00:52:30.441 
+Basically you have AB2 bits of a value, a single bit, and then carry in.
+
+00:52:31.001 --> 00:52:35.873 
+There's a carry that happens in addition, as you know, and then there's a sum bit and then there's a
+
+00:52:35.873 --> 00:52:36.361 
+carry out.
+
+00:52:37.041 --> 00:52:39.481 
+And this is the functional specification of a one bit adder.
+
+00:52:40.241 --> 00:52:50.047 
+Some is really the XOR of ABC and carry out is a three input majority function that is specified
+
+00:52:50.047 --> 00:52:53.521 
+like this A&B or A&C in or B&C in.
+
+00:52:54.041 --> 00:53:01.521 
+If at least two of these ABCS are true, you get the true you get, you get one at the end.
+
+00:53:01.521 --> 00:53:03.481 
+Otherwise, you get a zero and three input.
+
+00:53:03.481 --> 00:53:08.201 
+XOR is if you have an even number of OK, I'm not going to go through that.
+
+00:53:09.161 --> 00:53:12.321 
+You can think about that because we're going to construct that later on.
+
+00:53:12.881 --> 00:53:14.401 
+So we've seen simple equations.
+
+00:53:14.561 --> 00:53:24.201 
+This is, again, just to jog your memory, this is an inverter A, a bar, essentially this is A and B.
+
+00:53:24.441 --> 00:53:25.841 
+This is just to set terminology.
+
+00:53:26.681 --> 00:53:29.241 
+This is really an AND gate A&B.
+
+00:53:29.241 --> 00:53:31.401 
+It's kind of like a multiplication symbol, but it's really.
+
+00:53:31.681 --> 00:53:35.481 
+And and this is A or B.
+
+00:53:36.081 --> 00:53:40.761 
+OK, so Boolean algebra is really based on is an algebra of of ones and zeros.
+
+00:53:40.761 --> 00:53:47.628 
+To manipulate these equations with and or not an operations, you start with some axioms and we'll
+
+00:53:47.628 --> 00:53:48.761 
+see some axioms.
+
+00:53:49.201 --> 00:53:51.641 
+These are basic things about objects and operations.
+
+00:53:51.641 --> 00:53:58.266 
+You just assume to be true at the start and you derive laws and theorems, which we're going to look
+
+00:53:58.266 --> 00:53:58.601 
+into.
+
+00:53:58.601 --> 00:54:02.841 
+Also, they allow you to manipulate Boolean expressions and equations.
+
+00:54:03.161 --> 00:54:10.521 
+They also, importantly for the purposes of digital design, allow us to simplify boolean expressions.
+
+00:54:10.601 --> 00:54:17.349 
+You may have a function with lots of inputs and a huge specification, but if you use some of these
+
+00:54:17.349 --> 00:54:24.028 
+laws and theorems and axioms, you can actually reduce it to a much smaller specification, meaning
+
+00:54:24.028 --> 00:54:30.295 
+you can actually design A much smaller circuit to implement that function, which may not be
+
+00:54:30.295 --> 00:54:32.361 
+expressed in its minimal form.
+
+00:54:33.281 --> 00:54:33.801 
+Makes sense.
+
+00:54:34.481 --> 00:54:36.881 
+OK, So we'll see example of this.
+
+00:54:37.321 --> 00:54:41.921 
+So you can derive more sophisticated properties for manipulating digital designs essentially.
+
+00:54:42.601 --> 00:54:44.241 
+So we'll see applications of it.
+
+00:54:45.561 --> 00:54:47.401 
+How many of you have seen Boolean algebra before?
+
+00:54:47.641 --> 00:54:53.952 
+Now that I've introduced a little bit more, probably all of you, right, In high school, Yes, in an
+
+00:54:53.952 --> 00:54:55.241 
+earlier course here.
+
+00:54:55.721 --> 00:54:56.321 
+Which course?
+
+00:54:59.241 --> 00:55:02.321 
+Who wants to discrete math?
+
+00:55:02.321 --> 00:55:03.041 
+Yes, exactly.
+
+00:55:03.321 --> 00:55:08.997 
+Maybe the notation may be a bit different and you that you see in discrete math or is it exactly the
+
+00:55:08.997 --> 00:55:09.281 
+same?
+
+00:55:10.641 --> 00:55:13.681 
+OK, it's a bit different, yeah, unfortunately, but that's how it is.
+
+00:55:14.401 --> 00:55:16.401 
+You just need to get used to the notation over here.
+
+00:55:16.841 --> 00:55:20.761 
+This is how things are done in the circuit community or digital design community.
+
+00:55:21.321 --> 00:55:22.841 
+So these are some axioms.
+
+00:55:22.841 --> 00:55:24.601 
+So I'm not going to go through these in detail.
+
+00:55:24.961 --> 00:55:27.681 
+Probably, you know, a lot of these, this is just jogging your memory.
+
+00:55:27.681 --> 00:55:32.361 
+Let's say commutative laws A or B is the same as B or A.
+
+00:55:32.681 --> 00:55:33.881 
+You can swap inputs.
+
+00:55:33.881 --> 00:55:34.681 
+Basically.
+
+00:55:34.681 --> 00:55:40.881 
+A&B is the same as B&A, identity elements, A or Z, or is A, A and 1 is A.
+
+00:55:41.401 --> 00:55:42.881 
+There's distributive laws.
+
+00:55:43.721 --> 00:55:49.001 
+A or B&C is A or B&A or C and the other way around.
+
+00:55:50.041 --> 00:55:59.689 
+So the the the and and OR operations distribute over each other and complement A or A bar is 1A and
+
+00:55:59.689 --> 00:56:00.761 
+a bar is 0.
+
+00:56:00.881 --> 00:56:01.641 
+Sounds good, right?
+
+00:56:02.121 --> 00:56:04.961 
+There's a duality property in Boolean algebra.
+
+00:56:04.961 --> 00:56:06.481 
+All of the axioms come in dual form.
+
+00:56:06.481 --> 00:56:09.041 
+Anything true for an expression is also true for its dual.
+
+00:56:09.601 --> 00:56:14.281 
+So this is actually useful when actually you manipulate circuits, different gates, let's say.
+
+00:56:15.161 --> 00:56:20.321 
+So any derivation you make that is true can be flipped into a dual form and it stays true.
+
+00:56:20.721 --> 00:56:25.811 
+So more formally, you form a dual of a boolean expression by replacing every AND operation with an
+
+00:56:25.811 --> 00:56:30.954 
+OR operation, every OR operation with an AND operation, every constant one with a constant 0, every
+
+00:56:30.954 --> 00:56:32.721 
+constant zero with a constant one.
+
+00:56:33.041 --> 00:56:35.641 
+But you don't change any of the literals or play with the complements.
+
+00:56:36.521 --> 00:56:38.681 
+So for example, A and.
+
+00:56:39.561 --> 00:56:43.921 
+So if if this is your equation, this is correct.
+
+00:56:44.281 --> 00:56:52.103 
+It's it's it basically show the distributed law if you change every and every dot to plus over here
+
+00:56:52.103 --> 00:56:57.081 
+in the top and every cluster dots, there are no constants here.
+
+00:56:58.601 --> 00:57:00.401 
+It's essentially the same equation, right?
+
+00:57:01.081 --> 00:57:02.361 
+Basically it's it's the dual equation.
+
+00:57:02.361 --> 00:57:03.841 
+It's not the same equation, but it's the dual.
+
+00:57:04.161 --> 00:57:07.401 
+If this is true, then this is also true, OK.
+
+00:57:08.121 --> 00:57:10.761 
+And this is the distributed law of the other way around, as you can see.
+
+00:57:11.641 --> 00:57:13.881 
+OK, So there are also some other use for loss.
+
+00:57:14.281 --> 00:57:15.721 
+And these are the duals of it.
+
+00:57:16.801 --> 00:57:19.601 
+You can see that for your for yourself here.
+
+00:57:19.641 --> 00:57:23.241 
+For example, X or zero is X logically.
+
+00:57:23.681 --> 00:57:29.041 
+And dual means change the OR to and and change the zero to 1X.
+
+00:57:29.041 --> 00:57:30.921 
+And one is X Sounds good.
+
+00:57:31.321 --> 00:57:31.961 
+I'll buy that.
+
+00:57:32.521 --> 00:57:32.841 
+OK.
+
+00:57:33.081 --> 00:57:34.521 
+And you can do the other one for yourself.
+
+00:57:35.241 --> 00:57:38.321 
+X or X is xnxx is also the X.
+
+00:57:38.321 --> 00:57:38.841 
+That's good.
+
+00:57:39.201 --> 00:57:43.641 
+There's no dual for this because it's the same and complementary as a dual also.
+
+00:57:43.721 --> 00:57:44.841 
+And then there's commutativity.
+
+00:57:45.761 --> 00:57:47.961 
+OK, let's take a look at some more associated laws.
+
+00:57:47.961 --> 00:57:54.473 
+We've seen this is an example over here, distributed law we've seen, we haven't seen associated, but
+
+00:57:54.473 --> 00:57:55.841 
+it's kind of obvious.
+
+00:57:55.841 --> 00:57:58.001 
+Basically parentheses order doesn't matter.
+
+00:57:58.561 --> 00:58:04.024 
+Simplification theorems are useful for simplifying logic and actually what people, what electronic
+
+00:58:04.024 --> 00:58:08.986 
+people have automated a lot of these design essentially today there are a lot of electric
+
+00:58:08.986 --> 00:58:14.115 
+electronic design automation tools that can compute this Boolean algebra and give you a nice
+
+00:58:14.115 --> 00:58:14.561 
+circuit.
+
+00:58:15.761 --> 00:58:17.721 
+With AI you can do even better today actually.
+
+00:58:18.121 --> 00:58:24.424 
+So these are some simplification theorems as you can see, X&Y plus or X&Y bars X and the dual is
+
+00:58:24.424 --> 00:58:25.081 
+also true.
+
+00:58:25.721 --> 00:58:30.619 
+I'll let you study the duals on your own, but I will say that some of these actually happen in
+
+00:58:30.619 --> 00:58:31.401 
+circuits a lot.
+
+00:58:31.801 --> 00:58:35.561 
+X or X&Y is X and you can prove that clearly.
+
+00:58:36.081 --> 00:58:38.001 
+We're going to prove that in a later slide soon.
+
+00:58:38.801 --> 00:58:47.091 
+So if you have something like this X or X&Y, implementing an AND gate and an OR gate is a waste
+
+00:58:47.091 --> 00:58:51.281 
+because you could just have X right, and a wire.
+
+00:58:51.881 --> 00:58:52.401 
+That's it.
+
+00:58:53.521 --> 00:58:56.601 
+Because this, this simplifies the X essentially.
+
+00:58:57.881 --> 00:59:00.441 
+OK, so let's take a look at proving things relatively quickly.
+
+00:59:01.161 --> 00:59:02.921 
+Let's let's assume that this is our theorem.
+
+00:59:03.081 --> 00:59:06.561 
+X&Y or X&Y bar is equal to X.
+
+00:59:07.001 --> 00:59:07.761 
+How do we prove it?
+
+00:59:07.881 --> 00:59:17.634 
+We basically take out X on the left and based on the distributed laws, X&Y or Y bar is equal to X&Y
+
+00:59:17.634 --> 00:59:22.561 
+or Y bar is essentially 1 and then X and one is X.
+
+00:59:22.641 --> 00:59:28.481 
+So we've proven it and you can prove the next one also similarly this way.
+
+00:59:29.161 --> 00:59:32.921 
+And This is why this circuit is not good to implement.
+
+00:59:32.921 --> 00:59:35.041 
+You just have a wire, makes sense, right?
+
+00:59:35.041 --> 00:59:40.673 
+So if you have this at some point in your circuit, don't implement an AND gate and an OR gate, just
+
+00:59:40.673 --> 00:59:41.641 
+have a wire to X.
+
+00:59:42.401 --> 00:59:43.041 
+Makes sense, right?
+
+00:59:43.441 --> 00:59:44.761 
+This is basic logic again.
+
+00:59:45.481 --> 00:59:50.966 
+But hopefully you see the connection to how you implement gates, because logic is gates, and the
+
+00:59:50.966 --> 00:59:55.481 
+more gates, the more complicated your Boolean equation, the more gates usually.
+
+00:59:57.241 --> 00:59:59.401 
+And some gates may be more expensive than others.
+
+00:59:59.561 --> 01:00:04.227 
+So you may actually want to do the simplification to avoid some gates that are more expensive than
+
+01:00:04.227 --> 01:00:04.561 
+others.
+
+01:00:05.161 --> 01:00:08.801 
+And that's essentially what circuits minimisation tools do today.
+
+01:00:09.921 --> 01:00:11.681 
+So let's take a look at a few more laws.
+
+01:00:11.921 --> 01:00:13.521 
+How many of you have seen the Morgan's laws?
+
+01:00:13.801 --> 01:00:14.201 
+OK, good.
+
+01:00:14.361 --> 01:00:15.841 
+I'll go through this even more quickly then.
+
+01:00:16.801 --> 01:00:18.041 
+So this is a transformation.
+
+01:00:18.081 --> 01:00:19.721 
+I like thinking of it as this way.
+
+01:00:19.721 --> 01:00:23.961 
+It's a logical thing if at least one of ABC is true.
+
+01:00:24.441 --> 01:00:26.481 
+It is not the case that ABC are all false.
+
+01:00:27.001 --> 01:00:31.241 
+That's the best way I can think of the the Morgan's Law and the other way around is true.
+
+01:00:31.961 --> 01:00:34.161 
+So this is what this law says.
+
+01:00:34.201 --> 01:00:38.281 
+And then there is also an AND version of it as opposed to or version over here.
+
+01:00:39.361 --> 01:00:43.401 
+OK, now what is the Morgan's Law useful for?
+
+01:00:43.401 --> 01:00:45.561 
+Probably you didn't go into this in discrete math.
+
+01:00:46.041 --> 01:00:52.361 
+Essentially, you can change the type of gates that you want to implement the same function for.
+
+01:00:52.361 --> 01:00:58.937 
+For example, let's assume that this is you have nor basically, nor is equivalent to end with inputs
+
+01:00:58.937 --> 01:00:59.801 
+complemented.
+
+01:01:00.321 --> 01:01:05.321 
+So this is our nor gate X nor YA is equal to X nor Y.
+
+01:01:05.801 --> 01:01:12.201 
+And if you apply the Morgan's Law on it, you'll get X complement and Y complement.
+
+01:01:13.161 --> 01:01:13.721 
+Makes sense, right?
+
+01:01:13.721 --> 01:01:15.161 
+It's it's the same thing basically.
+
+01:01:16.241 --> 01:01:19.441 
+Now the difference is the type of gate that you have, right?
+
+01:01:19.801 --> 01:01:20.521 
+This the NOR gate.
+
+01:01:20.521 --> 01:01:21.241 
+This the NAND gate.
+
+01:01:21.241 --> 01:01:26.441 
+If for some reason your NOR gate is faster than your NAND gate, you may want to choose the NOR gate.
+
+01:01:26.721 --> 01:01:32.355 
+If for some reason your NAND gate is faster or lower power than your NOR gates, you may want to
+
+01:01:32.355 --> 01:01:33.601 
+choose the NAND gate.
+
+01:01:34.201 --> 01:01:38.897 
+These are essentially implementing the same logic function, but the underlying gates maybe may have
+
+01:01:38.897 --> 01:01:43.261 
+different speed, different power consumption, different reliability, depending on how things
+
+01:01:43.261 --> 01:01:43.641 
+operate.
+
+01:01:44.081 --> 01:01:49.823 
+OK, we're not going to go into that in detail, but that's what this these laws are useful for
+
+01:01:49.823 --> 01:01:50.441 
+partially.
+
+01:01:51.161 --> 01:01:55.601 
+Similarly, NAND is equivalent to OR with inputs complemented, as you can see over here.
+
+01:01:57.241 --> 01:02:00.841 
+OK, so we're going to use Boolean equations to represent logic circuits.
+
+01:02:01.561 --> 01:02:02.801 
+The functional specification.
+
+01:02:02.961 --> 01:02:04.161 
+We cannot do that with timing.
+
+01:02:04.681 --> 01:02:09.122 
+We will methodically transform the function into simpler functions which will lead to different
+
+01:02:09.122 --> 01:02:11.601 
+hardware realisations, hopefully smaller and smaller.
+
+01:02:12.401 --> 01:02:18.165 
+This is called logic minimisation or logic simplification essentially, and we can automate this
+
+01:02:18.165 --> 01:02:21.321 
+process if you feed all of these rules to a program.
+
+01:02:22.241 --> 01:02:25.961 
+These are called computer aided design or electronic design automation programs.
+
+01:02:26.121 --> 01:02:27.201 
+They can do all of this for you.
+
+01:02:27.201 --> 01:02:33.163 
+And again, as I said today, there's AI assisted EDA programs that are actually quite good, but you
+
+01:02:33.163 --> 01:02:35.841 
+need to know the basics of how they operate.
+
+01:02:38.401 --> 01:02:44.260 
+OK, so different Boolean expressions lead to different logic gate implementations or realisations as
+
+01:02:44.260 --> 01:02:49.241 
+we have seen, which may have implications on hardware area, cost, latency and energy.
+
+01:02:51.081 --> 01:02:52.921 
+But usually, how do you start?
+
+01:02:53.201 --> 01:02:58.641 
+So a function may be represented with an infinite number of Boolean equations.
+
+01:02:59.001 --> 01:03:03.667 
+You can actually come up with this kind of useless exercise maybe of representing a function with an
+
+01:03:03.667 --> 01:03:05.721 
+infinite number of Boolean equations, right?
+
+01:03:05.881 --> 01:03:12.312 
+You keep adding useless terms, but normally what's you need if you want to actually automate this
+
+01:03:12.312 --> 01:03:18.877 
+process, you want to start with something that's universally agreed upon and that's why people have
+
+01:03:18.877 --> 01:03:23.121 
+developed these canonical forms or standardised representations.
+
+01:03:23.121 --> 01:03:28.905 
+In other words, it's a they they enable a single universally agreed on way of representing A boolean
+
+01:03:28.905 --> 01:03:31.161 
+function starting from its truth table.
+
+01:03:32.321 --> 01:03:33.241 
+And there are two forms.
+
+01:03:33.281 --> 01:03:37.441 
+I'm going to cover the sum of products form in a bit more detail than product of sums form.
+
+01:03:38.841 --> 01:03:40.121 
+The key idea is very simple.
+
+01:03:40.121 --> 01:03:41.721 
+Essentially assume you have a truth table.
+
+01:03:41.721 --> 01:03:46.913 
+This is all words, but I'm going to give you an example of boolean function F You express this
+
+01:03:46.913 --> 01:03:49.841 
+function in terms of the inputs in a standard manner.
+
+01:03:50.321 --> 01:03:55.001 
+Sum of products form express the truth table as a true level boolean expression.
+
+01:03:55.441 --> 01:03:56.121 
+That's the idea.
+
+01:03:56.121 --> 01:04:00.121 
+Every truth table can be expressed as A2 level boolean expression for a given input.
+
+01:04:00.401 --> 01:04:06.921 
+A given output, sorry, it contains all of the input variable combinations that result in A1 output.
+
+01:04:07.281 --> 01:04:12.321 
+So you look at the output there, which ones are one and you identify them.
+
+01:04:13.201 --> 01:04:17.853 
+And if any of the combinations of input variables that results in a one is true, then the output is
+
+01:04:17.853 --> 01:04:18.041 
+one.
+
+01:04:18.321 --> 01:04:18.521 
+Right?
+
+01:04:18.561 --> 01:04:19.681 
+That's basic logic.
+
+01:04:20.121 --> 01:04:23.001 
+Again, this is how I can I can express that output.
+
+01:04:23.721 --> 01:04:27.795 
+If any of the input combinations that results in a one for the output is true, then the function is
+
+01:04:27.795 --> 01:04:28.001 
+true.
+
+01:04:28.641 --> 01:04:29.881 
+The output evaluates to true.
+
+01:04:30.521 --> 01:04:35.717 
+So essentially you can express the function as the OR of all input variable combinations that result
+
+01:04:35.717 --> 01:04:36.081 
+in a 1.
+
+01:04:37.121 --> 01:04:38.641 
+So let's take a look at this with an example.
+
+01:04:38.641 --> 01:04:40.041 
+It's much easier with an example.
+
+01:04:40.601 --> 01:04:44.241 
+There are also some terminology like this called disjunctive normal form min term expansion.
+
+01:04:44.241 --> 01:04:45.681 
+We'll see why it's called a min term.
+
+01:04:46.321 --> 01:04:52.689 
+Basically this is a truth table of a three input function ABC 3 inputs there 8 possible minterms
+
+01:04:52.689 --> 01:04:54.281 
+meaning 8 possible rows.
+
+01:04:54.641 --> 01:05:02.888 
+OK you list all of them and you look at the value of output bits function F and you figure out which
+
+01:05:02.888 --> 01:05:03.961 
+ones are one.
+
+01:05:05.121 --> 01:05:10.412 
+So for find all the input combinations, an input combination is called a minterm for which the
+
+01:05:10.412 --> 01:05:14.521 
+output of the function is true and there are five of them as you can see.
+
+01:05:15.121 --> 01:05:20.681 
+And basically you express this function as an OR of all of those input combinations.
+
+01:05:21.361 --> 01:05:24.321 
+So these are values that are assigned to ABC.
+
+01:05:24.561 --> 01:05:34.201 
+If a IS0B is 1 and C If A is 0 and B is 1 and C is 1, the output is 1.
+
+01:05:34.721 --> 01:05:40.521 
+Or if A is 1 and B is 0 and C is 0, the output is 1 and you get the rest of it, right?
+
+01:05:41.321 --> 01:05:44.441 
+So basically this is how you express the function in a canonical form.
+
+01:05:44.801 --> 01:05:49.921 
+Function is of or of all min terms input variable combinations that result in a 1.
+
+01:05:49.921 --> 01:05:59.635 
+So function is a bar BCF is true, F eval is to one if a bar BC values to one or AB bar C bar eval is
+
+01:05:59.635 --> 01:06:02.841 
+to one or AB bar C values to 1...
+
+01:06:03.521 --> 01:06:04.201 
+makes sense right?
+
+01:06:04.441 --> 01:06:05.401 
+It's basic logic again.
+
+01:06:05.961 --> 01:06:07.441 
+And this is the sum of products form.
+
+01:06:07.801 --> 01:06:10.721 
+And all boolean equations can be written in sum of products form.
+
+01:06:11.081 --> 01:06:17.634 
+And this sum of product form forms a unique signature for this three input function where the bottom
+
+01:06:17.634 --> 01:06:19.601 
+5 rows evaluate to one, right?
+
+01:06:20.721 --> 01:06:21.561 
+Hopefully that makes sense.
+
+01:06:22.561 --> 01:06:24.921 
+OK, so let's go through this relatively quickly.
+
+01:06:24.921 --> 01:06:27.801 
+Complement, you know what a complement is variable with a bar over it.
+
+01:06:28.081 --> 01:06:30.121 
+Literal is variable or it's complement.
+
+01:06:30.801 --> 01:06:33.361 
+Implicant is product and of literals.
+
+01:06:33.521 --> 01:06:37.001 
+So we're going to use and of literals in sum of products form.
+
+01:06:37.241 --> 01:06:40.081 
+Mean term is the product that includes all input variables.
+
+01:06:40.561 --> 01:06:45.643 
+Basically, if you have a three input function, all of the input variables should be there because we
+
+01:06:45.643 --> 01:06:49.201 
+want a canonical or standardised form that everybody agrees on, right?
+
+01:06:49.321 --> 01:06:52.681 
+If someone omits one input, somebody else can omit another input.
+
+01:06:52.681 --> 01:06:54.161 
+So that's not a standardised form.
+
+01:06:54.161 --> 01:06:55.441 
+We want something standardised.
+
+01:06:56.241 --> 01:06:59.641 
+Next term is going to be important for product of sums form.
+
+01:06:59.841 --> 01:07:04.041 
+This is the sum that or that includes all of the input variables.
+
+01:07:06.121 --> 01:07:10.721 
+So truth table is the signature of a boolean function, but it's an expensive representation.
+
+01:07:12.161 --> 01:07:17.326 
+Many boolean functions can have the same truth table as we discussed, and we want to have a
+
+01:07:17.326 --> 01:07:19.881 
+standardised form and minimise that later on.
+
+01:07:19.921 --> 01:07:25.481 
+I've discussed all of them earlier, so we've already done this sum of products form.
+
+01:07:25.481 --> 01:07:30.921 
+This is actually a copy of the previous slide, but let's take a look at why this works.
+
+01:07:31.521 --> 01:07:35.742 
+So the function evaluates are true if any of the products or midterms causes the output to be one,
+
+01:07:35.742 --> 01:07:36.001 
+right?
+
+01:07:36.241 --> 01:07:37.601 
+So let's take a look at one example.
+
+01:07:38.921 --> 01:07:43.361 
+If a IS1BB is 0 and C is 1, you evaluate one, right?
+
+01:07:44.081 --> 01:07:48.961 
+So this input activates that term and only the shaded term will be one.
+
+01:07:49.561 --> 01:07:52.761 
+No other product terms will turn on, they will all be 0.
+
+01:07:53.161 --> 01:07:59.721 
+So if inputs ABC correspond to a product term in the expression, you get one for output.
+
+01:08:00.561 --> 01:08:05.492 
+If the inputs ABC do not correspond to any product term, hopefully this part over here, then you get
+
+01:08:05.492 --> 01:08:06.281 
+0 as the output.
+
+01:08:06.881 --> 01:08:11.281 
+OK, these are actually very simple things, so that's why I'm going through this relatively quickly.
+
+01:08:11.601 --> 01:08:13.001 
+So how do we standardise this?
+
+01:08:13.361 --> 01:08:18.406 
+Essentially, if we agree on the order of variables in the rows of the truth table, we can enumerate
+
+01:08:18.406 --> 01:08:23.401 
+each row with a decimal number that corresponds to the binary number created by the input pattern.
+
+01:08:23.521 --> 01:08:28.683 
+Basically you're you're you're enumerating all of the min terms for an N input function, and an
+
+01:08:28.683 --> 01:08:31.401 
+input function has two to the end minterms, right?
+
+01:08:32.561 --> 01:08:34.401 
+So in this case, we have a three input function.
+
+01:08:34.401 --> 01:08:36.001 
+You have 8 minterms.
+
+01:08:36.641 --> 01:08:39.401 
+So this particular minterm is 100.
+
+01:08:39.401 --> 01:08:42.441 
+We ordered them 000001010.
+
+01:08:42.441 --> 01:08:43.641 
+Basically it's increasing.
+
+01:08:44.361 --> 01:08:46.281 
+And the decimal version of this is 4.
+
+01:08:46.481 --> 01:08:48.641 
+So this is minterm 4 as you can see.
+
+01:08:48.881 --> 01:08:52.401 
+And this is midterm 7 decimal seven M7, OK.
+
+01:08:52.441 --> 01:08:59.240 
+And the function can be expressed as a sum of products, sum of midterm 34567, or you can use a
+
+01:08:59.240 --> 01:09:01.121 
+summation notation, right?
+
+01:09:01.841 --> 01:09:06.861 
+So if someone gives you this thing for a three input function, you know exactly what that function
+
+01:09:06.861 --> 01:09:09.321 
+is and everybody agrees on that function, right?
+
+01:09:10.241 --> 01:09:15.281 
+OK, so and you know exactly what the min terms are, right?
+
+01:09:15.761 --> 01:09:17.161 
+Then this is a short term notation.
+
+01:09:17.961 --> 01:09:20.521 
+So I think I've gone through this relatively quickly.
+
+01:09:20.961 --> 01:09:27.776 
+If you know that function, you can write out them in terms and then you know that this is a very
+
+01:09:27.776 --> 01:09:28.841 
+expensive form.
+
+01:09:28.841 --> 01:09:31.561 
+Potentially it may be the minimal form, you don't know that yet.
+
+01:09:32.521 --> 01:09:33.921 
+And then you can go and minimise it.
+
+01:09:34.401 --> 01:09:37.281 
+I will not go through this, but you can do it yourself.
+
+01:09:37.281 --> 01:09:41.081 
+It turns out the minimal form is a plus BC, but that's not a canonical form.
+
+01:09:41.521 --> 01:09:46.681 
+If you gave a plus BC, nobody would know that this would be a how many input function, right?
+
+01:09:46.681 --> 01:09:49.481 
+You don't know basically makes sense, right?
+
+01:09:50.441 --> 01:09:53.441 
+OK, so this is the realisation of this.
+
+01:09:53.961 --> 01:09:59.750 
+This is the standard form sum of products form of this function and this is the minimised version of
+
+01:09:59.750 --> 01:10:00.561 
+this function.
+
+01:10:01.041 --> 01:10:02.161 
+Those are two different things.
+
+01:10:02.921 --> 01:10:07.041 
+You could of course implement this function with like this, right?
+
+01:10:07.401 --> 01:10:12.401 
+Except it'll be very expensive, a lot of gates right now.
+
+01:10:12.401 --> 01:10:15.001 
+We will see actually how that is implemented soon.
+
+01:10:16.361 --> 01:10:18.001 
+OK, so this is how it's implemented.
+
+01:10:18.001 --> 01:10:19.801 
+Sum of products leads to two level logic.
+
+01:10:20.401 --> 01:10:29.100 
+This is how you have 3 min terms over here, A bar B, bar CAB A/B, bar C, bar AB, bar C, and then the
+
+01:10:29.100 --> 01:10:29.361 
+OR.
+
+01:10:30.281 --> 01:10:32.641 
+So you can see that sum of products is actually very regular.
+
+01:10:33.281 --> 01:10:39.531 
+You can actually form all of the min terms and then decide which ones to pick at the input of the OR
+
+01:10:39.531 --> 01:10:40.281 
+gate, right?
+
+01:10:41.921 --> 01:10:44.961 
+OK, clearly this is not minimal, so you can make it minimal.
+
+01:10:45.281 --> 01:10:46.401 
+OK, this is a summary.
+
+01:10:46.401 --> 01:10:49.801 
+I'm not going to go through this, but hopefully you got the idea of sum of products.
+
+01:10:50.081 --> 01:10:57.841 
+Products of sums is essentially the opposite, meaning instead of looking at the bits output where
+
+01:10:57.841 --> 01:11:03.041 
+the output is true, meaning 1, you look at where the output is 0.
+
+01:11:05.161 --> 01:11:11.524 
+Or another way, it's the De Morgan of sum of products of F bar you find all the input combinations
+
+01:11:11.524 --> 01:11:15.161 
+Max terms for which the output of the function is false.
+
+01:11:15.761 --> 01:11:22.066 
+And then and the function is expressed as the end of all input variable combinations that result in
+
+01:11:22.066 --> 01:11:22.321 
+a 0.
+
+01:11:23.001 --> 01:11:26.041 
+So this is the same function, exactly the same as what I showed you.
+
+01:11:27.561 --> 01:11:31.921 
+We look to the 0 outputs and we express things like this.
+
+01:11:32.881 --> 01:11:41.257 
+So product of sums, the function is false if this input combination is false or this input
+
+01:11:41.257 --> 01:11:47.121 
+combination is false or this input combination is false, right?
+
+01:11:48.601 --> 01:11:51.081 
+Or another way actually I should say that I should say it more correctly.
+
+01:11:51.441 --> 01:11:56.151 
+The function is false if you get this input combination or if you get this input combination or if
+
+01:11:56.151 --> 01:11:57.641 
+you get this input combination.
+
+01:11:58.401 --> 01:12:02.441 
+OK, so each sum term represents one of the zeros of the function.
+
+01:12:03.201 --> 01:12:05.961 
+I already said this if any of the sums cause the output to be 0.
+
+01:12:06.641 --> 01:12:08.081 
+And you can actually see that, right?
+
+01:12:08.521 --> 01:12:14.881 
+For example, if ABC are all zeros, this term will be 0 and the function will evaluate to 0.
+
+01:12:15.481 --> 01:12:19.441 
+If ABC are like this 001, this will evaluate to 0.
+
+01:12:19.681 --> 01:12:22.401 
+If ABC are 010, this will evaluate to 0.
+
+01:12:22.601 --> 01:12:26.081 
+If ABC is 111, all of these will evaluate to 1.
+
+01:12:26.081 --> 01:12:28.481 
+As a result, you'll get the output to be one, right?
+
+01:12:28.881 --> 01:12:29.601 
+That's the idea.
+
+01:12:29.681 --> 01:12:30.561 
+That's what you should get.
+
+01:12:31.641 --> 01:12:37.403 
+OK, so I'll go through this relatively quickly also because we kind of covered it with sum of
+
+01:12:37.403 --> 01:12:37.961 
+products.
+
+01:12:37.961 --> 01:12:42.801 
+This is actually the Morgan of SOP of F bar.
+
+01:12:44.481 --> 01:12:45.601 
+This is what I said earlier.
+
+01:12:46.121 --> 01:12:54.093 
+If you have one input the if, if it matches the Max term that is part of the product of sums, then
+
+01:12:54.093 --> 01:12:58.161 
+you get an output 0, which is what you should get.
+
+01:12:59.401 --> 01:13:00.881 
+OK only one of the products will be 0.
+
+01:13:00.881 --> 01:13:02.121 
+Anything added with 00.
+
+01:13:02.121 --> 01:13:02.801 
+That's why it works.
+
+01:13:02.801 --> 01:13:03.241 
+Basically.
+
+01:13:03.921 --> 01:13:05.801 
+Again, it's logic, basic boolean logic.
+
+01:13:07.161 --> 01:13:08.041 
+OK how do you write it?
+
+01:13:08.521 --> 01:13:13.561 
+Essentially I'll go through this again.
+
+01:13:13.961 --> 01:13:16.321 
+So basically this is the Max term notation.
+
+01:13:17.001 --> 01:13:20.561 
+So we had the minterms, remember now we have the Max terms.
+
+01:13:21.241 --> 01:13:28.316 
+Essentially this function can be expressed as a product of some of the Max terms that lead to an
+
+01:13:28.316 --> 01:13:29.201 
+output of 0.
+
+01:13:29.681 --> 01:13:31.401 
+Remember the first 3 Max terms?
+
+01:13:31.801 --> 01:13:32.961 
+Led to an output of 0.
+
+01:13:33.361 --> 01:13:38.041 
+The same function can be expressed as a product of Max term 012, and this is the Max term.
+
+01:13:38.401 --> 01:13:44.601 
+When someone gives you a large M Max term zero, that means a + b + C over here.
+
+01:13:44.761 --> 01:13:46.281 
+So you can easily map it, right?
+
+01:13:46.561 --> 01:13:47.841 
+That's how we represent the function.
+
+01:13:49.641 --> 01:13:51.961 
+So you will find the Max term.
+
+01:13:51.961 --> 01:13:54.041 
+You will form the Max term around the zeros of the function.
+
+01:13:55.641 --> 01:13:57.441 
+Note that this is not the complement of the function.
+
+01:13:57.441 --> 01:13:58.921 
+This is exactly the same function, right?
+
+01:13:59.601 --> 01:14:03.281 
+What I showed you is the same function for which we wrote the sum of products form.
+
+01:14:03.881 --> 01:14:14.441 
+Meaning products of Max term 01/2 equals sum of min terms 34567, right?
+
+01:14:15.881 --> 01:14:17.081 
+That's essentially the same function.
+
+01:14:18.161 --> 01:14:19.401 
+OK, these are useful conversions.
+
+01:14:19.401 --> 01:14:20.401 
+That's essentially what I said.
+
+01:14:20.401 --> 01:14:22.681 
+Min term to Max term conversion.
+
+01:14:23.201 --> 01:14:24.601 
+These two are the same functions.
+
+01:14:26.441 --> 01:14:33.479 
+You basically if if a function is represented in terms of there it's Max terms, product of Max
+
+01:14:33.479 --> 01:14:40.818 
+terms, you can represent defs some of the min terms that's are not overlapping with the Max terms,
+
+01:14:40.818 --> 01:14:42.241 
+OK, And vice versa.
+
+01:14:43.081 --> 01:14:44.121 
+That's the vice versa part.
+
+01:14:44.801 --> 01:14:48.161 
+How do you get the complement of the function?
+
+01:14:48.401 --> 01:14:52.721 
+Let's assume that this is our function and this is the complement of it.
+
+01:14:53.041 --> 01:14:54.761 
+This is a sum of min terms.
+
+01:14:55.001 --> 01:14:57.481 
+Complement means you complement the function.
+
+01:14:57.481 --> 01:15:02.841 
+Zeros become the zeros in the output becomes one once the ones in the output become zeros.
+
+01:15:03.441 --> 01:15:09.201 
+That means that exactly the complement of the min terms should lead to ones.
+
+01:15:10.121 --> 01:15:17.683 
+So instead of writing min terms 34567, make your function 1 min term 012 make the function one,
+
+01:15:17.683 --> 01:15:18.161 
+right?
+
+01:15:18.601 --> 01:15:25.618 
+OK, so I'm going through this relatively quickly again because it's the same with product of sums
+
+01:15:25.618 --> 01:15:30.321 
+and you can also do the min term expansion to Max term expansion.
+
+01:15:30.321 --> 01:15:31.881 
+I'll let you I'll let you think about that.
+
+01:15:33.001 --> 01:15:35.881 
+OK, so we've gone through a lot of this Boolean algebra.
+
+01:15:35.881 --> 01:15:36.801 
+It's relatively simple.
+
+01:15:36.961 --> 01:15:42.762 
+Essentially in the end, it's Boolean logic and we can simplify SOP or POS form of any function in a
+
+01:15:42.762 --> 01:15:43.641 
+methodical way.
+
+01:15:43.641 --> 01:15:48.161 
+You start with this canonical form and you can automate all of this.
+
+01:15:48.561 --> 01:15:54.428 
+You start with truth table actually initially and then that's you can construct an SOP or POS form
+
+01:15:54.428 --> 01:15:58.201 
+and you use Boolean simplification rules to reduce the circuit.
+
+01:15:58.721 --> 01:16:03.081 
+So I can reduce a full one bit adder to what we see over here and we will see that later.
+
+01:16:04.281 --> 01:16:09.081 
+So we've already seen actually this is the sum of products form of function, YA particular function.
+
+01:16:09.481 --> 01:16:10.681 
+You can reduce it to this.
+
+01:16:11.241 --> 01:16:12.641 
+And again, I'll let you do that reduction.
+
+01:16:12.641 --> 01:16:17.801 
+You'll do a lot of that reduction in your exercises and maybe in some of the exams also.
+
+01:16:18.361 --> 01:16:20.961 
+Usually there are questions that come up from this in the exam.
+
+01:16:20.961 --> 01:16:23.801 
+I think there are easy questions in general.
+
+01:16:25.481 --> 01:16:29.281 
+OK, if there are no questions, let's jump into some combinational blocks.
+
+01:16:29.281 --> 01:16:34.265 
+This is actually needed so that we can actually understand how we represent all of the combinational
+
+01:16:34.265 --> 01:16:35.761 
+blocks that are going to come.
+
+01:16:36.801 --> 01:16:41.521 
+OK, so these are some combinational blocks that we've already seen.
+
+01:16:42.041 --> 01:16:42.881 
+Let's see some more.
+
+01:16:44.321 --> 01:16:50.816 
+Essentially you design combinational logic to build more complex systems and we actually think of
+
+01:16:50.816 --> 01:16:53.361 
+these combinational blocks as modules.
+
+01:16:54.201 --> 01:16:59.051 
+It's they we want to hide the unnecessary gate double details to emphasize the function of the
+
+01:16:59.051 --> 01:16:59.361 
+block.
+
+01:16:59.601 --> 01:17:03.681 
+For example, we say an adder and I want to think about only an adder, right?
+
+01:17:03.921 --> 01:17:04.921 
+Adder does addition.
+
+01:17:04.921 --> 01:17:10.117 
+I don't want to think about the underlying gates, but that adder actually compose is composed of the
+
+01:17:10.117 --> 01:17:11.001 
+underlying gates.
+
+01:17:11.161 --> 01:17:17.565 
+So we're going to build an adder or some other thing based on those underlying gates and then later
+
+01:17:17.565 --> 01:17:18.601 
+forget about it.
+
+01:17:18.881 --> 01:17:20.321 
+That's the beauty of abstraction, right?
+
+01:17:20.881 --> 01:17:22.761 
+You know exactly how an adder is built.
+
+01:17:23.121 --> 01:17:27.637 
+But once you know how an adder is built, you can forget about how it's built, at least for the
+
+01:17:27.637 --> 01:17:30.761 
+purpose of constructing something larger, something more complex.
+
+01:17:31.801 --> 01:17:37.082 
+OK, we're going to look at some blocks that are very useful for many, many, many things that we will
+
+01:17:37.082 --> 01:17:37.241 
+do.
+
+01:17:37.881 --> 01:17:38.601 
+They're also fun.
+
+01:17:38.921 --> 01:17:42.161 
+Decoder, multiplexer, full adder and programmable logic arrays.
+
+01:17:42.681 --> 01:17:43.801 
+Have you guys seen that before?
+
+01:17:44.121 --> 01:17:46.121 
+Any of these maybe?
+
+01:17:46.841 --> 01:17:49.401 
+OK, some of you, yes, many of you know that's good.
+
+01:17:49.881 --> 01:17:51.361 
+This is actually what we are going to cover.
+
+01:17:51.361 --> 01:17:51.681 
+Probably.
+
+01:17:51.681 --> 01:17:56.801 
+We're not going to finish all of this today, but let's see how what kind of things we can cover.
+
+01:17:56.921 --> 01:17:58.121 
+Decoder is very useful.
+
+01:17:58.801 --> 01:18:00.601 
+It's essentially an input pattern detector.
+
+01:18:01.321 --> 01:18:06.361 
+You have N inputs, and you have two to the N outputs and N inputs.
+
+01:18:07.361 --> 01:18:15.721 
+Only one input corresponding to a particular output is set to 1 and everything else becomes zero.
+
+01:18:16.641 --> 01:18:17.441 
+You can think of it that way.
+
+01:18:17.441 --> 01:18:23.121 
+Exactly 1 of the outputs is 1 and all of the rest are zeros, depending on the pattern in the inputs.
+
+01:18:24.281 --> 01:18:28.644 
+The output, or in other words the output that is logically 1, is the output that's corresponding to
+
+01:18:28.644 --> 01:18:31.201 
+the input pattern the logic circuit is expected to detect.
+
+01:18:31.561 --> 01:18:33.641 
+So let's take a look at 2:00 to 4:00 decoder.
+
+01:18:33.921 --> 01:18:34.841 
+This is the truth table.
+
+01:18:35.361 --> 01:18:41.717 
+You have two inputs and you have 4 outputs and if the input is 001 of the outputs and exactly one of
+
+01:18:41.717 --> 01:18:44.641 
+them is set to 1, everything else is set to 0.
+
+01:18:44.761 --> 01:18:46.841 
+If it's 01, this other output is set to 1.
+
+01:18:46.841 --> 01:18:47.961 
+Everything else is set to 0.
+
+01:18:48.281 --> 01:18:52.161 
+If it's 10, this output is set to 1 and everything else is set to 0.
+
+01:18:52.161 --> 01:18:56.681 
+If it's if the input is 11 Y 3 is set to 1 and everything else is set to 0.
+
+01:18:57.401 --> 01:19:02.623 
+Basically, you're really detecting what is your input pattern or you can think of this as an encoded
+
+01:19:02.623 --> 01:19:03.041 
+version.
+
+01:19:03.121 --> 01:19:04.801 
+And this is a decoded version, right?
+
+01:19:06.161 --> 01:19:12.092 
+And this is the abstraction level that we're going to construct the gate level representation of
+
+01:19:12.092 --> 01:19:12.401 
+this.
+
+01:19:12.401 --> 01:19:19.394 
+But this is the abstraction that we have two inputs A1A04 outputs because two inputs can take 4
+
+01:19:19.394 --> 01:19:26.461 
+combinations and depending on the combination, only one of the output is set and it's unique per
+
+01:19:26.461 --> 01:19:28.081 
+the input combination.
+
+01:19:29.441 --> 01:19:31.441 
+Now you know exactly how to construct this, right?
+
+01:19:32.001 --> 01:19:40.841 
+You can have a sum of products form for Y0Y1Y2Y3, right?
+
+01:19:43.081 --> 01:19:43.481 
+Correct.
+
+01:19:44.801 --> 01:19:45.681 
+Let's let's do it.
+
+01:19:45.881 --> 01:19:46.721 
+This is it basically.
+
+01:19:49.201 --> 01:19:53.001 
+So this is I think Y0.
+
+01:19:53.361 --> 01:19:53.961 
+Let's go back.
+
+01:19:54.601 --> 01:19:57.761 
+So Y0 is equal to a bar and D bar, right?
+
+01:19:57.761 --> 01:20:03.601 
+That's the sum of products form and that's what we have over here, A bar and B bar.
+
+01:20:03.681 --> 01:20:13.841 
+So Y0 is 1 if A&B are both 0, this is Y1 is 1 if a IS0B is 1 and you can do the rest.
+
+01:20:13.841 --> 01:20:16.081 
+Basically this is your decoder basically.
+
+01:20:17.241 --> 01:20:17.921 
+Makes sense, right?
+
+01:20:19.081 --> 01:20:20.561 
+And this is actually a nice decoder.
+
+01:20:21.201 --> 01:20:26.338 
+It's if you have input 10, you can figure out that this will be activated and everything else will
+
+01:20:26.338 --> 01:20:26.601 
+be 0.
+
+01:20:27.481 --> 01:20:29.841 
+OK, so we just built a decoder.
+
+01:20:30.721 --> 01:20:32.241 
+You can think of this as an exercise.
+
+01:20:32.241 --> 01:20:36.741 
+If someone gave you the truth table, you could build it easily based on the logic gates and the
+
+01:20:36.741 --> 01:20:37.641 
+truth table, right?
+
+01:20:37.961 --> 01:20:42.931 
+If someone gave you the functional specification without the truth table, you can construct the
+
+01:20:42.931 --> 01:20:46.961 
+truth table 1st and then take the sum of products form and build this, right?
+
+01:20:47.641 --> 01:20:48.521 
+Yes, there's a question.
+
+01:21:03.401 --> 01:21:04.121 
+Say it again.
+
+01:21:04.121 --> 01:21:09.761 
+If you use what gates OR gates, I mean, you could do it, Yeah.
+
+01:21:09.761 --> 01:21:13.081 
+I mean, in the end, you can convert all of these gates to other gates.
+
+01:21:22.601 --> 01:21:23.921 
+I'm sure there's a cheaper way.
+
+01:21:24.201 --> 01:21:25.761 
+I'm not sure if it's with the OR gates.
+
+01:21:26.761 --> 01:21:27.201 
+OK.
+
+01:21:28.241 --> 01:21:34.041 
+I think with the, you will have the same type of complexity with the OR gates because if you want to
+
+01:21:34.041 --> 01:21:39.377 
+convert, for example, the first one to OR gates, what you do is you you need to push out the
+
+01:21:39.377 --> 01:21:39.841 
+bubbles.
+
+01:21:40.201 --> 01:21:42.241 
+So it's going to be nor of A&B.
+
+01:21:43.601 --> 01:21:46.001 
+So it's going to be the same complexity with the OR gates, I think.
+
+01:21:47.281 --> 01:21:51.224 
+But there could be other tricks you can play at the transistor level, which I'm not going to get
+
+01:21:51.224 --> 01:21:51.841 
+into right now.
+
+01:21:52.361 --> 01:21:53.761 
+OK, very good.
+
+01:21:53.761 --> 01:21:55.241 
+It's good to think about optimizations.
+
+01:21:56.601 --> 01:21:59.321 
+OK, so the decoder, what is it useful for, right?
+
+01:21:59.321 --> 01:22:00.321 
+Why do we decode things?
+
+01:22:00.681 --> 01:22:03.881 
+Basically, it's useful for many things that we're going to see in the future.
+
+01:22:04.201 --> 01:22:09.472 
+For example, when we cover sequential logic, you will see that there's a memory address and we want
+
+01:22:09.472 --> 01:22:12.401 
+to figure out where to access which part of the memory.
+
+01:22:12.441 --> 01:22:18.161 
+Memory is A2 dimensional array, Which row am I going to access based on the input address?
+
+01:22:18.361 --> 01:22:20.881 
+So that's when decoder will be useful, right?
+
+01:22:21.801 --> 01:22:26.444 
+So essentially, it could be the address of a location in memory that the processor intends to read
+
+01:22:26.444 --> 01:22:26.681 
+from.
+
+01:22:26.681 --> 01:22:28.801 
+We're going to use a lot of decoders for that.
+
+01:22:28.801 --> 01:22:34.521 
+When we build memories, it could be an instruction when we talk about instructions.
+
+01:22:34.681 --> 01:22:41.961 
+So how does the software communicate that the processor needs to do an add or multiply or XOR?
+
+01:22:42.761 --> 01:22:45.401 
+We're going to encode that using a bit pattern.
+
+01:22:46.761 --> 01:22:52.279 
+XOR will have a bit pattern different from AND, which will be a different from different bit pattern
+
+01:22:52.279 --> 01:22:55.481 
+from multiply, and that's going to be our instruction set.
+
+01:22:55.521 --> 01:23:01.664 
+Every instruction will be encoded with a different bit pattern, and when the processor gets that bit
+
+01:23:01.664 --> 01:23:07.746 
+pattern to understand what kind of instruction to execute, it will need to decode that and activate
+
+01:23:07.746 --> 01:23:11.801 
+a particular part of the circuit like an adder so they can do ADD.
+
+01:23:12.801 --> 01:23:17.041 
+And that line coming out of the decoder will decide which part of the circuit to activate.
+
+01:23:17.921 --> 01:23:21.121 
+Hopefully this magic is becoming a little bit less magic right now, right?
+
+01:23:21.441 --> 01:23:22.561 
+But we're going to build up to that.
+
+01:23:23.761 --> 01:23:25.241 
+OK, Multiplexer.
+
+01:23:25.241 --> 01:23:26.761 
+That's another very basic component.
+
+01:23:27.441 --> 01:23:28.921 
+It's also called a selector.
+
+01:23:29.921 --> 01:23:31.401 
+It selects one of the north inputs.
+
+01:23:31.481 --> 01:23:37.481 
+To connect to connect it to the output based on the value of a control input called select.
+
+01:23:37.721 --> 01:23:41.001 
+And this control input is logged 2 to the north bits.
+
+01:23:41.641 --> 01:23:44.881 
+OK, let's take a look at the simplest multiplexer, 2 to 1 Max 2.
+
+01:23:44.961 --> 01:23:46.321 
+It's called the Max also.
+
+01:23:46.961 --> 01:23:52.673 
+So there are three inputs, 2 of them are data inputs D1D0 that you're selecting from, and one of
+
+01:23:52.673 --> 01:23:54.161 
+them is the select input.
+
+01:23:54.161 --> 01:23:56.081 
+So there are actually 3 inputs for a Max.
+
+01:23:56.081 --> 01:23:58.521 
+But data inputs are two select inputs.
+
+01:23:58.521 --> 01:24:01.961 
+Control input is 1 and Y is the output.
+
+01:24:02.761 --> 01:24:04.481 
+And this is the truth table.
+
+01:24:05.121 --> 01:24:11.401 
+So the truth table looks complicated, but it's not complicated if S IS0Y is equal to D0, right?
+
+01:24:12.361 --> 01:24:15.561 
+So you can see that if S IS0Y is the same as D0.
+
+01:24:15.961 --> 01:24:19.201 
+If S is 1, Y is the same as D1, right?
+
+01:24:19.841 --> 01:24:22.681 
+And this is what a multiplexer looks like.
+
+01:24:22.681 --> 01:24:23.721 
+This is how we denote it.
+
+01:24:24.361 --> 01:24:26.841 
+If S IS0Y is equal to D0.
+
+01:24:27.161 --> 01:24:34.265 
+If S is 1, Y is equal to D1, so there's a 0, there's a, there's a data input at the zero select
+
+01:24:34.265 --> 01:24:41.220 
+position and there's a data input at the one select position and it's depending on the select
+
+01:24:41.220 --> 01:24:46.081 
+value, the data input at that position gets passed to the output.
+
+01:24:46.841 --> 01:24:50.521 
+OK, but again, this is magic, meaning it's a high level module.
+
+01:24:50.881 --> 01:24:54.361 
+It can be implemented using logic gates that we have seen.
+
+01:24:54.721 --> 01:24:55.441 
+Let's do that.
+
+01:24:56.801 --> 01:24:59.281 
+And this is our product of sum of products form.
+
+01:25:01.201 --> 01:25:04.361 
+Let's yeah.
+
+01:25:04.961 --> 01:25:07.001 
+So basically this is OK, let's go through this quickly.
+
+01:25:07.441 --> 01:25:14.521 
+This is what we have essentially this is the select input.
+
+01:25:16.481 --> 01:25:19.001 
+And this is A, this is B.
+
+01:25:19.641 --> 01:25:29.281 
+If S IS0A needs to pass and if S is 1B passes, right?
+
+01:25:30.241 --> 01:25:32.361 
+That's what's implemented over here as you can see.
+
+01:25:33.681 --> 01:25:35.641 
+So let's take a look at this pictorially.
+
+01:25:36.081 --> 01:25:39.521 
+If S is 0, this input over here is 1.
+
+01:25:39.961 --> 01:25:43.801 
+So the output of this and gate is A.
+
+01:25:44.081 --> 01:25:48.881 
+If S is 0, this the output of this and gate is zero and a or 0 is A.
+
+01:25:48.881 --> 01:25:51.121 
+And you can do the same thing for B.
+
+01:25:51.481 --> 01:25:56.121 
+And this is 1 implementation of the multiplexer that we have seen.
+
+01:25:57.601 --> 01:25:58.281 
+Makes sense, right?
+
+01:25:59.281 --> 01:26:03.521 
+OK, you can implement it with NOR gates also, product of sums form also etcetera.
+
+01:26:03.521 --> 01:26:04.481 
+But I'm not going to do that.
+
+01:26:05.481 --> 01:26:05.841 
+OK.
+
+01:26:05.841 --> 01:26:11.497 
+The output C is always connected to either the input A or input B and output value depends on the
+
+01:26:11.497 --> 01:26:14.121 
+select line S and this is the representation.
+
+01:26:14.481 --> 01:26:16.481 
+This is another way of doing the truth table.
+
+01:26:16.961 --> 01:26:20.361 
+It's kind of a more condensed form of the truth table, right?
+
+01:26:21.121 --> 01:26:23.441 
+It's kind of abusing the truth table in a sense.
+
+01:26:24.041 --> 01:26:29.709 
+Because normally in a in a canonical truth table, you have inputs on the left and all of the input
+
+01:26:29.709 --> 01:26:32.601 
+combinations on the left and outputs on the right.
+
+01:26:32.601 --> 01:26:38.201 
+Here, implicitly you have two inputs A&B, right, and they don't appear on the left, right.
+
+01:26:38.521 --> 01:26:41.041 
+But this is a nice way of thinking about a multiplexer.
+
+01:26:41.361 --> 01:26:44.121 
+If the select line is 0, output is A.
+
+01:26:44.201 --> 01:26:46.801 
+If the select line is 1, output is B, right?
+
+01:26:47.681 --> 01:26:48.081 
+Sounds good.
+
+01:26:48.081 --> 01:26:48.481 
+Hopefully.
+
+01:26:50.081 --> 01:26:56.295 
+OK, your task, which I'm going to solve in the next slide is draw a schematic for a four to one
+
+01:26:56.295 --> 01:26:57.081 
+multiplexer.
+
+01:26:58.041 --> 01:27:00.161 
+Meaning you have 4 inputs, you select one of them.
+
+01:27:01.721 --> 01:27:06.653 
+You can do it gate level as a combination of basic and or not gates, or you can do it as a module
+
+01:27:06.653 --> 01:27:11.281 
+level as a combination of two input maxes, 2 to 1 maxes and both of them are here actually.
+
+01:27:12.721 --> 01:27:14.761 
+So your task became my task.
+
+01:27:16.001 --> 01:27:17.521 
+This is from your book also by the way.
+
+01:27:18.201 --> 01:27:25.022 
+Basically you can you can convince yourself that this is the two level logic that implements A4 to 1
+
+01:27:25.022 --> 01:27:25.841 
+multiplexer.
+
+01:27:25.841 --> 01:27:29.441 
+4 data inputs, 2 select inputs because there are four data inputs.
+
+01:27:29.961 --> 01:27:39.001 
+Log 2 to the four S 2 and if based on the value of S1 and S0 you select one and only one of them.
+
+01:27:40.041 --> 01:27:44.761 
+For example if S0 is 0 S 1 is 0D0Y is equal to D0.
+
+01:27:45.521 --> 01:27:52.881 
+If S0 is 1 S, 1 is 0, you select D1 over here, and this is the module level.
+
+01:27:52.881 --> 01:27:59.281 
+Basically, you can build a four to one multiplexer as a tree of two to one multiplexers.
+
+01:27:59.961 --> 01:28:01.321 
+So this is the two to one multiplexer.
+
+01:28:01.321 --> 01:28:02.641 
+This is the 2 to 1 multiplexer.
+
+01:28:02.841 --> 01:28:04.761 
+You select between D0 and D1 first.
+
+01:28:05.241 --> 01:28:08.001 
+You select between D2 and D3 first based on S0.
+
+01:28:08.361 --> 01:28:09.001 
+This is S0.
+
+01:28:09.001 --> 01:28:11.481 
+That's not a nice notation, but that's your, that's what your book did.
+
+01:28:11.721 --> 01:28:14.521 
+Still, it's S0 kind of implicitly.
+
+01:28:14.881 --> 01:28:20.504 
+The line is going underneath the module over there and based on the things that you selected, you
+
+01:28:20.504 --> 01:28:22.881 
+select one more based on the value of S1.
+
+01:28:23.961 --> 01:28:29.081 
+OK, this does the same thing as this, except this is implemented in a different way.
+
+01:28:29.321 --> 01:28:30.721 
+OK, OK.
+
+01:28:31.681 --> 01:28:38.405 
+So I'll do this aside because it's really important, especially for your labs where you will see
+
+01:28:38.405 --> 01:28:45.269 
+Fpgas like field programmable gate arrays and they will use look up tables and you can actually do
+
+01:28:45.269 --> 01:28:47.721 
+logic functions using multiplexers.
+
+01:28:47.721 --> 01:28:50.321 
+Also, multiplexer itself is a logic element, right?
+
+01:28:50.321 --> 01:28:55.921 
+It's a combination logic circuit, but you can build other logic functions using multiplexers.
+
+01:28:56.081 --> 01:28:59.801 
+And this is fun to think of by treating them as look up tables.
+
+01:29:00.521 --> 01:29:03.001 
+So let's take a look at this example from your books book.
+
+01:29:03.481 --> 01:29:11.085 
+So this is a 4 to 1 multiplexer expensive logic like we've seen for whatever reason, you may want to
+
+01:29:11.085 --> 01:29:15.801 
+implement an and logic function using this 4 to 1 multiplexer.
+
+01:29:16.681 --> 01:29:19.281 
+I know and is easier to build by itself.
+
+01:29:19.481 --> 01:29:23.681 
+But if all you have is a multiplexer, you can implement the and based on that.
+
+01:29:23.681 --> 01:29:24.361 
+How do you do that?
+
+01:29:24.961 --> 01:29:25.761 
+Well this is the.
+
+01:29:28.201 --> 01:29:29.801 
+This is the truth table of and right?
+
+01:29:30.521 --> 01:29:39.587 
+What you do is you think of the truth table as a look up table and you select the output value based
+
+01:29:39.587 --> 01:29:41.401 
+on the input values.
+
+01:29:41.601 --> 01:29:48.641 
+Since you have 4 possible combination of inputs and you have two select lines over here.
+
+01:29:48.641 --> 01:29:55.121 
+Select lines can select the outputs based on the and select lines can act as the inputs right?
+
+01:29:55.681 --> 01:30:02.321 
+So in this case, the 00, if a IS0B is 0, you get a 0 because those are tied to ground.
+
+01:30:02.361 --> 01:30:07.801 
+This is tied to a high voltage, which is power.
+
+01:30:08.281 --> 01:30:14.281 
+And only if A&B are 1, you get the one output at Y Makes sense, right?
+
+01:30:15.881 --> 01:30:20.118 
+So this is how Fpgas operate, and we're going to see that a little bit more because they use these
+
+01:30:20.118 --> 01:30:20.681 
+multiplexers.
+
+01:30:20.681 --> 01:30:24.201 
+They need to be programmable and multiplexers or look up tables are useful.
+
+01:30:24.961 --> 01:30:26.401 
+This is another example over here.
+
+01:30:28.121 --> 01:30:32.201 
+This is a better way of implementing it with a 2 to 1 Max if you have two to the one Max, right?
+
+01:30:33.121 --> 01:30:34.521 
+Again, this is the same function.
+
+01:30:36.121 --> 01:30:37.201 
+Y is equal to A&B.
+
+01:30:38.041 --> 01:30:39.121 
+You can collapse things.
+
+01:30:39.121 --> 01:30:40.841 
+This is actually how things are simplified.
+
+01:30:41.481 --> 01:30:47.961 
+So Y is equal to 0 if a is equal to 0 and Y is equal to B if a is equal to 1.
+
+01:30:49.201 --> 01:30:50.521 
+We're kind of playing tricks, right?
+
+01:30:50.601 --> 01:30:51.361 
+Boolean tricks.
+
+01:30:52.081 --> 01:30:59.921 
+And you set the A as the select line and B as the input to the one when the and the select line is 1
+
+01:30:59.921 --> 01:31:03.841 
+and otherwise you select the ground which is zero.
+
+01:31:04.601 --> 01:31:06.521 
+OK, this is another example over here.
+
+01:31:06.521 --> 01:31:07.881 
+This is an XOR function.
+
+01:31:07.881 --> 01:31:09.561 
+Again, you can do it on your own.
+
+01:31:09.921 --> 01:31:13.281 
+You can convince yourself that this multiplexer implements an XOR function.
+
+01:31:13.801 --> 01:31:15.121 
+Now this is becoming interesting right?
+
+01:31:15.481 --> 01:31:19.561 
+You can use the same end to 1 multiplexer to implement different functions.
+
+01:31:19.561 --> 01:31:24.401 
+So multiplexers are not that bad after all, and that's why Fpgas have been quite powerful.
+
+01:31:24.521 --> 01:31:27.841 
+And you're going to program those Fpgas to do some of these functions.
+
+01:31:28.521 --> 01:31:29.601 
+It's good to know how they operate.
+
+01:31:29.801 --> 01:31:30.801 
+This is another example.
+
+01:31:31.081 --> 01:31:35.001 
+If you have an 8 to 1 multiplexer, you can implement this particular function.
+
+01:31:35.161 --> 01:31:35.721 
+As you can see.
+
+01:31:35.721 --> 01:31:37.401 
+Again, I'll let you study this on your own.
+
+01:31:37.641 --> 01:31:39.681 
+It's from your book also, but it's the same concept.
+
+01:31:40.721 --> 01:31:47.906 
+You enumerate all of the midterms inputs and you tie them to what output values they're supposed to
+
+01:31:47.906 --> 01:31:54.801 
+take based on the look up tables, and you use the input values to the function as select lines.
+
+01:31:55.481 --> 01:31:55.921 
+That's it.
+
+01:31:57.321 --> 01:32:01.201 
+Not the most efficient way of implementing a function, but it is a way of implementing a function.
+
+01:32:01.921 --> 01:32:07.041 
+This programble, meaning you can connect those things to something else.
+
+01:32:07.041 --> 01:32:08.001 
+As you will see over here.
+
+01:32:08.001 --> 01:32:08.641 
+This is the free input.
+
+01:32:08.641 --> 01:32:09.361 
+Look up table.
+
+01:32:09.881 --> 01:32:10.961 
+This is the multiplexer.
+
+01:32:11.641 --> 01:32:12.561 
+What we have seen.
+
+01:32:12.841 --> 01:32:16.521 
+You'll go and see this in the FPGA in the lab lecture also next week sometime.
+
+01:32:17.721 --> 01:32:18.721 
+This is the select input.
+
+01:32:19.281 --> 01:32:24.401 
+So you can program this look up table and this three lot in FPGA term it's called 3 lot.
+
+01:32:24.401 --> 01:32:27.681 
+It could be used to implement any three input function, 3 bit input function.
+
+01:32:28.601 --> 01:32:33.864 
+And for example there is this example that you will see again next week, a function that outputs one
+
+01:32:33.864 --> 01:32:36.601 
+when there are at least 2 ones in a three bit input.
+
+01:32:37.161 --> 01:32:38.841 
+You can implement that as a look up table.
+
+01:32:40.081 --> 01:32:48.001 
+You can figure out which input combinations have at least 2 ones set their look up table entries to
+
+01:32:48.001 --> 01:32:48.161 
+1.
+
+01:32:48.521 --> 01:32:53.655 
+Everything else's look up table entries are zero, and based on the input that you get, you get the
+
+01:32:53.655 --> 01:32:54.441 
+correct output.
+
+01:32:55.121 --> 01:32:58.081 
+Instead of designing logic, you use a multiplexer to implement the function.
+
+01:32:58.441 --> 01:32:59.761 
+Multiplexer itself is logic.
+
+01:33:00.641 --> 01:33:04.561 
+So we're still designing logic, but we're not designing specialised logic for this function.
+
+01:33:04.761 --> 01:33:06.241 
+We're just programming a look up table.
+
+01:33:06.241 --> 01:33:10.201 
+So it's going to be more fun as you go into the labs and Fpgas.
+
+01:33:11.041 --> 01:33:13.201 
+OK, you can similarly use logic.
+
+01:33:14.681 --> 01:33:16.521 
+You do logic using decoders.
+
+01:33:16.841 --> 01:33:20.409 
+I will mention this and then we're going to finish and there will be an announcement from your
+
+01:33:20.409 --> 01:33:21.321 
+colleagues very quickly.
+
+01:33:21.321 --> 01:33:24.241 
+You may win, I don't know, $10,000.
+
+01:33:24.881 --> 01:33:25.441 
+OK, wow.
+
+01:33:25.761 --> 01:33:28.161 
+I would like to win that before we go on to full ladder.
+
+01:33:28.601 --> 01:33:31.361 
+So basically decoders can be combined with OR gates to build.
+
+01:33:31.521 --> 01:33:33.481 
+Functions also this is a 2 to 4 recorder.
+
+01:33:34.161 --> 01:33:37.481 
+What decoder does is decodes the minterms as you can see.
+
+01:33:38.081 --> 01:33:43.241 
+So if you want to do X nor of A&B, this is how you can connect.
+
+01:33:43.681 --> 01:33:50.321 
+So you basically connect the minterm AB and minterm AB bar to this or gate and that's what it is.
+
+01:33:50.321 --> 01:33:54.572 
+So this is a decoder and we're going to see more of this in the next lecture when we we'll start
+
+01:33:54.572 --> 01:33:55.281 
+with full adder.
+
+01:33:55.881 --> 01:34:00.881 
+OK, I'll see you next week, but there's a short announcement from your colleagues.
+
+01:34:09.162 --> 01:34:11.842 
+Hack is truly a universe of opportunities.
+
+01:34:17.042 --> 01:34:23.513 
+I learnt so much about teamwork, how everyone has some skills and how to bring it together for one
+
+01:34:23.513 --> 01:34:24.042 
+project.
+
+01:34:27.962 --> 01:34:32.042 
+I would recommend anyone to take up this chance and seize the moment.
+
+01:34:33.842 --> 01:34:38.282 
+The winner of Start Hack 2025 is Team.
+
+01:34:50.922 --> 01:34:58.962 
+We had one goal in mind and keep going and going and we used all these 36 hours to.
+
+01:34:59.122 --> 01:35:01.042 
+If are best and this case study.
+
+01:35:19.793 --> 01:35:23.993 
+So what you have seen here is one of the biggest hackathons in Europe.
+
+01:35:24.593 --> 01:35:29.393 
+It's going to be in March, using it for 10 years.
+
+01:35:30.073 --> 01:35:36.873 
+And we've got people coming from America, from Germany, Italy, and of course, Switzerland.
+
+01:35:37.433 --> 01:35:43.793 
+So we invite you to take part of this, to this international hackathon with many, many universities.
+
+01:35:46.033 --> 01:35:50.113 
+So yeah, we bring together over 600 hackers.
+
+01:35:50.473 --> 01:35:52.113 
+Everything is included.
+
+01:35:52.113 --> 01:35:53.353 
+So everything is free.
+
+01:35:54.593 --> 01:36:04.045 
+We have some problems with the PowerPoint, but I it's such a good opportunity to dive into a real
+
+01:36:04.045 --> 01:36:13.400 
+and concrete cases to go from theory to practice and not just to stay at uni and doing some yeah
+
+01:36:13.400 --> 01:36:23.047 
+theory you can apply now or just take a picture the application close really soon so like do it now
+
+01:36:23.047 --> 01:36:31.233 
+you can develop solutions for plenty of industries from finance to government to AI.
+
+01:36:31.793 --> 01:36:34.993 
+We've got case partners who yeah, who do finance.
+
+01:36:35.193 --> 01:36:39.713 
+You can code softwares to control drones.
+
+01:36:39.713 --> 01:36:42.353 
+That was one of the hack we had before.
+
+01:36:42.513 --> 01:36:49.999 
+So it's you've really got a good choice to do what you want and to make something that people will
+
+01:36:49.999 --> 01:36:50.993 
+actually use.
+
+01:36:51.313 --> 01:36:51.793 
+Thank you.
+
