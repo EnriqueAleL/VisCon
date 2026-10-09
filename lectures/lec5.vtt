@@ -1,0 +1,4691 @@
+WEBVTT
+
+00:00:03.044 --> 00:00:04.364 
+OK, let's get started.
+
+00:00:04.444 --> 00:00:08.844 
+Artet wir sind gut online, ok.
+
+00:00:10.204 --> 00:00:14.284 
+OK, I see that we're losing some people even though this is a Thursday.
+
+00:00:15.524 --> 00:00:17.044 
+Let's see when we will hit the bottom.
+
+00:00:20.244 --> 00:00:21.804 
+Hopefully, hopefully not 0.
+
+00:00:23.884 --> 00:00:26.564 
+But you have all the lectures online so you don't.
+
+00:00:26.604 --> 00:00:28.324 
+We don't require attendance over here.
+
+00:00:28.524 --> 00:00:31.724 
+The the the best way you can learn is the most important for me.
+
+00:00:31.804 --> 00:00:38.105 
+As long as you learn and get the basic concepts and principles, OK, today we're going to cover
+
+00:00:38.105 --> 00:00:41.324 
+something that's really important for your labs.
+
+00:00:42.524 --> 00:00:49.008 
+Also, it's really important for thinking in parallel, I would say, because we're going to look at
+
+00:00:49.008 --> 00:00:52.284 
+describing hardware using human design languages.
+
+00:00:52.924 --> 00:00:57.527 
+And we're going to specifically look at a particular language called Verilogue, but essentially all
+
+00:00:57.527 --> 00:01:00.364 
+hardware description language that are fundamentally similar.
+
+00:01:01.444 --> 00:01:07.399 
+And we're going to look at some design principles to enable this hardware, especially hierarchical
+
+00:01:07.399 --> 00:01:12.444 
+design, top down and bottom up design, and different ways of representing hardware.
+
+00:01:12.524 --> 00:01:16.044 
+Some of them will be very low level, some of them will be much higher level.
+
+00:01:16.444 --> 00:01:21.164 
+And both ways are important to know for the reasons that we will discuss.
+
+00:01:21.964 --> 00:01:27.764 
+Some of these may be automated in the future, but if you don't know, you don't, you may not actually
+
+00:01:27.764 --> 00:01:33.042 
+figure out how the automated things are actually doing in terms of performance, efficiency,
+
+00:01:33.042 --> 00:01:33.564 
+etcetera.
+
+00:01:34.084 --> 00:01:40.064 
+So it's always good to know what's going on underneath, even if AI eventually takes over and does
+
+00:01:40.064 --> 00:01:42.284 
+some of these for you in the future.
+
+00:01:42.524 --> 00:01:46.164 
+And I believe this is actually a part that is more amenable to that.
+
+00:01:46.804 --> 00:01:53.873 
+And if you know what you're doing or how the how the how the underlying hardware description is made
+
+00:01:53.873 --> 00:02:00.660 
+and also is optimised or can be optimised, then you can do much better in, in, in navigating how
+
+00:02:00.660 --> 00:02:02.004 
+the AI optimise it.
+
+00:02:02.124 --> 00:02:03.564 
+So it's good to think about these things.
+
+00:02:03.884 --> 00:02:06.484 
+I have a picture that I'm going to show related to this later on also.
+
+00:02:07.164 --> 00:02:11.284 
+OK, But before we jump into it, this is what we covered in the last few lectures.
+
+00:02:11.404 --> 00:02:14.164 
+We essentially are done with combinational logic.
+
+00:02:14.804 --> 00:02:18.084 
+You should know essentially everything on this slide.
+
+00:02:19.484 --> 00:02:23.184 
+We actually looked at a lot of combinational logic blocks, which is part of the combinational logic
+
+00:02:23.184 --> 00:02:23.484 
+lecture.
+
+00:02:23.484 --> 00:02:25.284 
+We talked about logical completeness.
+
+00:02:25.684 --> 00:02:29.324 
+It was your task to prove NAND and NOR is logically complete.
+
+00:02:29.444 --> 00:02:34.783 
+Basically can represent any Boolean equation using only Nands and also build anything using only
+
+00:02:34.783 --> 00:02:37.564 
+NAND gates, which is a fascinating result I think.
+
+00:02:38.884 --> 00:02:41.644 
+And we covered sequential logic in the last lecture.
+
+00:02:41.884 --> 00:02:46.498 
+We talked about how to store information, how to design sequential logic circuits, and how to build
+
+00:02:46.498 --> 00:02:47.524 
+finite state machines.
+
+00:02:47.524 --> 00:02:51.604 
+And essentially we said that everything in a computer is a finite state machine.
+
+00:02:51.604 --> 00:02:54.084 
+A computer is a collection of finite state machines.
+
+00:02:54.084 --> 00:02:58.084 
+It may have many states, millions or billion states, but it's still a finite state machine.
+
+00:02:58.524 --> 00:03:02.284 
+And we're going to design some of these finite state machines at the end of this lecture using
+
+00:03:02.284 --> 00:03:02.604 
+Verilog.
+
+00:03:03.324 --> 00:03:03.844 
+Sounds good.
+
+00:03:04.964 --> 00:03:07.564 
+OK, OK, this is the agenda for today.
+
+00:03:07.564 --> 00:03:12.150 
+We're going to talk about HDL or hardware description languages, and then first we're going to
+
+00:03:12.150 --> 00:03:14.004 
+implement combinational logic with it.
+
+00:03:14.004 --> 00:03:17.164 
+And then we're going to implement sequential logic and finite state machines.
+
+00:03:18.444 --> 00:03:21.524 
+The Verilog slides are part of a tutorial also.
+
+00:03:21.524 --> 00:03:26.699 
+We may not cover everything in detail, but it's good for you to study them on your own if we don't
+
+00:03:26.699 --> 00:03:28.284 
+cover every single part of it.
+
+00:03:28.804 --> 00:03:31.244 
+And they'll be definitely very beneficial for your labs.
+
+00:03:31.604 --> 00:03:36.284 
+In fact, in the lab lectures this week, you may design A finite state machine.
+
+00:03:36.564 --> 00:03:40.654 
+I don't know if you will go over the Verilog depend, depends on your questions also, but it could be
+
+00:03:40.654 --> 00:03:42.004 
+useful for you to think about it.
+
+00:03:42.764 --> 00:03:48.804 
+Or at least next week also, OK, soon we will use these components to design a full microprocessor.
+
+00:03:48.844 --> 00:03:52.484 
+So next week, the week after we're going to design microprocessor.
+
+00:03:52.484 --> 00:03:55.324 
+So everything will build on top of what we will learn.
+
+00:03:55.484 --> 00:04:00.385 
+And in the labs, you're going to design A microprocessor using information that we have gathered in
+
+00:04:00.385 --> 00:04:02.564 
+the last few lectures, plus today's lecture.
+
+00:04:02.764 --> 00:04:06.604 
+So real programming will start with today's lecture.
+
+00:04:06.964 --> 00:04:07.884 
+OK, this is the data path.
+
+00:04:08.044 --> 00:04:09.484 
+So I'm going to leave that here.
+
+00:04:09.884 --> 00:04:11.284 
+These are the readings for this week.
+
+00:04:11.404 --> 00:04:13.924 
+Again, if you understand everything, you don't need to read anything.
+
+00:04:13.924 --> 00:04:17.924 
+But reading is always good for reinforcing concepts.
+
+00:04:18.044 --> 00:04:23.764 
+And H&H Harris and Harris as the nice description of hardware description languages and Verilog.
+
+00:04:24.244 --> 00:04:27.364 
+And tomorrow we're going to cover timing and verification.
+
+00:04:28.404 --> 00:04:28.884 
+Sounds good.
+
+00:04:30.004 --> 00:04:30.324 
+OK.
+
+00:04:31.244 --> 00:04:36.326 
+But before we jump into today's lecture, somebody may be questioning what's the point of this
+
+00:04:36.326 --> 00:04:36.764 
+lecture?
+
+00:04:37.444 --> 00:04:38.564 
+Maybe I'll ask you the question.
+
+00:04:38.564 --> 00:04:39.644 
+Who painted this painting?
+
+00:04:40.724 --> 00:04:41.444 
+Anybody knows?
+
+00:04:44.804 --> 00:04:45.244 
+Nobody.
+
+00:04:47.764 --> 00:04:48.684 
+Anybody can.
+
+00:04:48.844 --> 00:04:51.164 
+Yes, maybe AI.
+
+00:04:51.164 --> 00:04:51.524 
+Maybe AI.
+
+00:04:51.524 --> 00:04:52.764 
+OK, that's a good guess.
+
+00:04:52.764 --> 00:04:55.884 
+But no, there's a real painting painted by a real human.
+
+00:04:55.884 --> 00:05:03.164 
+I don't remember the name of the artist who was living in Belgium and he was painting happiness.
+
+00:05:03.724 --> 00:05:06.604 
+OK, I see my grade wrong but good guess.
+
+00:05:06.924 --> 00:05:09.164 
+It's good to try, it's hard to guess.
+
+00:05:11.004 --> 00:05:11.444 
+Do you know why?
+
+00:05:11.444 --> 00:05:15.444 
+It's hard to guess because it's not an extremely impressive painting.
+
+00:05:16.004 --> 00:05:19.004 
+It's not something that someone would be remembered by.
+
+00:05:20.284 --> 00:05:21.324 
+Do you guys agree or no?
+
+00:05:23.044 --> 00:05:23.964 
+OK, maybe you just say agree.
+
+00:05:23.964 --> 00:05:24.324 
+Fine.
+
+00:05:24.964 --> 00:05:27.004 
+But I think a lot of art critics would agree.
+
+00:05:27.204 --> 00:05:29.604 
+Not that I'm an art critic, but that's the case.
+
+00:05:30.604 --> 00:05:33.684 
+If I told you that this guy did it, can you name this guy?
+
+00:05:34.444 --> 00:05:34.964 
+There you go.
+
+00:05:35.724 --> 00:05:41.604 
+Salvador Dali But you won't remember Salvador Dali by this Salvador Dali.
+
+00:05:41.844 --> 00:05:44.004 
+Well, maybe I'll ask you who painted this one.
+
+00:05:45.324 --> 00:05:46.404 
+Dali OK, there you go.
+
+00:05:46.404 --> 00:05:48.804 
+Everybody remember Salvador Dali by this thing, right?
+
+00:05:49.604 --> 00:05:52.284 
+The burning giraffe or giraffes.
+
+00:05:53.324 --> 00:05:55.604 
+Anyway, I'm not going to interpret this painting.
+
+00:05:55.604 --> 00:05:57.804 
+But this was also Dali who painted this painting.
+
+00:05:59.404 --> 00:06:04.585 
+This is the same person and they all have implications of this painting you can go and find which
+
+00:06:04.585 --> 00:06:07.524 
+may be fitting for today, what's going on in the world.
+
+00:06:08.404 --> 00:06:16.002 
+My point is this, we're covering these lectures because if you want to be like Dali, you may or may
+
+00:06:16.002 --> 00:06:19.764 
+not want to be, depending on what you want to do.
+
+00:06:20.604 --> 00:06:27.125 
+You got to learn the basic principles before you can use them, ignore them, or consciously choose it
+
+00:06:27.125 --> 00:06:28.364 
+to even break them.
+
+00:06:29.084 --> 00:06:33.324 
+If you don't know the principles, then you're basically shooting in the dark.
+
+00:06:34.284 --> 00:06:39.610 
+The AI is doing programming for you, and you have no idea when it does something wrong, and you have
+
+00:06:39.610 --> 00:06:44.724 
+no idea when it does something useless, and you have no idea when it does something inefficient,
+
+00:06:44.724 --> 00:06:45.044 
+right?
+
+00:06:45.724 --> 00:06:47.164 
+You're basically shooting in the dark.
+
+00:06:47.724 --> 00:06:49.764 
+You're relying on someone else's expertise.
+
+00:06:50.764 --> 00:06:51.964 
+That's why we're covering this.
+
+00:06:52.044 --> 00:06:57.484 
+That's why you're covering a lot of these basics that may be eventually automated by AI.
+
+00:06:57.764 --> 00:06:58.324 
+Who knows?
+
+00:06:58.604 --> 00:06:59.444 
+We don't know for sure.
+
+00:07:00.644 --> 00:07:01.404 
+Does that make sense?
+
+00:07:02.284 --> 00:07:08.407 
+So remember these pictures if you ever doubt or if someone ever challenges something saying that why
+
+00:07:08.407 --> 00:07:10.244 
+are you learning these things?
+
+00:07:10.364 --> 00:07:15.924 
+Why are you learning these basic things that people are not going to deal with 100 years from now?
+
+00:07:16.484 --> 00:07:17.444 
+It's good to think about that.
+
+00:07:18.284 --> 00:07:19.604 
+OK, I like Dali.
+
+00:07:20.764 --> 00:07:23.244 
+OK, so let's jump into hardware description languages.
+
+00:07:23.244 --> 00:07:25.924 
+So this is a modern microprocessor.
+
+00:07:26.004 --> 00:07:26.684 
+Not as modern.
+
+00:07:26.684 --> 00:07:27.404 
+It's 10 years old.
+
+00:07:27.404 --> 00:07:30.644 
+As you can see, it had 1.75 billion transistors.
+
+00:07:30.644 --> 00:07:35.044 
+We're going to see a lot of the things that go into this jargon over here later.
+
+00:07:35.724 --> 00:07:39.324 
+It's one of the state-of-the-art process of its of its time.
+
+00:07:40.244 --> 00:07:43.924 
+This was 22,021 sixteen billion transistors.
+
+00:07:43.924 --> 00:07:49.004 
+So you can see that the number multiplied by ten in four years or so.
+
+00:07:49.044 --> 00:07:51.724 
+Different companies, but good to think about.
+
+00:07:51.964 --> 00:07:58.509 
+This is the next generation of that M1 put together using two chips bonded together using some
+
+00:07:58.509 --> 00:07:59.484 
+interconnects.
+
+00:07:59.684 --> 00:08:00.924 
+That's 114 billion.
+
+00:08:01.724 --> 00:08:07.962 
+And we've already seen pictures like this where you have 1.2 trillion transistors on a wafer and 2.6
+
+00:08:07.962 --> 00:08:08.524 
+trillion.
+
+00:08:08.924 --> 00:08:11.604 
+And this is something what someone is holding.
+
+00:08:11.764 --> 00:08:15.204 
+Basically, we have, we can put a lot of things on a chip, right?
+
+00:08:15.524 --> 00:08:19.324 
+Transistors are the basic building blocks, but there's some complexity that's associated with it.
+
+00:08:19.324 --> 00:08:20.844 
+And this is something from Wikipedia.
+
+00:08:21.324 --> 00:08:23.804 
+If you look at memory, memory is even worse.
+
+00:08:24.324 --> 00:08:28.859 
+Basically, memory chips have orders of magnitude more transistors and computation chips, and these
+
+00:08:28.859 --> 00:08:29.924 
+are some example chips.
+
+00:08:30.444 --> 00:08:35.244 
+You can see that my numbers earlier for GPUs was actually out outdated.
+
+00:08:36.004 --> 00:08:40.164 
+The number over here is 208 billion, apparently on NVIDIA B100.
+
+00:08:40.764 --> 00:08:44.124 
+Assuming you trust who whoever changed Wikipedia over here.
+
+00:08:44.124 --> 00:08:46.964 
+But they're not that bad, at least in these things.
+
+00:08:48.604 --> 00:08:52.524 
+OK, so it's good to think about this basically, basically this pose A complexity challenge.
+
+00:08:52.524 --> 00:08:54.244 
+How do you actually deal with this complexity?
+
+00:08:56.044 --> 00:08:59.404 
+How do you actually put things together on a chip?
+
+00:08:59.404 --> 00:09:00.244 
+Design things.
+
+00:09:00.364 --> 00:09:05.164 
+And this is where languages that are specialized for describing hardware come into play.
+
+00:09:05.964 --> 00:09:12.154 
+Essentially what we need for hardware design is the ability to describe and specify designs and then
+
+00:09:12.154 --> 00:09:16.364 
+increasing the complex designs and also to simulate their behaviour.
+
+00:09:16.484 --> 00:09:18.324 
+And you're going to do both of them in the labs actually.
+
+00:09:18.724 --> 00:09:22.244 
+And we're going to talk about functional simulation as well as timing simulation timing tomorrow.
+
+00:09:23.084 --> 00:09:28.223 
+And also you would like to be able to synthesize this hardware, meaning automatically designed
+
+00:09:28.223 --> 00:09:29.044 
+portions of it.
+
+00:09:29.084 --> 00:09:35.694 
+You describe the hardware and someone needs to map it to the underlying logic gates for example, or
+
+00:09:35.694 --> 00:09:37.564 
+transistors or technologies.
+
+00:09:37.684 --> 00:09:41.084 
+And that part is usually done through electronic design automation tools.
+
+00:09:41.084 --> 00:09:41.364 
+Today.
+
+00:09:41.364 --> 00:09:44.764 
+This is the subject of another lecture if you really want to understand how they operate.
+
+00:09:45.204 --> 00:09:50.644 
+Not this lecture, but for all of these you start with describing the hardware, right?
+
+00:09:50.924 --> 00:09:54.284 
+So you need to have an error free path to implementation eventually.
+
+00:09:55.004 --> 00:09:57.364 
+And hardware description language actually enable all of the above.
+
+00:09:57.724 --> 00:09:58.884 
+It enables description.
+
+00:09:59.004 --> 00:10:03.644 
+Even though they're called description, they also enable simulation and also a synthesis of the
+
+00:10:03.644 --> 00:10:04.084 
+hardware.
+
+00:10:05.164 --> 00:10:07.364 
+So these are languages designed to describe hardware.
+
+00:10:07.884 --> 00:10:08.484 
+Based on what?
+
+00:10:08.764 --> 00:10:09.324 
+Based on the name.
+
+00:10:09.524 --> 00:10:14.198 
+Based on what the name suggests, and there are similarly featured HDLS, one of the most popular
+
+00:10:14.198 --> 00:10:16.364 
+ones, Verilog, and you're going to use that.
+
+00:10:16.884 --> 00:10:20.204 
+There are versions of Verilog, Verilog, System Verilog, etcetera.
+
+00:10:20.644 --> 00:10:22.364 
+The principles are basically the same.
+
+00:10:22.644 --> 00:10:23.804 
+Syntax is different.
+
+00:10:24.844 --> 00:10:29.833 
+Some things are easier, some things are harder in one version versus the other, but I'm going to
+
+00:10:29.833 --> 00:10:31.964 
+give you the basic principles in the end.
+
+00:10:31.964 --> 00:10:37.887 
+We're going to talk a little bit about syntax also because syntax is always interesting but annoying
+
+00:10:37.887 --> 00:10:41.204 
+also sometimes this is where actually AI can help a lot.
+
+00:10:41.964 --> 00:10:46.924 
+So if you learn one language, it's not hard to learn another in this particular case, right?
+
+00:10:47.604 --> 00:10:53.193 
+And mapping between language is usually mechanical, especially for the commonly used subset of the
+
+00:10:53.193 --> 00:10:53.764 
+languages.
+
+00:10:54.524 --> 00:10:56.324 
+So this is a boring slide.
+
+00:10:56.324 --> 00:10:57.444 
+A little bit of history.
+
+00:10:57.444 --> 00:10:58.804 
+There are two major languages.
+
+00:10:58.804 --> 00:11:00.844 
+One is Verilog and the other is VHDL.
+
+00:11:01.084 --> 00:11:04.524 
+Surprisingly, they were developed very late, meaning 1980s.
+
+00:11:04.524 --> 00:11:09.964 
+That's relatively late in the development of computing and they became standards relatively quickly.
+
+00:11:11.444 --> 00:11:17.444 
+We will use Verilog in this course, but other people may use VHDL, and again, you can easily see the
+
+00:11:17.444 --> 00:11:19.964 
+similarities and differences between them.
+
+00:11:20.284 --> 00:11:22.444 
+So why do we have specialised languages for hardware?
+
+00:11:22.964 --> 00:11:25.284 
+Well, my answer is hardware is special.
+
+00:11:26.284 --> 00:11:30.924 
+It's special because you do some special things in hardware, as we will see, right?
+
+00:11:31.364 --> 00:11:37.374 
+As we have seen also right, First, they enable easy description of hardware structures which may not
+
+00:11:37.374 --> 00:11:42.724 
+exist in a higher level programming language that you may be used to Python, for example.
+
+00:11:42.724 --> 00:11:45.004 
+In a Python, how do you describe a flip flop?
+
+00:11:45.364 --> 00:11:50.404 
+How do you describe concurrent assignment of different things to a stateful thing?
+
+00:11:50.604 --> 00:11:51.644 
+It's good to think about that.
+
+00:11:53.324 --> 00:11:57.605 
+And also a high a hardware description language enables seamless expression of parallelism inherent
+
+00:11:57.605 --> 00:11:58.124 
+in hardware.
+
+00:11:58.884 --> 00:12:06.017 
+So for example, this hardware description language usually has specialised keywords to describe
+
+00:12:06.017 --> 00:12:11.124 
+wires, gates, registers, flip flops, clock, rising and falling edge.
+
+00:12:11.124 --> 00:12:11.924 
+We're going to see that.
+
+00:12:12.084 --> 00:12:15.164 
+Hopefully you remember the clock and rising and fall edge.
+
+00:12:15.164 --> 00:12:18.724 
+These are concepts that are necessary to actually build sequential logic, right?
+
+00:12:19.284 --> 00:12:21.604 
+Essentially combinational and sequential logic elements.
+
+00:12:23.484 --> 00:12:27.484 
+And for the second one, all hardware logic updates concurrently.
+
+00:12:28.204 --> 00:12:32.804 
+Basically you actually you, you design something and there's a lot of concurrency in hardware.
+
+00:12:33.644 --> 00:12:38.703 
+The way you synchronize to different concurrent operations is through clock, assuming you're doing
+
+00:12:38.703 --> 00:12:39.684 
+synchronous design.
+
+00:12:40.044 --> 00:12:43.244 
+If you don't have synchronous design, it's much harder to synchronize things.
+
+00:12:44.044 --> 00:12:50.551 
+So we're going to see that concurrent operations specified in the hardware description language and
+
+00:12:50.551 --> 00:12:55.284 
+having both of these above is a specification, simulation and synthesis.
+
+00:12:56.764 --> 00:12:59.964 
+It enables the hardware designer to design something better.
+
+00:13:00.404 --> 00:13:06.997 
+It enables the tools to simulate things better, and it enables the electronic design automation
+
+00:13:06.997 --> 00:13:10.884 
+tools to map what's described to the underlying library.
+
+00:13:10.884 --> 00:13:14.124 
+Let's say, let's say a library of logic gates, much better.
+
+00:13:14.564 --> 00:13:18.124 
+People have tried, for example, to use high level languages to describe hardware.
+
+00:13:18.124 --> 00:13:26.012 
+You take C or Java or Python or whatever pick pick your favorite language and you try to map it to
+
+00:13:26.012 --> 00:13:31.164 
+the hardware and people have not been successful in that so far.
+
+00:13:31.284 --> 00:13:37.789 
+Even though you may be able to actually describe the hardware and also implement it, the resulting
+
+00:13:37.789 --> 00:13:44.029 
+hardware is very inefficient, either very slow or very expensive or power hungry or all of the
+
+00:13:44.029 --> 00:13:46.884 
+above, usually all of the above in the end.
+
+00:13:47.564 --> 00:13:53.476 
+So it's it's very hard to get from a very general purpose language that's designed to write software
+
+00:13:53.476 --> 00:13:59.152 
+to a hardware implementation versus having a special language for hardware and get to a hardware
+
+00:13:59.152 --> 00:14:01.044 
+implementation compared to that.
+
+00:14:02.204 --> 00:14:05.124 
+OK, Hopefully you'll see some of these as we go through this lecture.
+
+00:14:05.684 --> 00:14:07.884 
+So let's do some hardware design using HDL.
+
+00:14:07.884 --> 00:14:10.444 
+So how do you actually do this design?
+
+00:14:10.524 --> 00:14:15.164 
+You have 1 trillion transistors and you want to use them for something.
+
+00:14:15.164 --> 00:14:17.964 
+We're going to see a lot of principles for designing processors.
+
+00:14:17.964 --> 00:14:22.678 
+Later on, you may decide to use some of those principles and you eventually decide there will be
+
+00:14:22.678 --> 00:14:24.004 
+some modules that you want.
+
+00:14:24.484 --> 00:14:26.084 
+This is some example over here, right?
+
+00:14:26.084 --> 00:14:27.764 
+You have some cores.
+
+00:14:27.844 --> 00:14:29.924 
+We're going to delve a lot into these cores.
+
+00:14:30.084 --> 00:14:30.884 
+You have some caches.
+
+00:14:30.884 --> 00:14:33.364 
+We're going to see more of that how how they are constructed.
+
+00:14:34.044 --> 00:14:36.764 
+Memory controllers, we're going to see some of that also and memory.
+
+00:14:37.564 --> 00:14:39.844 
+And essentially, you have these different modules, right?
+
+00:14:40.444 --> 00:14:45.084 
+And in the end, if you want to tame complexity, you have to separate things into modules.
+
+00:14:45.084 --> 00:14:47.044 
+That's the divide and conquer approach, right?
+
+00:14:47.204 --> 00:14:50.524 
+You separate things into modules, have a hierarchy of them.
+
+00:14:50.524 --> 00:14:56.924 
+For example, a cache block that has a lot of memory over here has smaller modules internally.
+
+00:14:57.044 --> 00:15:01.644 
+And it's a hierarchy of modules where I'm going to give you some examples.
+
+00:15:01.644 --> 00:15:04.364 
+Essentially you start with predefined primitive gates.
+
+00:15:04.364 --> 00:15:08.752 
+For example, these are the smallest modules that you may have, and then you build simple modules on
+
+00:15:08.752 --> 00:15:09.284 
+top of them.
+
+00:15:09.404 --> 00:15:14.656 
+By instantiating these gates for example components like multiplexers, decoders like we have done in
+
+00:15:14.656 --> 00:15:15.444 
+lecture, right?
+
+00:15:16.524 --> 00:15:21.647 
+And you, you build more complex modules like like an ALU arithmetic logic unit like we have done,
+
+00:15:21.647 --> 00:15:21.964 
+right?
+
+00:15:21.964 --> 00:15:27.884 
+It consists of multiplexers, adders, wires, gates, etcetera.
+
+00:15:28.364 --> 00:15:31.164 
+And we do this by instantiating simpler modules.
+
+00:15:31.804 --> 00:15:37.484 
+And having this hierarchy clearly helps with the complex design, complexity of the design.
+
+00:15:37.924 --> 00:15:41.444 
+This is similar to having like functions and methods in programming, right?
+
+00:15:41.444 --> 00:15:44.124 
+You program using functions or methods.
+
+00:15:44.404 --> 00:15:50.267 
+And these help you build a hierarchy of functions or a call stack of functions, which could be
+
+00:15:50.267 --> 00:15:55.444 
+useful in really programming as opposed to writing everything as a sequential code.
+
+00:15:55.644 --> 00:15:57.164 
+And there are no functions, no methods.
+
+00:15:57.844 --> 00:15:59.804 
+It's very hard to read also, right?
+
+00:16:00.844 --> 00:16:04.604 
+OK, so basically complexity is a big issue in microprocessors today.
+
+00:16:05.844 --> 00:16:10.624 
+Even though software is complex, hardware is actually very complex too, because usually the
+
+00:16:10.624 --> 00:16:12.884 
+understanding is that hardware should work.
+
+00:16:13.724 --> 00:16:16.324 
+That understanding doesn't translate easily to software.
+
+00:16:16.324 --> 00:16:21.244 
+Actually, it's unfortunate that if you think about it, software is a more iterative process.
+
+00:16:22.204 --> 00:16:23.604 
+The first version may not work.
+
+00:16:24.364 --> 00:16:29.220 
+I suggest enabling your first version to work very well, but the first version may not work and you
+
+00:16:29.220 --> 00:16:32.164 
+can keep iterating, change the software because soft, right?
+
+00:16:32.764 --> 00:16:38.034 
+Whereas with hardware, if the first version doesn't work, you manufactured it, you're going to
+
+00:16:38.034 --> 00:16:39.604 
+manufacture it again, right?
+
+00:16:39.644 --> 00:16:41.724 
+It's very expensive to do this.
+
+00:16:41.724 --> 00:16:44.364 
+That's why first version should ideally work.
+
+00:16:45.164 --> 00:16:49.710 
+So if you don't actually do the right thing when you're designing, you may actually get not working
+
+00:16:49.710 --> 00:16:50.124 
+hardware.
+
+00:16:50.244 --> 00:16:53.284 
+And if with complex hardware, it's very easy to get something that doesn't work.
+
+00:16:53.844 --> 00:17:01.829 
+OK, So OK, basically what is the size of a module also becomes a question what what do you
+
+00:17:01.829 --> 00:17:03.604 
+synthesise to gates?
+
+00:17:03.604 --> 00:17:06.084 
+This is actually a real question that people are trying to answer.
+
+00:17:06.204 --> 00:17:07.084 
+I'm not going to answer that.
+
+00:17:07.564 --> 00:17:10.084 
+So there are usually two types of design methodologies.
+
+00:17:10.084 --> 00:17:12.004 
+1 is top down, the other is bottom up.
+
+00:17:12.204 --> 00:17:15.364 
+People usually use both when they're designing complex systems.
+
+00:17:16.004 --> 00:17:21.161 
+So top down is essentially you define a top level module, let's say microprocessor, and identify the
+
+00:17:21.161 --> 00:17:23.844 
+sub modules necessary to build the top level module.
+
+00:17:24.844 --> 00:17:26.564 
+You have a bunch of sub modules.
+
+00:17:27.084 --> 00:17:31.859 
+You may have, for example, an instruction fetch engine and then instruction decode engine and then
+
+00:17:31.859 --> 00:17:36.342 
+an instruction execution engine and then memory access engine and then instruction finishing
+
+00:17:36.342 --> 00:17:36.684 
+engine.
+
+00:17:36.924 --> 00:17:39.204 
+We're going to see that actually in several lectures.
+
+00:17:39.844 --> 00:17:47.409 
+And these may be different modules that are put together in some way and then clearly they consist
+
+00:17:47.409 --> 00:17:51.964 
+of other sub modules and eventually you come to leaf cells.
+
+00:17:52.124 --> 00:17:54.884 
+Leaf cells are circuit components that cannot be further divided.
+
+00:17:55.404 --> 00:18:01.029 
+Based on what you're doing, they could be logic gates, they could be primitive cell library elements
+
+00:18:01.029 --> 00:18:04.404 
+that can be synthesised that may map to different libraries.
+
+00:18:04.404 --> 00:18:08.604 
+So essentially it could be an adder for example, but it could be an AND gate also, right?
+
+00:18:09.284 --> 00:18:12.004 
+It depends, but hopefully you get the idea right.
+
+00:18:12.004 --> 00:18:15.844 
+This is the modular design that you have or you can do bottom up design.
+
+00:18:15.964 --> 00:18:19.044 
+You first identify what building blocks that are available to you.
+
+00:18:19.484 --> 00:18:20.044 
+Leaf cells.
+
+00:18:20.044 --> 00:18:21.204 
+Someone may provide this to you.
+
+00:18:21.204 --> 00:18:27.054 
+Basically, someone may say you're going to use only these blocks because these are the blocks that I
+
+00:18:27.054 --> 00:18:32.553 
+can efficiently manufacture in my factory, right Fabrication technology and I'm and you should
+
+00:18:32.553 --> 00:18:35.244 
+design your microprocessor using these blocks.
+
+00:18:35.524 --> 00:18:42.088 
+This is what happens when people manufacture, for example, their microprocessors and when, when they
+
+00:18:42.088 --> 00:18:46.684 
+send it to TSMC, for example, they manufacture in Taiwan or somewhere.
+
+00:18:47.444 --> 00:18:51.204 
+You get some libraries and you're, you're supposed to work with them.
+
+00:18:51.844 --> 00:18:57.604 
+And then you build bigger modules using these blocks and eventually you have a top level module.
+
+00:18:57.844 --> 00:19:00.044 
+So these two methodologies are bottom up, top down.
+
+00:19:00.484 --> 00:19:01.924 
+Usually it's a combination of both.
+
+00:19:02.884 --> 00:19:07.444 
+And sometimes you may say, oh, I want another leaf module, please add it to your library.
+
+00:19:07.684 --> 00:19:12.564 
+And if the manufacturer is nice and if you give them enough money, they may be able to do that.
+
+00:19:12.684 --> 00:19:16.644 
+You know, so top down is good because you can request things.
+
+00:19:16.964 --> 00:19:22.570 
+Bottom up is good because maybe you're poor and you cannot pay a lot and you basically deal with the
+
+00:19:22.570 --> 00:19:23.804 
+leaf cells over there.
+
+00:19:24.964 --> 00:19:25.444 
+Sounds good.
+
+00:19:26.324 --> 00:19:31.188 
+OK, so hopefully you understand the trade-offs, which is not which which comes up actually in
+
+00:19:31.188 --> 00:19:32.444 
+software design as well.
+
+00:19:33.044 --> 00:19:34.764 
+OK, so let's talk about this module.
+
+00:19:35.164 --> 00:19:36.764 
+You can define modules in Verilog.
+
+00:19:37.004 --> 00:19:38.724 
+It's the main building block in Verilog.
+
+00:19:39.604 --> 00:19:42.084 
+Essentially you define the name of the module.
+
+00:19:42.124 --> 00:19:43.324 
+In this case, it's example.
+
+00:19:43.924 --> 00:19:45.644 
+You need to define the directions of its ports.
+
+00:19:45.644 --> 00:19:47.084 
+There are some inputs and outputs.
+
+00:19:47.124 --> 00:19:47.964 
+This is a hardware block.
+
+00:19:47.964 --> 00:19:48.444 
+Basically.
+
+00:19:48.524 --> 00:19:55.044 
+Now we're defining a hardware block and you need to name the ports ABC and Y here.
+
+00:19:56.004 --> 00:20:01.074 
+And then you need to describe the functionality of the module using programming using the syntax of
+
+00:20:01.074 --> 00:20:01.484 
+Verilog.
+
+00:20:02.444 --> 00:20:04.364 
+So let's take a look at one module over here.
+
+00:20:04.364 --> 00:20:08.844 
+This is a module definition, example module ABCY.
+
+00:20:09.404 --> 00:20:12.884 
+Inputs our ABC output is Y and then you describe the circuit and you do end module.
+
+00:20:13.044 --> 00:20:16.044 
+Again this is syntax boring automated easily.
+
+00:20:17.364 --> 00:20:18.524 
+But this is at your module.
+
+00:20:20.044 --> 00:20:24.359 
+I've already said all of these, so and you need to declare the type of these ports, input and
+
+00:20:24.359 --> 00:20:24.684 
+output.
+
+00:20:25.924 --> 00:20:30.764 
+So again, syntax, these two descriptions are functionally identical.
+
+00:20:30.764 --> 00:20:36.602 
+You can put the input declarations inside or you can actually merge them over here, depends on the
+
+00:20:36.602 --> 00:20:39.164 
+readability and coding standards, etcetera.
+
+00:20:39.804 --> 00:20:42.284 
+So you can combine the declaration and direction.
+
+00:20:43.124 --> 00:20:49.246 
+So if you have multi input and output, multi bit input and output is called a bus, a set of wires
+
+00:20:49.246 --> 00:20:50.004 
+essentially.
+
+00:20:50.524 --> 00:20:52.884 
+You have an array definition that looks like this.
+
+00:20:52.884 --> 00:20:58.044 
+Range end, range start and number of bits is range end minus range start plus one.
+
+00:20:58.204 --> 00:21:03.804 
+For example, this is a 32 bit bus named A, It's an input.
+
+00:21:04.124 --> 00:21:09.564 
+This is a 8, an 8 bit bus named B1, It's an output.
+
+00:21:09.564 --> 00:21:14.804 
+There's an 8 bit bus also named B2 and this is single wire, single bit bus essentially.
+
+00:21:16.164 --> 00:21:18.004 
+I think I already said this.
+
+00:21:18.124 --> 00:21:20.564 
+So normally you use like this.
+
+00:21:22.724 --> 00:21:24.244 
+It's preferred over this definition.
+
+00:21:24.244 --> 00:21:25.844 
+So it's good practice to be consistent.
+
+00:21:26.684 --> 00:21:31.084 
+Either you always use 31 zero or zero 31, but not both.
+
+00:21:31.084 --> 00:21:32.404 
+Otherwise you will confuse people.
+
+00:21:32.644 --> 00:21:32.924 
+Yes.
+
+00:21:32.924 --> 00:21:38.364 
+Is there a reason you specify a start index?
+
+00:21:38.364 --> 00:21:39.524 
+Start index like 0?
+
+00:21:39.564 --> 00:21:40.244 
+That's how it is.
+
+00:21:40.244 --> 00:21:48.124 
+I mean that's the syntax maybe.
+
+00:21:48.124 --> 00:21:52.797 
+Maybe you always want to connect it to the top bytes, let's say, right, Because there are 8 bits
+
+00:21:52.797 --> 00:21:53.284 
+over here.
+
+00:21:53.644 --> 00:21:58.364 
+And maybe this is semantically that B1 always goes to the top 8 bytes bits.
+
+00:21:58.364 --> 00:22:03.164 
+It could be, for example, the top 8 bits of a 16 bit number, and that's what you want to do.
+
+00:22:03.164 --> 00:22:04.404 
+So this may be the way.
+
+00:22:04.724 --> 00:22:06.084 
+I wouldn't name it B1 in that case.
+
+00:22:06.084 --> 00:22:09.164 
+It might be the significant byte of B or something like that.
+
+00:22:09.204 --> 00:22:19.604 
+You know, yes, a is 30, 232 bits, yes, 32 bits.
+
+00:22:19.924 --> 00:22:20.164 
+And then?
+
+00:22:26.844 --> 00:22:27.244 
+Which one?
+
+00:22:27.244 --> 00:22:28.484 
+It's the, it's the same notation, right?
+
+00:22:28.484 --> 00:22:32.604 
+It's 15 through 8, but it's, it basically says 8 bits, right?
+
+00:22:33.404 --> 00:22:34.244 
+There's also 8 bits.
+
+00:22:34.244 --> 00:22:35.844 
+It's just written that way.
+
+00:22:37.964 --> 00:22:39.724 
+OK, so how do you manipulate bits?
+
+00:22:39.724 --> 00:22:41.124 
+So these are easy things.
+
+00:22:41.124 --> 00:22:43.924 
+Again, you can slice the bits, you can concatenate the bits.
+
+00:22:43.924 --> 00:22:45.444 
+So slicing the bits looks like this.
+
+00:22:45.444 --> 00:22:49.364 
+For example, you have a 16 bit long bus, you have an 8 bit short bus.
+
+00:22:49.764 --> 00:22:54.684 
+And you can assign those 8 bits to be the bits 12 through 5 of the long bus, right?
+
+00:22:55.724 --> 00:22:58.964 
+You basically slice the middle bits over here.
+
+00:22:59.844 --> 00:23:00.764 
+It's possible to do it.
+
+00:23:00.964 --> 00:23:06.694 
+As you can see, that's, that's why you basically a 16 bit wire, get the middle 8 bits and assign it
+
+00:23:06.694 --> 00:23:08.084 
+to the short bus, right?
+
+00:23:08.084 --> 00:23:09.204 
+That's what we're doing over here.
+
+00:23:09.244 --> 00:23:13.124 
+And you should be able to do that in hardware clearly concatenation.
+
+00:23:13.524 --> 00:23:21.680 
+Basically, if you want to concatenate 4 different bits, let's say you have an, you have a bus called
+
+00:23:21.680 --> 00:23:21.844 
+A.
+
+00:23:22.884 --> 00:23:30.306 
+And if you want to create a four bit value that consists of the 0 TH bit of a, again 0 TH bit of a
+
+00:23:30.306 --> 00:23:37.124 
+copied and then the first bit of A and the second bit of a, you can concatenate like this.
+
+00:23:39.084 --> 00:23:40.364 
+Or you can duplicate things.
+
+00:23:40.364 --> 00:23:47.998 
+For example, if you want to duplicate the first bit of A, the 0 TH bit, I should, I should say 0 TH
+
+00:23:47.998 --> 00:23:50.004 
+bit, really 0 TH bit of A.
+
+00:23:51.084 --> 00:23:54.564 
+And if you want to duplicate it four times, this is one way of doing it.
+
+00:23:54.844 --> 00:23:59.164 
+X is essentially A4 bit value that duplicates the zero bit four times.
+
+00:23:59.164 --> 00:24:00.804 
+Or you could specify it this way.
+
+00:24:00.804 --> 00:24:03.444 
+These both specify the same thing, essentially multiple copies.
+
+00:24:04.524 --> 00:24:06.004 
+So it's good to think about these things.
+
+00:24:06.084 --> 00:24:08.004 
+And it's relatively easy, as you can see.
+
+00:24:08.004 --> 00:24:08.244 
+Yes.
+
+00:24:08.244 --> 00:24:14.848 
+So are these long bosses, short bosses, X&Y, are these inputs outputs that we define, or are they
+
+00:24:14.848 --> 00:24:17.164 
+new variables that we now declare?
+
+00:24:17.164 --> 00:24:18.204 
+Yeah, there are wires here.
+
+00:24:18.204 --> 00:24:23.484 
+You can see that they're declared as wires, but they could also be inputs, they could be outputs.
+
+00:24:23.484 --> 00:24:25.764 
+But in this case, you have a declaration called wire.
+
+00:24:25.764 --> 00:24:28.204 
+Wire that's not part of your module.
+
+00:24:28.204 --> 00:24:30.444 
+You'll see that it's going to be part of your module itself.
+
+00:24:30.444 --> 00:24:30.924 
+Inside.
+
+00:24:30.924 --> 00:24:33.844 
+It's not an input, it's not an output, but it's inside the module.
+
+00:24:33.844 --> 00:24:40.548 
+There's some wires, OK, And then assign statement is used when you want to assign some value to some
+
+00:24:40.548 --> 00:24:40.884 
+wire.
+
+00:24:40.884 --> 00:24:41.964 
+OK, yes.
+
+00:24:41.964 --> 00:24:43.164 
+And then the index.
+
+00:24:46.303 --> 00:24:48.383 
+So it it gets the value that's assigned to it.
+
+00:24:49.623 --> 00:24:52.583 
+So if it's an input, it needs to be supplied as input, right?
+
+00:24:52.583 --> 00:24:56.663 
+For example, a four bit value, if the value is 1111, A zero will be 1.
+
+00:24:57.263 --> 00:25:00.183 
+If the value is 1110, the a zero will be 0.
+
+00:25:01.383 --> 00:25:05.543 
+OK, OK, so there's some basic syntax.
+
+00:25:05.543 --> 00:25:06.903 
+The word log is case sensitive.
+
+00:25:07.703 --> 00:25:09.543 
+Fortunately or unfortunately these are the.
+
+00:25:09.623 --> 00:25:10.823 
+These are not the same things.
+
+00:25:10.863 --> 00:25:13.303 
+Basically you need to deal with case sensitivity.
+
+00:25:13.823 --> 00:25:15.463 
+Names cannot start with numbers.
+
+00:25:15.983 --> 00:25:17.583 
+That's what they decided to do.
+
+00:25:18.343 --> 00:25:23.526 
+White space are ignored and you can make comments that are single line comments and multi line
+
+00:25:23.526 --> 00:25:24.023 
+comments.
+
+00:25:24.943 --> 00:25:26.343 
+Hopefully these are easy to think about.
+
+00:25:27.223 --> 00:25:31.592 
+OK, let's talk about two main styles of HDL implementation because we're going to look at the lower
+
+00:25:31.592 --> 00:25:35.961 
+level style first, which is structural and then we're going to look at the higher level style which
+
+00:25:35.961 --> 00:25:36.623 
+is behavioural.
+
+00:25:37.063 --> 00:25:38.503 
+Structural is essentially gate level.
+
+00:25:39.463 --> 00:25:44.923 
+The module body contains gate level description of the circuit and you define describe how the
+
+00:25:44.923 --> 00:25:50.675 
+modules are interconnected each other and each model module contains other modules or instances and
+
+00:25:50.675 --> 00:25:54.103 
+you also specify the interconnection between these modules.
+
+00:25:54.103 --> 00:25:55.623 
+I'm going to give you examples of this soon.
+
+00:25:57.023 --> 00:26:00.583 
+Essentially you can describe the hierarchical modules that are defined as gates.
+
+00:26:01.343 --> 00:26:03.583 
+So it's very low level because you start with gates.
+
+00:26:04.103 --> 00:26:06.063 
+Behavioural on the other hand is very high level.
+
+00:26:06.063 --> 00:26:11.812 
+It's more similar to higher level programming language, although there will be differences that are
+
+00:26:11.812 --> 00:26:13.903 
+specialised elements as we will see.
+
+00:26:14.343 --> 00:26:17.703 
+The module body contains functional description of the circuit.
+
+00:26:19.023 --> 00:26:24.063 
+As opposed to using gates like and gates or gates, we're going to use a functional description.
+
+00:26:24.183 --> 00:26:31.183 
+If and else statement, for example will be one example or a for loop, we'll be able to do that.
+
+00:26:31.463 --> 00:26:36.063 
+It contains logical and mathematical operators like plus, minus, etcetera.
+
+00:26:36.823 --> 00:26:39.103 
+So the level of abstraction is higher than gate love.
+
+00:26:39.983 --> 00:26:45.726 
+Now this is useful in specifying complex things, but this also leads to many possible gate level
+
+00:26:45.726 --> 00:26:51.350 
+realisations from this behavioural description because the person who is describing it doesn't
+
+00:26:51.350 --> 00:26:53.863 
+really specify the gate level description.
+
+00:26:54.343 --> 00:27:00.108 
+OK, so there's a lot of open-ended potential compilation of this and there are many, many practical
+
+00:27:00.108 --> 00:27:01.623 
+designs actually use both.
+
+00:27:01.663 --> 00:27:05.683 
+You need to use a combination of both in the end, because structural is, you could potentially
+
+00:27:05.683 --> 00:27:09.063 
+design everything with structural gate level, very log, no question about that.
+
+00:27:09.223 --> 00:27:14.543 
+And that's a very good learning experience for someone who starts, but it's very tedious.
+
+00:27:14.663 --> 00:27:21.351 
+Essentially, it's not easy to design a trillion like billion gate processor with every gate
+
+00:27:21.351 --> 00:27:23.263 
+specified by the designer.
+
+00:27:24.823 --> 00:27:29.922 
+OK, so but we're going to start with structural because it's easier to understand and then gate
+
+00:27:29.922 --> 00:27:31.103 
+behaviour will follow.
+
+00:27:31.703 --> 00:27:34.943 
+So this is an example of module that I want to design.
+
+00:27:34.983 --> 00:27:37.103 
+Let's say it does something right.
+
+00:27:38.423 --> 00:27:40.103 
+It has a top level module.
+
+00:27:40.303 --> 00:27:43.343 
+It's inputs are a select and C, let's say.
+
+00:27:43.863 --> 00:27:49.223 
+And then it's output is Y, and it consists of two smaller modules that are identical to each other.
+
+00:27:50.983 --> 00:27:52.943 
+One of them looks like this, the other looks like this.
+
+00:27:52.943 --> 00:27:55.143 
+And they're connected using a wire called N1.
+
+00:27:55.943 --> 00:27:58.703 
+OK, so this is our schematic.
+
+00:27:58.703 --> 00:28:04.863 
+Usually when you design A module, it's good to do a pictorial schematic to do the design.
+
+00:28:05.543 --> 00:28:07.703 
+That's actually what in general people do.
+
+00:28:09.063 --> 00:28:10.943 
+And I've already said what what is said over here.
+
+00:28:11.343 --> 00:28:17.167 
+Now let's take a look at how you would instantiate it or how you would describe this module in
+
+00:28:17.167 --> 00:28:17.663 
+Verilog.
+
+00:28:18.143 --> 00:28:23.669 
+So you can see that there's a top module, there's some inputs and outputs and you also describe you
+
+00:28:23.669 --> 00:28:25.623 
+also define the wires that connect.
+
+00:28:25.903 --> 00:28:28.343 
+That's part of this top level module, as you can see, right?
+
+00:28:28.463 --> 00:28:29.663 
+And don't forget then module.
+
+00:28:30.583 --> 00:28:31.943 
+And then there's a small module.
+
+00:28:31.943 --> 00:28:34.343 
+You can see the inputs AB and output Y.
+
+00:28:34.943 --> 00:28:36.103 
+And then there's some description.
+
+00:28:36.103 --> 00:28:36.863 
+It does something.
+
+00:28:37.023 --> 00:28:39.383 
+Let's assume it doesn't matter what it does actually.
+
+00:28:39.383 --> 00:28:42.063 
+But because we're not, we're not going to deal with that.
+
+00:28:42.063 --> 00:28:44.543 
+We're really looking at how you combine modules over here.
+
+00:28:44.983 --> 00:28:46.543 
+So that's the top module over here.
+
+00:28:46.703 --> 00:28:48.503 
+These are the small modules.
+
+00:28:49.063 --> 00:28:50.023 
+And this is a wire.
+
+00:28:50.143 --> 00:28:51.023 
+You need to declare these.
+
+00:28:51.023 --> 00:28:56.996 
+Unfortunately, it doesn't automatically infer that it's a wire because we will see some other types
+
+00:28:56.996 --> 00:28:58.143 
+of things later on.
+
+00:28:59.583 --> 00:29:02.543 
+You can see that this is the first instantiation of the small module.
+
+00:29:02.743 --> 00:29:05.903 
+So the top level module has a small module.
+
+00:29:05.903 --> 00:29:07.863 
+I first instantiate it this way.
+
+00:29:09.263 --> 00:29:16.656 
+Here I'm the The instantiation describes that the A input of the module is connected to the A input
+
+00:29:16.656 --> 00:29:23.303 
+of A input of the first small module is connected to the A input of the top level module.
+
+00:29:23.463 --> 00:29:31.686 
+Right B input dot B specifies that B input of the first small module is connected as cell input of
+
+00:29:31.686 --> 00:29:38.903 
+the top level module and the Y output of the small module is connected to the wire N1.
+
+00:29:39.863 --> 00:29:43.183 
+OK, that's how you'd specify again it's syntax.
+
+00:29:44.143 --> 00:29:46.543 
+You're really describing how things are connected over here.
+
+00:29:47.423 --> 00:29:51.503 
+And this is the second instantiating the small one for the second time.
+
+00:29:52.023 --> 00:29:53.103 
+Here you're describing the.
+
+00:29:53.103 --> 00:29:59.343 
+A input of the second one is connected to the M1 wire that is which is the output of this one.
+
+00:30:00.903 --> 00:30:05.223 
+And B input is connected to the C input of the top level module.
+
+00:30:05.583 --> 00:30:09.903 
+And the Y output of this is connected to the Y output of the top level module, right?
+
+00:30:10.303 --> 00:30:11.383 
+That's what we've done basically.
+
+00:30:11.383 --> 00:30:12.343 
+Naming is important.
+
+00:30:12.343 --> 00:30:16.823 
+Clearly, if you don't want to deal with the naming, this is what you could do.
+
+00:30:16.903 --> 00:30:25.928 
+So instead of doing this dot A dot B dot Y, you basically follow the order aby over here, a cell and
+
+00:30:25.928 --> 00:30:27.463 
+one, for example.
+
+00:30:27.783 --> 00:30:28.383 
+Implicitly.
+
+00:30:28.383 --> 00:30:33.427 
+If you don't explicitly specify which input is connected to what, you basically fall back on the
+
+00:30:33.427 --> 00:30:33.743 
+order.
+
+00:30:34.503 --> 00:30:37.463 
+It's possible to do it, but pin order is very important.
+
+00:30:37.623 --> 00:30:42.423 
+This is a safer choice, clearly, because here you can basically order these in any way.
+
+00:30:42.423 --> 00:30:47.729 
+I wouldn't recommend that still, but it's harder to make a mistake because you're explicitly
+
+00:30:47.729 --> 00:30:52.863 
+specifying which input is connected to the which thing at the higher level module, right?
+
+00:30:54.383 --> 00:30:55.303 
+But you could do either way.
+
+00:30:56.903 --> 00:31:01.943 
+OK, so a short form is not good practice in general as it reduces code maintainability.
+
+00:31:02.943 --> 00:31:04.743 
+OK, so now let's build a multiplexer.
+
+00:31:05.663 --> 00:31:06.783 
+You know multiplexers.
+
+00:31:06.783 --> 00:31:11.343 
+This is our beautiful 2 to 1 multiplexer from previous lecture and the last lecture.
+
+00:31:11.343 --> 00:31:13.383 
+From the previous lecture and the previous to previous lecture.
+
+00:31:13.383 --> 00:31:15.503 
+Actually, we've seen this multiple times.
+
+00:31:16.863 --> 00:31:20.943 
+So Verilog actually supports multiple ways of building a multiplexer.
+
+00:31:21.423 --> 00:31:23.463 
+Let's take a look at how to use logic gates.
+
+00:31:24.263 --> 00:31:27.103 
+Actually, Verilog has basic logic gates as its primitives.
+
+00:31:27.863 --> 00:31:32.439 
+These primitives are instantiated like modules, except that they're predefined in Verilog and do not
+
+00:31:32.439 --> 00:31:33.583 
+need a module definition.
+
+00:31:33.583 --> 00:31:38.863 
+For example, you don't need to define an and module because and is a special thing in Verilog.
+
+00:31:39.503 --> 00:31:42.543 
+So this is our multiplexer 2 input multiplexer.
+
+00:31:42.543 --> 00:31:44.183 
+You have two inputs D0D1.
+
+00:31:44.863 --> 00:31:51.611 
+You can see that I you can omit inputs if you if you actually use the input over here, another input
+
+00:31:51.611 --> 00:31:53.703 
+S select input and an output Y.
+
+00:31:54.943 --> 00:32:02.134 
+And if you want to do a structural description, you need to declare the wires Y1Y2 and then not
+
+00:32:02.134 --> 00:32:06.223 
+select, which is actually shown over here as a bubble.
+
+00:32:07.063 --> 00:32:08.503 
+And this is the gate double description.
+
+00:32:08.903 --> 00:32:12.423 
+You first invert select.
+
+00:32:12.623 --> 00:32:13.943 
+The output is not select.
+
+00:32:14.343 --> 00:32:18.503 
+This is our G1 over here, which is the bubble actually.
+
+00:32:19.143 --> 00:32:27.016 
+And then you have an Ant which takes the not select which is here and then D0AS inputs and then
+
+00:32:27.016 --> 00:32:31.823 
+outputs Y1 which is this one that's G2 and gate over here.
+
+00:32:32.223 --> 00:32:39.565 
+And then you have another Ant, which is this one G3 which takes S and D1 as inputs and outputs Y2,
+
+00:32:39.565 --> 00:32:42.263 
+which is our wire which we declared.
+
+00:32:42.783 --> 00:32:48.458 
+And then you you describe the OR gates which takes Y1 and Y2AS inputs and outputs Y, which is
+
+00:32:48.458 --> 00:32:51.143 
+connected to the output of the Max 2 module.
+
+00:32:51.583 --> 00:32:53.423 
+It's an OR gate, did I say?
+
+00:32:53.423 --> 00:32:54.343 
+And it's an OR gate.
+
+00:32:54.983 --> 00:32:58.543 
+OK, basically this is our Multiplex here that we knew from before, right?
+
+00:32:59.543 --> 00:33:00.223 
+Looks nice.
+
+00:33:00.423 --> 00:33:04.663 
+And we exactly described it in hardware using the primitives that Verilog provides.
+
+00:33:05.103 --> 00:33:06.183 
+And it could keep doing this.
+
+00:33:06.703 --> 00:33:08.223 
+You could do this all with Nans.
+
+00:33:09.143 --> 00:33:14.223 
+It's fun, but it gets very boring and tiring after some point because you know you can't do it.
+
+00:33:14.703 --> 00:33:16.543 
+So you need to raise the level of abstraction, right?
+
+00:33:16.543 --> 00:33:17.103 
+Abstraction.
+
+00:33:17.103 --> 00:33:19.263 
+Raising the level of abstraction improves productivity.
+
+00:33:19.663 --> 00:33:21.103 
+That's why we don't do this all the time.
+
+00:33:22.303 --> 00:33:24.383 
+OK, But you, you should know how to do this clearly.
+
+00:33:25.303 --> 00:33:28.263 
+So behavioural HDL, let's talk about behavioural description.
+
+00:33:28.263 --> 00:33:32.663 
+Remember, this was the functional description of the circuit, not necessarily the gate level.
+
+00:33:33.863 --> 00:33:40.187 
+So this enables us to raise the abstraction level, improve productivity, and also enable potential
+
+00:33:40.187 --> 00:33:46.383 
+optimizations that could be done by whoever is mapping the description to an underlying circuit.
+
+00:33:46.583 --> 00:33:51.437 
+With some libraries, there's a compilation step or mapping step that happens using electronic design
+
+00:33:51.437 --> 00:33:52.263 
+automation tools.
+
+00:33:52.463 --> 00:33:54.983 
+Or a very smart person may do that also, right?
+
+00:33:56.623 --> 00:34:02.947 
+OK, there's always this tension between very smart people who can, who know how to optimise code,
+
+00:34:02.947 --> 00:34:07.903 
+and very smart people who think that they can write better compilers, right?
+
+00:34:08.183 --> 00:34:10.023 
+That's true in software, that's true in hardware also.
+
+00:34:10.703 --> 00:34:11.343 
+It exists.
+
+00:34:11.823 --> 00:34:18.258 
+And they always go against each other because very smart people think that they can optimise code
+
+00:34:18.258 --> 00:34:24.627 
+much better than the best compiler that than any other smart, some other smart people can design
+
+00:34:24.627 --> 00:34:25.623 
+and vice versa.
+
+00:34:26.663 --> 00:34:27.543 
+Now this is a good battle.
+
+00:34:27.543 --> 00:34:27.943 
+Actually.
+
+00:34:28.023 --> 00:34:32.583 
+It's interesting to think, OK, so behavioural HDL, this is an example over here.
+
+00:34:33.303 --> 00:34:35.983 
+If this circuit does something, you don't need to figure out what it does.
+
+00:34:35.983 --> 00:34:38.783 
+But essentially this is behavioural, right?
+
+00:34:39.423 --> 00:34:41.423 
+This is the circuit description that we have.
+
+00:34:41.423 --> 00:34:45.543 
+We're not using the gates and, or not NAND, whatever.
+
+00:34:45.983 --> 00:34:56.368 
+We're basically inverting things using this complement behavioural, let's say keyword or letter or
+
+00:34:56.368 --> 00:35:00.183 
+some alphabet, and you can see that.
+
+00:35:00.263 --> 00:35:05.663 
+That A&B&C are inverted and you take the end of it and then there's an OR over here.
+
+00:35:05.663 --> 00:35:08.383 
+So basically we're describing A bitwise circuit over here.
+
+00:35:08.863 --> 00:35:14.970 
+You have a 2-3 inputs and gates that takes a bar B, bar C You're Oring it with another three input
+
+00:35:14.970 --> 00:35:19.583 
+and gates results and Oring it with another three input and gates results.
+
+00:35:19.583 --> 00:35:21.103 
+So you have a three input OR gates in the end.
+
+00:35:22.423 --> 00:35:24.263 
+This is what it looks like, right?
+
+00:35:24.543 --> 00:35:30.925 
+Yeah, 33 input AND gates and you have an OR gates and you have the emergence, which are the these
+
+00:35:30.925 --> 00:35:31.583 
+over here.
+
+00:35:32.023 --> 00:35:37.223 
+So this is a behavioural description that maps nicely to a hardware circuit.
+
+00:35:37.743 --> 00:35:42.543 
+OK, that's not that exciting because it's still very low level, right?
+
+00:35:43.823 --> 00:35:44.983 
+You could also do this.
+
+00:35:45.463 --> 00:35:48.703 
+This is another example you could have.
+
+00:35:50.463 --> 00:35:52.383 
+Now you can see something a little bit different over here.
+
+00:35:52.463 --> 00:35:54.423 
+You get inputs are for example, 4 bits, right?
+
+00:35:54.423 --> 00:35:58.543 
+A&B outputs, you have 5 outputs that are also 4 bits.
+
+00:35:58.543 --> 00:36:00.383 
+So everything is 4 bits over here.
+
+00:36:01.263 --> 00:36:03.143 
+So Y one is A&B.
+
+00:36:03.143 --> 00:36:07.423 
+You can see that this is A OR BA XOR B, this is NAND, this is NOR.
+
+00:36:07.783 --> 00:36:08.663 
+So you can do this also.
+
+00:36:08.663 --> 00:36:11.743 
+And this also maps to a circuit, which is nice.
+
+00:36:11.743 --> 00:36:17.031 
+So you can do bitwise operations behaviourally as you can see, right, you don't need to write the
+
+00:36:17.031 --> 00:36:19.103 
+circuits or NAND and or NOR over here.
+
+00:36:19.223 --> 00:36:19.663 
+Gates.
+
+00:36:20.543 --> 00:36:22.423 
+OK, let's let's see some more interesting things.
+
+00:36:22.423 --> 00:36:23.743 
+So this is a reduction operator.
+
+00:36:24.463 --> 00:36:28.223 
+You have an 8 input bus called A and you have A.
+
+00:36:28.303 --> 00:36:36.844 
+You have one one, sorry, 8 bits bus called A as input and one bit bus or one bit Y are called Y as
+
+00:36:36.844 --> 00:36:44.950 
+output and this is a reduction of A Reduction is essentially you're ending every bit of A and
+
+00:36:44.950 --> 00:36:48.263 
+reducing that value to a single a bit.
+
+00:36:48.263 --> 00:36:52.663 
+This is much easier than to write than this one that I'm not going to read right?
+
+00:36:52.663 --> 00:36:53.623 
+You're ending every single bit.
+
+00:36:53.623 --> 00:36:56.503 
+It's an 88 input and gate basically looks like this.
+
+00:36:57.023 --> 00:37:01.383 
+Now this is a bit more interesting because this saved us a lot of trouble, right?
+
+00:37:02.103 --> 00:37:04.943 
+OK, now let's see more interesting things.
+
+00:37:05.103 --> 00:37:07.903 
+Remember our mocks that we saw earlier?
+
+00:37:08.263 --> 00:37:17.183 
+If you want to actually select, have a 2 input mocks where each bits, so each input is 4 bits.
+
+00:37:17.663 --> 00:37:18.823 
+Those are data inputs.
+
+00:37:18.823 --> 00:37:21.183 
+And then you have a select input and the output is one of those.
+
+00:37:21.183 --> 00:37:24.623 
+Depending on the value of the select input, you can assign it this way.
+
+00:37:24.703 --> 00:37:32.503 
+Basically you're assigning output Y to D1 if select is 1, otherwise D0.
+
+00:37:33.023 --> 00:37:34.503 
+OK, it's an assignment statement.
+
+00:37:34.823 --> 00:37:35.823 
+It's a conditional assignment.
+
+00:37:35.823 --> 00:37:37.423 
+It's also called a ternary operator.
+
+00:37:37.663 --> 00:37:39.703 
+It operates on three inputs SD1D0.
+
+00:37:39.983 --> 00:37:42.663 
+OK, now this is your Max.
+
+00:37:42.943 --> 00:37:47.623 
+It's much better than the Max that we much easier to write than the Max we designed, right?
+
+00:37:47.623 --> 00:37:52.094 
+Because it's really describing the behaviour of the circuit, as opposed to gates that contain the
+
+00:37:52.094 --> 00:37:52.463 
+circuit.
+
+00:37:53.503 --> 00:37:57.103 
+And this is how we can look at it from a schematic level.
+
+00:37:57.303 --> 00:37:59.663 
+This could be implemented in many different ways as we discussed, right?
+
+00:38:00.023 --> 00:38:03.703 
+You could implement this using tri-state buffers, for example, as we have seen in lecture.
+
+00:38:03.863 --> 00:38:09.317 
+You could implement it using NAND gates or gates, NOR gates, anything you want basically, as long as
+
+00:38:09.317 --> 00:38:12.263 
+it's functionally complete and enables implementation.
+
+00:38:13.423 --> 00:38:15.743 
+OK, We can do more complicated conditional assignments.
+
+00:38:15.743 --> 00:38:19.423 
+This is essentially A4 input Max, right?
+
+00:38:20.463 --> 00:38:26.060 
+As opposed to having two data inputs, We have four data inputs, each of them is 4 bits and we're
+
+00:38:26.060 --> 00:38:27.343 
+selecting one of them.
+
+00:38:27.383 --> 00:38:30.343 
+So your select input needs to be two bits as you can see.
+
+00:38:30.823 --> 00:38:36.743 
+And we kind of build it using nested ternary statements, right?
+
+00:38:38.503 --> 00:38:41.423 
+Very similar to what we have seen earlier.
+
+00:38:41.983 --> 00:38:47.303 
+It's you can think of it as building as having a tree of maxes, right?
+
+00:38:47.303 --> 00:38:53.298 
+You have two maxes which are controlled by S0 and their outputs go into another Max which is
+
+00:38:53.298 --> 00:38:54.863 
+controlled by S1, right?
+
+00:38:55.423 --> 00:38:56.543 
+I'm going to show you a picture of that.
+
+00:38:57.063 --> 00:39:05.835 
+There's another way of doing this which is as opposed to a nested statement you do, I guess it's
+
+00:39:05.835 --> 00:39:07.023 
+still nested.
+
+00:39:07.023 --> 00:39:09.423 
+Sorry, another different kind of nested statement.
+
+00:39:10.423 --> 00:39:19.288 
+Instead of checking S1 and then deciding like having checking S0, you kind of distribute S1 and S0
+
+00:39:19.288 --> 00:39:20.103 
+together.
+
+00:39:20.103 --> 00:39:21.583 
+You check S1 and S0 together, right?
+
+00:39:21.583 --> 00:39:22.503 
+2 bit value together.
+
+00:39:23.023 --> 00:39:27.303 
+OK, if S1S0 are one one, then you select D3.
+
+00:39:27.303 --> 00:39:30.063 
+Otherwise if S1S0 are 10 you select D2.
+
+00:39:30.063 --> 00:39:36.023 
+Otherwise if S1S0 are 01, you select D1, otherwise you select D0 and assign it to Y.
+
+00:39:36.743 --> 00:39:38.943 
+OK, so that's a four input marks.
+
+00:39:38.943 --> 00:39:41.583 
+The same thing, except written in two different ways.
+
+00:39:43.183 --> 00:39:45.783 
+Clearly you can also write it this way, right?
+
+00:39:45.983 --> 00:39:50.103 
+If else, if OK, OK, so these are, this is what we've done basically.
+
+00:39:50.103 --> 00:39:55.343 
+This is the first actually both of those describe this one over here.
+
+00:39:55.423 --> 00:39:56.943 
+And this is the structural implementation.
+
+00:39:57.183 --> 00:39:58.063 
+We did not do this.
+
+00:39:58.063 --> 00:40:00.183 
+Basically we did this in that behaviour.
+
+00:40:00.703 --> 00:40:01.263 
+Description.
+
+00:40:02.303 --> 00:40:02.623 
+OK.
+
+00:40:04.263 --> 00:40:04.863 
+Any questions?
+
+00:40:04.863 --> 00:40:07.623 
+Hopefully these are relatively easy and interesting, but yeah, go ahead.
+
+00:40:07.623 --> 00:40:18.411 
+Can you have a race of inputs like now you can specify the zero to 163, you may be like the index
+
+00:40:18.411 --> 00:40:21.303 
+you, yes, you can do that.
+
+00:40:21.303 --> 00:40:22.263 
+You can parameterize things.
+
+00:40:22.263 --> 00:40:23.063 
+We're going to get to that.
+
+00:40:23.583 --> 00:40:27.583 
+Yeah, there are a lot of language features that people have added then.
+
+00:40:28.223 --> 00:40:29.423 
+Yeah, to make it easier.
+
+00:40:31.663 --> 00:40:32.743 
+OK, I'll move on.
+
+00:40:32.983 --> 00:40:35.103 
+So there's also a precedence of operators.
+
+00:40:35.183 --> 00:40:39.983 
+I kind of actually assume that precedence in an earlier thing.
+
+00:40:40.823 --> 00:40:43.303 
+But some operators are the highest precedence.
+
+00:40:43.303 --> 00:40:46.583 
+For example, they apply first, not is the highest precedence.
+
+00:40:46.823 --> 00:40:52.310 
+You apply that and then multiply, divide and modulus comes and then add and subtract and then
+
+00:40:52.310 --> 00:40:52.783 
+shift...
+
+00:40:52.783 --> 00:40:56.023 
+And then eventually you get to ternary operator, which is the lowest precedence.
+
+00:40:56.583 --> 00:41:05.455 
+So for example, here we'd we, yeah, we applied the ternary operator, but then we don't have anything
+
+00:41:05.455 --> 00:41:06.343 
+over here.
+
+00:41:06.343 --> 00:41:12.528 
+So if it if this was for example, some up addition operation addition would get precedence over the
+
+00:41:12.528 --> 00:41:15.903 
+ternary operator or an inversion would get precedence.
+
+00:41:15.903 --> 00:41:21.663 
+So if this was not D3, then that would get precedence over the ternary operator application.
+
+00:41:21.663 --> 00:41:23.623 
+So you would select between not D3 and D2.
+
+00:41:23.703 --> 00:41:24.063 
+OK.
+
+00:41:24.463 --> 00:41:26.103 
+So that's what precedence means in the end.
+
+00:41:27.183 --> 00:41:29.983 
+It's not nice to know all of these.
+
+00:41:30.183 --> 00:41:33.383 
+It's kind of similar to C So it's good to parenthesise in general.
+
+00:41:34.103 --> 00:41:39.448 
+That helps people to think, especially when some of these things are not obvious, usually not as
+
+00:41:39.448 --> 00:41:43.903 
+obvious, but which one has the higher precedent sometimes is not obvious, right?
+
+00:41:44.463 --> 00:41:44.743 
+Yes.
+
+00:41:44.743 --> 00:41:48.263 
+What exactly is the shift operation?
+
+00:41:48.903 --> 00:41:49.863 
+We're going to talk about that.
+
+00:41:49.863 --> 00:41:52.063 
+But essentially you're shifting a value by one bit.
+
+00:41:52.063 --> 00:42:01.482 
+So for example, if your value is 00014 bit value and you're shifting it to the left by one, you're
+
+00:42:01.482 --> 00:42:04.943 
+moving every bit to the left by one.
+
+00:42:05.863 --> 00:42:11.248 
+So the bottom bits goes to the left by 1, the next bit goes to the left by 1, the next bit goes left
+
+00:42:11.248 --> 00:42:14.103 
+by 1, and then the bottom bits gets something inside.
+
+00:42:14.263 --> 00:42:17.743 
+Usually it's a zero OK, So 0001.
+
+00:42:17.743 --> 00:42:21.263 
+If you shifted left by one, it becomes 0010 OK.
+
+00:42:21.623 --> 00:42:24.343 
+If you shifted left by 1 again, it becomes 0100.
+
+00:42:24.503 --> 00:42:28.183 
+OK, Yeah, we're going to see these more when we talk about the ISA.
+
+00:42:28.183 --> 00:42:28.303 
+Yes.
+
+00:42:28.503 --> 00:42:38.023 
+Which index has is the highest bit numerical.
+
+00:42:39.503 --> 00:42:39.743 
+Yeah.
+
+00:42:39.863 --> 00:42:46.383 
+So left, normally left, left, left most bit is the highest, most significant bit, OK.
+
+00:42:47.343 --> 00:42:50.783 
+And the bottom most or right most bit is the lowest.
+
+00:42:50.783 --> 00:42:56.983 
+So in terms of indices, in terms of indices, 0 is the lowest and the higher number is highest.
+
+00:42:56.983 --> 00:43:00.863 
+But again, you can change that also if you actually use the other indexing structure.
+
+00:43:01.543 --> 00:43:07.513 
+It's better to assume that for the purpose of this lecture and whatever, whatever descriptions I
+
+00:43:07.513 --> 00:43:11.183 
+say, 0 is the least significant one, least significant bit.
+
+00:43:11.663 --> 00:43:16.743 
+And as the number, as the number increases, it becomes more and more significant, OK?
+
+00:43:17.423 --> 00:43:22.503 
+So for example, if it's a 32 bit value, bit 31 is the most significant bit.
+
+00:43:22.863 --> 00:43:23.863 
+It has the largest effect.
+
+00:43:26.903 --> 00:43:31.583 
+OK, so how do you express numbers kind of related to what you asked over here.
+
+00:43:32.703 --> 00:43:40.223 
+Essentially this is an 8 bit value that's consists OF00000001.
+
+00:43:40.423 --> 00:43:41.623 
+This is the least significant one.
+
+00:43:41.623 --> 00:43:42.783 
+This is the most significant 1.
+
+00:43:42.983 --> 00:43:45.583 
+You could also express it like this in terms of bytes.
+
+00:43:46.583 --> 00:43:47.823 
+N is the number of bits.
+
+00:43:48.663 --> 00:43:55.599 
+It express how many bits will be used to store the value B is the base over here, can be binary,
+
+00:43:55.599 --> 00:43:57.623 
+hexadecimal, decimal, octal.
+
+00:43:57.623 --> 00:44:01.903 
+** is the number, the value expressed in that particular base.
+
+00:44:01.903 --> 00:44:04.903 
+It can also have invalid and floating values which we have seen.
+
+00:44:04.903 --> 00:44:09.358 
+I'm going to show you more of that_is used to improve readability so that you don't need to figure
+
+00:44:09.358 --> 00:44:11.223 
+out how many zeros are there for example.
+
+00:44:11.983 --> 00:44:13.583 
+So these are some examples over here.
+
+00:44:14.983 --> 00:44:17.623 
+This is a 4 bit value, 1001.
+
+00:44:18.303 --> 00:44:22.343 
+This is a 4 bit value, Decimal 5.
+
+00:44:23.103 --> 00:44:24.703 
+In binary, it's 0101.
+
+00:44:24.703 --> 00:44:25.583 
+That's decimal, right?
+
+00:44:25.863 --> 00:44:26.463 
+Decimal 5.
+
+00:44:27.383 --> 00:44:29.903 
+This is an 8 bit value, 1001.
+
+00:44:30.543 --> 00:44:34.943 
+If it's eight bits and you don't specify the top bits, they're assumed to be 0, right?
+
+00:44:36.783 --> 00:44:39.823 
+This is a 12 bit value, specified in hexadecimal as you can see.
+
+00:44:39.823 --> 00:44:43.223 
+HFA 3FA3 over here.
+
+00:44:43.743 --> 00:44:45.063 
+Again, another 8 bit value.
+
+00:44:45.143 --> 00:44:49.783 
+You could keep doing this for some time, so default is 32 bits.
+
+00:44:50.223 --> 00:44:57.140 
+So if you don't specify the number of bits, you still need to specify the, whether it's binary,
+
+00:44:57.140 --> 00:44:58.743 
+hexadecimal, etcetera.
+
+00:44:58.743 --> 00:45:00.223 
+And you still need to specify some value.
+
+00:45:00.663 --> 00:45:02.463 
+But default is assumed to be 32 bits.
+
+00:45:02.583 --> 00:45:06.863 
+So if you don't want the 32 bit value, you should specify it.
+
+00:45:07.023 --> 00:45:07.383 
+Yes.
+
+00:45:08.583 --> 00:45:10.383 
+OK, OK, floating signals.
+
+00:45:10.383 --> 00:45:11.423 
+We've seen this before.
+
+00:45:11.423 --> 00:45:13.783 
+This is important because you come into these.
+
+00:45:14.503 --> 00:45:18.223 
+This is a signal that's not driven by any circuit, open circuit or floating wire.
+
+00:45:18.903 --> 00:45:20.943 
+We've seen these again, a tri-state buffer.
+
+00:45:20.943 --> 00:45:25.943 
+If you remember, this is how you would input how you describe a tri-state buffer in Verilogue.
+
+00:45:26.223 --> 00:45:27.983 
+Remember, tri-state buffers were very useful.
+
+00:45:28.223 --> 00:45:29.263 
+We're going to see more of those.
+
+00:45:29.863 --> 00:45:31.023 
+It's a four input.
+
+00:45:32.463 --> 00:45:35.383 
+It's a, it's a, it's essentially A4 bit tri-state buffer.
+
+00:45:35.383 --> 00:45:36.783 
+The input is 4 bits A.
+
+00:45:37.263 --> 00:45:40.943 
+There's an enable input like any tri-state buffer and there's an output, 4 bit output.
+
+00:45:41.463 --> 00:45:43.343 
+And essentially the assignment looks like this.
+
+00:45:43.863 --> 00:45:46.863 
+If enable is true, Y is assigned A.
+
+00:45:47.343 --> 00:45:51.223 
+If enable is forced, Y is assigned A4 bit floating signal Z.
+
+00:45:51.663 --> 00:45:52.063 
+OK.
+
+00:45:52.383 --> 00:45:54.223 
+That's how we would implement a tri-state buffer.
+
+00:45:54.823 --> 00:45:57.423 
+And this is recalled from last lectures.
+
+00:45:57.703 --> 00:46:04.943 
+It acts like a switch and we're going to use it to connect CPUs and memories to a shared buses.
+
+00:46:04.943 --> 00:46:10.187 
+And more generally, whenever you want to actually implement a shared wire, it makes sense to
+
+00:46:10.187 --> 00:46:12.183 
+potentially use a tri-state buffer.
+
+00:46:12.183 --> 00:46:16.103 
+You could use other things also, but a tri-state buffer is one thing that we will use.
+
+00:46:16.703 --> 00:46:17.503 
+This is a truth table.
+
+00:46:17.503 --> 00:46:22.623 
+I will let you study on your own, but essentially it's fun to think about this.
+
+00:46:23.663 --> 00:46:32.089 
+If a this is a truth table of AND gate shown as a, let's say 2 dimensional thing, A can take value
+
+00:46:32.089 --> 00:46:34.583 
+01 ZXB, can take value 01 ZX.
+
+00:46:35.063 --> 00:46:40.223 
+And this is the output of the AND gate depending on what values things take.
+
+00:46:40.223 --> 00:46:44.783 
+For example, if any value is 0, the output of the AND gate is definitely 0, right?
+
+00:46:45.263 --> 00:46:48.743 
+But if both values are X, for example, the output of the AND gate is X.
+
+00:46:49.543 --> 00:46:52.783 
+If both values are Z, it's again X because we don't know what the value is.
+
+00:46:52.783 --> 00:46:54.103 
+It's definitely not floating.
+
+00:46:54.663 --> 00:46:56.863 
+It's some value, but we don't know what it is, right?
+
+00:46:57.183 --> 00:46:58.983 
+It's kind of don't care in that sense.
+
+00:47:00.023 --> 00:47:02.343 
+OK, remember the don't cares that we used in the past.
+
+00:47:02.343 --> 00:47:03.263 
+That's also important.
+
+00:47:03.263 --> 00:47:08.823 
+You should you should be able to specify a circuit with don't cares in very long.
+
+00:47:09.183 --> 00:47:10.623 
+So remember the priority circuit.
+
+00:47:11.663 --> 00:47:14.383 
+OK, So what happens with HDL code?
+
+00:47:14.543 --> 00:47:18.503 
+One thing is synthesis, you synthesise the code, the other is simulation.
+
+00:47:18.503 --> 00:47:20.583 
+Now you're going to do both of them in this lecture.
+
+00:47:20.823 --> 00:47:24.823 
+Modern tools map synthesisable HDL code to low level cell libraries.
+
+00:47:25.463 --> 00:47:29.503 
+In the end you will see also in your labs that this will be a net list described in Gates and Wires.
+
+00:47:29.503 --> 00:47:32.623 
+You can actually read it, figure out its format, etcetera.
+
+00:47:33.103 --> 00:47:35.143 
+These tools can perform many optimisations.
+
+00:47:35.423 --> 00:47:37.383 
+So it may not be very easy to read.
+
+00:47:37.383 --> 00:47:43.863 
+It may not be very easy to map the synthesised code back to your Verilog code.
+
+00:47:44.223 --> 00:47:48.823 
+Although if you're if you figure out how to do reverse engineering, you could actually do that.
+
+00:47:48.823 --> 00:47:53.479 
+So if someone is given a net list, you can actually reconstruct what that circuit can potentially
+
+00:47:53.479 --> 00:47:53.623 
+do.
+
+00:47:54.783 --> 00:47:57.183 
+These tools are good, but they're not great.
+
+00:47:57.263 --> 00:47:59.663 
+Let's say they cannot guarantee that a solution is optimal.
+
+00:47:59.903 --> 00:48:05.527 
+Optimal for whenever you throw the word word optimal, you should be careful because optimal for
+
+00:48:05.527 --> 00:48:05.823 
+what?
+
+00:48:05.823 --> 00:48:06.103 
+Right?
+
+00:48:06.503 --> 00:48:06.943 
+Optimal.
+
+00:48:06.943 --> 00:48:08.703 
+These tools are optimal for in general, nothing.
+
+00:48:09.623 --> 00:48:13.223 
+Neither power, energy nor area.
+
+00:48:13.223 --> 00:48:14.023 
+Circuit area.
+
+00:48:14.343 --> 00:48:19.283 
+Because you, if you throw a large circuit to it, it's very hard to actually optimise things to be
+
+00:48:19.283 --> 00:48:20.863 
+and prove that that's the best.
+
+00:48:21.703 --> 00:48:24.623 
+And mainly this is because this is that an expensive problem.
+
+00:48:25.023 --> 00:48:26.943 
+It's anp hard problem actually.
+
+00:48:27.223 --> 00:48:29.063 
+It's very computationally expensive to do.
+
+00:48:29.063 --> 00:48:34.508 
+Placement and routing of the circuits and tools are not good enough here with AI, things are
+
+00:48:34.508 --> 00:48:40.308 
+improving, but there's also a big debate in the community these days actually as to whether the AI
+
+00:48:40.308 --> 00:48:45.931 
+tools are actually better than human design tools because humans have actually improved in this
+
+00:48:45.931 --> 00:48:46.583 
+area a lot.
+
+00:48:46.943 --> 00:48:48.543 
+Neither of them are optimal at this time.
+
+00:48:49.143 --> 00:48:52.823 
+So basically you need to describe your circuit in a nice to synthesise way.
+
+00:48:53.143 --> 00:48:55.143 
+And this is the most common way of digital design these days.
+
+00:48:55.143 --> 00:48:56.783 
+And that's what you will do in your labs basically.
+
+00:48:57.543 --> 00:49:01.728 
+And simulation allows the behaviour of the circuit to be verified without actually manufacturing the
+
+00:49:01.728 --> 00:49:02.063 
+circuit.
+
+00:49:02.063 --> 00:49:03.543 
+So you're going to do a lot of simulation.
+
+00:49:03.543 --> 00:49:08.263 
+And in the end, we're not going to manufacture circuits, we're going to use something called Fpgas.
+
+00:49:08.263 --> 00:49:09.783 
+You're going to program the Fpgas.
+
+00:49:09.783 --> 00:49:12.623 
+That's the beauty of every configurable logic essentially.
+
+00:49:14.023 --> 00:49:16.983 
+And simulators can work on both structural or behavioural HDL.
+
+00:49:17.903 --> 00:49:21.863 
+It's really essential for functional and timing verification as we will see tomorrow.
+
+00:49:22.223 --> 00:49:23.383 
+Let's take a look at this example.
+
+00:49:23.383 --> 00:49:27.543 
+This was the circuit that was interesting synthesising.
+
+00:49:27.543 --> 00:49:32.320 
+You could basically you take this very log, you throw it to a synthesis tool and that's what it
+
+00:49:32.320 --> 00:49:32.823 
+gives you.
+
+00:49:33.103 --> 00:49:33.863 
+It could give you this.
+
+00:49:33.863 --> 00:49:36.183 
+Basically any tool should be able to do that.
+
+00:49:36.863 --> 00:49:38.143 
+And this is the simulation part.
+
+00:49:38.583 --> 00:49:42.391 
+I'll go through this very quickly, but essentially simulation, you will see a lot of this when you
+
+00:49:42.391 --> 00:49:44.063 
+actually simulate your circuit in the labs.
+
+00:49:44.703 --> 00:49:46.983 
+You will have some sort of clock.
+
+00:49:47.103 --> 00:49:48.663 
+Well in this case there's no clock actually.
+
+00:49:48.983 --> 00:49:55.234 
+But you see that you you will be able to see the signals and when you change some of the signals
+
+00:49:55.234 --> 00:49:59.663 
+from zero to 1 circuits, the output of the circuit will change also.
+
+00:50:00.263 --> 00:50:01.463 
+Tomorrow we will cover timing.
+
+00:50:01.623 --> 00:50:03.383 
+So in this simulation there is no timing.
+
+00:50:03.583 --> 00:50:08.103 
+Whenever some value changes, the output also changes, right?
+
+00:50:08.663 --> 00:50:12.063 
+Tomorrow we will see what goes into that timing and it's going to be interesting.
+
+00:50:12.063 --> 00:50:17.543 
+Hopefully I will maybe finish this and then we'll take a break.
+
+00:50:17.543 --> 00:50:18.703 
+But this is actually important.
+
+00:50:19.143 --> 00:50:23.023 
+You're going to see more of This is why it's important in the later part of this lecture.
+
+00:50:23.023 --> 00:50:24.423 
+But, well, maybe I'll read it.
+
+00:50:24.423 --> 00:50:28.979 
+One of the most common mistakes for beginners is to think of HDL as a computer program, rather than
+
+00:50:28.979 --> 00:50:31.143 
+as a shorthand for describing digital hardware.
+
+00:50:31.623 --> 00:50:36.144 
+If you don't know approximately what hardware your HDL should synthesize into, you probably won't
+
+00:50:36.144 --> 00:50:36.983 
+like what you get.
+
+00:50:37.103 --> 00:50:41.809 
+If you care, of course, you might create far more hardware than is necessary, or you might write
+
+00:50:41.809 --> 00:50:45.143 
+code that simulates correctly but cannot be implemented in hardware.
+
+00:50:45.583 --> 00:50:50.385 
+Instead, think of your system in terms of blocks of computational combinational logic registers on
+
+00:50:50.385 --> 00:50:51.463 
+finite state machines.
+
+00:50:52.063 --> 00:50:55.863 
+Sketch these blocks on paper and show how they are connected before you start writing code.
+
+00:50:55.863 --> 00:50:57.423 
+And I definitely agree with this.
+
+00:50:57.463 --> 00:51:01.743 
+It's good to, if you're designing hardware, you should sketch those blocks and then write code.
+
+00:51:01.743 --> 00:51:02.943 
+And we will do that in the labs.
+
+00:51:03.863 --> 00:51:05.583 
+OK, so this is what we've seen so far.
+
+00:51:06.583 --> 00:51:10.143 
+There's more we're going to look at, but first we should take a break.
+
+00:51:10.983 --> 00:51:11.983 
+Then let's be back.
+
+00:51:13.423 --> 00:51:22.103 
+That's 15, let's say 1518 because I want to finish Verilog today and then we'll continue.
+
+00:51:25.310 --> 00:51:26.550 
+OK, hello everyone.
+
+00:51:27.470 --> 00:51:31.350 
+Before you start the lecture, I have a tiny, tiny, tiny, small announcement.
+
+00:51:31.350 --> 00:51:32.790 
+It won't take two minutes.
+
+00:51:33.150 --> 00:51:33.910 
+My name is Frank.
+
+00:51:33.910 --> 00:51:37.830 
+I work at the electrical engineering department.
+
+00:51:37.830 --> 00:51:43.110 
+I know bad people, but we have a project called CIS CHIPS.
+
+00:51:43.110 --> 00:51:50.015 
+The CIS government is giving us some money and they want more IC designs, chips being produced in
+
+00:51:50.015 --> 00:51:50.870 
+Switzerland.
+
+00:51:50.870 --> 00:51:59.470 
+And for that they have teamed up with Matt Van who's running an A service called Tiny Tape Out.
+
+00:51:59.750 --> 00:52:04.310 
+So there is one chip where 205 hundred designs are placed together.
+
+00:52:04.510 --> 00:52:10.928 
+They are manufactured together, they come back, you get the chips, you not only get your chip, you
+
+00:52:10.928 --> 00:52:17.215 
+also get 200 other designs and you can play with it and with your level that you've just covered
+
+00:52:17.215 --> 00:52:23.633 
+here, simple combinational designs, you can actually just put them on a chip, have it manufactured
+
+00:52:23.633 --> 00:52:24.550 
+and come back.
+
+00:52:25.030 --> 00:52:32.350 
+So to explain how this goes, Matt is going to give a webinar March 10th, next Tuesday at six.
+
+00:52:33.910 --> 00:52:38.630 
+It's up there, so you can sign up and say yes, I'm interested, I want to do it.
+
+00:52:39.110 --> 00:52:43.630 
+And if you want to do it, you will get the chip manufactured for free.
+
+00:52:43.630 --> 00:52:45.750 
+You'll also get the board for free.
+
+00:52:46.750 --> 00:52:52.070 
+You have to just sign up and say you're a Swiss resident and everything will work out.
+
+00:52:52.070 --> 00:52:56.750 
+And we want to have as many people coming and doing this.
+
+00:52:57.230 --> 00:52:58.670 
+It's great, it's fun.
+
+00:52:59.110 --> 00:53:03.510 
+And at the moment, let me just a second share the other one.
+
+00:53:09.550 --> 00:53:13.590 
+This is a life, life thing.
+
+00:53:14.590 --> 00:53:19.230 
+@the Moment, we have room for one hundred forty designs @the.
+
+00:53:19.310 --> 00:53:25.150 
+At the moment I have 13, so I need 107 more.
+
+00:53:25.390 --> 00:53:31.189 
+And don't worry if all of you make one, once we reach 140, we will just make it twice as large, so
+
+00:53:31.189 --> 00:53:34.030 
+there is enough room for you to make your chips.
+
+00:53:34.030 --> 00:53:34.310 
+Question.
+
+00:53:34.310 --> 00:53:34.430 
+Yeah.
+
+00:53:34.430 --> 00:53:36.070 
+Just a quick question, will keep the IP of the chip design.
+
+00:53:40.310 --> 00:53:41.950 
+This will be open source.
+
+00:53:41.950 --> 00:53:44.030 
+So you will be making a GitHub action.
+
+00:53:44.230 --> 00:53:47.870 
+So everything, all designs on this chip are open source.
+
+00:53:48.150 --> 00:53:50.350 
+The technology information is open source.
+
+00:53:50.350 --> 00:53:53.310 
+It will be manufactured in Germany by IHP.
+
+00:53:53.870 --> 00:53:55.750 
+The tools used are open source.
+
+00:53:55.750 --> 00:53:57.830 
+So it is completely open.
+
+00:53:57.830 --> 00:54:01.630 
+So it is your IP, your intellectual property is not going to anyone.
+
+00:54:01.710 --> 00:54:02.670 
+Very good question.
+
+00:54:05.190 --> 00:54:06.230 
+Isn't it exciting?
+
+00:54:08.390 --> 00:54:08.870 
+I need to.
+
+00:54:08.870 --> 00:54:10.470 
+I paid for 140.
+
+00:54:10.470 --> 00:54:12.430 
+OK only 13 people join.
+
+00:54:12.710 --> 00:54:15.310 
+I need more or my boss will not be happy.
+
+00:54:16.510 --> 00:54:24.790 
+OK yes I mean some people put their amazing demos.
+
+00:54:24.790 --> 00:54:28.630 
+The good thing is you can actually go to the well you are here.
+
+00:54:29.110 --> 00:54:31.110 
+You can go and check what they did.
+
+00:54:32.190 --> 00:54:33.350 
+I have no idea.
+
+00:54:33.390 --> 00:54:33.990 
+Code name.
+
+00:54:33.990 --> 00:54:35.270 
+Black headed golf.
+
+00:54:36.510 --> 00:54:38.110 
+Well OK, that wasn't a good idea.
+
+00:54:38.510 --> 00:54:39.910 
+Never do live demos.
+
+00:54:40.590 --> 00:54:43.670 
+I lost the page anyway.
+
+00:54:43.950 --> 00:54:46.510 
+I am pretty sure because it's not submitted anyway.
+
+00:54:47.270 --> 00:54:51.190 
+You can go to the tiny table web page and check what everybody else did.
+
+00:54:51.190 --> 00:54:55.750 
+There are people who submitted only an AND gate a multiplexer.
+
+00:54:56.710 --> 00:54:57.790 
+I mean you can do more.
+
+00:54:57.790 --> 00:54:58.870 
+You can do better than that.
+
+00:54:58.870 --> 00:55:01.030 
+You can take one of your exercises.
+
+00:55:01.030 --> 00:55:02.470 
+Some of you have some ideas.
+
+00:55:02.790 --> 00:55:05.670 
+Deadline is March 23rd to submit the design.
+
+00:55:05.990 --> 00:55:10.670 
+It can be done using a web-based schematic thing.
+
+00:55:10.670 --> 00:55:17.110 
+So you can choose the gates connect or you can have a GitHub action using very low code and enter
+
+00:55:17.110 --> 00:55:17.310 
+it.
+
+00:55:17.310 --> 00:55:19.790 
+It is for your level.
+
+00:55:19.790 --> 00:55:21.470 
+This is absolutely doable.
+
+00:55:21.470 --> 00:55:26.910 
+If you are a little bit more interested, you will easily manage to do this.
+
+00:55:27.390 --> 00:55:28.790 
+It's fun and it's for free.
+
+00:55:28.790 --> 00:55:29.270 
+Come on.
+
+00:55:30.310 --> 00:55:31.350 
+OK, thanks a lot.
+
+00:55:31.430 --> 00:55:31.790 
+Thanks.
+
+00:55:31.790 --> 00:55:32.510 
+Thanks, Frank.
+
+00:55:39.512 --> 00:55:40.912 
+You can try it out and see.
+
+00:55:41.992 --> 00:55:43.952 
+Hopefully you'll do better than a single AND gate.
+
+00:55:43.952 --> 00:55:50.282 
+By the way, with the level of knowledge you guys have right now, you can do many things.
+
+00:55:54.198 --> 00:56:01.128 
+So basically we've covered combination Verilog, but we're going to cover sequential, which is going
+
+00:56:01.128 --> 00:56:03.088 
+to be even more interesting.
+
+00:56:03.088 --> 00:56:06.088 
+I think these are, this is what we've covered so far.
+
+00:56:06.088 --> 00:56:10.408 
+You can design structural hierarchy, you can do simple logic, you can do behavioural modelling.
+
+00:56:10.888 --> 00:56:13.488 
+We've looked at multiplexers, we've looked at constants.
+
+00:56:13.688 --> 00:56:14.488 
+There is much more.
+
+00:56:14.488 --> 00:56:20.455 
+Essentially, you can write very long code in many different ways, meaning there are good ways or
+
+00:56:20.455 --> 00:56:23.688 
+easier to read ways and they're harder to read ways.
+
+00:56:23.688 --> 00:56:25.608 
+We're going to look at some examples of this.
+
+00:56:25.888 --> 00:56:31.443 
+If you write at a very low level of abstraction you can get poor readability and but easier
+
+00:56:31.443 --> 00:56:37.488 
+automated optimization potentially because especially for low level tools we can map things easily.
+
+00:56:38.168 --> 00:56:43.678 
+If you write a higher level of abstraction you can get better readability, but it could be more
+
+00:56:43.678 --> 00:56:46.288 
+difficult to optimise things in a better way.
+
+00:56:46.448 --> 00:56:52.594 
+There could be a large search space because going from a very abstract X abstract description to a
+
+00:56:52.594 --> 00:56:58.614 
+very low level implementation may require a huge source space for the tools, even for tools that
+
+00:56:58.614 --> 00:57:04.008 
+know a lot, meaning that I've seen a lot of these designs trained with AI for example.
+
+00:57:04.688 --> 00:57:06.608 
+So it's good to think about this.
+
+00:57:06.688 --> 00:57:09.488 
+So let's take a look at something as simple as comparing 2 numbers.
+
+00:57:09.928 --> 00:57:12.128 
+You can define your own gates as new modules.
+
+00:57:12.688 --> 00:57:16.088 
+We're going to do an equality checker checker, which you have seen.
+
+00:57:16.088 --> 00:57:19.728 
+Essentially, we're going to look at different ways of implementing A4 bit compared.
+
+00:57:20.808 --> 00:57:23.648 
+So we're going to use, for example, 2 input X nor gates.
+
+00:57:23.648 --> 00:57:28.168 
+This is an X nor gates written in behavioural Verilog AX or B.
+
+00:57:28.728 --> 00:57:30.568 
+And then this is the not of that, right?
+
+00:57:30.688 --> 00:57:32.768 
+And you assign variable Z to that.
+
+00:57:33.528 --> 00:57:36.048 
+And this is a true input and gates A&B.
+
+00:57:36.048 --> 00:57:36.688 
+You've seen that.
+
+00:57:36.888 --> 00:57:37.928 
+Again, this is behavioural.
+
+00:57:37.968 --> 00:57:41.208 
+It's not really the gate primitive that Verilog uses.
+
+00:57:41.688 --> 00:57:43.688 
+But remember a four bit comparator.
+
+00:57:43.688 --> 00:57:48.848 
+This is what our 4 bit comparator was a couple of lectures ago.
+
+00:57:49.168 --> 00:57:55.768 
+Constructed from 42 input X NOR gates and 1/4 input NAND.
+
+00:57:56.208 --> 00:58:03.168 
+Which could 1A14 input and gate, which could be a three of three two input and gates also, right?
+
+00:58:03.848 --> 00:58:06.928 
+And this is our gate level implementation, which looks pretty ugly, right?
+
+00:58:07.688 --> 00:58:13.648 
+So essentially I've defined my XNOR inputs ABZ and my and inputs ABZ.
+
+00:58:14.168 --> 00:58:21.149 
+Essentially this is a direct implementation of this, except this four input and gate doesn't exist
+
+00:58:21.149 --> 00:58:21.648 
+for us.
+
+00:58:21.648 --> 00:58:23.848 
+It's 232 input and gates.
+
+00:58:25.288 --> 00:58:30.688 
+So you have 4 xnores and then three ants.
+
+00:58:31.488 --> 00:58:35.208 
+You get bored at some point and you name them in different ways as you can see.
+
+00:58:35.728 --> 00:58:39.488 
+OK, so clearly this is not readable, I would say.
+
+00:58:39.488 --> 00:58:41.328 
+I mean it's readable, but it takes some time.
+
+00:58:42.768 --> 00:58:44.168 
+So you can change things.
+
+00:58:44.608 --> 00:58:46.528 
+You can do these assignments.
+
+00:58:46.848 --> 00:58:51.688 
+So you still keep the xnores over here and then do the ends like this.
+
+00:58:51.688 --> 00:58:52.368 
+Behavioural.
+
+00:58:52.368 --> 00:58:53.728 
+This is behavioural now, right?
+
+00:58:54.328 --> 00:58:59.987 
+I mean, the previous thing was also behavioural, but modules, you, you connected modules, you got
+
+00:58:59.987 --> 00:59:04.888 
+rid of modules over here that are not necessarily you turn them into ends like this.
+
+00:59:05.528 --> 00:59:10.998 
+And you can also do this, there's a for input behavioural and statement bitwise AND which could be
+
+00:59:10.998 --> 00:59:13.008 
+implemented as a for input and gate.
+
+00:59:13.208 --> 00:59:15.808 
+So this sounds much better now ignores.
+
+00:59:15.808 --> 00:59:17.208 
+Let's try to get rid of them also.
+
+00:59:17.568 --> 00:59:23.275 
+So one thing you could do is instead of having inputs like this, you could have 4 bits inputs and
+
+00:59:23.275 --> 00:59:25.688 
+four bit output wire and you can do this.
+
+00:59:25.728 --> 00:59:26.448 
+This is good.
+
+00:59:26.848 --> 00:59:30.448 
+You simplified some things, but this is actually a much better X N.O.R.E.
+
+00:59:30.608 --> 00:59:32.288 
+Clearly 4 bit X N.O.R.E, right?
+
+00:59:33.488 --> 00:59:37.368 
+And this is actually a much better way of doing comparison of the two bit numbers.
+
+00:59:37.688 --> 00:59:40.568 
+So you can see that you could have done things like this.
+
+00:59:41.408 --> 00:59:46.008 
+Equal is assigned to the output of this ternary equation.
+
+00:59:46.528 --> 00:59:51.408 
+And the output ternary equation outputs one if a is equal to B, otherwise it outputs 0, right?
+
+00:59:51.968 --> 00:59:52.648 
+That's what it is.
+
+00:59:53.288 --> 00:59:54.848 
+So which one do you guys prefer?
+
+00:59:54.848 --> 00:59:56.928 
+This one or this one?
+
+00:59:56.928 --> 00:59:57.048 
+Yes.
+
+00:59:57.048 --> 01:00:00.408 
+What would be the output of this like A equal to B expression?
+
+01:00:02.126 --> 01:00:03.846 
+That's a good question, basically, I think.
+
+01:00:03.846 --> 01:00:06.006 
+So yes, you should be able to do that.
+
+01:00:07.846 --> 01:00:10.846 
+But again, try compiling and check it.
+
+01:00:12.366 --> 01:00:16.206 
+I'm not a big believer in memorizing syntax, so yeah, OK.
+
+01:00:18.366 --> 01:00:23.379 
+And this is where an AI tool can help a lot, you know, get rid of the memorisation aspect that
+
+01:00:23.379 --> 01:00:25.406 
+humans don't need to really deal with.
+
+01:00:25.766 --> 01:00:28.326 
+Although there's some values of that also if you ask me.
+
+01:00:28.366 --> 01:00:30.166 
+But OK, OK, very good.
+
+01:00:31.006 --> 01:00:31.886 
+That's a very good question.
+
+01:00:31.886 --> 01:00:34.166 
+Basically you can simplify it even further perhaps.
+
+01:00:34.886 --> 01:00:41.246 
+OK, so essentially writing more reusable very long code is nicer, but this is not reusable enough.
+
+01:00:41.406 --> 01:00:44.046 
+For example, what if you want to compare an 8 bit numbers, right?
+
+01:00:44.046 --> 01:00:46.246 
+This is hard wired to 4 bit numbers.
+
+01:00:47.126 --> 01:00:49.206 
+So that's why we have parameterised modules.
+
+01:00:50.766 --> 01:00:53.046 
+You don't want to write code for each case.
+
+01:00:53.606 --> 01:00:56.446 
+And in parameterised modules you can define module parameters.
+
+01:00:56.806 --> 01:01:01.086 
+So this is for example A2 input Max.
+
+01:01:01.526 --> 01:01:06.046 
+The width of each of the inputs can be specified with the width parameter.
+
+01:01:06.646 --> 01:01:08.086 
+The default value is 8.
+
+01:01:08.366 --> 01:01:14.766 
+So by default if you don't specify the parameter width you get an 8 bit to input Max.
+
+01:01:15.406 --> 01:01:18.926 
+But this could be any width to input Max.
+
+01:01:19.446 --> 01:01:22.766 
+OK, when instantiating the module you just need to specify the width.
+
+01:01:23.606 --> 01:01:26.966 
+So this is our module when you instantiate it.
+
+01:01:27.766 --> 01:01:33.406 
+This is for example the 8 bits.
+
+01:01:33.486 --> 01:01:39.709 
+So inputs are 8 bits D0 and D1 and alt are 8 bits here, because we didn't specify a value here, we
+
+01:01:39.709 --> 01:01:40.726 
+specify 12 like.
+
+01:01:40.726 --> 01:01:46.573 
+This is the syntax as you can see, and the inputs and outputs are 12 bits in this case, except for
+
+01:01:46.573 --> 01:01:47.886 
+select of course rate.
+
+01:01:48.446 --> 01:01:49.726 
+So this is another way of doing it.
+
+01:01:50.086 --> 01:01:54.646 
+This is a more verbose version where you actually specify the width, right?
+
+01:01:55.566 --> 01:01:57.326 
+OK, so they're both the same thing.
+
+01:01:57.686 --> 01:01:59.646 
+And also you specify the connections over here.
+
+01:02:00.326 --> 01:02:06.568 
+OK, so timing, it's possible to also define timing relations in Verilogue, but this is not what
+
+01:02:06.568 --> 01:02:12.680 
+timing you will get when you actually implement when when someone actually maps the code to a
+
+01:02:12.680 --> 01:02:13.206 
+circuit.
+
+01:02:13.526 --> 01:02:14.726 
+This is more for a simulation.
+
+01:02:15.166 --> 01:02:16.766 
+Essentially you can put timing.
+
+01:02:17.046 --> 01:02:21.486 
+These cannot be synthesised because they may not be possible to actually observe that timing.
+
+01:02:22.086 --> 01:02:23.526 
+They're used for modelling delays.
+
+01:02:23.526 --> 01:02:24.726 
+When you simulate things.
+
+01:02:25.206 --> 01:02:32.252 
+For example, you can specify a time scale and you can basically assign and this assignment in
+
+01:02:32.252 --> 01:02:33.086 
+simulation.
+
+01:02:33.086 --> 01:02:39.761 
+When you simulate this thing, you get an inverted output Z1 after 5 nanoseconds after the beginning
+
+01:02:39.761 --> 01:02:42.526 
+of the simulation and you get an you get.
+
+01:02:43.406 --> 01:02:46.006 
+A assigned to Z2 after 9 nanoseconds.
+
+01:02:46.326 --> 01:02:47.806 
+OK, this is good for a simulation.
+
+01:02:47.806 --> 01:02:53.126 
+Now you will do that when you simulate things for for real timing, we're going to see tomorrow, Yes.
+
+01:02:55.850 --> 01:02:58.759 
+logic gate or two logic gates?
+
+01:02:58.759 --> 01:03:01.479 
+Well, in this in this particular case, there is no logic depth, right?
+
+01:03:01.839 --> 01:03:07.129 
+You're basically specifying it functionally this morning a relation to the labs in relation to the
+
+01:03:07.129 --> 01:03:07.399 
+labs.
+
+01:03:07.399 --> 01:03:13.500 
+So is it specific to a lab question then ask it within the context of the labs because I don't know
+
+01:03:13.500 --> 01:03:15.719 
+exactly the context of the question.
+
+01:03:16.159 --> 01:03:23.053 
+OK, but for this particular case, when you instantiate an extort gate, there is no concept of logic
+
+01:03:23.053 --> 01:03:23.959 
+depth, right?
+
+01:03:23.959 --> 01:03:29.961 
+You're just describing things unless you have a structural extort gate where you actually show the
+
+01:03:29.961 --> 01:03:31.799 
+built it using Ands and Nands.
+
+01:03:32.719 --> 01:03:33.119 
+OK.
+
+01:03:33.159 --> 01:03:37.866 
+But the lab questions I think folks here would be able to answer, OK, there's more on the timing
+
+01:03:37.866 --> 01:03:41.839 
+soon and more on the simulation soon, but we're going to see the timing tomorrow.
+
+01:03:41.959 --> 01:03:44.319 
+We're going to go actually a lot deeper in the time.
+
+01:03:44.719 --> 01:03:50.227 
+So there are a bunch of good practices that I would recommend develop and use a good consistent
+
+01:03:50.227 --> 01:03:55.909 
+naming style, essentially MSP to LSP ordering for buses use this one that I assumed and one of you
+
+01:03:55.909 --> 01:03:58.519 
+asked questions about as opposed to this one.
+
+01:03:58.679 --> 01:04:00.679 
+Basically 0 should be least significant bits.
+
+01:04:01.159 --> 01:04:06.239 
+Larger numbers should specify more powerful or more significant bits.
+
+01:04:06.879 --> 01:04:11.679 
+Define one module per file in general, and use a file name that matches the module name.
+
+01:04:12.439 --> 01:04:14.639 
+Always keep in mind that Verilog describes hardware.
+
+01:04:14.639 --> 01:04:16.199 
+That's why I read the quote from your book.
+
+01:04:17.559 --> 01:04:20.039 
+OK, so this is what we've done so far, combinational logic.
+
+01:04:20.199 --> 01:04:25.468 
+And let's talk about sequential logic because sequential logic things become interesting as we have
+
+01:04:25.468 --> 01:04:26.639 
+seen last time, right?
+
+01:04:26.639 --> 01:04:29.879 
+Because you need to describe flip flops, for example, or latches.
+
+01:04:29.879 --> 01:04:32.719 
+And these are two different sequential constructs as we have seen.
+
+01:04:33.959 --> 01:04:36.279 
+And you remember sequential is combinational plus memory.
+
+01:04:36.279 --> 01:04:38.399 
+So it's always more complex than just combinational.
+
+01:04:40.639 --> 01:04:43.679 
+Essentially we need to, we want to define blocks that have memory.
+
+01:04:43.679 --> 01:04:47.039 
+These are flip flops, latches and build finite state machines out of them.
+
+01:04:48.199 --> 01:04:51.119 
+So we need the notion of a clock and sequential logic.
+
+01:04:51.119 --> 01:04:57.090 
+State transition is triggered by a clock signal in synchronous design, as we have discussed, latches
+
+01:04:57.090 --> 01:04:59.599 
+are sensitive to the level of that signal.
+
+01:04:59.999 --> 01:05:04.636 
+Flip flops are sensitive to the transitioning, meaning the edge of the signal, like going from zero
+
+01:05:04.636 --> 01:05:09.039 
+to 1, rising edge of the clock for example as we have discussed, or falling edge of the clock.
+
+01:05:10.559 --> 01:05:15.995 
+Unfortunately, what we've seen so far are not sufficient to express the sequential logic to describe
+
+01:05:15.995 --> 01:05:16.159 
+it.
+
+01:05:16.519 --> 01:05:21.839 
+We need new constructs and Verilog introduces a couple of contracts.
+
+01:05:21.839 --> 01:05:23.799 
+Always pause edge and neg edge.
+
+01:05:24.119 --> 01:05:27.039 
+You can guess what those are always a bit different, so we'll see Always.
+
+01:05:27.679 --> 01:05:29.479 
+So always looks like this.
+
+01:05:29.919 --> 01:05:31.799 
+This is a block that you can write.
+
+01:05:31.799 --> 01:05:36.639 
+Always add some sensitivity list of signals you execute some statement.
+
+01:05:36.959 --> 01:05:41.199 
+This means that whenever the event in the sensitivity list occurs, the statement is executed.
+
+01:05:41.559 --> 01:05:43.999 
+OK, so recall the D flip flop.
+
+01:05:43.999 --> 01:05:48.759 
+We're going to implement the D flip flop in very log and it's going to be very easy to implement.
+
+01:05:48.919 --> 01:05:56.604 
+But remember what we wanted was state change on clock edge and we wanted the data output of the flip
+
+01:05:56.604 --> 01:05:59.679 
+flop available for the full clock cycle.
+
+01:05:59.759 --> 01:06:04.096 
+And you remember the clock cycle is from 1 rising edge of the clock to the other rising edge of the
+
+01:06:04.096 --> 01:06:04.359 
+clock.
+
+01:06:04.639 --> 01:06:07.919 
+And this is how we designed the D flip flop to from 2D latches.
+
+01:06:08.359 --> 01:06:13.279 
+And this is the module that hides the details of the underlying implementation.
+
+01:06:13.279 --> 01:06:19.004 
+As you can see, the key is that the rising edge of the clock clock going from zero to 1 Q should get
+
+01:06:19.004 --> 01:06:22.039 
+assigned D At all other times, Q should be unchanged.
+
+01:06:22.999 --> 01:06:23.359 
+So.
+
+01:06:24.319 --> 01:06:27.199 
+This is how we implemented the state register.
+
+01:06:27.759 --> 01:06:31.439 
+We're going to implement more of these, but let's first build this D flip flop.
+
+01:06:31.439 --> 01:06:33.119 
+And it's like this in Verilog.
+
+01:06:33.439 --> 01:06:35.079 
+So you can see that Verilog makes it simple.
+
+01:06:37.239 --> 01:06:39.919 
+So this is flop, Let's called flop input.
+
+01:06:39.919 --> 01:06:46.453 
+You have a clock input, you have a four bit D input, it's a four bit D flip flop, and you have a
+
+01:06:46.453 --> 01:06:47.679 
+four bit Q output.
+
+01:06:47.879 --> 01:06:50.439 
+There's something special called Reg over here.
+
+01:06:51.239 --> 01:06:52.439 
+We're going to talk about that later.
+
+01:06:52.439 --> 01:07:00.162 
+You need to declare it as Reg because it's stateful and this is the description behavioural, always
+
+01:07:00.162 --> 01:07:07.808 
+at the positive edge of clock, meaning clock signal goes from zero to 1, Q gets D and there's some
+
+01:07:07.808 --> 01:07:09.759 
+special symbol over here.
+
+01:07:10.399 --> 01:07:10.959 
+It's A.
+
+01:07:11.479 --> 01:07:14.639 
+It's essentially a non blocking assignment as we will discuss later.
+
+01:07:14.839 --> 01:07:17.039 
+We're going to separate it from the blocking assignments.
+
+01:07:18.119 --> 01:07:21.159 
+OK, this is your description of flip flop in Verilogs.
+
+01:07:21.359 --> 01:07:23.119 
+Nice friendly way.
+
+01:07:23.639 --> 01:07:27.849 
+You may not find it friendly at this point, but it's going to become more and more friendly as you
+
+01:07:27.849 --> 01:07:29.439 
+do things, just like in any language.
+
+01:07:30.479 --> 01:07:31.319 
+This sounds good right?
+
+01:07:31.639 --> 01:07:32.479 
+This is my flip flop.
+
+01:07:32.479 --> 01:07:35.479 
+I don't need to deal with a gate level description.
+
+01:07:35.799 --> 01:07:36.719 
+This is how I describe.
+
+01:07:36.799 --> 01:07:42.490 
+Type AD flip flop because this is going to be a huge basic, basic building block of any finite state
+
+01:07:42.490 --> 01:07:43.799 
+machine that you built.
+
+01:07:44.559 --> 01:07:47.439 
+And this is the power of a hardware description language.
+
+01:07:47.999 --> 01:07:50.079 
+It lets you do these things easily.
+
+01:07:50.879 --> 01:07:53.079 
+OK, so a pause edge defines a rising edge.
+
+01:07:53.079 --> 01:07:57.399 
+Transition from zero to one statement is executed when the clock signal rises.
+
+01:07:57.839 --> 01:08:01.319 
+That's what always means always at the positive edge of clock.
+
+01:08:02.639 --> 01:08:03.279 
+Do this.
+
+01:08:03.559 --> 01:08:09.119 
+The value of D is copied to Q OK input is.
+
+01:08:09.119 --> 01:08:11.359 
+The output is Q OK.
+
+01:08:11.999 --> 01:08:14.799 
+So a sign statement is not used within an always block.
+
+01:08:14.799 --> 01:08:15.719 
+That's forbidden.
+
+01:08:15.719 --> 01:08:18.839 
+Essentially, you'll get a compiler, hopefully with a good compiler.
+
+01:08:19.759 --> 01:08:26.080 
+And this odd thing that kind of looks like less than or equal to or poor man's less than or equal to
+
+01:08:26.080 --> 01:08:28.799 
+describes a non blocking assignment, right?
+
+01:08:29.079 --> 01:08:31.999 
+And we will see the difference between blocking non blocking assignment soon.
+
+01:08:33.719 --> 01:08:36.959 
+This is assigned variables need to be declared as Reg.
+
+01:08:38.959 --> 01:08:41.279 
+The name Reg is kind of unfortunate.
+
+01:08:41.279 --> 01:08:43.439 
+It doesn't necessarily mean that the values are registered.
+
+01:08:43.719 --> 01:08:45.199 
+It could be, but it doesn't have to be.
+
+01:08:45.519 --> 01:08:48.919 
+It's just the syntax that someone decided.
+
+01:08:50.359 --> 01:08:57.359 
+We will see examples of this later also, but let me introduce the notion of reset also.
+
+01:08:57.359 --> 01:09:01.166 
+We didn't do this when we talked about flip flop, but it's going to be important when you design
+
+01:09:01.166 --> 01:09:02.039 
+finite state machines.
+
+01:09:02.039 --> 01:09:05.639 
+As we discussed in the last lecture, you should start from a known state.
+
+01:09:05.759 --> 01:09:12.719 
+Any finite state machine should have a state that you reset the machine into.
+
+01:09:13.159 --> 01:09:15.199 
+That's your beginning state, basically start state.
+
+01:09:16.519 --> 01:09:17.959 
+And there are two ways of doing research.
+
+01:09:18.159 --> 01:09:21.999 
+We're going to use synchronous reset a lot in this course, but there's also asynchronous reset.
+
+01:09:22.319 --> 01:09:22.999 
+It's good to know.
+
+01:09:23.919 --> 01:09:31.358 
+Essentially you reset the signals you you use the these reset signals to initialise flip flops or
+
+01:09:31.358 --> 01:09:34.119 
+state the hardware to a known state.
+
+01:09:34.599 --> 01:09:37.319 
+Usually this happens at system start up on power up.
+
+01:09:37.439 --> 01:09:42.519 
+Some of you had questions actually about resetting but I didn't cover it in class.
+
+01:09:42.519 --> 01:09:44.039 
+Now we're this is the time to cover it.
+
+01:09:45.639 --> 01:09:52.537 
+So asynchronous reset means that the reset signals sampled independently of the clock, just like
+
+01:09:52.537 --> 01:09:54.119 
+anything asynchronous.
+
+01:09:54.119 --> 01:09:58.159 
+Actually reset gets the highest priority in this case.
+
+01:09:58.519 --> 01:10:03.719 
+And as we will see tomorrow, this is sensitive to a lot of issues like glitches, meta stability.
+
+01:10:03.719 --> 01:10:05.159 
+You will learn more about these tomorrow.
+
+01:10:05.159 --> 01:10:09.239 
+We talked about meta stability when we introduced the cross coupled NAND gates.
+
+01:10:11.679 --> 01:10:12.959 
+Cross coupled NAND gates, right?
+
+01:10:13.119 --> 01:10:16.359 
+You both SNR should not be equal to 1 at the same time.
+
+01:10:16.359 --> 01:10:17.119 
+We discussed this.
+
+01:10:17.239 --> 01:10:22.724 
+We're going to talk about that more synchronous reset, which we're going to use a lot, is reset
+
+01:10:22.724 --> 01:10:25.439 
+signal sampled with respect to clock over here.
+
+01:10:25.679 --> 01:10:30.617 
+And in this case, the reset signal should be active long enough to get sampled at the clock edge,
+
+01:10:30.617 --> 01:10:35.555 
+because at the positive edge of the clock, for example, if reset is one or zero, depending on how
+
+01:10:35.555 --> 01:10:39.679 
+you think about reset, usually people think of reset being 0 as resetting things.
+
+01:10:40.959 --> 01:10:43.519 
+You basically reset the value to zero.
+
+01:10:43.919 --> 01:10:47.679 
+OK, So this results in a completely synchronous sequential circuit.
+
+01:10:47.999 --> 01:10:52.394 
+Now we're going to implement the flip flops with reset and we've seen asynchronous versus
+
+01:10:52.394 --> 01:10:53.679 
+synchronous state changes.
+
+01:10:53.679 --> 01:10:59.094 
+This slide that I copied and pasted, it's essentially asynchronous versus synchronous reset goes
+
+01:10:59.094 --> 01:11:02.479 
+into the heart of design as asynchronous versus synchronous.
+
+01:11:03.119 --> 01:11:06.599 
+These are some a signal could be asynchronous versus synchronous be sampled.
+
+01:11:07.239 --> 01:11:10.479 
+OK, so this is an example of a Deflip flop with asynchronous reset.
+
+01:11:11.559 --> 01:11:13.079 
+Let's take a look at what's going on over here.
+
+01:11:13.079 --> 01:11:15.359 
+Somebody threw this code at you.
+
+01:11:16.239 --> 01:11:18.839 
+There are two inputs, clock and reset.
+
+01:11:18.839 --> 01:11:26.221 
+There there's another 4-4 bit data input and there's a Reg output 4 bits always at the positive edge
+
+01:11:26.221 --> 01:11:28.879 
+of clock and negative edge of reset.
+
+01:11:29.159 --> 01:11:30.479 
+This code is executed.
+
+01:11:30.519 --> 01:11:33.279 
+That's what this means essentially.
+
+01:11:33.279 --> 01:11:36.839 
+Yeah, 2 events triggers the execution of this always block.
+
+01:11:36.839 --> 01:11:38.159 
+There's a begin and end as you can see.
+
+01:11:38.159 --> 01:11:41.599 
+We added that for easy ease of reading.
+
+01:11:42.039 --> 01:11:43.959 
+Rising edge of clock or falling edge of reset.
+
+01:11:43.959 --> 01:11:51.959 
+When the reset goes down and if the reset is signal IS0Q gets assigned, 0Q gets zero.
+
+01:11:52.839 --> 01:12:00.741 
+That means in this case A0 reset signal means that you should reset the output the flip flop,
+
+01:12:00.741 --> 01:12:07.879 
+otherwise Q gets D So basically we added this if reset 0 over here to be reset able.
+
+01:12:08.159 --> 01:12:10.639 
+So we use begin and end over here to improve readability.
+
+01:12:10.839 --> 01:12:14.871 
+In this example it was not necessary because if an else is complete, actually there's no other
+
+01:12:14.871 --> 01:12:16.759 
+statement but begin and end are always good.
+
+01:12:17.399 --> 01:12:26.799 
+So this basically sets you first check reset if reset IS0Q is set to 0 otherwise you check Q gets D.
+
+01:12:27.159 --> 01:12:31.039 
+So this is an asynchronous reset, as the reset can happen independently of the clock.
+
+01:12:31.719 --> 01:12:36.719 
+Basically, you're executing the statement when reset goes from 1 to 0 OK.
+
+01:12:38.999 --> 01:12:40.399 
+On the negative edge of the reset signal.
+
+01:12:40.559 --> 01:12:44.119 
+Hopefully this is clear, we're just going through some code to understand it.
+
+01:12:44.799 --> 01:12:53.044 
+If there is no reset, meaning assume that reset never goes to the negative edge, then this this
+
+01:12:53.044 --> 01:12:58.599 
+simplifies to always that positive edge of clock Q gets D right?
+
+01:12:59.559 --> 01:13:02.479 
+If reset never goes to 0 or negative edge, that's what happens.
+
+01:13:03.079 --> 01:13:09.117 
+OK, so this is that was asynchronous reset a flip flop AD flip flop with synchronous reset looks
+
+01:13:09.117 --> 01:13:12.199 
+like this essentially, I'll I'll go through this.
+
+01:13:12.199 --> 01:13:18.456 
+So here, here we got rid of the negative edge reset from the always block because we don't want
+
+01:13:18.456 --> 01:13:20.959 
+anything else triggering state change.
+
+01:13:21.359 --> 01:13:26.519 
+OK, state change is triggered, meaning the statement is executed only at the positive edge of clock.
+
+01:13:26.839 --> 01:13:34.914 
+And if reset happens to be 0 at that point, Q gets 0, otherwise Q gets D You either sample the reset
+
+01:13:34.914 --> 01:13:39.679 
+signal or the input D signal at the positive edge of clock.
+
+01:13:41.199 --> 01:13:47.189 
+OK, for you to be able to reset the flip flop, you'd better have the reset 0 at a positive edge of
+
+01:13:47.189 --> 01:13:52.079 
+clock when you're beginning, let's say to reset your machine for example, right?
+
+01:13:52.279 --> 01:13:52.599 
+Yes.
+
+01:13:53.319 --> 01:13:55.279 
+Why did you have one?
+
+01:13:55.976 --> 01:14:03.536 
+You could do it also potentially, but I guess the question is assignment.
+
+01:14:04.136 --> 01:14:06.176 
+You cannot do multiple assignments, right?
+
+01:14:06.176 --> 01:14:08.536 
+Because you're assigning a single variable.
+
+01:14:09.296 --> 01:14:13.296 
+If you have multiple always blocks, it's not, it's not modelling the same hardware, right?
+
+01:14:13.376 --> 01:14:14.976 
+If you have two different always blocks.
+
+01:14:16.856 --> 01:14:18.776 
+So how are you going to assign Q in this case?
+
+01:14:18.976 --> 01:14:22.345 
+In one case, you're going to assign Q in one way, in other case, you're going to assign Q in some
+
+01:14:22.345 --> 01:14:22.936 
+other way, Right.
+
+01:14:24.416 --> 01:14:25.416 
+OK, think about it.
+
+01:14:25.776 --> 01:14:26.376 
+We'll get to that.
+
+01:14:26.376 --> 01:14:31.616 
+Actually, you cannot assign Q in two different always blocks, same output.
+
+01:14:38.866 --> 01:14:39.786 
+You can think of it that way.
+
+01:14:40.466 --> 01:14:40.666 
+Yeah.
+
+01:14:40.866 --> 01:14:43.186 
+Basically reset happens only when the clock rises.
+
+01:14:43.186 --> 01:14:44.386 
+It's a synchronous reset.
+
+01:14:44.386 --> 01:14:45.346 
+The process is sensitive.
+
+01:14:45.626 --> 01:14:49.946 
+The process meaning the always block is sensitive only to the positive edge of clock.
+
+01:14:50.546 --> 01:14:50.826 
+OK.
+
+01:14:51.186 --> 01:14:53.746 
+There are also some things like an enabled flip flop.
+
+01:14:54.346 --> 01:14:56.626 
+There's an enabled signal, let's go, right, right.
+
+01:14:56.626 --> 01:14:59.626 
+Enable, for example, it's just called enable.
+
+01:14:59.786 --> 01:15:01.386 
+That's another signal that you can input.
+
+01:15:02.106 --> 01:15:04.826 
+This is AD flip flop with enable and reset.
+
+01:15:04.946 --> 01:15:10.229 
+It happens to be asynchronous reset over here, always at the positive edge of clock and the negative
+
+01:15:10.229 --> 01:15:10.546 
+reset.
+
+01:15:10.546 --> 01:15:12.026 
+If reset IS0Q gets 0.
+
+01:15:12.666 --> 01:15:19.426 
+Otherwise, only if enable is true, Q gets D OK, so that's a right enable signal for example, right?
+
+01:15:19.426 --> 01:15:23.066 
+We've seen the right enable, so you can build a right enabled memory with this.
+
+01:15:24.226 --> 01:15:32.097 
+OK, Note that the enable signal is not in the sensitivity list over here because it's a synchronous
+
+01:15:32.097 --> 01:15:37.266 
+signal, OK, Q gets D only when clock is rising and enable is one.
+
+01:15:37.666 --> 01:15:39.426 
+OK, so that was flip flop.
+
+01:15:40.266 --> 01:15:43.106 
+Now let's build a latch because in some cases you may want a latch, right?
+
+01:15:43.106 --> 01:15:48.506 
+You're not using the latch for as a state register, but it may be useful in your design.
+
+01:15:49.626 --> 01:15:50.426 
+This is our latch.
+
+01:15:52.026 --> 01:15:54.786 
+You should be able to read it right now and think that it's a latch.
+
+01:15:55.586 --> 01:15:58.266 
+Basically, I don't have the positive edge of clock.
+
+01:16:00.266 --> 01:16:07.986 
+My input sensitivity list is clock and D always when clock and D, either of them changes.
+
+01:16:08.706 --> 01:16:15.892 
+If clock it's true, meaning clock is high, Q gets assigned D This was exactly the problem with latch
+
+01:16:15.892 --> 01:16:17.546 
+that we tried to solve.
+
+01:16:17.946 --> 01:16:21.666 
+But this means that this is a good description of the latch, right?
+
+01:16:22.506 --> 01:16:27.550 
+Basically, whenever the clock is high, Q should get assigned D That's the definition of a latch,
+
+01:16:27.550 --> 01:16:27.866 
+right?
+
+01:16:28.866 --> 01:16:33.506 
+Otherwise, Q doesn't get assigned anything, which is it retains the old value.
+
+01:16:33.906 --> 01:16:37.746 
+OK, and this is exactly doing that.
+
+01:16:37.826 --> 01:16:42.626 
+That could happen when D changes or when clock changes.
+
+01:16:43.066 --> 01:16:47.266 
+OK, so this is the sensitive list.
+
+01:16:49.466 --> 01:16:57.066 
+When D changes, if the clock IS0Q doesn't get assigned anything, which means it keeps its old value.
+
+01:16:57.546 --> 01:17:03.346 
+But when D changes, if clock is 1, Q gets assigned the new value of D OK, that's a latch.
+
+01:17:04.306 --> 01:17:05.826 
+OK, sounds good, hopefully.
+
+01:17:06.066 --> 01:17:07.306 
+So this is the summary we've seen.
+
+01:17:07.306 --> 01:17:10.946 
+This is going to get a little bit more interesting and maybe a little bit more complicated.
+
+01:17:10.946 --> 01:17:15.346 
+But basically if you want sequential statements, you should do them in an always block.
+
+01:17:15.786 --> 01:17:18.706 
+The sequential block is triggered with a change in the sensitivity list.
+
+01:17:19.146 --> 01:17:21.306 
+Basically you can put anything in the sensitivity list.
+
+01:17:21.306 --> 01:17:24.786 
+Whenever that signal changes, that statement is executed.
+
+01:17:24.786 --> 01:17:25.306 
+That always.
+
+01:17:25.386 --> 01:17:26.306 
+Block is executed.
+
+01:17:26.746 --> 01:17:29.986 
+Signals assigned within always must be declared as Reg.
+
+01:17:30.466 --> 01:17:34.066 
+They're not necessarily registers, they're more stateful elements that are assigned.
+
+01:17:35.426 --> 01:17:39.882 
+And we use this less than or equal to our poor man's less than or equal to 4 non blocking
+
+01:17:39.882 --> 01:17:42.786 
+assignments and do not use assign within the always block.
+
+01:17:44.066 --> 01:17:47.546 
+OK, so let's take a look at these always blocks a little bit more.
+
+01:17:49.466 --> 01:17:52.266 
+For example, this is one circuit that you can look at.
+
+01:17:52.866 --> 01:17:55.306 
+You can have as many always blocks as needed.
+
+01:17:56.666 --> 01:18:01.768 
+So for example, you're assigning special to D at the positive edge of clock and then inverting
+
+01:18:01.768 --> 01:18:03.506 
+special doing normal, let's say.
+
+01:18:03.546 --> 01:18:07.106 
+And then you're assigning also at the positive edge of clock normal to Q.
+
+01:18:07.546 --> 01:18:11.786 
+These are two different flip flops arrays that we have.
+
+01:18:13.266 --> 01:18:14.346 
+Hopefully you can think of that.
+
+01:18:15.266 --> 01:18:17.786 
+OK, assignment to same signal are different.
+
+01:18:17.786 --> 01:18:21.106 
+Always blocks is not allowed because that doesn't describe hardware, right?
+
+01:18:22.226 --> 01:18:28.407 
+You could potentially get into a situation where these actually look at the completely exclusive
+
+01:18:28.407 --> 01:18:33.946 
+cases of assignment, but it's it becomes a mess to program describe hardware that way.
+
+01:18:33.986 --> 01:18:37.386 
+So think of this as hardware as opposed to assigned of a variable, right?
+
+01:18:37.866 --> 01:18:47.266 
+If it's hardware, then all of the operations that affect a signal should happen concurrently, right?
+
+01:18:47.546 --> 01:18:49.266 
+It shouldn't happen with two always blocks.
+
+01:18:49.266 --> 01:18:50.866 
+It should happen at the same time yes.
+
+01:18:57.678 --> 01:19:05.108 
+So the the delay of actually going to the wire and inverting it and then setting it again is
+
+01:19:05.108 --> 01:19:06.078 
+comfortable.
+
+01:19:06.078 --> 01:19:09.238 
+Yeah, but the, but remember there are two flip flops over here, right?
+
+01:19:09.638 --> 01:19:18.238 
+One is at the positive edge of clock special gets D and then you sample this one, right?
+
+01:19:18.238 --> 01:19:22.998 
+So it actually takes 2 clock.
+
+01:19:22.998 --> 01:19:24.998 
+We're going to get to that.
+
+01:19:29.158 --> 01:19:29.718 
+That's correct.
+
+01:19:29.758 --> 01:19:30.718 
+Yes, that's correct.
+
+01:19:30.718 --> 01:19:31.758 
+We're going to get to that though.
+
+01:19:31.878 --> 01:19:36.078 
+Yeah, I'm going to get to the like assignment statements later on.
+
+01:19:36.558 --> 01:19:37.118 
+No, no.
+
+01:19:37.158 --> 01:19:38.438 
+How how long it takes, but you're right.
+
+01:19:38.438 --> 01:19:39.918 
+OK, but very good.
+
+01:19:39.918 --> 01:19:40.038 
+Yes.
+
+01:19:40.038 --> 01:19:46.758 
+Does this get compiled to like some transistor level implementation?
+
+01:19:48.438 --> 01:19:49.518 
+It could get compiled, yeah.
+
+01:19:49.518 --> 01:19:54.118 
+It's it's you can compile this perfectly using some compilation flow, yes.
+
+01:19:54.998 --> 01:19:57.958 
+But so maybe, maybe I can describe what you said over here.
+
+01:19:57.958 --> 01:20:03.878 
+Right at the positive edge of clock, this D special gets assigned D, right?
+
+01:20:05.078 --> 01:20:06.798 
+And propagation of this takes some time.
+
+01:20:07.398 --> 01:20:07.998 
+We'll get to that.
+
+01:20:07.998 --> 01:20:09.718 
+Let me get to it later, OK?
+
+01:20:09.878 --> 01:20:12.638 
+But before there's some other things that we should get out of the way, right?
+
+01:20:12.998 --> 01:20:16.838 
+Like you may actually have the question, does it always lock remember things, right?
+
+01:20:16.838 --> 01:20:17.998 
+Why does it remember things?
+
+01:20:18.358 --> 01:20:19.398 
+Because it's sequential, right?
+
+01:20:19.798 --> 01:20:23.718 
+So this statement over here with the always describes what happens to signal Q.
+
+01:20:24.598 --> 01:20:28.958 
+So when clock rises, D gets copied into Q, right?
+
+01:20:29.638 --> 01:20:34.878 
+Or Q gets D when the clock is not rising, what happens, right?
+
+01:20:35.038 --> 01:20:36.878 
+It basically keeps the old value, right?
+
+01:20:37.398 --> 01:20:39.238 
+The value of Q is preserved, remembered.
+
+01:20:39.798 --> 01:20:44.980 
+So it implicitly preserves the value even though we don't explicitly say anything about Q when it
+
+01:20:44.980 --> 01:20:47.438 
+when there's no positive edge of clock, right?
+
+01:20:47.598 --> 01:20:48.718 
+That's why this remembers.
+
+01:20:49.638 --> 01:20:52.638 
+Now it's good to think that it doesn't always remember.
+
+01:20:52.958 --> 01:20:56.238 
+An always block doesn't always specify A sequential circuit, right?
+
+01:20:56.598 --> 01:20:58.158 
+Let's take a look at this example over here.
+
+01:20:58.918 --> 01:21:01.998 
+You have an always block that gets triggered with invalid and data.
+
+01:21:01.998 --> 01:21:08.238 
+So whenever invalid or data changes, this underlying block gets executed.
+
+01:21:08.238 --> 01:21:09.038 
+If an else statement.
+
+01:21:09.358 --> 01:21:17.118 
+If invalid is true, result gets the converted a complemented value of data, otherwise result gets
+
+01:21:17.118 --> 01:21:17.518 
+data.
+
+01:21:18.238 --> 01:21:22.278 
+OK, so this is actually a combinational circuit.
+
+01:21:24.558 --> 01:21:31.358 
+Essentially when invalid is 1, result is data bar, when invalid is not one, result is data, right?
+
+01:21:31.878 --> 01:21:32.798 
+That's combinational, right?
+
+01:21:32.798 --> 01:21:38.078 
+The way I described it, meaning what does combinational mean?
+
+01:21:38.118 --> 01:21:41.078 
+Result is assigned a value whenever an input value changes.
+
+01:21:41.158 --> 01:21:43.358 
+And in all cases of the FNLS block.
+
+01:21:45.318 --> 01:21:47.518 
+OK, so there's nothing that's remembered over here.
+
+01:21:48.478 --> 01:21:49.078 
+Think about it.
+
+01:21:50.478 --> 01:21:53.958 
+OK, now N always block defines.
+
+01:21:53.958 --> 01:21:57.758 
+This makes it a little bit more powerful, but also maybe a little bit harder to think right.
+
+01:21:58.158 --> 01:22:01.078 
+But I think once you keep doing things, you'll learn more.
+
+01:22:01.078 --> 01:22:03.398 
+N always block defines combination logic.
+
+01:22:03.398 --> 01:22:09.038 
+If all outputs are always continuously updated, what does this mean?
+
+01:22:09.318 --> 01:22:13.078 
+All right hand signals are in the sensitivity list, which was the case over here.
+
+01:22:13.198 --> 01:22:15.598 
+Basically these are the inputs in invalid and data.
+
+01:22:15.598 --> 01:22:18.878 
+Whenever invalid and data changes, all outputs.
+
+01:22:19.278 --> 01:22:19.918 
+Results.
+
+01:22:20.598 --> 01:22:22.918 
+The result is the only output gets updated, right?
+
+01:22:24.078 --> 01:22:28.878 
+So basically all right hand signals inputs are in the sensitivity list.
+
+01:22:29.118 --> 01:22:34.661 
+You can use always at for short, at at star for short, and all left hand signals get assigned in
+
+01:22:34.661 --> 01:22:37.838 
+every possible condition of if and else or case blocks.
+
+01:22:37.838 --> 01:22:39.438 
+We'll see the case blocks in a little bit.
+
+01:22:40.798 --> 01:22:45.518 
+Meaning it also becomes easy to make mistakes and unintentionally describe memorising elements.
+
+01:22:45.718 --> 01:22:51.332 
+So if you want to use always blocks to actually do combinational logic, you may make mistakes, you
+
+01:22:51.332 --> 01:22:56.718 
+may get warnings or may not get warnings, but it's good to check your warning messages, right?
+
+01:22:56.758 --> 01:23:02.539 
+You may get a latch basically sometimes, OK, but always blocks actually allow powerful combinational
+
+01:23:02.539 --> 01:23:04.678 
+logic statements using if else cases.
+
+01:23:05.238 --> 01:23:07.958 
+So let's take a look at this exercise, sequential versus combinational.
+
+01:23:10.958 --> 01:23:12.638 
+Is this sequential or combinational?
+
+01:23:13.438 --> 01:23:14.438 
+Does this block remember?
+
+01:23:16.078 --> 01:23:17.398 
+Yeah, 50% chance.
+
+01:23:19.358 --> 01:23:20.838 
+So who says this is sequential?
+
+01:23:22.638 --> 01:23:24.278 
+OK, who says this is combinational?
+
+01:23:25.998 --> 01:23:31.198 
+Who says I have no idea, which is fine, OK, OK, we're going to go through this.
+
+01:23:31.638 --> 01:23:32.638 
+So this is sequential.
+
+01:23:32.638 --> 01:23:35.878 
+So people who said sequential is right essentially.
+
+01:23:39.438 --> 01:23:41.038 
+So let's take a look at when.
+
+01:23:42.318 --> 01:23:43.518 
+So what is the combinational logic?
+
+01:23:43.518 --> 01:23:49.638 
+Combinational logic means that all outputs are updated whenever inputs are changed, right?
+
+01:23:50.318 --> 01:23:58.518 
+So for this to be sequential under some changes of the inputs, outputs should not change, right?
+
+01:23:59.238 --> 01:24:03.961 
+So if you look over here, the sensitive list contains everything on the right hand side, meaning
+
+01:24:03.961 --> 01:24:04.798 
+anything changes.
+
+01:24:05.718 --> 01:24:07.078 
+This is executed fine.
+
+01:24:07.718 --> 01:24:12.798 
+Output A is updated always, which means that output A is really combinational, right?
+
+01:24:13.278 --> 01:24:20.558 
+But output B doesn't get updated unless enable is true, right?
+
+01:24:21.398 --> 01:24:26.158 
+Meaning if enable is not true, output B preserves its previous value regardless of whatever changed.
+
+01:24:27.438 --> 01:24:27.958 
+Makes sense.
+
+01:24:28.718 --> 01:24:29.838 
+That's why this is sequential.
+
+01:24:30.878 --> 01:24:31.678 
+Hopefully that's clear.
+
+01:24:32.598 --> 01:24:34.158 
+OK, let's do another one.
+
+01:24:35.358 --> 01:24:36.958 
+Is this combinational or sequential?
+
+01:24:44.708 --> 01:24:48.028 
+There's no reason, but this is actually correct.
+
+01:24:48.948 --> 01:24:51.548 
+But this, this I'm going to handle that issue later on.
+
+01:24:51.588 --> 01:24:56.588 
+This is actually a there's actually a good reason.
+
+01:24:56.588 --> 01:24:58.148 
+Yes, you'll see that too.
+
+01:25:01.468 --> 01:25:05.888 
+There's a non blocking assignment essential, but we'll see that soon.
+
+01:25:05.888 --> 01:25:07.048 
+Let's not confuse that right now.
+
+01:25:07.048 --> 01:25:07.728 
+Assume that.
+
+01:25:08.768 --> 01:25:11.128 
+OK, don't assume that, but assume that this is correct code.
+
+01:25:11.288 --> 01:25:14.008 
+OK, that's a very good observation.
+
+01:25:14.728 --> 01:25:17.128 
+OK, what about the what about what about this one over here?
+
+01:25:17.288 --> 01:25:18.848 
+Is this combinational or sequential?
+
+01:25:22.408 --> 01:25:29.168 
+Yes, combinational, yes.
+
+01:25:31.168 --> 01:25:38.716 
+The problem is this is not in the sensitivity list, meaning if data changes but enable doesn't
+
+01:25:38.716 --> 01:25:41.688 
+change, you don't trigger this block.
+
+01:25:42.848 --> 01:25:45.408 
+OK, so this is actually sequential also.
+
+01:25:47.488 --> 01:25:50.648 
+Yeah, it's very tricky as you can see, right, especially when you're starting.
+
+01:25:50.648 --> 01:25:53.288 
+But this is tricky regardless.
+
+01:25:53.408 --> 01:25:54.808 
+So yeah, you guys have very good questions.
+
+01:25:54.808 --> 01:25:58.368 
+So we're going to get to that non blocking versus blocking issue soon.
+
+01:25:58.728 --> 01:26:01.648 
+So there's always block is not always practical or nice.
+
+01:26:02.728 --> 01:26:04.008 
+This is one example of this.
+
+01:26:04.448 --> 01:26:08.728 
+Both of these, for example, describe the same multiplexer.
+
+01:26:08.928 --> 01:26:10.848 
+This was a multiplexer that we designed, right?
+
+01:26:12.928 --> 01:26:15.448 
+Always block is one way of implementing the multiplexer.
+
+01:26:15.448 --> 01:26:17.168 
+But this is much nicer as you can see, right?
+
+01:26:17.928 --> 01:26:18.728 
+Much cleaner.
+
+01:26:19.488 --> 01:26:21.728 
+Although this is not unreasonable either, right?
+
+01:26:22.048 --> 01:26:22.848 
+But it's more work.
+
+01:26:23.968 --> 01:26:27.888 
+OK, so for case statements, always blockers could be nice.
+
+01:26:27.888 --> 01:26:29.888 
+This comes in handy.
+
+01:26:30.408 --> 01:26:41.009 
+For example, always at any right hand input change, you check the data and you assign segments to
+
+01:26:41.009 --> 01:26:44.288 
+some of the input data values.
+
+01:26:44.288 --> 01:26:46.888 
+Part of the part of the input data values, right?
+
+01:26:47.848 --> 01:26:53.977 
+If if the sorry, you say you assign segments to a particular values depending on the input value of
+
+01:26:53.977 --> 01:26:54.968 
+the data, right?
+
+01:26:56.168 --> 01:26:57.208 
+So it's easy to do this.
+
+01:26:57.208 --> 01:27:02.088 
+So you can do this conditional assignment based on the input value of the data.
+
+01:27:03.008 --> 01:27:06.208 
+OK, so essentially this is powerful.
+
+01:27:06.208 --> 01:27:10.288 
+You can use if and else and you can use if and else only in the always blocks.
+
+01:27:11.488 --> 01:27:12.728 
+It's combinational only.
+
+01:27:12.808 --> 01:27:17.765 
+If all of the registers within the always block are always assigned to a signal and you can use a
+
+01:27:17.765 --> 01:27:22.672 
+default case with case statements like here, by default segments is assigned to some number over
+
+01:27:22.672 --> 01:27:22.928 
+here.
+
+01:27:23.688 --> 01:27:27.360 
+And you can use the case X statement to be able to check for don't cares, which I haven't shown you,
+
+01:27:27.360 --> 01:27:28.168 
+but you can find that.
+
+01:27:29.048 --> 01:27:34.371 
+Now let's go to that question that you asked earlier, like what What about this poor man's less than
+
+01:27:34.371 --> 01:27:36.608 
+or equal to signal versus equal to signal?
+
+01:27:36.608 --> 01:27:37.408 
+What's the difference?
+
+01:27:37.928 --> 01:27:40.368 
+The Senator nuance, but it exists.
+
+01:27:41.248 --> 01:27:46.205 
+So here it becomes interesting, especially when you have two things assigned over here and they may
+
+01:27:46.205 --> 01:27:47.808 
+or may not depend on each other.
+
+01:27:48.688 --> 01:27:50.728 
+So this is non blocking over here.
+
+01:27:52.048 --> 01:27:53.208 
+That's the poor man's signal.
+
+01:27:53.208 --> 01:27:54.488 
+That's what non blocking means.
+
+01:27:54.488 --> 01:27:58.208 
+Non blocking means that all assignments are made at the end of the block.
+
+01:27:59.648 --> 01:28:01.848 
+Basically you don't sequentially execute the block.
+
+01:28:02.488 --> 01:28:04.368 
+All assignments are made at the end of the block.
+
+01:28:04.568 --> 01:28:09.848 
+For example, here, or in other words, all assignments are made in parallel.
+
+01:28:09.848 --> 01:28:11.168 
+Process flow is not blocked.
+
+01:28:11.968 --> 01:28:16.008 
+So if you look over here, A gets the value of one right.
+
+01:28:17.688 --> 01:28:22.088 
+The question is should B get the value of 1 or should B get the previous value of A?
+
+01:28:23.208 --> 01:28:27.568 
+In this particular case because it's non blocking, all assignments are executed concurrently.
+
+01:28:27.568 --> 01:28:30.688 
+B gets the previous value of A which we don't know.
+
+01:28:31.648 --> 01:28:36.568 
+So here I can guarantee you that at the end of the execution of the always block, A is 1 BI.
+
+01:28:36.568 --> 01:28:38.568 
+Don't know it was the previous value of A.
+
+01:28:39.208 --> 01:28:44.408 
+OK, OK, now let's take a look at the blocking version of this.
+
+01:28:44.928 --> 01:28:46.968 
+Blocking version is more sequential.
+
+01:28:46.968 --> 01:28:49.008 
+The assignments are done 1 by 1.
+
+01:28:52.448 --> 01:29:01.368 
+For example, in this particular case, A is assigned 1 and B gets that new value of A OK, so B at the
+
+01:29:01.368 --> 01:29:04.848 
+end of the statement, both A&B are one.
+
+01:29:05.288 --> 01:29:10.289 
+Each assignment is made immediately OK and the process waits until the 1st assignment is complete,
+
+01:29:10.289 --> 01:29:11.208 
+meaning it blocks.
+
+01:29:11.208 --> 01:29:12.888 
+That's why it's blocking.
+
+01:29:12.928 --> 01:29:17.648 
+So this assignment is blocking, it completes and then the next assignment is done over here.
+
+01:29:17.648 --> 01:29:19.168 
+OK, yes, but does this actually change the synthesis?
+
+01:29:19.168 --> 01:29:24.928 
+I mean OK in this case it's a it will change the synthesis, right?
+
+01:29:24.928 --> 01:29:33.648 
+But does it actually create some sequential logic thing in Gates?
+
+01:29:34.928 --> 01:29:36.128 
+Yeah, that's a good question.
+
+01:29:36.128 --> 01:29:37.368 
+Basically, you need to think about that.
+
+01:29:37.488 --> 01:29:42.048 
+Yes, yes, certainly it, it will need to do whatever it takes to implement the semantics, right?
+
+01:29:46.728 --> 01:29:49.888 
+That's also possible depending on depending on what changes, right?
+
+01:29:49.888 --> 01:29:55.528 
+In this particular case, we don't have an always at B, so there's some remembrance going on, right?
+
+01:29:55.888 --> 01:29:58.328 
+So if you want to synthesise, you need to go through all of those cases.
+
+01:29:59.648 --> 01:30:00.648 
+But these are very good questions.
+
+01:30:00.648 --> 01:30:06.968 
+Yes, it also sets a in this block.
+
+01:30:07.728 --> 01:30:13.008 
+It can trigger the always block in an.
+
+01:30:15.568 --> 01:30:17.008 
+You can, you can think of it that way.
+
+01:30:17.008 --> 01:30:17.848 
+Yes, exactly.
+
+01:30:17.848 --> 01:30:23.488 
+At some point, this block gets triggered whenever a changes, right?
+
+01:30:24.648 --> 01:30:29.168 
+So you're right, it's good to think about it.
+
+01:30:29.168 --> 01:30:31.088 
+Eventually the work circuit settles.
+
+01:30:31.488 --> 01:30:35.168 
+OK, we're I'm going to say show you an example of this if you have time, otherwise tomorrow.
+
+01:30:35.768 --> 01:30:37.648 
+OK, so these are very good questions.
+
+01:30:37.648 --> 01:30:40.448 
+You guys are thinking what's going on basically in the hardware.
+
+01:30:41.568 --> 01:30:45.408 
+OK, so this is the second one is clearly similar to similar sequential programs, right?
+
+01:30:45.408 --> 01:30:47.048 
+In sequential programs, this is what happens.
+
+01:30:47.688 --> 01:30:53.684 
+You don't have this in sequential programs on the left, but this is very useful for defining, let's
+
+01:30:53.684 --> 01:30:56.168 
+say what happens in a clock cycle, right?
+
+01:30:56.328 --> 01:31:01.548 
+Because in in remember in the finite state machine you have some state registers, there could be
+
+01:31:01.548 --> 01:31:03.288 
+many of them, A&B, both of them.
+
+01:31:03.648 --> 01:31:10.661 
+And then you use those input values and the combination logic executes and only at the end of the
+
+01:31:10.661 --> 01:31:13.048 
+clock cycle you get A&B assigned.
+
+01:31:13.288 --> 01:31:17.854 
+So the first one is more like that sequential logic, the second one is more like the sequential
+
+01:31:17.854 --> 01:31:19.008 
+program that you design.
+
+01:31:19.688 --> 01:31:22.248 
+OK, why do you use non blocking or blocking statements?
+
+01:31:22.248 --> 01:31:25.168 
+Essentially non blocking statements allow operating on old values.
+
+01:31:25.168 --> 01:31:28.168 
+As I said, they enable easy sequential logic descriptions.
+
+01:31:28.608 --> 01:31:33.128 
+Blocking statements allow a sequence of operations, allow operating on immediately updated values.
+
+01:31:33.128 --> 01:31:35.368 
+It's more like a software programming language, right?
+
+01:31:36.368 --> 01:31:37.528 
+This doesn't mean it's combinational.
+
+01:31:38.048 --> 01:31:40.328 
+So that's a different question you kind of asked earlier.
+
+01:31:40.808 --> 01:31:44.779 
+You still need to think about whether it's sequential or combinational, but more like a software
+
+01:31:44.779 --> 01:31:45.648 
+programming language.
+
+01:31:46.208 --> 01:31:50.862 
+If the sensitivity list is correct, a block with non blocking statements will eventually evaluate to
+
+01:31:50.862 --> 01:31:53.608 
+the same result as the same block with blocking statements.
+
+01:31:54.408 --> 01:31:55.848 
+You may need to think about what I just said.
+
+01:31:56.288 --> 01:31:59.728 
+This may require additional iterations like you asked earlier.
+
+01:31:59.808 --> 01:32:01.128 
+Let's take a look at this for example.
+
+01:32:01.568 --> 01:32:05.248 
+So this is this is our blocking assignments.
+
+01:32:05.368 --> 01:32:11.488 
+This is actually your carry generation circuitry for for a carry look ahead adder.
+
+01:32:12.808 --> 01:32:15.728 
+You haven't seen carrier look ahead, but I recommend that you take a look at it.
+
+01:32:15.888 --> 01:32:18.528 
+You don't need to, but this is a carrier generation circuitry.
+
+01:32:18.888 --> 01:32:26.370 
+You have PGS and then C out and these are some operations as you can see and this is at over here
+
+01:32:26.370 --> 01:32:33.545 
+meaning on all, whenever any of the things on the right hand changes, you trigger this block,
+
+01:32:33.545 --> 01:32:34.008 
+right?
+
+01:32:34.808 --> 01:32:38.608 
+So initially assume that P everything is 0.
+
+01:32:39.088 --> 01:32:42.488 
+If a changes to 1, all values are updated in order, right?
+
+01:32:42.488 --> 01:32:43.808 
+Because this is blocking.
+
+01:32:45.088 --> 01:32:48.128 
+This becomes one, this becomes 0, this becomes one, this becomes zero.
+
+01:32:48.248 --> 01:32:51.768 
+OK, let's take a look at the same thing.
+
+01:32:51.768 --> 01:32:55.888 
+Exact same thing with an unblocking assignment sensitivity list.
+
+01:32:56.408 --> 01:32:59.128 
+Whatever on the right hand list changes, you trigger this.
+
+01:33:00.048 --> 01:33:02.848 
+So initially everything is 0 PGSC out.
+
+01:33:02.928 --> 01:33:04.728 
+They're all zeros now.
+
+01:33:05.608 --> 01:33:09.368 
+If a changes to 1, all assignments happen concurrently.
+
+01:33:10.408 --> 01:33:11.448 
+This changes to one.
+
+01:33:11.968 --> 01:33:12.728 
+This is 0.
+
+01:33:13.008 --> 01:33:13.568 
+This is 0.
+
+01:33:13.568 --> 01:33:14.048 
+Still.
+
+01:33:14.728 --> 01:33:15.248 
+This is 0.
+
+01:33:15.248 --> 01:33:20.688 
+Also, right now, because P changed, P changed.
+
+01:33:20.888 --> 01:33:25.928 
+This statement gets executed again right after the first iteration.
+
+01:33:25.928 --> 01:33:27.248 
+P has changed to 1 as well.
+
+01:33:27.728 --> 01:33:30.208 
+Since there's a change in P, the process triggers again.
+
+01:33:30.888 --> 01:33:32.968 
+This time S is calculated with P1.
+
+01:33:33.128 --> 01:33:37.408 
+So this becomes one, this becomes 0, this becomes one, this becomes zero at the end.
+
+01:33:38.448 --> 01:33:43.728 
+OK, so that's that's essentially how this works.
+
+01:33:43.768 --> 01:33:45.568 
+Let me finish this and then we're going to part.
+
+01:33:45.968 --> 01:33:50.688 
+Essentially always use always a positive edge of clock and non blocking assignments.
+
+01:33:51.048 --> 01:33:55.568 
+Meaning poor man's less than or equal to tomorrow's synchronous sequential logic.
+
+01:33:56.608 --> 01:33:57.328 
+That's beautiful.
+
+01:33:58.608 --> 01:34:00.008 
+That's our non blocking thing.
+
+01:34:00.248 --> 01:34:03.488 
+But use continuous assignments to model simple combinational logic.
+
+01:34:04.088 --> 01:34:10.080 
+There's a bit more use always and star everything in the right hand side of the in the sensitivity
+
+01:34:10.080 --> 01:34:14.728 
+list and blocking assignments to model more complicated combinational logic.
+
+01:34:15.608 --> 01:34:19.048 
+So if you use other things, things become dangerous basically.
+
+01:34:19.168 --> 01:34:24.448 
+But if you use star and blocking assignments, then you're doing combination logic, OK?
+
+01:34:24.928 --> 01:34:29.086 
+You cannot make assignments to the same signal in more than one always block or in a continuous
+
+01:34:29.086 --> 01:34:29.568 
+assignment.
+
+01:34:29.568 --> 01:34:30.688 
+So this is not allowed.
+
+01:34:30.848 --> 01:34:34.968 
+This was your question earlier because it doesn't describe hardware nicely.
+
+01:34:35.048 --> 01:34:39.608 
+Let's say even though you may have a correct thing in your mind, it may still not work.
+
+01:34:40.088 --> 01:34:43.008 
+It's not allowed basically because you may make a lot of mistakes.
+
+01:34:43.008 --> 01:34:43.728 
+It's also not allowed.
+
+01:34:44.448 --> 01:34:44.768 
+OK.
+
+01:34:44.968 --> 01:34:49.088 
+So we're going to pick up here tomorrow and continue with timing and verification.
+

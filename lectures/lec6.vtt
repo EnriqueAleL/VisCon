@@ -1,0 +1,4493 @@
+WEBVTT
+
+00:00:01.490 --> 00:00:02.250 
+Hello, hello.
+
+00:00:02.250 --> 00:00:02.810 
+Perfect.
+
+00:00:04.410 --> 00:00:06.890 
+Hey guys, If you could just listen up real quick.
+
+00:00:08.050 --> 00:00:09.210 
+Hi, I'm Thomas.
+
+00:00:09.250 --> 00:00:16.064 
+I'm the semester speaker for DDCA Kent over there is the other one he's just type writing out his
+
+00:00:16.064 --> 00:00:17.610 
+e-mail onto the board.
+
+00:00:17.930 --> 00:00:23.499 
+So just wanted to let you guys know that if you have any questions, complaints, suggestions,
+
+00:00:23.499 --> 00:00:26.890 
+anything, don't hesitate to reach us to reach out to us.
+
+00:00:27.170 --> 00:00:33.844 
+And then we'll obviously like, you know, try to reach out to Professor Mutlu and like communicate
+
+00:00:33.844 --> 00:00:37.010 
+and kind of try to get your problems resolved.
+
+00:00:37.010 --> 00:00:40.810 
+And and yeah, that's about it from me.
+
+00:00:41.450 --> 00:00:47.728 
+I think if you also had a like send a message to the WhatsApp group, DDCA and like say Kent or
+
+00:00:47.728 --> 00:00:54.274 
+Thomas, like or semester speakers who would also reply and send your comments, complaints or yeah,
+
+00:00:54.274 --> 00:00:55.410 
+everything Great.
+
+00:00:55.570 --> 00:00:56.010 
+Thank you.
+
+00:01:01.850 --> 00:01:03.050 
+OK, you're right on time.
+
+00:01:03.170 --> 00:01:06.210 
+Yeah, yeah.
+
+00:01:06.210 --> 00:01:10.930 
+Please communicate with them for any feedback, positive or negative.
+
+00:01:13.090 --> 00:01:13.570 
+OK.
+
+00:01:13.770 --> 00:01:15.370 
+And you can read the e-mail address.
+
+00:01:15.370 --> 00:01:16.050 
+I cannot read it.
+
+00:01:16.050 --> 00:01:17.010 
+My eyes are not good.
+
+00:01:17.010 --> 00:01:19.130 
+But you guys are younger than me, so.
+
+00:01:21.890 --> 00:01:22.410 
+OK.
+
+00:01:22.410 --> 00:01:23.090 
+Are we ready?
+
+00:01:25.410 --> 00:01:26.810 
+I mean, all slides are OK, too.
+
+00:01:31.050 --> 00:01:37.858 
+OK, Today we're going to start timing and verification, which is yeah, that's OK, we can switch it
+
+00:01:37.858 --> 00:01:38.970 
+later, you know.
+
+00:01:39.970 --> 00:01:41.410 
+Yeah, in the in the second health.
+
+00:01:41.570 --> 00:01:43.490 
+Yeah, yeah, yeah.
+
+00:01:43.490 --> 00:01:48.588 
+Today we're going to start timing and verification, which is a really important topic especially
+
+00:01:48.588 --> 00:01:53.050 
+these days when you want to design both robust as well as high performance circuits.
+
+00:01:53.490 --> 00:01:56.090 
+So far we've assumed functional operation.
+
+00:01:56.090 --> 00:02:00.930 
+We didn't talk much about timing even though I showed you a couple of timing diagrams today.
+
+00:02:00.930 --> 00:02:06.197 
+We're going to actually really understand how to analyse the timing of both combinational and
+
+00:02:06.197 --> 00:02:07.330 
+sequential circuits.
+
+00:02:07.570 --> 00:02:11.570 
+But before we get into that, let's finish yesterday's lecture.
+
+00:02:12.050 --> 00:02:15.770 
+These are some of the readings that I recommend this week.
+
+00:02:16.490 --> 00:02:18.570 
+Next week we're going to actually go into architecture.
+
+00:02:18.570 --> 00:02:19.650 
+It's going to be a lot of fun.
+
+00:02:20.090 --> 00:02:21.690 
+We're going to raise the abstraction level.
+
+00:02:21.730 --> 00:02:23.450 
+We're going to be done with digital logic design.
+
+00:02:23.450 --> 00:02:26.490 
+We're going to talk about how a computer executes instructions.
+
+00:02:27.050 --> 00:02:28.010 
+How do we program it?
+
+00:02:28.010 --> 00:02:29.610 
+It's going to be the von Neumann model.
+
+00:02:29.610 --> 00:02:34.290 
+So it's going to be quite exciting, I think, and then we're going to bridge the gap later on.
+
+00:02:34.650 --> 00:02:35.450 
+But that's next week.
+
+00:02:35.890 --> 00:02:39.410 
+So let's wrap wrap up HDL, hardware description language and Verilog.
+
+00:02:40.130 --> 00:02:48.032 
+So remember we covered how to describe digital logic circuits, both combinational and sequential
+
+00:02:48.032 --> 00:02:52.890 
+using hardware description languages, specifically Verilog.
+
+00:02:53.050 --> 00:02:58.718 
+We covered a lot of syntax as well as semantics, and we discussed how you would describe a flip
+
+00:02:58.718 --> 00:03:00.210 
+flop, for example, right?
+
+00:03:00.210 --> 00:03:01.650 
+So hopefully you remember all of that.
+
+00:03:01.650 --> 00:03:03.330 
+If not, you're going to do a lot of that during lab.
+
+00:03:03.330 --> 00:03:08.575 
+So I'm sure you're going to be experts on how to do the basics of those at least, which is good,
+
+00:03:08.575 --> 00:03:11.690 
+which is part of it, But the principles are what matters.
+
+00:03:11.690 --> 00:03:16.960 
+I should really say that in the end, what you will take away from this course is how to think in
+
+00:03:16.960 --> 00:03:20.090 
+parallel, I would say, and that's the beauty of hardware.
+
+00:03:20.130 --> 00:03:24.964 
+When you design hardware, you will need to think about signals happening at the same time, going
+
+00:03:24.964 --> 00:03:29.900 
+everywhere, and you will need to think about that parallelism and think about the fact that things
+
+00:03:29.900 --> 00:03:31.210 
+are happening in parallel.
+
+00:03:31.210 --> 00:03:34.090 
+You need to have some way of synchronising things.
+
+00:03:34.090 --> 00:03:35.330 
+That's why we introduced the clock.
+
+00:03:35.450 --> 00:03:42.890 
+OK, so I also said yesterday that we will design some finite state machines based on what we learnt.
+
+00:03:43.090 --> 00:03:46.570 
+So that's what we're going to do first and then we're going to jump into timing and verification.
+
+00:03:47.090 --> 00:03:48.130 
+Does that sound good to everyone?
+
+00:03:49.290 --> 00:03:49.850 
+OK, cool.
+
+00:03:50.370 --> 00:03:55.050 
+So finite state machines, if you recall, it's essentially a discrete.
+
+00:03:55.170 --> 00:04:00.028 
+Model and it consists of three separate parts, and we're going to design these three separate parts
+
+00:04:00.028 --> 00:04:02.090 
+like we did with this smart traffic light.
+
+00:04:02.330 --> 00:04:06.810 
+If you remember, we could do that, but we're going to design a couple of other state machines.
+
+00:04:07.930 --> 00:04:13.887 
+You need essentially a state register to hold the state, and you need a next state logic to decide
+
+00:04:13.887 --> 00:04:15.650 
+what your next state will be.
+
+00:04:16.170 --> 00:04:18.450 
+And you need output logic to decide your outputs.
+
+00:04:18.730 --> 00:04:23.493 
+And at the beginning of the clock cycle, next state is latched into the state register and all of
+
+00:04:23.493 --> 00:04:27.570 
+that, all of those are available for the entire clock cycle as we discussed, right?
+
+00:04:27.650 --> 00:04:29.770 
+That's why this, we built the state register in the past.
+
+00:04:30.330 --> 00:04:35.477 
+So it consists of sequential circuits, state registers, combinational circuits, which are next state
+
+00:04:35.477 --> 00:04:36.610 
+logic and optic logic.
+
+00:04:36.610 --> 00:04:37.810 
+So we're going to design these three.
+
+00:04:38.370 --> 00:04:43.410 
+And you remember this design procedure that I went over when we discussed finite state machines.
+
+00:04:43.410 --> 00:04:43.970 
+You can read this.
+
+00:04:43.970 --> 00:04:46.330 
+I don't want to read this again, but we're going to develop it.
+
+00:04:47.650 --> 00:04:53.210 
+It's more interesting to develop it than just read this kind of text in a boring way.
+
+00:04:54.210 --> 00:04:59.605 
+OK, so this is the simple finite state machine we're going to design first, which is going to divide
+
+00:04:59.605 --> 00:05:01.170 
+the clock frequency by three.
+
+00:05:01.530 --> 00:05:03.930 
+Sometimes you don't want a clock frequency that's fast.
+
+00:05:03.930 --> 00:05:10.490 
+You want clock to be relatively short, let's say to be 1 relatively short.
+
+00:05:10.570 --> 00:05:14.770 
+And if you want to divide the clock frequency by three, this is what we want to achieve.
+
+00:05:14.770 --> 00:05:18.090 
+Basically this is that we have a fast clock, you want to divide it by three.
+
+00:05:20.210 --> 00:05:23.970 
+So you can see that 3 clock cycle become one clock cycle here.
+
+00:05:24.730 --> 00:05:28.690 
+The clock stays one for a two third, one third of that.
+
+00:05:28.730 --> 00:05:31.330 
+But that's not what's interesting to us in this particular case.
+
+00:05:31.330 --> 00:05:36.091 
+You can also try to do it such that clock stays one for half of that, but we're not going to do that
+
+00:05:36.091 --> 00:05:36.330 
+here.
+
+00:05:37.410 --> 00:05:41.410 
+The idea is the output wise high for one clock cycle out of every three.
+
+00:05:42.250 --> 00:05:45.370 
+In other words, the output device, the clock frequency, frequency of the clock by three.
+
+00:05:45.490 --> 00:05:50.010 
+So this is the state machine that your book designed and I took over here.
+
+00:05:50.330 --> 00:05:57.170 
+So there are three states S0S1S2 in S0, outputs of the clock, which is Y is 1.
+
+00:05:57.450 --> 00:05:59.690 
+Output of the circuit output of the FSM is 1.
+
+00:06:00.690 --> 00:06:02.090 
+And this is also the reset state.
+
+00:06:02.090 --> 00:06:06.152 
+This that's you need to have a reset state and finite state machines you have to be able to reset,
+
+00:06:06.152 --> 00:06:08.930 
+otherwise you will start from an unknown state and that's not good.
+
+00:06:09.650 --> 00:06:13.885 
+There's a common mistake that let's say rookies do when they start designing finite state machines,
+
+00:06:13.885 --> 00:06:17.650 
+they forget the reset state and then you have no idea where you would start from, right?
+
+00:06:18.290 --> 00:06:24.811 
+So don't forget the reset state and unconditionally at the next clock edge, you go to state one,
+
+00:06:24.811 --> 00:06:26.170 
+output becomes zero.
+
+00:06:26.250 --> 00:06:32.126 
+At the next clock edge, you go to state 2, out becomes 0, again, out to state zero, and then you go
+
+00:06:32.126 --> 00:06:33.610 
+to go back to state zero.
+
+00:06:33.850 --> 00:06:36.930 
+OK, this makes sense, hopefully based on what we're trying to achieve.
+
+00:06:37.650 --> 00:06:39.450 
+Now let's try to design it in Verilog.
+
+00:06:39.690 --> 00:06:41.570 
+Well, let's try to describe this in Verilog.
+
+00:06:41.570 --> 00:06:44.410 
+We designed it actually it's not.
+
+00:06:44.570 --> 00:06:46.050 
+It's not a hard design, as you can see.
+
+00:06:46.290 --> 00:06:51.250 
+So we call it divide by three FSM this module and we have a Reg variables.
+
+00:06:51.250 --> 00:07:00.107 
+These are stateful variables that we're going to assign that we're going to update at rising clock
+
+00:07:00.107 --> 00:07:03.090 
+edge, right state and next state.
+
+00:07:03.570 --> 00:07:06.130 
+And these are the parameters that we designed.
+
+00:07:06.130 --> 00:07:11.770 
+So basically we can you go back, the parameter descriptions are optional, but this is good for
+
+00:07:11.770 --> 00:07:12.970 
+encoding the states.
+
+00:07:13.250 --> 00:07:18.770 
+Basically state 0 is encoded AS00, state one is encoded as 01, state 2 is encoded AS10.
+
+00:07:18.890 --> 00:07:22.490 
+OK, this is the state register.
+
+00:07:22.490 --> 00:07:26.490 
+Now we're implementing the state register and you know how to implement it right now.
+
+00:07:26.890 --> 00:07:35.659 
+This happens to be a state register that is, that also has a reset as you can see, and it's
+
+00:07:35.659 --> 00:07:37.490 
+asynchronous reset.
+
+00:07:37.490 --> 00:07:43.670 
+Also it's it happens to be that it's sensitive to clock and reset over here, the positive edge of
+
+00:07:43.670 --> 00:07:44.690 
+clock and reset.
+
+00:07:44.930 --> 00:07:48.490 
+And if reset is 1, you reset the state.
+
+00:07:49.050 --> 00:07:56.101 
+In this example, it's different from what we have seen yesterday where a reset value of 0 reset the
+
+00:07:56.101 --> 00:08:02.370 
+state to 0 right here, a reset value of 1 reset the state to S0 on this particular case.
+
+00:08:02.850 --> 00:08:04.130 
+Again, that's a convention.
+
+00:08:04.130 --> 00:08:05.090 
+It's what you decide to do.
+
+00:08:06.450 --> 00:08:08.130 
+It's good to see different examples.
+
+00:08:08.490 --> 00:08:12.370 
+Otherwise, if reset is not one, then state becomes next state.
+
+00:08:13.010 --> 00:08:15.530 
+OK, so that's the idea over here.
+
+00:08:15.570 --> 00:08:17.650 
+This is what we implemented in the past also.
+
+00:08:18.410 --> 00:08:19.890 
+OK, and this is the next state logic.
+
+00:08:19.890 --> 00:08:21.810 
+How does next state get determined?
+
+00:08:21.930 --> 00:08:24.210 
+Remember, next state logic is combinational, right?
+
+00:08:24.850 --> 00:08:31.170 
+So we want some combinational logic, meaning always at whatever right hand side variable changes.
+
+00:08:32.130 --> 00:08:38.530 
+You basically set next state to a particular state encoding depending on your current state.
+
+00:08:39.010 --> 00:08:44.417 
+So for example, if your current state is S0, next state is assigned to be S 1 based on the FSMV
+
+00:08:44.417 --> 00:08:44.930 
+designed.
+
+00:08:45.010 --> 00:08:48.370 
+If your current state is S1, next state is assigned to be S2.
+
+00:08:48.810 --> 00:08:51.210 
+If your current state is S2, next state is assigned to be S0.
+
+00:08:51.530 --> 00:08:53.770 
+OK, this is combination.
+
+00:08:54.090 --> 00:08:54.770 
+As you can see this is.
+
+00:08:55.130 --> 00:08:58.090 
+And yesterday we discussed in detail why this is combinational.
+
+00:08:58.570 --> 00:09:07.826 
+OK, Basically this gets executed whenever any inputs on the right hand side changes and the output
+
+00:09:07.826 --> 00:09:13.210 
+always gets assigned something whenever that happens, OK?
+
+00:09:13.210 --> 00:09:14.890 
+That means it's a combinational circuit.
+
+00:09:14.890 --> 00:09:19.050 
+If you forgot in one of the assignments assigning next state, that wouldn't be combinational.
+
+00:09:19.290 --> 00:09:21.010 
+OK, and there's a default.
+
+00:09:21.010 --> 00:09:23.570 
+It's always good to have default even though you're never going to get to it.
+
+00:09:23.570 --> 00:09:28.850 
+Hopefully in this particular case, OK, again, it's good programming practice to have defaults.
+
+00:09:29.370 --> 00:09:32.090 
+OK, And the last one is output logic.
+
+00:09:32.090 --> 00:09:34.730 
+What is the output of this FSM?
+
+00:09:34.730 --> 00:09:37.010 
+Again, this is a combinational output.
+
+00:09:37.450 --> 00:09:41.770 
+In this particular case, the output is 1 only if the state is at 0, right?
+
+00:09:42.250 --> 00:09:43.490 
+Otherwise the output is 0.
+
+00:09:43.570 --> 00:09:44.690 
+So this is our output.
+
+00:09:44.850 --> 00:09:51.416 
+Let's, it's called Y as part of this module, and this turns out to be a machine FSN and FSM where
+
+00:09:51.416 --> 00:09:53.650 
+the output depends only on state.
+
+00:09:54.170 --> 00:09:56.050 
+And this happens to be a more type FSM.
+
+00:09:56.490 --> 00:10:00.570 
+As I said, I always confuse these, so it's always good to remember what is what.
+
+00:10:01.890 --> 00:10:05.570 
+If I ask you, I'm not going to ask you to memorise what's more type, What's mealy type?
+
+00:10:06.130 --> 00:10:08.570 
+I hate that sort of question that requires memorisation.
+
+00:10:08.570 --> 00:10:11.010 
+That's not very insightful, let's say.
+
+00:10:11.010 --> 00:10:14.570 
+So it's good to think about it, but it's more type FSM basically.
+
+00:10:14.570 --> 00:10:15.130 
+I checked it.
+
+00:10:15.890 --> 00:10:17.530 
+OK, so this is the full implementation.
+
+00:10:17.530 --> 00:10:24.922 
+Basically, I I built it part by part, but this is the full implementation of this divide by three
+
+00:10:24.922 --> 00:10:28.810 
+FSM that that divides the clock frequency by three.
+
+00:10:29.730 --> 00:10:30.290 
+Sounds good.
+
+00:10:30.730 --> 00:10:36.986 
+So if you want to reduce the frequency of your processor, you could add this FSM somewhere in your
+
+00:10:36.986 --> 00:10:40.690 
+machine and supply that clock to the rest of your machine.
+
+00:10:41.690 --> 00:10:42.970 
+And we're going to see that clock soon.
+
+00:10:45.250 --> 00:10:45.890 
+Any questions?
+
+00:10:46.010 --> 00:10:46.450 
+All good.
+
+00:10:47.450 --> 00:10:47.770 
+OK.
+
+00:10:48.210 --> 00:10:48.650 
+Oh, yes.
+
+00:10:50.850 --> 00:10:51.730 
+Why would you want to do it?
+
+00:10:51.730 --> 00:10:53.050 
+Because you want to save energy.
+
+00:10:53.850 --> 00:11:00.125 
+Remember when we discussed in the second lecture, power consumption is a function of capacitance
+
+00:11:00.125 --> 00:11:02.610 
+times voltage, square times frequency.
+
+00:11:03.210 --> 00:11:05.890 
+If you want to save energy, you want to reduce frequency.
+
+00:11:06.290 --> 00:11:10.586 
+And if you reduce frequency, you also you can also reduce the voltage, meaning you can actually get
+
+00:11:10.586 --> 00:11:10.890 
+a quad.
+
+00:11:12.570 --> 00:11:16.850 
+Yeah, you can actually get a cubic savings in energy by reducing the frequency.
+
+00:11:19.490 --> 00:11:22.290 
+And this is actually what microprocessors currently use to save energy.
+
+00:11:22.290 --> 00:11:26.962 
+If they're not doing something, let's say time critical, they reduce the frequency, they reduce the
+
+00:11:26.962 --> 00:11:28.850 
+voltage, they go slowly and save energy.
+
+00:11:32.010 --> 00:11:34.370 
+So this is a real circuit, even though it looks very simple.
+
+00:11:34.930 --> 00:11:35.410 
+OK, yes.
+
+00:11:35.410 --> 00:11:40.530 
+What would it sympathise the different circuit if we?
+
+00:11:48.770 --> 00:11:49.450 
+Good question.
+
+00:11:49.770 --> 00:11:54.855 
+I don't know, it depends on the synthesis tools probably OK, it will probably have the same
+
+00:11:54.855 --> 00:11:57.650 
+functionality, but I haven't thought about enough.
+
+00:11:58.170 --> 00:11:58.770 
+But this is good.
+
+00:11:58.770 --> 00:12:00.530 
+This is good for you to try and see.
+
+00:12:02.250 --> 00:12:06.690 
+Some of this is trial and error, you know, I don't know everything about the synthesis tools.
+
+00:12:06.690 --> 00:12:08.130 
+We're going to talk about the mapping also.
+
+00:12:09.170 --> 00:12:09.810 
+OK, very good.
+
+00:12:10.250 --> 00:12:15.010 
+So this is the other finite state machine that I will go through relatively quickly with.
+
+00:12:17.410 --> 00:12:20.986 
+So the question is, it may synthesize to something different, but it will have the same
+
+00:12:20.986 --> 00:12:21.850 
+functionality, right?
+
+00:12:22.410 --> 00:12:23.090 
+That's what you're asking.
+
+00:12:23.090 --> 00:12:26.650 
+But it wouldn't be more optimal or whatever.
+
+00:12:26.650 --> 00:12:29.210 
+More optimal in terms of what area, for example?
+
+00:12:29.210 --> 00:12:30.450 
+Yeah, again, you don't know the mapping.
+
+00:12:30.450 --> 00:12:32.010 
+So this is a description.
+
+00:12:33.010 --> 00:12:38.962 
+There's after this, there's a synthesis process and there's a mapping process and things get to the
+
+00:12:38.962 --> 00:12:42.690 
+circuit level in in, in this case, it's a very simple circuit.
+
+00:12:42.690 --> 00:12:44.930 
+So I don't expect there are a lot of issues frankly.
+
+00:12:45.370 --> 00:12:50.481 
+But if your question is for a larger circuit, that's very hard to tell, OK, You need to know the
+
+00:12:50.481 --> 00:12:53.410 
+underlying workings of the mapping and synthesis tools.
+
+00:12:54.890 --> 00:13:00.410 
+OK, So this is another state machine that we didn't cover, but I mentioned that you can take a look.
+
+00:13:00.410 --> 00:13:04.914 
+I'll go through this relatively quickly also, but I won't go into everything that's is going to
+
+00:13:04.914 --> 00:13:06.290 
+happen in the very long code.
+
+00:13:06.770 --> 00:13:12.530 
+Remember this snail that crawls down a paper tape with ones and zeros on it?
+
+00:13:13.730 --> 00:13:20.210 
+We very, very briefly talked about it in the FSM lecture, and the idea is this snail smiles whenever
+
+00:13:20.210 --> 00:13:23.450 
+the last four digits it has crawled over our 1101.
+
+00:13:24.170 --> 00:13:26.010 
+Someone decided that's an interesting problem.
+
+00:13:27.050 --> 00:13:31.010 
+Not that terrible, but it's kind of interesting to design finite state machines for it.
+
+00:13:31.330 --> 00:13:37.373 
+And essentially, if you design more and merely finite state machines for it, more means the output
+
+00:13:37.373 --> 00:13:40.210 
+of the machine is dependent only on the state.
+
+00:13:40.610 --> 00:13:45.830 
+Merely means the output of the finite state machine is dependent on on the state as well as the
+
+00:13:45.830 --> 00:13:46.930 
+input current input.
+
+00:13:47.850 --> 00:13:49.370 
+So a more machine looks like this.
+
+00:13:49.770 --> 00:13:51.250 
+Basically you have 5 states.
+
+00:13:51.810 --> 00:13:53.250 
+S0 is the reset state.
+
+00:13:53.530 --> 00:13:54.850 
+When you see a one, you go to.
+
+00:13:55.130 --> 00:13:57.450 
+S1, when you see another one after that you go to S2.
+
+00:13:57.530 --> 00:14:03.942 
+You've seen one one basically when you see another zero, you go to S3110 and when you see another
+
+00:14:03.942 --> 00:14:10.090 
+one, you go to S4 and output A1, OK, So this is the state where where you have seen 1101, OK?
+
+00:14:10.650 --> 00:14:15.793 
+And then if you see another one over here, you go back here because you're actually doing 1101
+
+00:14:15.793 --> 00:14:16.450 
+around that.
+
+00:14:17.050 --> 00:14:21.048 
+So you can optimise this machine basically and people have optimised whoever designed it, optimised
+
+00:14:21.048 --> 00:14:21.170 
+it.
+
+00:14:21.530 --> 00:14:22.450 
+So you have 5 states.
+
+00:14:22.970 --> 00:14:26.010 
+On the other hand, the mealy version of this has four states.
+
+00:14:26.130 --> 00:14:31.890 
+That's usually the case if If your outputs depend on the state, you usually have more states.
+
+00:14:31.890 --> 00:14:36.358 
+Whereas if your outputs depend on not only the state but also the inputs, you can reduce the number
+
+00:14:36.358 --> 00:14:36.810 
+of states.
+
+00:14:37.090 --> 00:14:42.268 
+You have an F finite state machine because you're more richer in terms of the encoding of the output
+
+00:14:42.268 --> 00:14:42.890 
+information.
+
+00:14:42.890 --> 00:14:46.410 
+You don't need as many states as outputs essentially.
+
+00:14:47.450 --> 00:14:51.050 
+OK, so if you look over here, this is also doing the same thing in a different way.
+
+00:14:51.450 --> 00:14:53.370 
+So you're you're an S0.
+
+00:14:53.690 --> 00:14:56.530 
+You get an input of 1, you see a one.
+
+00:14:56.530 --> 00:15:00.050 
+Basically you output 0 because you haven't seen 1101 yet.
+
+00:15:00.090 --> 00:15:03.010 
+You go to S1 and then you you get another one.
+
+00:15:03.090 --> 00:15:03.930 
+You've seen one, one.
+
+00:15:03.930 --> 00:15:06.930 
+Basically at that point you output 0 because you haven't seen 1101 yet.
+
+00:15:06.930 --> 00:15:14.353 
+So you go to S2, you see a zero, you go to S3 and you output A1 because you've seen 110 but not 1101
+
+00:15:14.353 --> 00:15:14.650 
+yet.
+
+00:15:14.850 --> 00:15:18.650 
+And then if you're in S3 and if you see a one, you go to S1.
+
+00:15:20.370 --> 00:15:24.530 
+Essentially at that point you've seen 1101 and you output A1.
+
+00:15:24.810 --> 00:15:25.170 
+OK.
+
+00:15:25.730 --> 00:15:30.084 
+And the reason you go to S1 is you optimise the OK, you could have gone somewhere else, but then you
+
+00:15:30.084 --> 00:15:31.130 
+have more states, right?
+
+00:15:31.730 --> 00:15:36.888 
+OK, so you can convince yourself that these things work and we're going to implement in this case
+
+00:15:36.888 --> 00:15:41.250 
+the Mealy machine in the very long code, we're going to do something very similar.
+
+00:15:41.250 --> 00:15:47.315 
+Basically these are you have state and next state variables as regs and you have the input clock
+
+00:15:47.315 --> 00:15:53.570 
+reset digit that you're seeing and whether you're smiling or not, that's the output one bit output.
+
+00:15:53.770 --> 00:15:57.010 
+And these are the four state encoding S0 through S3.
+
+00:15:58.410 --> 00:16:02.170 
+This is essentially the state register, which is exactly the same as what we've seen earlier.
+
+00:16:02.810 --> 00:16:10.185 
+It's asynchronous reset, pause the edge clock triggered register and reset is active, ends one, and
+
+00:16:10.185 --> 00:16:16.890 
+this is the next state logic, which is again describing what's happening over here, right?
+
+00:16:18.170 --> 00:16:19.530 
+It's activated always.
+
+00:16:19.530 --> 00:16:20.890 
+It's also a combination logic.
+
+00:16:21.130 --> 00:16:24.610 
+If you're in state zero and if you see a digit, the next state is S1.
+
+00:16:24.850 --> 00:16:26.210 
+Otherwise the next state is S0.
+
+00:16:26.450 --> 00:16:28.930 
+OK, you stay in S0 because you haven't seen one yet.
+
+00:16:29.490 --> 00:16:32.610 
+If you're in S1 and if you've seen a digit, next stage S2.
+
+00:16:32.610 --> 00:16:37.570 
+Otherwise you go back to S0 because it's as if you haven't seen anything.
+
+00:16:37.570 --> 00:16:38.610 
+You're starting from scratch.
+
+00:16:38.890 --> 00:16:43.984 
+And you can you can again convince yourself that this is correct or look at your book, OK, And that
+
+00:16:43.984 --> 00:16:47.330 
+that was the next state logic output logic is also combinational.
+
+00:16:47.330 --> 00:16:50.090 
+And in this case, the question is whether or not you're smiling.
+
+00:16:50.650 --> 00:16:57.971 
+And in this particular case, if you're in state S3 and if you see a digit, then you basically output
+
+00:16:57.971 --> 00:16:58.850 
+a smile, OK?
+
+00:16:58.850 --> 00:17:00.450 
+That's the only case where you Optus to smile.
+
+00:17:01.490 --> 00:17:02.130 
+Does that sound good?
+
+00:17:03.250 --> 00:17:06.210 
+OK, So in this case, output depends on state and input.
+
+00:17:06.210 --> 00:17:09.570 
+So it's a mealy type FSM and we use simple combination assignment.
+
+00:17:10.170 --> 00:17:11.690 
+In this case, we have only four states.
+
+00:17:11.690 --> 00:17:14.770 
+You could actually implement the same thing with more states.
+
+00:17:14.850 --> 00:17:16.330 
+It's easy to make more states.
+
+00:17:16.890 --> 00:17:18.850 
+The problem is your circuit becomes larger, right?
+
+00:17:20.130 --> 00:17:26.210 
+But this is, I believe minimal in this particular case for a mealy type FSM, OK.
+
+00:17:27.210 --> 00:17:31.770 
+And this is the full implementation of this smiling snail sounds good.
+
+00:17:32.490 --> 00:17:34.530 
+In your labs, you'll do a lot of FSM implementation.
+
+00:17:34.530 --> 00:17:35.490 
+So it'll be a lot of fun.
+
+00:17:37.010 --> 00:17:40.690 
+OK, So I think we're done with HDL and Verilog right now.
+
+00:17:40.850 --> 00:17:47.106 
+We in this last part of this lecture, which is really carrying over from yesterday, we described
+
+00:17:47.106 --> 00:17:48.410 
+sequential circuits.
+
+00:17:48.410 --> 00:17:51.210 
+We talked about the always statement, which is interesting.
+
+00:17:51.210 --> 00:17:55.010 
+It's good to to try this and learn more about this.
+
+00:17:55.290 --> 00:18:00.810 
+We talked about blocking and non blocking statements and we talked about describing FSMS today.
+
+00:18:03.010 --> 00:18:06.970 
+Now we're going to talk about how to look at timing and how to test circuits.
+
+00:18:07.890 --> 00:18:09.610 
+Are people ready or are there questions?
+
+00:18:13.730 --> 00:18:14.810 
+Ready Sounds like ready.
+
+00:18:16.170 --> 00:18:18.730 
+OK, so let's talk about timing and verification.
+
+00:18:18.930 --> 00:18:25.024 
+This is going to be a lower level lecture because we're going to talk about timing, but we're still
+
+00:18:25.024 --> 00:18:27.610 
+not not going to go below the logic level.
+
+00:18:27.770 --> 00:18:34.890 
+We're going to assume timing, timing associated with different logic gates, for example.
+
+00:18:36.010 --> 00:18:37.370 
+And I think your book does a nice job.
+
+00:18:37.370 --> 00:18:41.490 
+So I will I will still recommend you look at your book if you want more information on this.
+
+00:18:41.490 --> 00:18:44.330 
+So we're going to start with timing in combinational circuits.
+
+00:18:44.650 --> 00:18:49.964 
+We're going to introduce some notions of propagation delay and contamination delay, which are
+
+00:18:49.964 --> 00:18:55.050 
+essentially going to what we're going to use to analyze timing we're going to talk about.
+
+00:18:55.170 --> 00:18:55.770 
+Glitches.
+
+00:18:56.450 --> 00:19:00.777 
+And then we're going to talk about sequential circuits, which will build on what we introduce here,
+
+00:19:00.777 --> 00:19:02.570 
+but also add sequential components to it.
+
+00:19:03.170 --> 00:19:08.667 
+And we're going to talk about how to determine how fast a circuit can operate, meaning the clock
+
+00:19:08.667 --> 00:19:11.130 
+cycle of a circuit of a sequential circuit.
+
+00:19:11.570 --> 00:19:13.890 
+Clock cycle makes sense for a sequential circuit, of course, right?
+
+00:19:13.890 --> 00:19:18.156 
+Not a combinational circuit, because combinational circuit doesn't have the notion of a state or
+
+00:19:18.156 --> 00:19:18.690 
+clock cycle.
+
+00:19:18.690 --> 00:19:22.730 
+But we'll start with combinational elements because those are needed for sequential circuits.
+
+00:19:23.130 --> 00:19:27.879 
+And then we're going to switch gears and talk about circuit verification, which is how to make sure
+
+00:19:27.879 --> 00:19:32.532 
+a circuit works correctly, which is a difficult problem, which is becoming increasingly difficult
+
+00:19:32.532 --> 00:19:37.090 
+today because the sizes of the transistor that we're building are becoming smaller and smaller.
+
+00:19:38.410 --> 00:19:41.850 
+OK, so let's talk about some trade-offs in circuit design.
+
+00:19:41.850 --> 00:19:44.250 
+Basically, there's a lot that we want in circuit design.
+
+00:19:44.290 --> 00:19:47.450 
+When you ask the question, for example, optimal, what is optimal?
+
+00:19:47.450 --> 00:19:49.130 
+What is the metric that we're optimising for?
+
+00:19:49.210 --> 00:19:50.330 
+Area is one of them, right?
+
+00:19:50.330 --> 00:19:52.930 
+Circuit area is really proportional to the cost of the device.
+
+00:19:53.810 --> 00:19:58.730 
+Speed, Speed can be expressed in terms of latency, throughput, frequency.
+
+00:19:59.450 --> 00:20:04.130 
+We're going to talk more about that when we talk about the execution time of programs performance.
+
+00:20:05.170 --> 00:20:10.991 
+In general, we want faster, more capable circuits to achieve more right, to do more power and energy
+
+00:20:10.991 --> 00:20:11.690 
+consumption.
+
+00:20:11.850 --> 00:20:14.330 
+Mobile devices need to work with limited power supply.
+
+00:20:14.330 --> 00:20:16.690 
+Actually everything needs to work with limited power supply.
+
+00:20:16.690 --> 00:20:23.018 
+Today, high performance devices dissipate a lot of they have very high power density, which is watts
+
+00:20:23.018 --> 00:20:25.170 
+per centimetre square for example.
+
+00:20:25.730 --> 00:20:28.650 
+So we need to care a lot about this today especially.
+
+00:20:29.410 --> 00:20:31.050 
+And then design time is also important.
+
+00:20:31.130 --> 00:20:32.450 
+These are some of the metrics only there.
+
+00:20:32.450 --> 00:20:37.431 
+You can add more metrics over here, of course, like time to failure could be one metric, but we're
+
+00:20:37.431 --> 00:20:39.210 
+not going to talk about that today.
+
+00:20:39.770 --> 00:20:43.450 
+Design time, designers are expensive in terms of time and time and money.
+
+00:20:43.610 --> 00:20:44.690 
+Testing is expensive.
+
+00:20:45.210 --> 00:20:50.017 
+And if you're actually competing for some reason, whatever reason, the competition will not wait for
+
+00:20:50.017 --> 00:20:50.210 
+you.
+
+00:20:51.130 --> 00:20:51.930 
+Don't expect that.
+
+00:20:52.090 --> 00:20:53.250 
+Don't expect them to slow down.
+
+00:20:53.330 --> 00:20:55.410 
+Basically, even if you slow down.
+
+00:20:56.250 --> 00:21:00.319 
+So there are many, many requirements and goals and we know that they depend on the application,
+
+00:21:00.319 --> 00:21:02.290 
+depend defining different computing platforms.
+
+00:21:03.650 --> 00:21:06.090 
+In the end circuit timing effects all of these, right?
+
+00:21:07.050 --> 00:21:11.650 
+So, so far we've investigated logic functionality, you talked about functional behaviour.
+
+00:21:11.730 --> 00:21:13.330 
+We haven't talked about timing behaviour.
+
+00:21:14.050 --> 00:21:17.170 
+Now the question becomes today, well, how fast is a circuit?
+
+00:21:17.530 --> 00:21:18.770 
+How can we make it faster?
+
+00:21:19.330 --> 00:21:20.930 
+What happens if we run too fast?
+
+00:21:21.410 --> 00:21:22.290 
+You get wrong results.
+
+00:21:22.410 --> 00:21:27.675 
+Basically, that's a good answer, but why does why do you get wrong results and how far, how far you
+
+00:21:27.675 --> 00:21:31.770 
+can push the circuit to run fast and what do you care about while doing that?
+
+00:21:33.210 --> 00:21:37.890 
+So essentially there's a distinction between functional and timing, right?
+
+00:21:38.050 --> 00:21:44.171 
+You may actually have a perfectly functional circuit, but if you don't care about the timing, you
+
+00:21:44.171 --> 00:21:49.410 
+may set the clock frequency to some value where the circuit doesn't operate, right?
+
+00:21:50.010 --> 00:21:54.970 
+So today we're going to enable the circuit circuits to operate so that they're implementable.
+
+00:21:56.090 --> 00:21:57.890 
+So we'll start with combinational circuit timing.
+
+00:21:57.970 --> 00:22:00.530 
+As I said, this is an important picture to keep in mind.
+
+00:22:00.530 --> 00:22:01.810 
+I showed you this multiple times.
+
+00:22:01.810 --> 00:22:03.210 
+I'm going to show you multiple times again.
+
+00:22:03.650 --> 00:22:06.410 
+Basically, we're going to start with the timing of the combinational logic.
+
+00:22:07.010 --> 00:22:10.850 
+But this combinational logic is part of any kind of sequential circuit.
+
+00:22:10.850 --> 00:22:15.254 
+Also, if you remember right, we just built an FSM which had multiple combinational logic blocks,
+
+00:22:15.254 --> 00:22:15.530 
+right?
+
+00:22:15.810 --> 00:22:17.290 
+Which was like this, for example.
+
+00:22:18.330 --> 00:22:23.711 
+This is actually a more type FSM where the output is dependent on the on the on the state, for
+
+00:22:23.711 --> 00:22:24.170 
+example.
+
+00:22:24.490 --> 00:22:26.090 
+And the next state logic is over here.
+
+00:22:26.250 --> 00:22:27.970 
+So there are two combinational logic blocks.
+
+00:22:28.450 --> 00:22:30.810 
+This is something we're going to talk a lot about.
+
+00:22:32.610 --> 00:22:37.654 
+There's a pipeline type of circuit, but we're going to analyse the timing of one part of it where
+
+00:22:37.654 --> 00:22:42.750 
+you actually have inputs coming from this state register and going through the combinational logic
+
+00:22:42.750 --> 00:22:45.090 
+and being latched in the next state register.
+
+00:22:45.890 --> 00:22:51.735 
+And if the combination logic delay is larger than your clock cycle delay, you will latch the wrong
+
+00:22:51.735 --> 00:22:52.570 
+result, right?
+
+00:22:52.770 --> 00:22:55.850 
+That's why combination logic delay is going to be important, OK?
+
+00:22:57.610 --> 00:23:03.883 
+Hopefully that's gives you the bigger picture because we want to set our clock cycle such that this,
+
+00:23:03.883 --> 00:23:09.530 
+any combination logic delay that we have in the system is not larger than the clock cycle.
+
+00:23:10.170 --> 00:23:12.330 
+But we will see that that invariance is not going to be enough.
+
+00:23:12.610 --> 00:23:14.050 
+We need to care about other things also.
+
+00:23:14.890 --> 00:23:18.810 
+OK, so essentially this is the logic, the community abstraction.
+
+00:23:18.890 --> 00:23:22.970 
+And so far we've assumed that output changed immediately when the input changes.
+
+00:23:23.610 --> 00:23:25.290 
+Looks like this, right?
+
+00:23:25.290 --> 00:23:28.930 
+When A falls, Y rises, right?
+
+00:23:29.370 --> 00:23:31.650 
+Unfortunately, that's not the case in real life.
+
+00:23:32.130 --> 00:23:33.690 
+Outputs are delayed from the inputs.
+
+00:23:33.810 --> 00:23:39.290 
+Transistors take a finite amount of time to switch, and it kind of looks like this.
+
+00:23:39.770 --> 00:23:44.690 
+When A rises, it's not a sharp rise, it takes time to actually rise.
+
+00:23:45.330 --> 00:23:53.471 
+So there's some delay as A goes from zero to 1, zero to VDD, for example high voltage, and there's
+
+00:23:53.471 --> 00:23:55.050 
+another delay from.
+
+00:23:56.330 --> 00:24:01.170 
+A transitioning from zero to 1 and Y starting to change and finishing to change.
+
+00:24:01.530 --> 00:24:05.290 
+OK, And that's really the delay of this inverter over here.
+
+00:24:05.730 --> 00:24:07.130 
+Well, in this case, it's a buffer, sorry.
+
+00:24:09.210 --> 00:24:12.589 
+So it's not an inverter, but you could make it an inverter and this will go down right the other
+
+00:24:12.589 --> 00:24:12.730 
+way.
+
+00:24:13.690 --> 00:24:14.890 
+I'm too used to murders.
+
+00:24:17.050 --> 00:24:24.530 
+OK, so this is a real delay example from some simulations from some paper.
+
+00:24:25.290 --> 00:24:28.770 
+I kind of like this because it also shows that delay is statistical, right?
+
+00:24:29.290 --> 00:24:32.730 
+You basically your delay doesn't isn't always the same.
+
+00:24:33.290 --> 00:24:37.090 
+It changes across time, it changes across temperature, it changes across voltage.
+
+00:24:37.090 --> 00:24:39.730 
+There are a lot of things that affect the circuit timing delay.
+
+00:24:40.250 --> 00:24:46.530 
+And also it it's it's it it it also is depend on whether your input is 0 or one as well.
+
+00:24:46.850 --> 00:24:56.898 
+So for example, this work shows that going from if the input goes from a 90% voltage level high to
+
+00:24:56.898 --> 00:25:07.050 
+for the output to transition by 10% to the lower level, it takes this this many nanoseconds, right?
+
+00:25:07.810 --> 00:25:14.617 
+If you, if you look at the 50% levels or if the input is at 50% over here for the output to go down
+
+00:25:14.617 --> 00:25:20.050 
+to 50% while the input is going up to 50%, it's about 0.169 nanoseconds, right.
+
+00:25:20.570 --> 00:25:24.370 
+So even the delay, the statistical property, that's what I'm getting at over here.
+
+00:25:24.650 --> 00:25:26.970 
+How do you define delay becomes important?
+
+00:25:27.530 --> 00:25:32.777 
+So in general what people do is they measure and they figure out a worst case delay for a gate that
+
+00:25:32.777 --> 00:25:37.918 
+is designed and they basically report you the worst case delay such that you can assume that, but
+
+00:25:37.918 --> 00:25:42.530 
+under different conditions, delay can be different for different voltages, for example.
+
+00:25:42.730 --> 00:25:47.675 
+So if you want to optimise your circuit, you may actually want to change the delay analysis that you
+
+00:25:47.675 --> 00:25:50.890 
+do based on different voltages, different temperatures, etcetera.
+
+00:25:51.290 --> 00:25:53.570 
+OK, so we're going to simplify a lot of that.
+
+00:25:53.570 --> 00:25:55.610 
+Look at one version of delay, OK.
+
+00:25:55.610 --> 00:26:00.118 
+So delay is what is delay fundamentally caused by Essentially any circuit elements has some
+
+00:26:00.118 --> 00:26:02.050 
+capacitance and some resistance, right?
+
+00:26:02.610 --> 00:26:06.530 
+And when current needs to flow, it's needs to go against that resistance.
+
+00:26:06.530 --> 00:26:08.970 
+And that actually delays the flow of electrons.
+
+00:26:10.330 --> 00:26:13.850 
+And in the end, you're limited by some sort of physical phenomena.
+
+00:26:14.290 --> 00:26:16.130 
+There's finite speed of light, right?
+
+00:26:16.210 --> 00:26:22.244 
+And unfortunately the speed of light is something that we're very close to at the nanosecond level,
+
+00:26:22.244 --> 00:26:22.610 
+right?
+
+00:26:22.610 --> 00:26:27.970 
+We're operating at nanosecond levels and speed of light is not travelling as fast, OK.
+
+00:26:29.330 --> 00:26:35.422 
+So a lot of things can change the delay, whether input is changing from zero to one or one to zero,
+
+00:26:35.422 --> 00:26:37.330 
+whether it's rising or falling.
+
+00:26:39.130 --> 00:26:43.010 
+You may have different input values or different input variables that lead to different delays.
+
+00:26:43.010 --> 00:26:47.290 
+We will see some of that change in the environment like temperature, humidity.
+
+00:26:47.730 --> 00:26:54.899 
+These things may affect the delay circuit delay ageing of the circuit, how old it is, may affect the
+
+00:26:54.899 --> 00:26:55.330 
+delay.
+
+00:26:56.130 --> 00:26:59.010 
+Voltage supplied to the circuit certainly affects the delay.
+
+00:26:59.010 --> 00:27:01.930 
+Higher voltage usually enables faster flow.
+
+00:27:02.210 --> 00:27:05.130 
+As a result, you, you can operate faster, right?
+
+00:27:05.130 --> 00:27:09.410 
+Lower voltage, lower energy, lower mobility.
+
+00:27:09.410 --> 00:27:11.170 
+As a result, you're slower.
+
+00:27:11.410 --> 00:27:13.570 
+That's why energy is also lower with lower voltage.
+
+00:27:14.330 --> 00:27:17.570 
+OK, so basically you have a range of possible delays from input to output.
+
+00:27:18.450 --> 00:27:22.210 
+But now let's take a look at analysis that we will do.
+
+00:27:22.250 --> 00:27:25.650 
+Keep this in mind, we're not going to talk a whole lot about all of these variables, right?
+
+00:27:26.370 --> 00:27:29.130 
+But keep that in mind that it's more complex than what we have.
+
+00:27:29.130 --> 00:27:34.685 
+So in the end, if you want to really have a circuit that operates under all possible conditions that
+
+00:27:34.685 --> 00:27:38.130 
+you could imagine, you really need to take these into account.
+
+00:27:39.090 --> 00:27:41.010 
+And it's not easy to take these into account.
+
+00:27:41.010 --> 00:27:44.370 
+So what's people do is people do the timing analysis that we're going to do.
+
+00:27:44.810 --> 00:27:50.788 
+On top of that, they add a timing margin, margin saying that, OK, I did my timing analysis to the
+
+00:27:50.788 --> 00:27:56.396 
+best I can, but I don't know all of the conditions that happen under which the circuit will
+
+00:27:56.396 --> 00:27:56.890 
+operate.
+
+00:27:57.010 --> 00:28:05.000 
+So I'm going to add another 30% delay to the maximum delay that I get in my maximum combination
+
+00:28:05.000 --> 00:28:06.010 
+logic delay.
+
+00:28:07.370 --> 00:28:08.570 
+This is very common practice.
+
+00:28:08.570 --> 00:28:10.330 
+30% is not an unreasonable number.
+
+00:28:10.370 --> 00:28:12.330 
+In some cases it's 40 percent, 50%.
+
+00:28:13.290 --> 00:28:21.344 
+OK, So this doesn't mean that the circuit really needs that long, but the design is unsure about the
+
+00:28:21.344 --> 00:28:25.210 
+conditions under which the circuit will operate.
+
+00:28:25.210 --> 00:28:29.970 
+So a lot of the circuits may be operating slower than they could on their regular conditions.
+
+00:28:30.650 --> 00:28:36.432 
+So what some smart people do who care about their performance, some of these happen to be gamers,
+
+00:28:36.432 --> 00:28:42.156 
+for example, What they do is they basically increase their clock frequency because they may know
+
+00:28:42.156 --> 00:28:46.210 
+that in under their conditions the circuit will operate fine, right?
+
+00:28:47.170 --> 00:28:47.490 
+OK.
+
+00:28:47.490 --> 00:28:51.610 
+So it's good to think about this so you can be smart about how you operate your circuitry also.
+
+00:28:52.490 --> 00:28:54.530 
+OK, so let's talk about some.
+
+00:28:55.130 --> 00:28:57.010 
+Variable some some definitions.
+
+00:28:57.010 --> 00:29:00.650 
+So we're we're we're trying to find the delay from input to output Y.
+
+00:29:00.650 --> 00:29:04.330 
+We're going to call output Y contamination delay.
+
+00:29:04.690 --> 00:29:06.970 
+This is also called the minimum delay TCD.
+
+00:29:07.290 --> 00:29:09.610 
+This is the delay until Y starts changing.
+
+00:29:10.810 --> 00:29:13.210 
+OK, and there's propagation delay.
+
+00:29:13.410 --> 00:29:15.730 
+And this is the delay until Y finishes changing.
+
+00:29:16.050 --> 00:29:22.461 
+So you change the input at some point the output starts changing and at some point output finishes
+
+00:29:22.461 --> 00:29:23.050 
+changing.
+
+00:29:23.330 --> 00:29:24.210 
+So there's a range.
+
+00:29:24.570 --> 00:29:27.730 
+So the one is the minimum delay, the other is the maximum delay.
+
+00:29:28.690 --> 00:29:31.210 
+OK, so let's take a look at that example combinational circuit.
+
+00:29:31.210 --> 00:29:33.090 
+You have two inputs AB and output Y.
+
+00:29:33.810 --> 00:29:36.290 
+Let's take, let's take a look at the effect of changing input A.
+
+00:29:36.930 --> 00:29:43.650 
+So input A starts changing at this point and output Y starts changing at this point.
+
+00:29:43.650 --> 00:29:48.170 
+After that that this cross hatching means value is changing.
+
+00:29:48.410 --> 00:29:49.930 
+You don't you cannot trust that value.
+
+00:29:50.530 --> 00:29:52.650 
+So you can see that contamination delay is over here.
+
+00:29:54.810 --> 00:30:01.370 
+After A is changing, Y starts changing somehow and propagation delay is when Y finishes changing.
+
+00:30:01.970 --> 00:30:04.770 
+So the input is guaranteed to be stable at that point.
+
+00:30:05.170 --> 00:30:09.930 
+OK, so we're going to see examples of this contamination and propagation delay right now.
+
+00:30:10.250 --> 00:30:13.810 
+So what we want is we want to calculate the longest and shortest delay path.
+
+00:30:14.050 --> 00:30:15.210 
+We care about both of them.
+
+00:30:15.250 --> 00:30:19.210 
+And we will see why shortest is important also soon.
+
+00:30:20.650 --> 00:30:22.570 
+Normally we talk about the longest delay path, right?
+
+00:30:22.570 --> 00:30:23.930 
+But shortest is also important.
+
+00:30:26.210 --> 00:30:27.690 
+So let's take a look at this.
+
+00:30:28.850 --> 00:30:31.250 
+Longest delay path is also called critical path.
+
+00:30:31.850 --> 00:30:36.214 
+So you take a combinational logic critical path is the longest delay path in that combinational
+
+00:30:36.214 --> 00:30:36.490 
+logic.
+
+00:30:36.850 --> 00:30:42.777 
+And the critical path of an entire microprocessor is the longest critical path that you have in any
+
+00:30:42.777 --> 00:30:46.370 
+combinational logic delay in a sequential system, basically.
+
+00:30:47.210 --> 00:30:50.370 
+So let's take a look at this particular simple combination logic over here.
+
+00:30:50.370 --> 00:30:52.930 
+You have 4 inputs, ABCD, and you have Y.
+
+00:30:55.010 --> 00:30:58.970 
+Thinking about just the gate delays, This is our short path, right?
+
+00:30:59.010 --> 00:31:08.408 
+When D changes, Y starts changing after some point, and that's your minimum delay for that change to
+
+00:31:08.408 --> 00:31:10.570 
+start happening, right?
+
+00:31:10.850 --> 00:31:12.130 
+This is our contamination delay.
+
+00:31:12.130 --> 00:31:16.970 
+Basically here critical path is over here, it happens either with A or B.
+
+00:31:17.610 --> 00:31:22.370 
+This is the longest delay after which Y will finish changing, right?
+
+00:31:22.850 --> 00:31:23.730 
+So let's take a look at that.
+
+00:31:23.730 --> 00:31:29.641 
+So our shortest path, it's easier to see perhaps over here contamination delay is the contamination
+
+00:31:29.641 --> 00:31:32.090 
+delay that happens through this and gate.
+
+00:31:32.290 --> 00:31:34.450 
+We're going to ignore wires have delays for now.
+
+00:31:35.130 --> 00:31:39.410 
+It's a bad assumption, but for now, let's ignore that, OK?
+
+00:31:40.050 --> 00:31:46.165 
+Wires complicate things a lot because it's very hard to assign these delays to wires because when
+
+00:31:46.165 --> 00:31:52.155 
+you map the circuit that you describe in a language in hardware description language to a lower
+
+00:31:52.155 --> 00:31:54.930 
+level hardware, those wires get routed also.
+
+00:31:55.290 --> 00:32:00.084 
+So the tools that do that mapping actually optimise those wires, and you may not have a very good
+
+00:32:00.084 --> 00:32:03.050 
+idea at the higher level in terms of the delay of the wires.
+
+00:32:03.370 --> 00:32:09.067 
+OK, Delay of the gates, it's a bit easier, OK, Assuming the tools actually map to these gates, of
+
+00:32:09.067 --> 00:32:09.890 
+course, right?
+
+00:32:10.410 --> 00:32:16.299 
+So the shortest path is from D to Y, and there's an AND gate after D starts changing, Y starts
+
+00:32:16.299 --> 00:32:21.250 
+changing after some point, and that's our contamination delay for the AND gate.
+
+00:32:21.890 --> 00:32:26.068 
+So there should be a value for that contamination delay for the AND gate that someone provides to
+
+00:32:26.068 --> 00:32:26.370 
+us, OK.
+
+00:32:27.210 --> 00:32:27.450 
+OK.
+
+00:32:27.570 --> 00:32:34.656 
+So the longest path in this case is the propagation delay from this inputs, any of the inputs to the
+
+00:32:34.656 --> 00:32:40.610 
+output of the circuit goes through one AND gate one OR gate another AND gate, right?
+
+00:32:40.610 --> 00:32:47.652 
+So essentially 2 AND gates plus one OR gate the longest delay that you can have in any of these two
+
+00:32:47.652 --> 00:32:53.130 
+propagation delay of the AND gates plus one propagation delay of the OR gate.
+
+00:32:53.250 --> 00:32:57.810 
+OK, so every circuit component has two delays, CD and PD.
+
+00:32:57.890 --> 00:33:02.299 
+Contamination delay is the shortest delay that you can have from the input to the output, the input
+
+00:33:02.299 --> 00:33:04.170 
+changing to the output starting to change.
+
+00:33:04.690 --> 00:33:09.288 
+Propagation delay is the delay that you will have from the input changing to the output finishing to
+
+00:33:09.288 --> 00:33:09.610 
+change.
+
+00:33:09.730 --> 00:33:10.010 
+Right?
+
+00:33:10.050 --> 00:33:11.890 
+There are two delay components for each gate.
+
+00:33:12.730 --> 00:33:14.010 
+OK, two delay values.
+
+00:33:14.890 --> 00:33:17.410 
+So let's take a look at this.
+
+00:33:17.410 --> 00:33:18.170 
+This is from your book.
+
+00:33:18.170 --> 00:33:20.690 
+Also, I like this example.
+
+00:33:20.690 --> 00:33:26.250 
+So assume that initial values are 1101 for ABCD and a goes from 1 to 0.
+
+00:33:26.770 --> 00:33:27.610 
+This is what happens.
+
+00:33:28.210 --> 00:33:29.610 
+A goes from 1 to 0.
+
+00:33:30.010 --> 00:33:34.734 
+After some point this N1 changes, starts changing and then finishes changing and then N2 starts
+
+00:33:34.734 --> 00:33:39.210 
+changing and then finishes changing and then Y starts changing and then finishes changing.
+
+00:33:39.450 --> 00:33:42.850 
+So you can see that this is sequential dependence on prior values.
+
+00:33:43.370 --> 00:33:44.890 
+So that's our critical path basically.
+
+00:33:46.690 --> 00:33:47.690 
+And this is the shortest path.
+
+00:33:47.730 --> 00:33:54.126 
+Short path when D goes from 1 to 0, Y switches from 1 to 0, but it takes some time and that's the
+
+00:33:54.126 --> 00:33:55.050 
+shortest path.
+
+00:33:55.130 --> 00:34:00.610 
+That we have OK, OK, so let's take a look at an example TPD.
+
+00:34:00.610 --> 00:34:03.770 
+So someone provides you these values and then you can do this analysis.
+
+00:34:04.210 --> 00:34:06.210 
+And I pick this picture.
+
+00:34:06.210 --> 00:34:07.370 
+How many people use this stuff?
+
+00:34:08.810 --> 00:34:09.610 
+These are OK.
+
+00:34:09.610 --> 00:34:12.530 
+These are real gates actually, that you could put.
+
+00:34:12.530 --> 00:34:13.650 
+These are huge technology.
+
+00:34:13.890 --> 00:34:16.930 
+It's not it's not what we have in microprocessors today.
+
+00:34:17.290 --> 00:34:20.210 
+But you can put these on bread boards and you can design your own circuits.
+
+00:34:20.210 --> 00:34:21.410 
+You can build a microprocessor.
+
+00:34:21.410 --> 00:34:28.297 
+It's a lot of fun to do this and whenever you buy the stuff, you get a data sheet that tells you the
+
+00:34:28.297 --> 00:34:35.116 
+delay characteristics so that you can design A circuit that matches whatever your requirements that
+
+00:34:35.116 --> 00:34:36.770 
+you may want to satisfy.
+
+00:34:36.970 --> 00:34:44.863 
+And you can see that the propagation delay, for example for this two input NAND gate is specified
+
+00:34:44.863 --> 00:34:48.770 
+not so easily, meaning the propagation delay NA.
+
+00:34:49.090 --> 00:34:50.330 
+So inputs are AB to Y.
+
+00:34:51.770 --> 00:34:53.050 
+And then there's a figure over here.
+
+00:34:53.050 --> 00:34:55.970 
+I guess that's the figure, or maybe that's not the figure, I don't know.
+
+00:34:56.130 --> 00:34:59.730 
+But anyway, the propagation delay is dependent on voltage.
+
+00:35:00.450 --> 00:35:03.010 
+It's dependent on temperature, as you can see, right?
+
+00:35:03.890 --> 00:35:11.875 
+So for example, if your voltage is huge at 25°C, your delay is only 7 nanoseconds, which is not bad
+
+00:35:11.875 --> 00:35:13.650 
+for this huge circuit.
+
+00:35:14.930 --> 00:35:21.291 
+But if your voltage is lower, like 2 volts and you're operating at pretty high temperature, your
+
+00:35:21.291 --> 00:35:23.810 
+delay is pretty long, 135 nanoseconds.
+
+00:35:24.010 --> 00:35:28.717 
+So basically there's heavy dependence on voltage and temperature and somebody determines your these
+
+00:35:28.717 --> 00:35:29.050 
+delays.
+
+00:35:29.050 --> 00:35:31.730 
+How to determine these delays is the subject of another course.
+
+00:35:32.570 --> 00:35:34.610 
+OK, again, microelectronics design.
+
+00:35:34.930 --> 00:35:37.850 
+But here we assume that we get these delays.
+
+00:35:38.810 --> 00:35:43.530 
+OK, now let's take a look at the worst case delay of a four to one multiplexer.
+
+00:35:43.850 --> 00:35:46.050 
+You guys love 4 to 1 multiplexers, right?
+
+00:35:46.050 --> 00:35:48.130 
+We've seen that multiple times today.
+
+00:35:48.170 --> 00:35:53.495 
+And now let's take take a not today in the past, we're going to construct different types of four to
+
+00:35:53.495 --> 00:35:57.810 
+one multiplexers and look at their delays, different implementations essentially.
+
+00:35:58.650 --> 00:36:00.210 
+And these are the gates that we're given.
+
+00:36:00.530 --> 00:36:07.170 
+For example, I have a knot gate propagation delays, 32 input and 63 input and 80...
+
+00:36:07.410 --> 00:36:07.730 
+OK.
+
+00:36:08.090 --> 00:36:12.330 
+This is the circuit components that I gate that I'm given as gates.
+
+00:36:12.970 --> 00:36:15.570 
+This is 1 implementation that you've seen in the past.
+
+00:36:16.050 --> 00:36:22.930 
+You can see that this has four, three inputs and gates, 4 input or gates and two inverters, right?
+
+00:36:23.090 --> 00:36:24.210 
+And this is a multiplexer.
+
+00:36:24.210 --> 00:36:25.650 
+Hopefully you realise that.
+
+00:36:26.290 --> 00:36:31.250 
+And now if you want to look at the propagation delay, forget about the contamination delay, right?
+
+00:36:31.250 --> 00:36:33.330 
+Now you want to find the critical path.
+
+00:36:33.410 --> 00:36:38.650 
+And the critical path is the longest delay path that goes through the most number of gates, right?
+
+00:36:39.050 --> 00:36:44.633 
+So in this case, for example, S1 going through this inverter and then going through this and gate
+
+00:36:44.633 --> 00:36:49.930 
+and then going through this or gate is 1 critical path that also applies to S0, for example.
+
+00:36:50.370 --> 00:36:56.830 
+OK, so essentially the propagation delay is the delay of the inverter, the delay of the three input
+
+00:36:56.830 --> 00:37:02.833 
+and gate plus the delay of the three input and gate plus the delay of the four input or gate
+
+00:37:02.833 --> 00:37:03.290 
+308090.
+
+00:37:03.290 --> 00:37:07.090 
+That's 200 picoseconds in this description.
+
+00:37:07.930 --> 00:37:14.890 
+OK, So there could be another propagation delay that may be important.
+
+00:37:15.530 --> 00:37:16.570 
+So that's the S path.
+
+00:37:16.850 --> 00:37:26.392 
+There's also AD path that goes through D1 gate, 1/3 input end gate, and then outputs 14 input OR
+
+00:37:26.392 --> 00:37:26.890 
+gate.
+
+00:37:27.930 --> 00:37:30.010 
+That's essentially one end gate and one OR gate.
+
+00:37:30.090 --> 00:37:34.249 
+And you can convince yourself that that's 80 + 91170 picoseconds, which is lower than 200
+
+00:37:34.249 --> 00:37:34.810 
+picoseconds.
+
+00:37:34.810 --> 00:37:36.250 
+So that's not our critical path.
+
+00:37:36.850 --> 00:37:37.730 
+That's a shorter path.
+
+00:37:38.490 --> 00:37:47.091 
+OK, so this is another implementation of the four to one multiplexer which uses inverters, 2 inputs
+
+00:37:47.091 --> 00:37:54.650 
+and gates to control the enable input of a tri-state buffer and four tri-state buffers.
+
+00:37:55.730 --> 00:38:01.639 
+OK, now let's take a look at the critical path over here again, I will take s S gets inverted 1
+
+00:38:01.639 --> 00:38:07.797 
+inverter delay, one delay through the two input and gates and one delay through the enable input to
+
+00:38:07.797 --> 00:38:10.410 
+the output of the tri-state buffer, right?
+
+00:38:10.930 --> 00:38:17.656 
+So that's essentially 30 picoseconds for the inverter, 60 picoseconds for the two input and gates
+
+00:38:17.656 --> 00:38:22.650 
+and enable to why delay of the tri-state is specified as 35 picoseconds.
+
+00:38:22.650 --> 00:38:24.290 
+So that's 125 picoseconds.
+
+00:38:24.930 --> 00:38:32.650 
+OK, if you actually look at the delay over here, these happens to be supplied earlier over here.
+
+00:38:32.650 --> 00:38:40.645 
+As you can see, that's that goes to only an invert, only a tri-state buffer, because you're really
+
+00:38:40.645 --> 00:38:48.640 
+gating the tri-state, gating the D signals to the output based on the values of S1S0, essentially,
+
+00:38:48.640 --> 00:38:49.130 
+right?
+
+00:38:49.130 --> 00:38:50.290 
+That's what we're doing over here.
+
+00:38:50.730 --> 00:38:54.650 
+So the delay from D to output is actually very fast, 50 picoseconds.
+
+00:38:54.650 --> 00:38:55.090 
+That's not enough.
+
+00:38:55.130 --> 00:38:55.810 
+On our critical path.
+
+00:38:55.970 --> 00:39:01.057 
+So if you want to do this critical path analysis, and if it's not immediately obvious to you what's
+
+00:39:01.057 --> 00:39:06.144 
+the critical path, you take every single input, figure out the propagation delay from that input to
+
+00:39:06.144 --> 00:39:09.330 
+the output, and you basically look which value is the highest.
+
+00:39:09.650 --> 00:39:16.602 
+In this particular case, 125 picoseconds is the highest because that's the delay from S1 to output,
+
+00:39:16.602 --> 00:39:18.850 
+longest delay from S1 to output.
+
+00:39:19.770 --> 00:39:22.450 
+But it turns out to be better than 200 picoseconds over here, right?
+
+00:39:23.290 --> 00:39:23.890 
+This sounds nice.
+
+00:39:23.890 --> 00:39:29.677 
+So I would take this implementation maybe, maybe not because I didn't consider the wire delays over
+
+00:39:29.677 --> 00:39:29.970 
+here.
+
+00:39:30.450 --> 00:39:35.836 
+So there is some capacitance on this wire that's probably a bit higher than the capacitance that I
+
+00:39:35.836 --> 00:39:37.210 
+would get in this output.
+
+00:39:37.730 --> 00:39:40.810 
+So the delay over here may be a little bit longer actually, right.
+
+00:39:42.090 --> 00:39:48.981 
+So whenever you're getting the delays of a tri-state buffer, it doesn't tell you the delays on about
+
+00:39:48.981 --> 00:39:53.530 
+how many other tri-state buffers are connected to the wire, right?
+
+00:39:53.970 --> 00:39:55.730 
+So we didn't take that capacitance into account.
+
+00:39:55.730 --> 00:40:02.447 
+So there are some limitations to our methodology as you can see, but this is not a bad approximation
+
+00:40:02.447 --> 00:40:04.530 
+to begin with for our purposes.
+
+00:40:06.010 --> 00:40:11.570 
+OK, so clearly one observation over here is different designs lead to very different delays.
+
+00:40:12.850 --> 00:40:16.530 
+Now this is the importance of doing this sort of analysis right now.
+
+00:40:16.530 --> 00:40:21.423 
+I'll give you another design over here with some assumptions from your book, which leads to even
+
+00:40:21.423 --> 00:40:22.290 
+different delays.
+
+00:40:22.530 --> 00:40:26.090 
+This is actually a completely tri-state buffer based implementation.
+
+00:40:27.170 --> 00:40:31.450 
+And you can, if you trust your book, this is the delays that you would get.
+
+00:40:31.450 --> 00:40:33.250 
+I'll let you study it on your own.
+
+00:40:33.490 --> 00:40:37.170 
+But this turns out to be again, a bit faster than the previous ones.
+
+00:40:37.290 --> 00:40:41.570 
+But it's also assumed that the inversion happens for free inside the tri-state buffer.
+
+00:40:41.930 --> 00:40:43.010 
+So it's good to think about that.
+
+00:40:43.570 --> 00:40:47.681 
+And this may be a bit better because the loading on the wires may be a bit better actually, which
+
+00:40:47.681 --> 00:40:49.250 
+are which we don't take into account.
+
+00:40:49.370 --> 00:40:56.741 
+OK, so essentially here you go through different tri-state buffers and at most you have two
+
+00:40:56.741 --> 00:41:02.250 
+tri-state buffer delays, OK, OK, so that's the third implementation.
+
+00:41:04.370 --> 00:41:09.090 
+OK, So essentially it's not always this easy to determine the long short paths.
+
+00:41:09.250 --> 00:41:11.410 
+Not all input transitions affect the output.
+
+00:41:11.730 --> 00:41:14.250 
+You can have multiple different paths from an input to an output.
+
+00:41:14.250 --> 00:41:18.570 
+So you'll need to really do the analysis such that you don't miss the longest possible path, right?
+
+00:41:19.410 --> 00:41:22.050 
+And in this particular case, these are simple circuits.
+
+00:41:22.850 --> 00:41:25.850 
+You can see the longest possible path perhaps, right?
+
+00:41:26.050 --> 00:41:31.461 
+But if it's a very complicated circuit, very complicated combination logic with 1000 inputs and
+
+00:41:31.461 --> 00:41:35.050 
+maybe, I don't know, 50 outputs, it doesn't become that's easy.
+
+00:41:35.090 --> 00:41:36.250 
+It's not that easy basically.
+
+00:41:38.090 --> 00:41:44.105 
+And also a different instance of the same gates may have different delays because we're assuming the
+
+00:41:44.105 --> 00:41:45.850 
+gates have same delay, right?
+
+00:41:46.130 --> 00:41:49.690 
+But when you manufacture them, there's actually manufacturing process variation.
+
+00:41:50.650 --> 00:41:55.723 
+So some gates are actually smaller, some gates are bigger because you, we can, we don't know how to
+
+00:41:55.723 --> 00:41:57.210 
+perfectly manufacture things.
+
+00:41:57.730 --> 00:42:00.090 
+This is true for everything, right?
+
+00:42:00.090 --> 00:42:01.330 
+You've got these chairs over here.
+
+00:42:01.730 --> 00:42:03.010 
+Are they all exactly the same?
+
+00:42:03.690 --> 00:42:04.890 
+Not really, right?
+
+00:42:05.330 --> 00:42:10.207 
+There's a lot of variation over here, actually different rooms over here, even though they are
+
+00:42:10.207 --> 00:42:14.410 
+designed to be very similar, potentially they're still different from each other.
+
+00:42:14.650 --> 00:42:18.930 
+So there's manufacturing variation that happens in some cases that variation is quite high actually.
+
+00:42:19.770 --> 00:42:22.530 
+So this assumption doesn't hold necessarily.
+
+00:42:22.530 --> 00:42:26.290 
+So it becomes a more statistical analysis than what we've done so far.
+
+00:42:26.770 --> 00:42:28.450 
+Wires, we've already discussed this.
+
+00:42:28.450 --> 00:42:29.570 
+They have non zero delay.
+
+00:42:29.570 --> 00:42:32.290 
+That's a big assumption that we've made over here.
+
+00:42:32.290 --> 00:42:33.130 
+They have zero delay.
+
+00:42:33.650 --> 00:42:37.690 
+Again, temperature, voltage, not all circuit elements are affected the same way.
+
+00:42:37.690 --> 00:42:40.930 
+Also some elements are affected more when the temperature changes.
+
+00:42:40.930 --> 00:42:44.210 
+Some of them are affected less depending on how they're built.
+
+00:42:44.810 --> 00:42:49.970 
+This could even change the critical path potentially depending on how things behave.
+
+00:42:50.490 --> 00:42:54.650 
+So you may need to actually think a lot more on the analysis.
+
+00:42:55.010 --> 00:43:01.791 
+So in general what people do is they assume the worst case conditions, worst temperature, worst
+
+00:43:01.791 --> 00:43:05.290 
+voltage, OK, lowest voltage, highest temperature.
+
+00:43:05.810 --> 00:43:10.924 
+But they may also have bins because what current processors do is they do something called dynamic
+
+00:43:10.924 --> 00:43:12.490 
+voltage and frequency scaling.
+
+00:43:12.970 --> 00:43:18.627 
+And when they actually change the voltage, and they also can do it on at different temperatures,
+
+00:43:18.627 --> 00:43:20.690 
+they can also change the frequency.
+
+00:43:21.370 --> 00:43:26.851 
+So what a designer needs to do is under different conditions, determine the worst case delay and
+
+00:43:26.851 --> 00:43:28.450 
+decide on a clock frequency.
+
+00:43:28.730 --> 00:43:35.930 
+OK, so it's actually, there's a lot of statistics involved in deciding the real clock frequency.
+
+00:43:36.770 --> 00:43:38.850 
+OK, so this is a summary of our combinational timing.
+
+00:43:38.890 --> 00:43:42.250 
+Essentially, circuit outputs change sometime after the inputs change.
+
+00:43:43.090 --> 00:43:46.770 
+This is caused by multiple things, finite speed of light.
+
+00:43:46.890 --> 00:43:50.050 
+In the end, delays depend on inputs, environmental state, etcetera.
+
+00:43:50.730 --> 00:43:53.210 
+And we studied two major things.
+
+00:43:53.370 --> 00:43:54.330 
+Contamination, delay.
+
+00:43:54.330 --> 00:43:55.050 
+This is the minimum.
+
+00:43:55.130 --> 00:43:57.050 
+Possible delay, it's good to think about it that way.
+
+00:43:57.050 --> 00:44:01.970 
+TCD and propagation delay, maximum possible delay from the input to the output.
+
+00:44:02.690 --> 00:44:06.010 
+And this could be done on a gate level, this could be done on a combinational circuit level.
+
+00:44:06.890 --> 00:44:10.410 
+And delays change with circuit design, operating conditions, etcetera.
+
+00:44:11.490 --> 00:44:16.152 
+Before I go into sequential circuits, I want to introduce those output glitches because you will see
+
+00:44:16.152 --> 00:44:18.250 
+these glitches when you design your circuits.
+
+00:44:19.050 --> 00:44:21.290 
+But before that, any questions on combinational delay?
+
+00:44:21.290 --> 00:44:21.650 
+Yes.
+
+00:44:35.370 --> 00:44:37.410 
+Yeah, I mean it could be both.
+
+00:44:37.410 --> 00:44:39.970 
+So if you over clock, there are multiple issues, right.
+
+00:44:39.970 --> 00:44:43.570 
+Basically, you're, you're increasing the frequency, reducing the clock cycle time.
+
+00:44:43.810 --> 00:44:49.391 
+You're operating the circuit much faster and you may latch some, you may actually latch some result
+
+00:44:49.391 --> 00:44:53.450 
+that's incorrect because you didn't give the circuit enough time, right?
+
+00:44:53.490 --> 00:44:54.370 
+That could be one reason.
+
+00:44:54.650 --> 00:44:56.610 
+The other reason is you're operating the circuit faster.
+
+00:44:56.810 --> 00:45:02.776 
+Temperature was also increasing and you actually your, your likelihood of latching something wrong
+
+00:45:02.776 --> 00:45:03.690 
+also increases.
+
+00:45:07.330 --> 00:45:12.450 
+I mean, there could be multiple reasons, but latching wrong results is a very good reason to get
+
+00:45:12.450 --> 00:45:17.570 
+wrong, to get a crash, for example, or to get something undesirable while you're playing a game.
+
+00:45:20.730 --> 00:45:26.224 
+You thought you were actually winning the game and you may start losing it because something, the
+
+00:45:26.224 --> 00:45:29.170 
+score, the score got lashed in the wrong way, right?
+
+00:45:29.650 --> 00:45:30.170 
+It's gonna happen.
+
+00:45:31.170 --> 00:45:35.810 
+OK, so before we move to sequential circuits, let's talk about output glitches.
+
+00:45:35.810 --> 00:45:36.850 
+You will see a lot of this.
+
+00:45:36.930 --> 00:45:42.330 
+This is actually a fun topic for me, but OK, this is related to what you kind of asked, but glitch
+
+00:45:42.330 --> 00:45:47.730 
+is a little bit different, right One one problem that you may have is you latch some wrong result.
+
+00:45:48.290 --> 00:45:52.650 
+So you didn't give enough time, you calculated the delay wrong, let's say in combination logic.
+
+00:45:52.930 --> 00:45:55.330 
+As a result, you latch some wrong results at the clock edge.
+
+00:45:55.970 --> 00:45:58.530 
+And that could easily happen when you over clock things.
+
+00:45:58.530 --> 00:46:01.130 
+I'm going to finish out with glitches and then we're going to take a break.
+
+00:46:02.210 --> 00:46:05.850 
+And OK, what was I saying?
+
+00:46:06.930 --> 00:46:09.330 
+So that's one possible reason.
+
+00:46:09.490 --> 00:46:14.530 
+So another possible reason is you have a glitch, and somehow you didn't take that glitch into
+
+00:46:14.530 --> 00:46:16.970 
+account, and then you latch the wrong result.
+
+00:46:17.690 --> 00:46:18.450 
+OK, what's a glitch?
+
+00:46:18.930 --> 00:46:22.210 
+Glitch means one input transition causes multiple output transitions.
+
+00:46:22.450 --> 00:46:23.770 
+So let's take a look at the circuit.
+
+00:46:24.770 --> 00:46:26.570 
+This circuit's initial state looks like this.
+
+00:46:26.930 --> 00:46:29.250 
+You have 00 inputs over here, one over here.
+
+00:46:29.450 --> 00:46:30.610 
+The output is one right?
+
+00:46:31.490 --> 00:46:40.730 
+Now if this transitions, OK, if this transitions from one to zero, what does this go to 1 to 1?
+
+00:46:41.290 --> 00:46:44.770 
+So there are actually 2 paths that this input effects, right?
+
+00:46:44.970 --> 00:46:49.330 
+One is the fast path and the other is the slow path over here.
+
+00:46:52.890 --> 00:46:54.170 
+OK, something is wrong over here.
+
+00:46:54.170 --> 00:46:58.210 
+But this should be 1 I think 011 OK Anyway, this is correct.
+
+00:46:58.210 --> 00:46:59.010 
+This part is correct.
+
+00:46:59.410 --> 00:47:01.490 
+Meaning this is transitioning from 1 to 0.
+
+00:47:01.930 --> 00:47:07.348 
+Initially these are zeros, initially this is 01/1 and this transitioning from one to zero and this
+
+00:47:07.348 --> 00:47:09.450 
+will transition from one to something.
+
+00:47:09.570 --> 00:47:14.490 
+OK, so there are two paths over here.
+
+00:47:14.530 --> 00:47:21.930 
+When this transitions to 0, this gate becomes zero and this may change, right?
+
+00:47:23.170 --> 00:47:23.570 
+OK.
+
+00:47:24.290 --> 00:47:29.250 
+And when this transitions, the slow path doesn't get updated as quickly.
+
+00:47:29.930 --> 00:47:34.690 
+So as a result, the output over here goes from 1 to 0 back to one.
+
+00:47:35.410 --> 00:47:37.050 
+OK, makes sense.
+
+00:47:37.050 --> 00:47:41.050 
+Hopefully you can verify that.
+
+00:47:45.370 --> 00:47:52.010 
+OK, so the issue is OK, this is the picture over here.
+
+00:47:52.290 --> 00:47:57.570 
+B is transitioning from one to zero and two changes from one to zero.
+
+00:47:57.970 --> 00:47:58.450 
+OK.
+
+00:47:58.570 --> 00:48:06.210 
+Because initially it's one and then it becomes zero quickly and N1 goes up a little bit later.
+
+00:48:07.810 --> 00:48:13.050 
+But after N2 changes over here, Y goes to zero, OK.
+
+00:48:14.410 --> 00:48:17.890 
+And only after N1 goes up, Y goes back up to one, OK.
+
+00:48:17.890 --> 00:48:26.984 
+So for a short period of time, while this output, this N1 is propagating, you get a glitch, meaning
+
+00:48:26.984 --> 00:48:28.730 
+Y output becomes 0.
+
+00:48:29.330 --> 00:48:36.661 
+OK, now this may not be a problem if your clock cycle is long enough, but this becomes a problem if
+
+00:48:36.661 --> 00:48:43.845 
+you somehow set your clock cycle too close to this glitch such that you latch the zero over here,
+
+00:48:43.845 --> 00:48:44.290 
+right?
+
+00:48:44.330 --> 00:48:47.530 
+You don't want to latch the zero because the circuit didn't have enough time to evaluate.
+
+00:48:48.050 --> 00:48:52.170 
+If you didn't do your timing, alas, collect correctly, you can actually have a glitching problem.
+
+00:48:53.450 --> 00:48:54.170 
+OK, you can.
+
+00:48:54.210 --> 00:48:55.090 
+You can, You don't, basically.
+
+00:48:55.130 --> 00:48:59.810 
+You don't want to have the glitch affect your state.
+
+00:49:01.610 --> 00:49:02.730 
+That's a simple way of putting it.
+
+00:49:02.730 --> 00:49:04.170 
+Glitches should not affect your state.
+
+00:49:04.770 --> 00:49:07.050 
+OK, so when could a glitch be bad?
+
+00:49:07.050 --> 00:49:11.598 
+Basically, I gave you the question if I gave you the answer if if it affects your state, if the if
+
+00:49:11.598 --> 00:49:15.450 
+the output of a glitch, if the result of a glitch gets latched in a state register.
+
+00:49:16.090 --> 00:49:17.970 
+OK, so how do you avoid glitches?
+
+00:49:18.050 --> 00:49:20.290 
+The essentially you add redundancy to the circuit.
+
+00:49:20.530 --> 00:49:25.299 
+We didn't talk about K maps, but I'll give you a very quick example of what AK map is because it's
+
+00:49:25.299 --> 00:49:26.370 
+fun to think about it.
+
+00:49:28.490 --> 00:49:32.050 
+Essentially, K maps are a pictorial depiction of the truth table, right?
+
+00:49:32.650 --> 00:49:34.210 
+So this is what we had, right?
+
+00:49:34.570 --> 00:49:36.970 
+If you think about it, this is a bar, B bar.
+
+00:49:37.410 --> 00:49:38.330 
+This is BC.
+
+00:49:38.530 --> 00:49:49.520 
+OK, so if you actually write the truth table in a pictorial way of this circuit, why this is our
+
+00:49:49.520 --> 00:50:00.855 
+output pictorially described AB IS00011110C is 01, output is 1 if a bar B bar is true, meaning A is
+
+00:50:00.855 --> 00:50:04.290 
+0 and B is 0 or if BC is true.
+
+00:50:04.730 --> 00:50:08.930 
+So this is the case where BC is true and this is the case where a bar B bar is true.
+
+00:50:09.650 --> 00:50:12.810 
+This is a beautiful pictorial representation of a truth table which we didn't cover.
+
+00:50:13.010 --> 00:50:14.890 
+These are called Carnot maps, K maps.
+
+00:50:15.610 --> 00:50:21.210 
+I'm not going to ask you questions about it, but the reason which happens is kind of visible in this
+
+00:50:21.210 --> 00:50:22.610 
+pictorial representation.
+
+00:50:23.050 --> 00:50:27.770 
+You're moving from here to here, meaning while.
+
+00:50:28.570 --> 00:50:38.170 
+So B is changing from one to zero and A is staying at zero and C is staying at one, essentially.
+
+00:50:38.970 --> 00:50:41.290 
+OK, so how to eliminate it?
+
+00:50:41.370 --> 00:50:48.312 
+Basically, you can eliminate it by adding a little bit more redundancy in hardware, adding this
+
+00:50:48.312 --> 00:50:55.546 
+term, and this term happens to be a bar C OK, so you can fix the glitch, meaning you can get rid of
+
+00:50:55.546 --> 00:51:00.370 
+that glitch completely by adding one more gate over here, a bar C.
+
+00:51:01.090 --> 00:51:06.130 
+And this way there will be no case where this Y will go from one to zero M back to one.
+
+00:51:07.130 --> 00:51:09.170 
+OK, it's interesting to think about.
+
+00:51:09.850 --> 00:51:14.816 
+I gave you one way of thinking about it, but you can also think about it by reasoning about the
+
+00:51:14.816 --> 00:51:15.810 
+truth table, right?
+
+00:51:17.050 --> 00:51:21.188 
+So I'll let you think about this because this actually this takes a little bit of time to think
+
+00:51:21.188 --> 00:51:21.450 
+about.
+
+00:51:21.970 --> 00:51:32.075 
+So the issue was our circuit glitched because it had some cases where one of the variables affected
+
+00:51:32.075 --> 00:51:34.730 
+the output quickly, right?
+
+00:51:35.490 --> 00:51:38.250 
+You can reduce that by actually adding another term, yes.
+
+00:51:38.250 --> 00:51:40.770 
+Will it be cheaper to add?
+
+00:51:40.770 --> 00:51:41.890 
+OK, that's a great question.
+
+00:51:41.890 --> 00:51:42.210 
+Yes.
+
+00:51:42.890 --> 00:51:44.250 
+So that's another possibility.
+
+00:51:44.930 --> 00:51:48.170 
+You could add buffer, yes.
+
+00:51:48.570 --> 00:51:50.250 
+Then you need to balance the buffers.
+
+00:51:50.490 --> 00:51:53.770 
+So you're proposing an implementation solution here.
+
+00:51:53.770 --> 00:51:54.970 
+It's a more logical solution.
+
+00:51:55.530 --> 00:51:56.210 
+Does that make sense?
+
+00:51:57.690 --> 00:52:02.010 
+But very good, keep that in mind because we're going to add those buffers for another reason.
+
+00:52:03.410 --> 00:52:09.250 
+But yes, you could also add a buffer over here, but then getting the timing may be more difficult.
+
+00:52:10.330 --> 00:52:14.290 
+OK, so in this case, there is no dependence on B, so there is no glitch.
+
+00:52:14.890 --> 00:52:16.690 
+That's essentially how we eliminated this glitch.
+
+00:52:17.090 --> 00:52:18.730 
+So do we always care about glitches?
+
+00:52:18.730 --> 00:52:23.730 
+Basically, not always, but sometimes it's a bit dangerous, right?
+
+00:52:23.850 --> 00:52:29.822 
+If you're actually pushing your frequency too much and the glitch happens too close to the end of
+
+00:52:29.822 --> 00:52:34.810 
+the clock cycle, you may actually have a a danger of latching this glitch, right?
+
+00:52:35.170 --> 00:52:36.370 
+That's the danger we have basically.
+
+00:52:36.770 --> 00:52:38.090 
+And fixing them is undesirable.
+
+00:52:38.410 --> 00:52:42.330 
+It consumes area, consumes power, more design effort in general.
+
+00:52:42.330 --> 00:52:43.090 
+We don't want to fix that.
+
+00:52:43.570 --> 00:52:49.106 
+So in the end, if you set your frequency right, the circuits should operate correctly regardless of
+
+00:52:49.106 --> 00:52:49.610 
+glitches.
+
+00:52:50.130 --> 00:52:51.930 
+The key is really setting your frequency right.
+
+00:52:52.450 --> 00:52:58.853 
+So basically the take away is not always we can safely ignore glitches, but we need to be able to
+
+00:52:58.853 --> 00:53:03.210 
+doing the timing analysis right if we want to ignore the glitches.
+
+00:53:03.410 --> 00:53:08.663 
+OK, so when you see glitches in your simulation, up input output and you will see them when you
+
+00:53:08.663 --> 00:53:14.138 
+design your circuits, it's important to recognise them as glitches and it's important to not to let
+
+00:53:14.138 --> 00:53:15.410 
+them affect your state.
+
+00:53:16.850 --> 00:53:18.050 
+And that brings me to state.
+
+00:53:18.330 --> 00:53:20.770 
+But this is a good place to take a break.
+
+00:53:21.490 --> 00:53:25.970 
+Let's be back at 1520 and then we're going to talk about sequential circuit timing.
+
+00:53:29.608 --> 00:53:35.967 
+So now that we've covered combinational timing, let's talk about sequential circuit timing, which is
+
+00:53:35.967 --> 00:53:38.448 
+the even more exciting part, let's say.
+
+00:53:39.208 --> 00:53:41.048 
+And I'll show you this picture again.
+
+00:53:41.208 --> 00:53:42.928 
+So we've covered the combinational logic.
+
+00:53:43.328 --> 00:53:51.188 
+Now we're going to look at what happens in A in a sequential circuit where you have state registers
+
+00:53:51.188 --> 00:53:53.808 
+as inputs as well as the outputs.
+
+00:53:54.128 --> 00:53:54.448 
+OK.
+
+00:53:54.528 --> 00:53:58.968 
+And that's going to be more realistic because that's going to be our designs going into the future.
+
+00:53:59.888 --> 00:54:01.408 
+And we're going to talk about D flip flop.
+
+00:54:01.648 --> 00:54:03.368 
+We're going to abstract it a little bit.
+
+00:54:03.368 --> 00:54:09.485 
+You can do the analysis of the D flip flop yourself, but essentially remember the D flip flop, we
+
+00:54:09.485 --> 00:54:15.728 
+built it so that we can sample D at the rising clock edge and it outputs the sampled value to Q and
+
+00:54:15.728 --> 00:54:20.648 
+it stores or keeps the sampled value until the next rising clock hitch, right?
+
+00:54:20.768 --> 00:54:25.088 
+That's how this operates and it's made from combinational elements.
+
+00:54:25.288 --> 00:54:29.688 
+And all of these DQ clock all have timing requirements.
+
+00:54:30.008 --> 00:54:35.968 
+And we looked at one implementation of the flip flop in the in the last lecture.
+
+00:54:36.128 --> 00:54:41.987 
+If you remember right, 2D latches put together first latch, second latch and the inverted clocks
+
+00:54:41.987 --> 00:54:47.907 
+applied to the first one as right enable and the non inverted clocks applied to the second one as
+
+00:54:47.907 --> 00:54:49.128 
+right enable signal.
+
+00:54:49.408 --> 00:54:50.448 
+That's one implementation.
+
+00:54:50.888 --> 00:54:55.088 
+But D flip flop can have multiple different types of implementations.
+
+00:54:55.448 --> 00:55:02.340 
+So that's why we're going to abstract it and we're going to treat it as as an element that's
+
+00:55:02.340 --> 00:55:04.888 
+basically samples D and outputs Q.
+
+00:55:05.768 --> 00:55:07.808 
+And this happens at a clock edge.
+
+00:55:07.808 --> 00:55:10.768 
+It could be at the rising clock edge or falling clock edge, it doesn't matter.
+
+00:55:10.768 --> 00:55:11.688 
+We're going to assume rising.
+
+00:55:12.688 --> 00:55:20.048 
+And the question becomes when should D be stable and when is Q available, right?
+
+00:55:21.968 --> 00:55:26.368 
+And what we're going to do is we're going to introduce some timing constraints to this D flip flop.
+
+00:55:26.768 --> 00:55:33.345 
+And we're going to say the input D must be stable when it's sampled, meaning at the rising clock
+
+00:55:33.345 --> 00:55:33.688 
+edge.
+
+00:55:34.688 --> 00:55:39.328 
+But that's not enough because there's some delay internally in this thing, right?
+
+00:55:40.368 --> 00:55:44.008 
+You can think of this as I like thinking of this as a camera.
+
+00:55:44.008 --> 00:55:49.870 
+I think one of your books has this also, whenever you take a picture with a camera, there's some
+
+00:55:49.870 --> 00:55:53.168 
+aperture time, right, where the camera takes light in.
+
+00:55:53.728 --> 00:55:57.208 
+And all of during all of that time, the camera gets exposed.
+
+00:55:58.048 --> 00:56:01.688 
+You can think of flip flop taking a picture of the right.
+
+00:56:01.688 --> 00:56:03.488 
+It's basically taking a picture and sampling.
+
+00:56:04.208 --> 00:56:09.855 
+If D is not stable during any time in the picture, you may get a fuzzy value or the wrong value,
+
+00:56:09.855 --> 00:56:10.208 
+right?
+
+00:56:11.128 --> 00:56:13.648 
+OK, because there's some internal delay associated with it.
+
+00:56:13.648 --> 00:56:18.728 
+This flip flop is not essentially it's it's consists of combinational elements.
+
+00:56:19.128 --> 00:56:27.695 
+So we're going to call this time where the flip flop where the input needs to be stable as aperture
+
+00:56:27.695 --> 00:56:28.128 
+time.
+
+00:56:28.688 --> 00:56:31.368 
+And there are actually two things over here.
+
+00:56:31.608 --> 00:56:35.248 
+1 is the set up time and the other is the hold time of the flip flop.
+
+00:56:35.728 --> 00:56:38.648 
+So set up time or T set up is the time before the clock edge.
+
+00:56:38.648 --> 00:56:39.928 
+That data must be stable.
+
+00:56:40.368 --> 00:56:42.288 
+Data should not be changing after this point.
+
+00:56:42.608 --> 00:56:45.288 
+OK, if it changes, you may capture the wrong value.
+
+00:56:46.368 --> 00:56:51.048 
+Hold time is time after the clock edge that data must be stable.
+
+00:56:52.088 --> 00:56:54.848 
+OK, we're going to see why hold time is important soon.
+
+00:56:55.808 --> 00:57:01.448 
+OK, so these two are important and together this is called the aperture time of the deep loop flop.
+
+00:57:01.448 --> 00:57:04.968 
+Inspired by this camera again, time around the clock edge.
+
+00:57:04.968 --> 00:57:06.208 
+That data must be stable.
+
+00:57:06.208 --> 00:57:10.488 
+TA is equal to C set up plus C hold, but we usually divide it into two set up and hold.
+
+00:57:10.488 --> 00:57:13.688 
+And we're going to analyse things in a different way, as you will see.
+
+00:57:14.688 --> 00:57:19.768 
+OK, so before I go into how to do the analysis, I should introduce this meta stability.
+
+00:57:19.768 --> 00:57:21.328 
+I'll go through this relatively quickly.
+
+00:57:21.888 --> 00:57:26.448 
+Essentially, if D is changing when it's sampled, some meta stability can occur.
+
+00:57:26.648 --> 00:57:31.874 
+Flip flop output is stuck somewhere between 1 and 0, and output eventually settles non
+
+00:57:31.874 --> 00:57:32.968 
+deterministically.
+
+00:57:33.648 --> 00:57:40.048 
+So this is an example of meta stability that people have simulated for AN and Rs latch, for example.
+
+00:57:40.088 --> 00:57:43.728 
+It's true for AD flip flop also because the D flip flop is usually made of latches.
+
+00:57:44.248 --> 00:57:46.448 
+So here this is your output.
+
+00:57:47.888 --> 00:57:54.434 
+There's your input where you violated the timing and when the clock falls with the falling edge
+
+00:57:54.434 --> 00:57:56.088 
+triggered the flip flop.
+
+00:57:57.168 --> 00:58:03.151 
+Essentially, when the clock falls, you go into some metastable state between zero and one, as you
+
+00:58:03.151 --> 00:58:09.196 
+can see, and based on different conditions of the circuit, you may settle to one or you may settle
+
+00:58:09.196 --> 00:58:15.179 
+to zero, OK, because you change things while the flip flop is sampling things, OK, too, too close
+
+00:58:15.179 --> 00:58:16.968 
+to the clock edge, basically.
+
+00:58:17.208 --> 00:58:17.528 
+OK.
+
+00:58:18.688 --> 00:58:19.848 
+So it's good to think about that.
+
+00:58:20.408 --> 00:58:22.488 
+There's a lot of research on that area.
+
+00:58:22.888 --> 00:58:27.128 
+OK, So this is the output timing that we're going to assume with the flip flops.
+
+00:58:27.328 --> 00:58:30.785 
+So I'm going to introduce a couple of terms, but they're going to be contamination delay and
+
+00:58:30.785 --> 00:58:31.688 
+propagation delay again.
+
+00:58:32.568 --> 00:58:33.488 
+So this is clock.
+
+00:58:34.328 --> 00:58:36.888 
+There's a clock to queue delay that happens.
+
+00:58:36.888 --> 00:58:42.040 
+So we talked about the data delay that needs to be satisfied, input data delay, that's the setup
+
+00:58:42.040 --> 00:58:43.328 
+time and the whole time.
+
+00:58:43.848 --> 00:58:49.368 
+But there's also, when we do the timing analysis, there will be a clock to queue delay.
+
+00:58:49.528 --> 00:58:56.248 
+This is CCQ, essentially clock to queue delay, contamination delay, contamination, clock to queue.
+
+00:58:56.328 --> 00:58:58.328 
+And then there's propagation clock to queue, OK.
+
+00:58:58.328 --> 00:59:03.058 
+This is the same thing basically what we discussed earliest time after the clock edge, that queue
+
+00:59:03.058 --> 00:59:03.888 
+starts to change.
+
+00:59:04.528 --> 00:59:06.528 
+That's CCQ, OK.
+
+00:59:06.928 --> 00:59:10.168 
+And then there's PCQ, which is propagation delay, clock to queue.
+
+00:59:10.208 --> 00:59:13.008 
+That's the latest time after the clock edge that queue stops changing.
+
+00:59:13.168 --> 00:59:14.208 
+That's the worst case delay.
+
+00:59:14.448 --> 00:59:21.172 
+This is the shortest delay, OK, Very similar to combinational logic, except we apply it to clock to
+
+00:59:21.172 --> 00:59:27.354 
+queue input for the flip flop clock clock input to queue output because it also consists of
+
+00:59:27.354 --> 00:59:29.528 
+combinational components, right?
+
+00:59:30.528 --> 00:59:31.808 
+OK, there's no magic inside.
+
+00:59:31.808 --> 00:59:37.097 
+You could actually do this analysis yourself for a given flip flop design, which we're not going to
+
+00:59:37.097 --> 00:59:39.128 
+do now, but we're going to assume, OK.
+
+00:59:39.488 --> 00:59:42.288 
+So recall, this is one example of a sequential system design.
+
+00:59:42.448 --> 00:59:49.499 
+So what we have discussed, all of those delays set up time, hold time, clock to queue, contamination
+
+00:59:49.499 --> 00:59:56.480 
+and propagation delays affect the sequential circuit where you have inputs in register one and some
+
+00:59:56.480 --> 01:00:03.249 
+combinational logic operates on those inputs and the result of the combination logic needs to be
+
+01:00:03.249 --> 01:00:07.128 
+placed into register 2 at the rising edge of the clock.
+
+01:00:07.128 --> 01:00:08.808 
+So you have one full clock cycle.
+
+01:00:09.968 --> 01:00:16.138 
+The question is essentially, how do you decide that clock cycle such that you don't latch incorrect
+
+01:00:16.138 --> 01:00:18.008 
+data violating the timing, OK?
+
+01:00:18.088 --> 01:00:21.208 
+Essentially you have multiple flip flops that are connected with combination logic.
+
+01:00:21.728 --> 01:00:24.728 
+Clock runs with a period TC, that's the cycle time.
+
+01:00:25.088 --> 01:00:26.768 
+How long is your clock cycle time?
+
+01:00:27.448 --> 01:00:31.608 
+It's essentially when the clock rises the first time and when the clock rises the next time.
+
+01:00:31.608 --> 01:00:32.648 
+That's your clock cycle time.
+
+01:00:32.728 --> 01:00:39.471 
+The distance in terms of time between those two rising edges, OK, Essentially for this to work, you
+
+01:00:39.471 --> 01:00:44.648 
+must meet timing requirements for both register one as well as register two.
+
+01:00:45.808 --> 01:00:50.246 
+OK, Combination logic has some timing, but there are also timing requirements that you have for
+
+01:00:50.246 --> 01:00:51.648 
+register one and register two.
+
+01:00:51.728 --> 01:00:54.488 
+OK, we're ignoring wires still.
+
+01:00:55.048 --> 01:00:56.648 
+There are also wires, but let's ignore them.
+
+01:00:57.208 --> 01:00:59.368 
+So how do we ensure correct sequential operation?
+
+01:00:59.848 --> 01:01:04.328 
+Essentially, we need to ensure correct input timing on R2 to begin with, right?
+
+01:01:04.328 --> 01:01:09.888 
+This is our register 2, meaning that what you latch here should be correct.
+
+01:01:10.728 --> 01:01:16.128 
+You should not latch something too quickly before the combination logic settles.
+
+01:01:16.408 --> 01:01:18.728 
+You should not latch something during the whole time.
+
+01:01:19.648 --> 01:01:22.968 
+You should not violate the whole time and you should not violate the set up time.
+
+01:01:22.968 --> 01:01:27.888 
+Basically, something should not change after the clock edge for some time.
+
+01:01:28.968 --> 01:01:35.085 
+OK, so the results over here that go into R2D2, essentially D2 should be stable during the whole
+
+01:01:35.085 --> 01:01:39.928 
+time as well as the set up time or during the set up time and the hold time.
+
+01:01:40.088 --> 01:01:44.408 
+OK, OK, so essentially that's what I what I meant what I said over here.
+
+01:01:44.888 --> 01:01:47.888 
+So this is your clock edge, rising clock edge D2.
+
+01:01:48.288 --> 01:01:55.732 
+This D2 over here must be stable at least T set up before the clock edge so that you don't violate
+
+01:01:55.732 --> 01:02:02.948 
+the set up time requirements and it should be stable at least until T hold time after the clock
+
+01:02:02.948 --> 01:02:03.328 
+edge.
+
+01:02:03.848 --> 01:02:04.168 
+OK.
+
+01:02:05.408 --> 01:02:07.728 
+And that's your aperture time makes sense.
+
+01:02:08.928 --> 01:02:12.288 
+If it changes, you may get a get meta stability or some wrong value.
+
+01:02:13.848 --> 01:02:19.522 
+You have the same requirement over here compared to the previous stage, let's say previous whatever
+
+01:02:19.522 --> 01:02:21.128 
+combination logic over here.
+
+01:02:21.128 --> 01:02:22.568 
+But we're going to do the analysis over here.
+
+01:02:22.888 --> 01:02:28.224 
+So whatever I said actually has implications on the entire clock cycle time now and we're going to
+
+01:02:28.224 --> 01:02:29.368 
+do that analysis now.
+
+01:02:29.848 --> 01:02:33.368 
+This means that there is both a minimum and maximum delay between the two flip flops.
+
+01:02:33.368 --> 01:02:39.357 
+SO2 flip flops we're talking about is R1 the that's has the inputs and R2 that stores the output at
+
+01:02:39.357 --> 01:02:40.688 
+the rising clock edge.
+
+01:02:41.968 --> 01:02:44.168 
+So this is what we're going to look at essentially.
+
+01:02:44.688 --> 01:02:53.252 
+So if for example, combination logic over here is too fast, what happens is this D2 changes too fast
+
+01:02:53.252 --> 01:03:01.217 
+and it may violate the whole time over here, OK, because the clock clock rises over here, you
+
+01:03:01.217 --> 01:03:06.528 
+sample something, but this combination logic changed too fast.
+
+01:03:06.528 --> 01:03:14.748 
+So D2 changed the whole time got violated because the input to the second register over here changed
+
+01:03:14.748 --> 01:03:15.488 
+too fast.
+
+01:03:15.888 --> 01:03:16.808 
+OK, you don't want that.
+
+01:03:18.528 --> 01:03:20.008 
+So there's what the potential.
+
+01:03:20.128 --> 01:03:23.128 
+Are 2T hold violation, so you should set your clock cycle time.
+
+01:03:23.608 --> 01:03:24.728 
+Actually this is different.
+
+01:03:25.368 --> 01:03:30.156 
+You should set things I should say that's going to be interesting such that you don't get into a
+
+01:03:30.156 --> 01:03:33.448 
+hold violation and it will be independent of the clock cycle time.
+
+01:03:33.448 --> 01:03:34.768 
+It turns out OK, yes.
+
+01:03:34.768 --> 01:03:39.208 
+When you say CL is too fast, you're talking about the contamination.
+
+01:03:39.208 --> 01:03:39.608 
+Exactly.
+
+01:03:39.608 --> 01:03:40.768 
+Yes, yeah.
+
+01:03:41.608 --> 01:03:41.928 
+OK.
+
+01:03:42.888 --> 01:03:48.288 
+And if the combination logic is too slow, then you might violate the set up time over here.
+
+01:03:48.488 --> 01:03:54.808 
+So basically, combination logic is too slow and you violated the set up time.
+
+01:03:54.808 --> 01:03:55.728 
+You'll get the wrong result.
+
+01:03:56.048 --> 01:03:58.728 
+So you should set your clock cycle time such that this doesn't happen.
+
+01:03:59.088 --> 01:04:02.608 
+OK, so we're going to look at both of these in sequence.
+
+01:04:02.688 --> 01:04:06.840 
+Let's first look at the set up time constraint because it's a bit easier to think about because it's
+
+01:04:06.840 --> 01:04:08.128 
+about the longest delay, right?
+
+01:04:08.768 --> 01:04:15.088 
+So essentially your safe timing depends on the maximum delay from R1 to R2.
+
+01:04:16.008 --> 01:04:21.860 
+Basically you you get the inputs from R1, you go through the combination logic and then you latch,
+
+01:04:21.860 --> 01:04:24.368 
+you capture the result at the rising edge.
+
+01:04:25.168 --> 01:04:29.408 
+So the input to R2 must be stable at least T set up before the clock edge, right?
+
+01:04:30.288 --> 01:04:33.008 
+So you have some your clock cycle.
+
+01:04:33.168 --> 01:04:38.712 
+In other words, your clock cycle should be greater than whatever delay is from here clock to queue,
+
+01:04:38.712 --> 01:04:39.048 
+right?
+
+01:04:39.048 --> 01:04:41.368 
+There is a propagation delay from clock to queue.
+
+01:04:41.368 --> 01:04:49.328 
+That's the maximum delay to read the data after the rising edge of the clock.
+
+01:04:49.688 --> 01:04:57.035 
+From here we we saw that right, That's the delay from clock to queue and then the maximum delay in
+
+01:04:57.035 --> 01:05:04.308 
+this combination logic which we calculated earlier for different combinational logic, TPD and the
+
+01:05:04.308 --> 01:05:05.208 
+set up time.
+
+01:05:06.208 --> 01:05:10.128 
+So your clock cycle time should be greater than the sum of these three.
+
+01:05:11.008 --> 01:05:12.488 
+OK, that makes sense.
+
+01:05:12.488 --> 01:05:14.088 
+Hopefully that's the maximum delay you get.
+
+01:05:14.168 --> 01:05:20.643 
+You need to read the data from the from R1, which is essentially propagation delay from clock to
+
+01:05:20.643 --> 01:05:21.048 
+queue.
+
+01:05:22.248 --> 01:05:22.808 
+You need to.
+
+01:05:23.408 --> 01:05:24.568 
+That's the maximum delay.
+
+01:05:24.848 --> 01:05:30.147 
+Your queue will be stable at that point, meaning the inputs to the combination logic and then those
+
+01:05:30.147 --> 01:05:35.446 
+inputs propagate through the combination logic, and there's a maximum delay through the combination
+
+01:05:35.446 --> 01:05:35.768 
+logic.
+
+01:05:36.328 --> 01:05:41.545 
+And then after that point, D2 is stable, but D2 needs to be stable longer than that to ensure that
+
+01:05:41.545 --> 01:05:43.888 
+the set up time doesn't get violated, right?
+
+01:05:44.448 --> 01:05:47.408 
+So this is essentially our clock cycle time.
+
+01:05:47.888 --> 01:05:54.039 
+If you think about it, we're doing useful work computation, assuming this is all doing useful work
+
+01:05:54.039 --> 01:06:00.002 
+in the combination logic, and we're kind of wasting some time to make sure that we can read the
+
+01:06:00.002 --> 01:06:04.208 
+inputs from the register and we can write the inputs to a register.
+
+01:06:04.768 --> 01:06:06.208 
+So this is also called wasted work.
+
+01:06:06.488 --> 01:06:08.128 
+This is also called sequencing overhead.
+
+01:06:08.808 --> 01:06:11.288 
+So this is essentially the overhead of a synchronous design.
+
+01:06:11.288 --> 01:06:16.403 
+Now, we talked about asynchronous versus synchronous, and asynchronous design would not have this
+
+01:06:16.403 --> 01:06:19.568 
+overhead, except you'll be going crazy designing that thing.
+
+01:06:20.928 --> 01:06:22.128 
+So that's a different overhead.
+
+01:06:23.368 --> 01:06:28.328 
+But in this case, there's some amount of time wasted every cycle, every clock cycle, because we need
+
+01:06:28.328 --> 01:06:32.048 
+to read the data from a register and write the data to some other register.
+
+01:06:33.128 --> 01:06:33.488 
+OK.
+
+01:06:34.008 --> 01:06:37.888 
+Due to timing requirements that we have, OK.
+
+01:06:38.328 --> 01:06:41.888 
+So let's take a look at this T set up constraint and design performance.
+
+01:06:41.888 --> 01:06:48.357 
+This is our critical path over here in the circuit that we have seen and essentially overall design
+
+01:06:48.357 --> 01:06:54.761 
+performance is determined by the critical path TPD, right, TPCQ&T set up, you cannot do much about
+
+01:06:54.761 --> 01:06:55.088 
+that.
+
+01:06:55.088 --> 01:06:58.368 
+You can reduce by designing a better flip flop, for example, right?
+
+01:06:59.368 --> 01:07:01.528 
+Designing better registers, better technology, etcetera.
+
+01:07:02.168 --> 01:07:04.248 
+Now, this determines your minimum clock.
+
+01:07:04.528 --> 01:07:07.448 
+Meaning maximum operating frequency.
+
+01:07:07.448 --> 01:07:08.928 
+Is one over frequency, right?
+
+01:07:10.848 --> 01:07:13.968 
+And if the critical pass is too long, the design will run slowly.
+
+01:07:14.608 --> 01:07:19.135 
+If the critical pass is too short, each cycle will do very little useful work, meaning most of the
+
+01:07:19.135 --> 01:07:21.168 
+cycle will be wasted in sequencing overhead.
+
+01:07:21.448 --> 01:07:27.528 
+So as TPD goes to 0, your clock cycle is dominated by TPC Q + T setup.
+
+01:07:28.088 --> 01:07:30.848 
+How good your flip flop, how fast your flip flops are, right?
+
+01:07:31.328 --> 01:07:37.552 
+So it can reduce the combinational logic delay that you have as much as possible by designing,
+
+01:07:37.552 --> 01:07:43.974 
+optimising your circuit a lot as we will see in pipelining, by reducing the stages to smaller and
+
+01:07:43.974 --> 01:07:44.968 
+smaller chunks.
+
+01:07:45.608 --> 01:07:47.968 
+But now you're dominated by your sequencing overhead.
+
+01:07:48.408 --> 01:07:51.448 
+OK, Hopefully that's clear.
+
+01:07:51.568 --> 01:07:52.968 
+That'll come back to us.
+
+01:07:53.008 --> 01:07:56.728 
+When we talk about pipelining, we'll design pipeline machines that look exactly like this.
+
+01:07:57.408 --> 01:08:03.298 
+You have an input register, combinational logic, an output register, which is the input to the next
+
+01:08:03.298 --> 01:08:04.608 
+stage in the pipeline.
+
+01:08:04.728 --> 01:08:08.488 
+Combinational logic, another output register, combinational logic, another output register.
+
+01:08:08.488 --> 01:08:10.328 
+So that'll be the pipeline we design, right?
+
+01:08:10.888 --> 01:08:14.688 
+And you will have a choice in how to divide all of that combinational logic.
+
+01:08:14.928 --> 01:08:19.768 
+That's going to do some amount of work whether you divide it into very small.
+
+01:08:20.088 --> 01:08:26.352 
+Delay portions, meaning many, many stages where each of them will do a little bit work, but the
+
+01:08:26.352 --> 01:08:28.528 
+sequencing overhead will be huge.
+
+01:08:28.768 --> 01:08:34.768 
+Or whether each stage does a lot of work where the sequencing overhead will be lower, but your clock
+
+01:08:34.768 --> 01:08:36.928 
+frequency will be also lower, right?
+
+01:08:37.568 --> 01:08:38.568 
+So it's good to think about that.
+
+01:08:38.568 --> 01:08:41.368 
+We're going to see more of this, so we're going to build up to pipelining.
+
+01:08:41.888 --> 01:08:44.928 
+OK, let's talk about hold time because this will reveal something interesting.
+
+01:08:45.128 --> 01:08:46.808 
+So set up time was not that interesting, right?
+
+01:08:46.808 --> 01:08:50.874 
+That's a maximum logic delay, and that's affected by the combinational logic as well as sequencing
+
+01:08:50.874 --> 01:08:51.248 
+elements.
+
+01:08:51.968 --> 01:08:54.288 
+Now, hold time is harder.
+
+01:08:55.088 --> 01:08:58.968 
+So in this case also it's harder to reason about, but I'll try to reason about it.
+
+01:08:58.968 --> 01:09:02.208 
+Safe timing depends on the minimum delay from R1 to R2, right?
+
+01:09:03.128 --> 01:09:09.377 
+So D2 meaning the R2 input over here must be stable for at least hold time after the clock edge,
+
+01:09:09.377 --> 01:09:09.768 
+right?
+
+01:09:10.688 --> 01:09:15.488 
+Meaning D2 must not change until T hold after the clock edge.
+
+01:09:16.088 --> 01:09:16.888 
+So what does this mean?
+
+01:09:17.648 --> 01:09:20.008 
+You have a minimum delay over here?
+
+01:09:20.448 --> 01:09:21.648 
+That's the contamination delay.
+
+01:09:21.648 --> 01:09:25.088 
+Somebody asked that question earlier, contamination delay from clock to queue.
+
+01:09:25.088 --> 01:09:30.557 
+Let's talk about the minimum delay at which the D2 can change contamination delay clock to queue
+
+01:09:30.557 --> 01:09:33.008 
+plus contamination delay through the logic.
+
+01:09:35.648 --> 01:09:42.648 
+And this should not be greater than T hold or this should be greater than T hold?
+
+01:09:42.648 --> 01:09:44.088 
+This should not be less than T hold, right?
+
+01:09:44.568 --> 01:09:51.648 
+If it's less than T hold, DD2 will change before the whole time requirement is satisfied.
+
+01:09:52.208 --> 01:09:58.285 
+So for this circuit to operate safely while satisfying the whole time requirement, the minimum delay
+
+01:09:58.285 --> 01:10:04.302 
+through the circuit which is reading the inputs and also operating on the inputs in the combination
+
+01:10:04.302 --> 01:10:09.408 
+logic together should be greater than the whole time of this register over here, OK?
+
+01:10:09.888 --> 01:10:11.648 
+So that's the requirement we need to satisfy.
+
+01:10:12.848 --> 01:10:18.537 
+And essentially if you actually change this equation a little bit, TCD combinational logic delay
+
+01:10:18.537 --> 01:10:20.968 
+should be greater than T hold minus TCCQ.
+
+01:10:22.088 --> 01:10:25.728 
+You can see that this actually completely independent of the clock.
+
+01:10:26.768 --> 01:10:32.603 
+It's really only depend on the characteristics of the sequential state elements that you're
+
+01:10:32.603 --> 01:10:35.168 
+building, meaning your registers, right?
+
+01:10:36.248 --> 01:10:36.568 
+OK.
+
+01:10:38.968 --> 01:10:42.448 
+So it becomes very hard, meaning it becomes very hard to fix.
+
+01:10:42.448 --> 01:10:44.288 
+You cannot just change the clock frequency, right?
+
+01:10:45.088 --> 01:10:49.806 
+If you actually violated this requirement for whatever reason because you didn't consider it, you
+
+01:10:49.806 --> 01:10:51.168 
+need to change the circuits.
+
+01:10:51.248 --> 01:10:52.928 
+You cannot just change the clock frequency.
+
+01:10:53.008 --> 01:10:56.608 
+You cannot just divide the clock, for example, like we discussed, or Yeah.
+
+01:10:57.888 --> 01:11:01.088 
+So basically, you need to be very careful to satisfy hold time constraints.
+
+01:11:01.088 --> 01:11:06.089 
+Now the good news is this doesn't happen very often, but this could happen if the combinational
+
+01:11:06.089 --> 01:11:09.248 
+logic delay, the combinational logic is very short actually.
+
+01:11:09.608 --> 01:11:13.448 
+And there are some paths in the combinational logic delay that can change very quickly, right.
+
+01:11:13.728 --> 01:11:18.608 
+So this is we're talking about contamination delay over here, not propagation delay, minimum delay.
+
+01:11:19.248 --> 01:11:21.488 
+OK, So this is the summary of sequential timing.
+
+01:11:22.808 --> 01:11:28.448 
+We have the clock to clock, clock to queue delay, contamination, minimum and maximum combinational
+
+01:11:28.448 --> 01:11:30.808 
+logic delays, again, minimum and maximum.
+
+01:11:31.168 --> 01:11:35.488 
+There's a set up time time that flip flop inputs must be stable before the next clock edge.
+
+01:11:35.888 --> 01:11:39.888 
+And there's a whole time time that flip flop inputs must be stable after the clock edge.
+
+01:11:40.088 --> 01:11:41.168 
+And then there's the clock.
+
+01:11:42.448 --> 01:11:43.848 
+And we've seen these pictures.
+
+01:11:44.088 --> 01:11:45.608 
+Now let's do some timing analysis.
+
+01:11:46.328 --> 01:11:48.008 
+So this is our sequential circuit.
+
+01:11:48.008 --> 01:11:50.608 
+You can see that there are 4 registers over here, ABCD.
+
+01:11:50.608 --> 01:11:53.488 
+Those are supplying inputs to this combinational circuit.
+
+01:11:53.888 --> 01:11:58.288 
+And there are two outputs that are latched in the next two registers, OK.
+
+01:11:58.768 --> 01:12:01.168 
+And here are timing characteristics that were given.
+
+01:12:02.088 --> 01:12:02.968 
+Somebody gave these.
+
+01:12:04.288 --> 01:12:10.310 
+OK, now let's take a look at how we should design the circuit to satisfy set up time and hold time
+
+01:12:10.310 --> 01:12:11.048 
+constraints.
+
+01:12:12.688 --> 01:12:20.382 
+So as we discussed, the combination logic delay should be greater than propagation delay, clock to
+
+01:12:20.382 --> 01:12:27.842 
+queue plus the maximum propagation delay through this combination logic plus the set up time of
+
+01:12:27.842 --> 01:12:29.648 
+these registers, right.
+
+01:12:30.168 --> 01:12:35.688 
+So we need to we need to calculate TPD and TCDTCD will be useful for the whole time constraints.
+
+01:12:36.328 --> 01:12:40.128 
+So TPD in this particular case is this is the critical path.
+
+01:12:40.528 --> 01:12:47.381 
+You go through three gates, each of them happened to be I guess per gate, 35 picoseconds, it's 105
+
+01:12:47.381 --> 01:12:51.368 
+picoseconds, OK Contamination delay is the minimum delay.
+
+01:12:51.448 --> 01:12:55.448 
+You go through one gate and there are two cases where this happens is 25 picoseconds.
+
+01:12:55.688 --> 01:12:57.848 
+OK, This is what we did with combination logic.
+
+01:12:58.808 --> 01:13:01.568 
+Let's do, let's apply to clock cycle time.
+
+01:13:02.008 --> 01:13:04.888 
+PCQ were given as 50 picoseconds.
+
+01:13:04.888 --> 01:13:13.208 
+So our clock to queue maximum delay is 50 picoseconds and then propagation delay of 105 picoseconds.
+
+01:13:13.208 --> 01:13:14.048 
+That's our critical path.
+
+01:13:14.048 --> 01:13:16.928 
+And then the setup time constraints is 60 picoseconds.
+
+01:13:17.528 --> 01:13:20.008 
+So our clock cycle time should be greater than 200.
+
+01:13:20.088 --> 01:13:27.014 
+In picoseconds in this particular case, meaning we cannot our frequency, our maximum frequency is
+
+01:13:27.014 --> 01:13:29.728 
+one over that which is 4.65 gigahertz.
+
+01:13:29.968 --> 01:13:33.048 
+OK, this is optimistic, of course, as we discussed, right?
+
+01:13:33.048 --> 01:13:35.048 
+Normally you add some timing margin.
+
+01:13:35.768 --> 01:13:36.528 
+We're not adding that.
+
+01:13:36.528 --> 01:13:38.848 
+We're not even talking about the wires over here.
+
+01:13:39.608 --> 01:13:41.608 
+OK, let's take a look at the hold time constraint.
+
+01:13:42.048 --> 01:13:49.390 
+Remember the hold time constraint, The minimum delay CCQ plus CD should be greater than the hold
+
+01:13:49.390 --> 01:13:51.608 
+time of this register, right?
+
+01:13:52.848 --> 01:13:53.728 
+So what is CCQ?
+
+01:13:53.728 --> 01:14:00.641 
+We're given that clock to queue delay, minimum delay 30 picoseconds and combination logic delay 25
+
+01:14:00.641 --> 01:14:01.488 
+picoseconds.
+
+01:14:01.528 --> 01:14:03.688 
+30 + 25 is 55.
+
+01:14:05.088 --> 01:14:09.528 
+And if you look at the hold time, hold time is specified for this register as 70 picoseconds.
+
+01:14:10.328 --> 01:14:11.008 
+Doesn't sound good.
+
+01:14:11.568 --> 01:14:13.568 
+So we didn't satisfy the hold time requirement.
+
+01:14:14.248 --> 01:14:17.128 
+So this circuit will probably not work.
+
+01:14:18.408 --> 01:14:23.208 
+Yes, yeah, 4.6 gigahertz.
+
+01:14:27.928 --> 01:14:29.448 
+I mean, this is just given, right?
+
+01:14:32.208 --> 01:14:33.208 
+Yeah, yeah, yeah, that's true.
+
+01:14:33.208 --> 01:14:37.608 
+Yes, these are these are actually in today's technology, you can do things much faster, Yes.
+
+01:14:37.848 --> 01:14:40.688 
+These are not meant to be today's technology.
+
+01:14:41.328 --> 01:14:47.592 
+OK, OK, So we didn't satisfy the whole time constraints and that's not depend on the clock
+
+01:14:47.592 --> 01:14:48.288 
+frequency.
+
+01:14:48.728 --> 01:14:50.248 
+So this fails.
+
+01:14:51.008 --> 01:14:52.768 
+So how do we fix the whole time violation?
+
+01:14:52.928 --> 01:14:56.208 
+I think your buffers come in over here.
+
+01:14:56.208 --> 01:15:03.248 
+Basically you add buffers and you do the timing analysis again after that.
+
+01:15:03.248 --> 01:15:08.288 
+The good news is these buffers are not on the critical path because they're actually on the minimum
+
+01:15:08.288 --> 01:15:08.848 
+delay path.
+
+01:15:09.888 --> 01:15:11.408 
+So it doesn't affect your critical path.
+
+01:15:11.768 --> 01:15:17.808 
+You can still clock things as fast, but it does so no change to Max frequency.
+
+01:15:18.128 --> 01:15:25.369 
+But now your CCQ plus CD becomes 80 picoseconds because you go through an inverter over here which
+
+01:15:25.369 --> 01:15:28.768 
+has ACD contamination delay of 25 picoseconds.
+
+01:15:30.448 --> 01:15:31.088 
+Am I correct?
+
+01:15:33.688 --> 01:15:34.448 
+Yes, I think so.
+
+01:15:34.448 --> 01:15:37.328 
+An inverter has a contamination delay same as this.
+
+01:15:37.328 --> 01:15:40.808 
+So 25 + 25 is 50 and then CCQ is 30.
+
+01:15:40.808 --> 01:15:43.288 
+So 80 picoseconds is greater than 70 picoseconds.
+
+01:15:43.568 --> 01:15:44.448 
+And you declare victory.
+
+01:15:45.128 --> 01:15:52.432 
+If you're comfortable with AD being larger large enough than 70, you may not be comfortable because
+
+01:15:52.432 --> 01:15:55.088 
+under all conditions you may not be.
+
+01:15:55.328 --> 01:15:57.448 
+That's, that's like 10% difference almost, right?
+
+01:15:58.248 --> 01:15:58.848 
+Not a lot.
+
+01:15:59.448 --> 01:16:02.328 
+Maybe you say, OK, I want to add more buffers, OK?
+
+01:16:02.528 --> 01:16:05.928 
+At some point, your critical path may start increasing depending on what you do.
+
+01:16:06.768 --> 01:16:11.208 
+OK, so This is why hold time is important, as you can see.
+
+01:16:11.968 --> 01:16:15.448 
+So hopefully you have a good idea of analysis right now.
+
+01:16:15.448 --> 01:16:16.848 
+We're going to complicate it more.
+
+01:16:17.848 --> 01:16:18.968 
+We assumed a lot of things.
+
+01:16:19.048 --> 01:16:23.420 
+You can add wires to this analysis, You can add temperature so it becomes more statistical, as I
+
+01:16:23.420 --> 01:16:23.648 
+said.
+
+01:16:23.648 --> 01:16:31.603 
+But one thing you we assumed that's really interesting is essentially related to wire delay in the
+
+01:16:31.603 --> 01:16:31.928 
+end.
+
+01:16:32.688 --> 01:16:35.528 
+But there's something called clock skew, meaning clocks have delay.
+
+01:16:36.168 --> 01:16:39.568 
+The clock does not reach all parts of the chip at the same time, right?
+
+01:16:40.128 --> 01:16:43.888 
+It's it reaches register one faster than register 2, for example.
+
+01:16:44.328 --> 01:16:46.168 
+Then the question is, how do you do the analysis right?
+
+01:16:46.528 --> 01:16:48.128 
+It's actually not that hard, but we'll do it.
+
+01:16:49.168 --> 01:16:51.448 
+It'll it'll essentially make our frequency lower.
+
+01:16:53.328 --> 01:16:55.968 
+Clock's queue is essentially a time difference between 2 clock edges.
+
+01:16:56.488 --> 01:16:58.608 
+So you have some clock source that's generating the clock.
+
+01:16:59.088 --> 01:17:01.008 
+The clock happens to arrive here faster.
+
+01:17:01.248 --> 01:17:04.408 
+It happens to take the scenic path to arrive here.
+
+01:17:04.928 --> 01:17:07.928 
+OK, so there's a long slow clock path.
+
+01:17:08.488 --> 01:17:13.448 
+As a result, clock arrives at point A faster than it arrives at point B.
+
+01:17:13.448 --> 01:17:17.935 
+The rising edge of the clock in one register happens earlier than the rising edge of the clock
+
+01:17:17.935 --> 01:17:19.368 
+happening in another register.
+
+01:17:20.048 --> 01:17:20.848 
+And this is real.
+
+01:17:21.328 --> 01:17:26.784 
+This is one of the beautiful chips that was designed in 1990s by Alpha Digital Equipment
+
+01:17:26.784 --> 01:17:27.528 
+Corporation.
+
+01:17:27.968 --> 01:17:31.288 
+It was it was the fastest processor of it's time, 500 megahertz.
+
+01:17:31.888 --> 01:17:34.768 
+And this is the distribution of the skew of clock.
+
+01:17:35.288 --> 01:17:38.328 
+When does the clock arrive to different parts of the chip?
+
+01:17:38.688 --> 01:17:41.648 
+You can see that there is a difference in skew.
+
+01:17:42.368 --> 01:17:46.683 
+And there's a reason why this looks like this because they had an interconnect H shaped
+
+01:17:46.683 --> 01:17:47.328 
+interconnect.
+
+01:17:48.648 --> 01:17:50.568 
+And I'm going to show you some examples of that interconnect.
+
+01:17:50.568 --> 01:17:55.627 
+So, so there's an interconnect that distributes the clock from the source with a lot of buffering to
+
+01:17:55.627 --> 01:17:56.488 
+the destinations.
+
+01:17:57.328 --> 01:18:01.208 
+OK, so let's take a look at let's revisit the set up time constraint with clock skew.
+
+01:18:01.808 --> 01:18:04.648 
+So now safe timing requires considering the worst case queue.
+
+01:18:04.768 --> 01:18:05.528 
+What does that mean?
+
+01:18:06.328 --> 01:18:10.808 
+That means that clock arrives at R2 before R1.
+
+01:18:10.968 --> 01:18:14.248 
+That's the worst case for the circuit for set up time.
+
+01:18:14.848 --> 01:18:15.128 
+Why?
+
+01:18:15.128 --> 01:18:20.008 
+Because set up time says that this D2.
+
+01:18:20.648 --> 01:18:28.168 
+Should be stable at least set up time before basically.
+
+01:18:28.608 --> 01:18:33.808 
+Basically the the D2 should arrive here early enough, right?
+
+01:18:33.928 --> 01:18:39.462 
+If this clock arrives here early and if this clock arrives here late, that means you have little
+
+01:18:39.462 --> 01:18:43.728 
+time, less time in this combination logic to operate on the inputs, right?
+
+01:18:44.568 --> 01:18:45.328 
+Does that make sense?
+
+01:18:46.248 --> 01:18:52.962 
+This if clock arrives into R2 earlier, R2 will latch things earlier then when this register will
+
+01:18:52.962 --> 01:18:57.648 
+latch things, meaning the inputs over here will be available later.
+
+01:18:58.128 --> 01:19:00.168 
+OK, so it's good to think about that.
+
+01:19:00.168 --> 01:19:03.088 
+So this is your pick your books picture over here.
+
+01:19:03.328 --> 01:19:07.808 
+So clock 1 rising edge happens later, which is this one.
+
+01:19:08.128 --> 01:19:10.848 
+Clock 2 rising edge happens earlier over here.
+
+01:19:11.288 --> 01:19:13.208 
+And this is also the important part over here.
+
+01:19:13.568 --> 01:19:18.568 
+So clock 1 inputs become available over here and there's a PCQ delay.
+
+01:19:20.168 --> 01:19:24.448 
+Yeah, signal essentially signal at D2 must must arrive at D2 earlier.
+
+01:19:25.368 --> 01:19:29.608 
+So there's a, the inputs over here are available right here.
+
+01:19:29.768 --> 01:19:34.818 
+So there's a PCQ delay for Q ones to stabilise and then there's a propagation delay over here
+
+01:19:34.818 --> 01:19:36.448 
+through the combination logic.
+
+01:19:36.728 --> 01:19:41.928 
+And there's a set up time that you need to obey and you need to take into account the SKU.
+
+01:19:41.928 --> 01:19:43.288 
+You need to wait for the SKU also.
+
+01:19:45.008 --> 01:19:53.703 
+So your clock cycle time should be greater than TPCQ plus TBD plus set up time plus the skew because
+
+01:19:53.703 --> 01:19:59.008 
+you need to account for the clock arriving at R2 earlier, OK?
+
+01:20:00.128 --> 01:20:05.832 
+So you're kind of compensating for that because clock arrives at R2 earlier, you have less time to
+
+01:20:05.832 --> 01:20:07.928 
+actually complete what you're doing.
+
+01:20:08.168 --> 01:20:13.225 
+So you need to increase the clock cycle time by that amount so that you don't match the wrong
+
+01:20:13.225 --> 01:20:16.488 
+result, OK, So that's the kind of the effective set up time.
+
+01:20:16.488 --> 01:20:20.923 
+Now you can think of it that way also, instead of having a skew like that you can incorporate into
+
+01:20:20.923 --> 01:20:21.648 
+the set up time.
+
+01:20:22.088 --> 01:20:23.328 
+That's one way of thinking about it.
+
+01:20:24.208 --> 01:20:29.445 
+Now, what this means is if your skew is higher, your clock frequency should be lower or cycle time
+
+01:20:29.445 --> 01:20:30.568 
+should be higher, OK.
+
+01:20:31.088 --> 01:20:36.887 
+That's why people try to distribute the clock as nicely and it's balanced as possible to different
+
+01:20:36.887 --> 01:20:39.728 
+parts of the chip so that the skew is lower, OK.
+
+01:20:39.728 --> 01:20:44.054 
+So they actually put a lot of effort into the distribution of the circuits, distribution of the
+
+01:20:44.054 --> 01:20:44.328 
+clock.
+
+01:20:44.728 --> 01:20:46.448 
+There's a clock distribution network essentially.
+
+01:20:46.728 --> 01:20:48.808 
+So let's look, let's take a look at the hold time.
+
+01:20:49.408 --> 01:20:52.488 
+Essentially safe timing now requires considering the worst case queue.
+
+01:20:53.408 --> 01:20:55.128 
+So hold time is kind of the opposite.
+
+01:20:55.448 --> 01:21:01.048 
+Basically DD2 should be stable for the for hold time after the rising edge of the clock, right?
+
+01:21:02.288 --> 01:21:07.848 
+Which becomes a problem if clock arrives at R2 after R1, right?
+
+01:21:08.408 --> 01:21:11.248 
+Because this increase the minimum required delay for this combination logic.
+
+01:21:11.448 --> 01:21:12.328 
+Let's take a look at that.
+
+01:21:12.848 --> 01:21:16.568 
+Clock arrives at R2 after it drives at R1.
+
+01:21:16.568 --> 01:21:23.458 
+Clock one has an earlier rising edge than clock 2 over here now, which means that the signal must
+
+01:21:23.458 --> 01:21:24.808 
+arrive at D2 later.
+
+01:21:25.488 --> 01:21:27.328 
+This effectively increase your T hold time.
+
+01:21:27.448 --> 01:21:35.408 
+Right before what we had was the combination or CCQ over here, TCCQ plus TCD, which is the minimum
+
+01:21:35.408 --> 01:21:40.688 
+delay until the two changes should be greater than the hold time.
+
+01:21:41.288 --> 01:21:44.288 
+But now you also have a clock skew, right?
+
+01:21:44.448 --> 01:21:52.785 
+Because clock arrives at R2 after R1, meaning this state transition will happen not at that point,
+
+01:21:52.785 --> 01:21:55.168 
+but skew later T skew later.
+
+01:21:55.408 --> 01:21:55.808 
+OK.
+
+01:21:55.968 --> 01:22:01.058 
+So I need to take that into account, which means that TCD plus TCCQ should be greater than T hold
+
+01:22:01.058 --> 01:22:01.688 
+plus T skew.
+
+01:22:01.768 --> 01:22:04.128 
+And this is now our effective hold time, OK.
+
+01:22:04.488 --> 01:22:09.090 
+So satisfying the hold time requirement also becomes more complicated because of because of clock
+
+01:22:09.090 --> 01:22:09.328 
+skew.
+
+01:22:09.608 --> 01:22:11.608 
+So I need to add more buffers essentially, right?
+
+01:22:12.768 --> 01:22:18.622 
+So a clock skew is not good for your clock frequency, your performance as well as your hold time
+
+01:22:18.622 --> 01:22:23.928 
+satisfaction, meaning that you need to add more area with more buffers to satisfy this.
+
+01:22:25.368 --> 01:22:27.528 
+This is the price of synchronous design.
+
+01:22:27.608 --> 01:22:30.528 
+Part of the price, part of the price was the sequencing overhead.
+
+01:22:31.168 --> 01:22:36.288 
+Now we're paying another price for synchronous design, which is clock skew, OK.
+
+01:22:37.888 --> 01:22:44.223 
+So essentially skew increases both T set up and T Holt is now is the increased sequencing overhead
+
+01:22:44.223 --> 01:22:49.008 
+less useful work done per cycle and designers must keep skew to a minimum.
+
+01:22:49.328 --> 01:22:54.078 
+So this requires intelligent clock network designs across the chip and people try to enable clock to
+
+01:22:54.078 --> 01:22:58.638 
+arrive at all locations roughly at the same time, which is a very difficult task with very large
+
+01:22:58.638 --> 01:22:59.208 
+chips today.
+
+01:23:00.128 --> 01:23:05.749 
+So what a lot of people try to do today is not global synchronous design, but more local
+
+01:23:05.749 --> 01:23:08.688 
+synchronous, but globally asynchronous design.
+
+01:23:09.008 --> 01:23:11.768 
+And there's some buffering that happens when you cross the clock domains.
+
+01:23:11.768 --> 01:23:17.611 
+You may actually think about different clocks enabling synchrony in different parts of the chip when
+
+01:23:17.611 --> 01:23:20.008 
+you when you when there are signals that.
+
+01:23:20.088 --> 01:23:24.451 
+Across different clock domains, you need to have some buffering, and the design of that buffering is
+
+01:23:24.451 --> 01:23:26.808 
+really, really critical in terms of correct operation.
+
+01:23:27.408 --> 01:23:31.608 
+But these are some example clock network designs that people have done in the past.
+
+01:23:32.288 --> 01:23:35.568 
+So there's an H3 design over here that kind of looks like this.
+
+01:23:36.368 --> 01:23:39.608 
+And Alpha 21 to 64 was kind of like that.
+
+01:23:39.608 --> 01:23:41.928 
+That's why you see these bumps in the middle.
+
+01:23:43.888 --> 01:23:45.008 
+OK, any questions?
+
+01:23:46.168 --> 01:23:47.168 
+Sounds like fun, right?
+
+01:23:48.248 --> 01:23:51.048 
+You know how to deal with all of these interesting issues when you design things.
+
+01:23:54.808 --> 01:23:56.648 
+OK, so we talked about timing.
+
+01:23:56.688 --> 01:23:58.888 
+Let's jump into verification.
+
+01:23:59.928 --> 01:24:01.608 
+We're not going to do a lot of analysis over here.
+
+01:24:01.608 --> 01:24:03.888 
+We're just going to talk about how to do verification.
+
+01:24:03.888 --> 01:24:06.728 
+Basically, how do you know that a circuit works?
+
+01:24:07.848 --> 01:24:08.968 
+Is it functionally correct?
+
+01:24:08.968 --> 01:24:14.528 
+Even if it's functionally correct, does the timing requirements get satisfied?
+
+01:24:14.888 --> 01:24:19.688 
+So basically the quick question becomes how can you test a circuit for functionality and timing?
+
+01:24:20.608 --> 01:24:23.568 
+And the answer, unfortunately here is mostly simulation tools.
+
+01:24:23.728 --> 01:24:29.871 
+Today there are some formal verification tools that people have developed to verify based on some
+
+01:24:29.871 --> 01:24:30.568 
+invariants.
+
+01:24:30.768 --> 01:24:34.528 
+They are not very scalable to the size of the hardware that we have today, unfortunately.
+
+01:24:34.928 --> 01:24:41.385 
+Imagine verifying these things, verifying A wafer scale processor with some SAT solvers, It takes a
+
+01:24:41.385 --> 01:24:42.168 
+lot of time.
+
+01:24:42.768 --> 01:24:46.168 
+Simulation also takes a lot of time, but people play a lot of tricks.
+
+01:24:46.808 --> 01:24:50.768 
+So in your labs, for example, you're going to do a lot of timing simulation using Vivado.
+
+01:24:51.168 --> 01:24:52.328 
+It's essentially a simulator.
+
+01:24:52.328 --> 01:24:57.116 
+And then there are lower level things, circuit simulation, which can enable help with timing as
+
+01:24:57.116 --> 01:24:57.368 
+well.
+
+01:24:58.568 --> 01:24:58.888 
+OK.
+
+01:24:58.928 --> 01:25:01.488 
+But the bigger question is testing large digital designs.
+
+01:25:01.488 --> 01:25:03.088 
+This is not an easy problem.
+
+01:25:03.088 --> 01:25:03.928 
+We're not going to solve it.
+
+01:25:03.928 --> 01:25:10.453 
+So we're going to cover, we're not going to cover everything over here and even existing systems
+
+01:25:10.453 --> 01:25:15.688 
+today because because things are difficult to design and difficult to verify.
+
+01:25:16.288 --> 01:25:17.968 
+There are faults that escape into the field.
+
+01:25:18.328 --> 01:25:20.688 
+We're going to talk about that in some later lectures, for example.
+
+01:25:21.088 --> 01:25:29.080 
+But sometimes people have found out, especially recently, that sometimes these processors compute
+
+01:25:29.080 --> 01:25:30.728 
+wrong values, right?
+
+01:25:31.248 --> 01:25:36.953 
+And this happens under a small fraction of conditions, maybe related to temperature, related to some
+
+01:25:36.953 --> 01:25:42.431 
+sort of environmental effects, related to some voltage spikes that happen that you cannot easily
+
+01:25:42.431 --> 01:25:42.888 
+control.
+
+01:25:43.448 --> 01:25:46.088 
+But people have found out that you get wrong results in a data centre.
+
+01:25:46.088 --> 01:25:51.668 
+If you have millions of these processors, for example, if one of them fails every month, you're
+
+01:25:51.668 --> 01:25:54.488 
+going to get a lot of failures over time, right?
+
+01:25:55.048 --> 01:25:56.128 
+So it's good to think about that.
+
+01:25:56.128 --> 01:26:00.654 
+So testing is still a problem and people are actually developing online testing methods to test
+
+01:26:00.654 --> 01:26:02.608 
+these processors while they're operating.
+
+01:26:02.808 --> 01:26:07.048 
+And these are actually happening right now because of the small size of the circuit.
+
+01:26:07.728 --> 01:26:13.208 
+But testing can be done also before you actually manufacture something, right?
+
+01:26:13.208 --> 01:26:15.008 
+And you're going to do that and you need to do that.
+
+01:26:15.208 --> 01:26:19.368 
+But even if after doing, even after doing testing today, things still fail.
+
+01:26:20.008 --> 01:26:24.448 
+OK, So testing is actually the most time consuming design stage that happens.
+
+01:26:24.448 --> 01:26:28.928 
+So 6070% of the cost of a processor cutting edge processor is testing today.
+
+01:26:30.288 --> 01:26:34.585 
+You need to do the functional correctness testing and you need to do the timing and power testing if
+
+01:26:34.585 --> 01:26:35.488 
+you care about power.
+
+01:26:35.768 --> 01:26:38.168 
+Now you do care about power because you have a maximum power requirement.
+
+01:26:38.448 --> 01:26:41.448 
+And if you're designing something cutting edge, you should not violate that, right?
+
+01:26:42.328 --> 01:26:45.728 
+So unfortunately, low level simulation is much slower than high level simulation.
+
+01:26:46.408 --> 01:26:48.328 
+So in general, people do both.
+
+01:26:48.848 --> 01:26:51.728 
+You check only functionality at a high level.
+
+01:26:51.768 --> 01:26:53.528 
+This is relatively fast simulation time.
+
+01:26:53.848 --> 01:26:55.208 
+It allows high code coverage.
+
+01:26:55.448 --> 01:27:00.488 
+It's easy to write and run tests and you check only timing, power, etcetera at low level.
+
+01:27:00.528 --> 01:27:05.236 
+At the circuit level, no functional testing of low level model and instead you reason about the
+
+01:27:05.236 --> 01:27:07.368 
+functional equivalence to high level model.
+
+01:27:08.608 --> 01:27:11.888 
+This is hard, but easier than testing logical functionality at a very low level, right?
+
+01:27:12.888 --> 01:27:14.368 
+OK, this will become more clear later.
+
+01:27:15.168 --> 01:27:17.968 
+So essentially we have tools to handle different levels of verification.
+
+01:27:18.048 --> 01:27:22.538 
+You have logic synthesis tools that's guarantee equivalence of high level logic and synthesised
+
+01:27:22.538 --> 01:27:23.768 
+circuit level description.
+
+01:27:23.888 --> 01:27:25.928 
+You trust them, Somebody needs to develop them.
+
+01:27:26.328 --> 01:27:27.528 
+They may not always be correct.
+
+01:27:28.328 --> 01:27:32.320 
+There are timing verification tools that check all circuit timings, and then there are design rule
+
+01:27:32.320 --> 01:27:34.968 
+checks that ensure that physical circuits are actually buildable.
+
+01:27:35.328 --> 01:27:37.208 
+That actually depends on what's manufacturable.
+
+01:27:37.208 --> 01:27:41.248 
+Basically, how far should my should this transistor be from this other transistor?
+
+01:27:41.448 --> 01:27:42.728 
+That's a design rule, for example.
+
+01:27:42.968 --> 01:27:43.968 
+We're not going to talk about that.
+
+01:27:44.528 --> 01:27:49.266 
+So the task of the logic designer is really to provide functional tests for logical correctness of
+
+01:27:49.266 --> 01:27:53.328 
+the design and also provide timing constraints like the desired operating frequency.
+
+01:27:54.048 --> 01:27:58.928 
+And then the tools or the circuit engineers will decide whether they can build it correctly.
+
+01:27:59.568 --> 01:28:00.968 
+So let's talk about functional verification.
+
+01:28:00.968 --> 01:28:04.507 
+We're going to talk about timing verification, which is much more difficult actually than functional
+
+01:28:04.507 --> 01:28:04.968 
+verification.
+
+01:28:05.168 --> 01:28:06.448 
+Functional verification is difficult.
+
+01:28:06.608 --> 01:28:08.128 
+Timing verification is much more difficult.
+
+01:28:08.968 --> 01:28:11.008 
+Power is even more difficult, basically.
+
+01:28:12.048 --> 01:28:16.792 
+OK, so essentially functional verification checks the logical correctness of the design or
+
+01:28:16.792 --> 01:28:20.008 
+functional correctness timing is typically ignored over here.
+
+01:28:21.008 --> 01:28:22.168 
+There are two primary approaches.
+
+01:28:22.168 --> 01:28:26.123 
+1 is logic simulation, which you're going to do a lot in your labs, and the other is formal
+
+01:28:26.123 --> 01:28:26.688 
+verification.
+
+01:28:26.688 --> 01:28:28.448 
+We're going to ignore formal verification over here.
+
+01:28:28.488 --> 01:28:34.672 
+There's a lot of research effort in this area and for small circuits it works, but for large
+
+01:28:34.672 --> 01:28:36.488 
+circuits it becomes harder.
+
+01:28:38.088 --> 01:28:41.860 
+We're going we're going to use Verilog for functional verification and I'm going to introduce
+
+01:28:41.860 --> 01:28:43.888 
+something called test bench phase functional test.
+
+01:28:43.888 --> 01:28:48.902 
+It's very similar to actually testing your software, but we're going to test hardware modules that
+
+01:28:48.902 --> 01:28:49.568 
+we developed.
+
+01:28:50.008 --> 01:28:55.545 
+So a test bench is a module created specifically to test a design, and the tested design is usually
+
+01:28:55.545 --> 01:28:57.168 
+called dot device under test.
+
+01:28:58.008 --> 01:29:01.048 
+People like these acronyms and it looks like this.
+
+01:29:01.048 --> 01:29:06.389 
+Basically, test bench, you have a test pattern generator that's exercise the inputs and that's
+
+01:29:06.389 --> 01:29:11.788 
+causes some change in the output and there's some output checking logic that checks whether the
+
+01:29:11.788 --> 01:29:15.368 
+outputs change correctly based on how the inputs were actuated.
+
+01:29:17.048 --> 01:29:18.328 
+I can, I think I've already said that.
+
+01:29:18.328 --> 01:29:20.408 
+So the question becomes, how do you provide the inputs?
+
+01:29:20.568 --> 01:29:25.088 
+You can have handcrafted values or you can automatically generate things, right?
+
+01:29:25.368 --> 01:29:29.168 
+There's something called automatic test pattern generation where people generate automatic test
+
+01:29:29.168 --> 01:29:29.528 
+patterns.
+
+01:29:29.808 --> 01:29:35.528 
+Regardless, this is not easy if you want to test every possible input combination.
+
+01:29:35.528 --> 01:29:41.278 
+And if you have thousands of inputs, that's like 2 of the 1000 different combinations that you're
+
+01:29:41.278 --> 01:29:42.168 
+testing, right?
+
+01:29:43.208 --> 01:29:45.928 
+OK, so you people, people usually do divide and conquer.
+
+01:29:45.928 --> 01:29:49.248 
+They actually test smaller modules and then they connect things.
+
+01:29:49.368 --> 01:29:54.659 
+But still it's not, we're going to see for a 64 bit adder, for example, you still have two to the 64
+
+01:29:54.659 --> 01:29:57.888 
+combinations, possible combinations for a given input, right?
+
+01:29:57.888 --> 01:29:59.608 
+And then you have two of those inputs.
+
+01:30:00.488 --> 01:30:06.409 
+OK, so test band checks the outputs of the data against values that you think are correct
+
+01:30:06.409 --> 01:30:07.208 
+handcrafted.
+
+01:30:07.208 --> 01:30:09.968 
+Or you have a golden design that is known to be bug free.
+
+01:30:10.128 --> 01:30:11.568 
+If you can design this, this is great.
+
+01:30:12.688 --> 01:30:16.688 
+So having this golden design at a high abstraction level may be very useful.
+
+01:30:17.168 --> 01:30:21.568 
+If you have a specially designed and validated processors in the past, this gives you an advantage.
+
+01:30:21.808 --> 01:30:23.928 
+Basically, experience helps over here.
+
+01:30:25.248 --> 01:30:32.672 
+OK so a test bench can be very lock code for example, or hardware, any hardware description language
+
+01:30:32.672 --> 01:30:35.568 
+code written to test other HDL modules.
+
+01:30:35.568 --> 01:30:38.568 
+Or it could be a circuit schematic used to test other circuit designs.
+
+01:30:39.088 --> 01:30:40.848 
+This is not designed for hardware synthesis.
+
+01:30:41.008 --> 01:30:42.048 
+This is just a test.
+
+01:30:42.208 --> 01:30:43.888 
+Basically, it runs in simulation.
+
+01:30:43.888 --> 01:30:45.968 
+You're going to do this a lot in your labs, like in Vivato.
+
+01:30:45.968 --> 01:30:49.874 
+We're not going to do a circuit simulation in this particular class, But if you want to go to the
+
+01:30:49.874 --> 01:30:51.928 
+lower level, you can simulate the circuits as well.
+
+01:30:52.608 --> 01:30:54.488 
+So we're going to use simulation only constructs.
+
+01:30:54.488 --> 01:30:58.008 
+For example, we're going to say in Verilog, wait for 10 nanoseconds, right?
+
+01:30:58.128 --> 01:31:00.448 
+We're not going to talk about voltage and current sources.
+
+01:31:00.768 --> 01:31:02.208 
+Basically, this is not going to be built.
+
+01:31:03.408 --> 01:31:05.128 
+So there are three kinds of test benches.
+
+01:31:05.608 --> 01:31:09.608 
+Simple, you do everything, input, output generation and error checking manually.
+
+01:31:09.968 --> 01:31:14.752 
+Self checking, input output generation is manual, error checking is automatic and automatic is the
+
+01:31:14.752 --> 01:31:16.168 
+best as you can see, ideally.
+
+01:31:16.768 --> 01:31:17.608 
+But there are trade-offs.
+
+01:31:18.608 --> 01:31:22.728 
+So let's take a look at different types of test benches that test this logic function.
+
+01:31:23.928 --> 01:31:26.088 
+So this is our silly function as you can see.
+
+01:31:27.408 --> 01:31:30.768 
+OK, And this is going to be our test bench.
+
+01:31:31.208 --> 01:31:35.168 
+So we basically have some simulation that we're going to run.
+
+01:31:36.048 --> 01:31:42.452 
+For example, the input, we set the value of Reg to zero and we wait for 10 nanoseconds and then
+
+01:31:42.452 --> 01:31:44.408 
+value of The Reg will be one.
+
+01:31:44.488 --> 01:31:46.408 
+That's how you manipulate or actuate the input.
+
+01:31:46.648 --> 01:31:52.808 
+And you observe by displaying a message saying this is our my output, for example, right?
+
+01:31:52.928 --> 01:31:54.248 
+You can you can print the output.
+
+01:31:54.848 --> 01:31:57.408 
+So let's develop the simple test bench relatively quickly.
+
+01:31:57.408 --> 01:31:59.688 
+We instantiate the silly function that I showed you earlier.
+
+01:31:59.928 --> 01:32:05.288 
+That's our design under test dot and apply hard coded inputs one at a time.
+
+01:32:05.608 --> 01:32:10.488 
+We set the inputs to all zeros, wait for 10, change C to one, wait for 10 nanoseconds.
+
+01:32:10.888 --> 01:32:12.328 
+Basically you keep applying, right?
+
+01:32:12.328 --> 01:32:15.248 
+This is one hard coded Test match looks terrible.
+
+01:32:16.088 --> 01:32:17.168 
+I mean, you could do it, right?
+
+01:32:17.528 --> 01:32:19.168 
+This is how you start programming, right?
+
+01:32:19.248 --> 01:32:23.448 
+And that's how I start programming by changing the values internally, right?
+
+01:32:23.928 --> 01:32:30.820 
+And this is a good way of starting also because you can check your waveform simulator and you can
+
+01:32:30.820 --> 01:32:36.648 
+look at the waveform diagrams and try to check whether you get the output correct.
+
+01:32:36.968 --> 01:32:37.648 
+This is a mess.
+
+01:32:38.048 --> 01:32:40.408 
+So you can manually check that output is correct at all times.
+
+01:32:40.408 --> 01:32:41.528 
+You don't want to do this.
+
+01:32:41.928 --> 01:32:43.448 
+OK, so it's easy to design.
+
+01:32:43.568 --> 01:32:48.239 
+You can easily test a few specific inputs like corner cases maybe, but it's not scalable clearly,
+
+01:32:48.239 --> 01:32:48.528 
+right?
+
+01:32:48.528 --> 01:32:53.737 
+You're not going to do this for two to the 32 input combinations and outputs must be checked
+
+01:32:53.737 --> 01:32:57.928 
+manually outside of simulation somehow either printfs or waveform signals.
+
+01:32:58.368 --> 01:32:58.808 
+Not good.
+
+01:32:59.008 --> 01:33:01.888 
+That's why people do self checking test benches which are not also enough.
+
+01:33:02.328 --> 01:33:03.928 
+But basically this is the idea over here.
+
+01:33:04.608 --> 01:33:10.248 
+You still manually supply the, manipulate the inputs, actuate the inputs and check whether the
+
+01:33:10.248 --> 01:33:11.328 
+output is correct.
+
+01:33:11.528 --> 01:33:16.928 
+After that you wait for some time and if output is not correct then you display.
+
+01:33:17.008 --> 01:33:18.808 
+But this test case failed OK.
+
+01:33:20.568 --> 01:33:25.827 
+So it's still easy to design, it's still easy to test a few specific inputs, but it's still not
+
+01:33:25.827 --> 01:33:28.928 
+scalable and easy to make an error in hard coded values.
+
+01:33:29.128 --> 01:33:36.088 
+OK, OK, I think I'm going to stop here because we have some more to discuss about testing.
+
+01:33:36.968 --> 01:33:38.648 
+We'll do that next week.
+
+01:33:38.688 --> 01:33:43.147 
+And next week we're going to also raise the abstraction level and talk about many interesting things
+
+01:33:43.147 --> 01:33:44.128 
+in architecture level.
+
+01:33:45.008 --> 01:33:46.008 
+OK, have a good weekend.
+

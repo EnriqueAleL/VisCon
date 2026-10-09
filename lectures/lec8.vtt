@@ -1,0 +1,4598 @@
+WEBVTT
+
+00:00:01.327 --> 00:00:04.647 
+OK, I think we can get started.
+
+00:00:06.007 --> 00:00:07.247 
+Today is lecture 9.
+
+00:00:08.567 --> 00:00:16.447 
+Looks like the attendance is still OK, a bit dropping, not too bad for the weather.
+
+00:00:17.727 --> 00:00:19.927 
+Hopefully that's not because people are not interested.
+
+00:00:21.567 --> 00:00:25.327 
+We're going to cover some more exciting topics, ISA and micro architecture.
+
+00:00:25.527 --> 00:00:28.327 
+Last week we started ISA as you know.
+
+00:00:28.327 --> 00:00:33.214 
+Today we're going to cover some of the trade-offs and I'll give you a big picture also before we
+
+00:00:33.214 --> 00:00:34.487 
+jump into the trade-offs.
+
+00:00:35.087 --> 00:00:42.152 
+And then we all finally start implementing the ISA based on everything we've seen so far using logic
+
+00:00:42.152 --> 00:00:42.647 
+blocks.
+
+00:00:42.647 --> 00:00:44.807 
+And that's going to be our micro architecture.
+
+00:00:44.887 --> 00:00:48.087 
+And we'll look at many different types of micro architectures to implement.
+
+00:00:48.927 --> 00:00:55.927 
+But remember that you have an extra credit assignment if you want to and the deadlines coming up.
+
+00:00:56.887 --> 00:00:59.727 
+And this is kind of the agenda that we have for today.
+
+00:00:59.727 --> 00:01:05.788 
+And the next few lectures, there's ISA, we're going to cover, MIPS, assembly we're going to talk
+
+00:01:05.788 --> 00:01:06.167 
+about.
+
+00:01:06.167 --> 00:01:10.873 
+But I'm going to refer you to another lecture because you all know programming, there's going to be
+
+00:01:10.873 --> 00:01:14.487 
+another type of programming that you're going to do, especially in the labs.
+
+00:01:15.487 --> 00:01:16.967 
+But you've already seen a lot of assembly.
+
+00:01:16.967 --> 00:01:17.487 
+Actually.
+
+00:01:17.847 --> 00:01:21.207 
+This is going to give you a bigger picture of the assembly process.
+
+00:01:23.087 --> 00:01:23.407 
+OK.
+
+00:01:23.407 --> 00:01:24.407 
+What have you been learning?
+
+00:01:24.447 --> 00:01:26.687 
+Hopefully you've seen all of this by now.
+
+00:01:26.687 --> 00:01:31.871 
+We talked about instruction set architectures, instruction formats, clear the von Neumann model
+
+00:01:31.871 --> 00:01:34.927 
+before that, and addressing modes, data types, etcetera.
+
+00:01:35.247 --> 00:01:37.167 
+All sounds good, Everybody's happy.
+
+00:01:38.247 --> 00:01:38.967 
+You know, all of these.
+
+00:01:38.967 --> 00:01:39.487 
+That's good.
+
+00:01:40.047 --> 00:01:41.207 
+And you have some readings.
+
+00:01:41.807 --> 00:01:42.367 
+You can look.
+
+00:01:42.407 --> 00:01:44.207 
+You can look and follow them if you want.
+
+00:01:45.327 --> 00:01:49.087 
+OK, Just to jog your memory, we've been talking about instruction processing cycle.
+
+00:01:49.447 --> 00:01:53.007 
+Instruction cycle, not to be confused with clock cycle.
+
+00:01:53.287 --> 00:01:55.687 
+If you remember, clock cycle is something timing related.
+
+00:01:55.687 --> 00:02:01.167 
+Instruction processing cycle is what stages an instruction goes to be processed in a machine.
+
+00:02:01.567 --> 00:02:04.527 
+And we talk about the six stages of the instruction processing cycle.
+
+00:02:04.527 --> 00:02:10.993 
+We're going to see this more and more as we build our machines, but recall that I've also introduced
+
+00:02:10.993 --> 00:02:17.007 
+you to a part of the finite state machine that we're going to build later today and tomorrow.
+
+00:02:17.847 --> 00:02:21.607 
+Essentially, A finite state machine implements the instruction processing cycle.
+
+00:02:21.807 --> 00:02:29.267 
+And we have seen that on the LC3B finite state machine, there's a full finite state machine that
+
+00:02:29.267 --> 00:02:32.687 
+executes the instructions specified by LC3B.
+
+00:02:32.927 --> 00:02:36.287 
+And you can see that the fetch phase, decode phase, execute phases here.
+
+00:02:37.727 --> 00:02:40.647 
+I will not go through this in detail because we've seen all this happens.
+
+00:02:40.647 --> 00:02:45.607 
+So you have 3 states for fetch and you know our fetch happens by now.
+
+00:02:45.607 --> 00:02:50.456 
+You put the program counter into the memory address register and then increment the program counter
+
+00:02:50.456 --> 00:02:52.367 
+so that points to the next instruction.
+
+00:02:52.447 --> 00:02:56.007 
+We were following the von Neumann model and the memory queries.
+
+00:02:56.327 --> 00:03:02.137 
+Memory is queried and the data appears on the memory data register at after some point and in the
+
+00:03:02.137 --> 00:03:08.008 
+next you you keep transitioning between these States and you transition to the next state when the
+
+00:03:08.008 --> 00:03:08.847 
+data is ready.
+
+00:03:09.287 --> 00:03:14.367 
+At that point, you take the data value in the memory data register, put in the instruction register.
+
+00:03:14.407 --> 00:03:15.607 
+That's how you fetch an instruction.
+
+00:03:15.807 --> 00:03:16.847 
+Must jog your memory, right?
+
+00:03:16.847 --> 00:03:18.607 
+So there's no magic over here.
+
+00:03:18.847 --> 00:03:26.247 
+And you can do all of those in the LC3B or LC3 machine that's designed for this purpose.
+
+00:03:26.247 --> 00:03:29.727 
+We're going to design this in more detail later, OK?
+
+00:03:30.207 --> 00:03:34.671 
+But these are the concepts that we've seen, finite state machine logic blocks and instruction
+
+00:03:34.671 --> 00:03:35.487 
+processing cycle.
+
+00:03:35.767 --> 00:03:37.527 
+So we kind of tied these together, right?
+
+00:03:38.247 --> 00:03:44.826 
+Let's let me just finish this in, in the decode state, state 4, the machine decode the instruction
+
+00:03:44.826 --> 00:03:51.271 
+by looking at the up code using a decoder and then it determines the next state based on that up
+
+00:03:51.271 --> 00:03:51.607 
+code.
+
+00:03:51.927 --> 00:03:52.287 
+OK.
+
+00:03:52.647 --> 00:03:55.807 
+If the up code is a jump, for example, you go to the state.
+
+00:03:56.007 --> 00:03:58.047 
+If you up code is a load, you go to the state.
+
+00:03:58.047 --> 00:04:00.327 
+If you up code is an add, you go to the state.
+
+00:04:00.447 --> 00:04:00.727 
+OK.
+
+00:04:00.727 --> 00:04:05.127 
+That's how you determine what to do based on an instruction.
+
+00:04:05.127 --> 00:04:07.447 
+You go to different state based on the instruction.
+
+00:04:07.447 --> 00:04:12.444 
+So in this case the instruction register the opcode and the instruction registers an input to the
+
+00:04:12.444 --> 00:04:13.527 
+finite state machine.
+
+00:04:14.207 --> 00:04:20.873 
+So it's very, you can connect the concepts, right that we have designed in, in earlier lectures when
+
+00:04:20.873 --> 00:04:24.607 
+we talk about sequential logic on finite state machines.
+
+00:04:25.087 --> 00:04:26.647 
+So there's nothing magic essential.
+
+00:04:26.647 --> 00:04:31.043 
+We're executing an instruction using a finite state machine and this is a full finite state machine
+
+00:04:31.043 --> 00:04:32.287 
+for us to study a bit later.
+
+00:04:33.367 --> 00:04:33.687 
+OK.
+
+00:04:34.327 --> 00:04:39.993 
+So again, just to jog your memory, we've looked at different instructions in LC3 and MIPS
+
+00:04:39.993 --> 00:04:41.967 
+instructions and architectures.
+
+00:04:42.367 --> 00:04:47.396 
+These architectures are relatively similar to each other actually, but one is a toy architecture,
+
+00:04:47.396 --> 00:04:49.367 
+the other is a more real architecture.
+
+00:04:50.167 --> 00:04:53.167 
+We've looked at instructions, up codes, we've looked at data types.
+
+00:04:54.047 --> 00:04:55.327 
+Remember the clock example?
+
+00:04:56.007 --> 00:04:56.687 
+I like that one.
+
+00:04:57.727 --> 00:04:58.167 
+And you can.
+
+00:04:58.727 --> 00:05:00.487 
+You can also think about which data type is.
+
+00:05:00.687 --> 00:05:01.847 
+Natural to humans, right?
+
+00:05:01.847 --> 00:05:03.247 
+Humans also operate on data types.
+
+00:05:03.247 --> 00:05:08.114 
+Actually, some are, some are more natural, some are less natural, but you can get trained to operate
+
+00:05:08.114 --> 00:05:10.207 
+on different data types potentially, right?
+
+00:05:11.447 --> 00:05:16.887 
+Like as opposed to looking at a clock that looks like this, that's easier to read 1420 maybe I
+
+00:05:16.887 --> 00:05:22.327 
+encoded in AI don't know hexadecimal system and I can immediately realise what that is, right?
+
+00:05:23.607 --> 00:05:25.327 
+But humans are easier with decimal.
+
+00:05:25.567 --> 00:05:27.327 
+The question is, is that nature or nurture?
+
+00:05:27.367 --> 00:05:28.607 
+It's a good question also, right?
+
+00:05:28.607 --> 00:05:35.225 
+How are we, are we trained to operate on decimal in general, or can we be trained to do something
+
+00:05:35.225 --> 00:05:35.567 
+else?
+
+00:05:35.567 --> 00:05:35.807 
+Right?
+
+00:05:36.607 --> 00:05:40.255 
+It's good to ask these questions because these are very fundamental and they're going to affect the
+
+00:05:40.255 --> 00:05:41.767 
+nature of humanity going into the future.
+
+00:05:41.767 --> 00:05:43.047 
+Also, if you think about it.
+
+00:05:43.407 --> 00:05:48.629 
+So you may think that this lecture, oh, it's this guy in front of you is making fun of things,
+
+00:05:48.629 --> 00:05:50.407 
+trying to explain you something.
+
+00:05:50.727 --> 00:05:56.446 
+But this sort of stuff is going to be critical to a lot of things in the world, including economies,
+
+00:05:56.446 --> 00:05:57.647 
+wars, and everything.
+
+00:05:59.047 --> 00:06:02.247 
+You can, you can come back to me in 50 years and tell me I'm wrong.
+
+00:06:04.007 --> 00:06:06.967 
+OK, so addressing modes, we've discovered all of that.
+
+00:06:06.967 --> 00:06:07.407 
+Also.
+
+00:06:08.247 --> 00:06:14.087 
+This is basically how do you actually address the operands that you want and operate instructions.
+
+00:06:14.087 --> 00:06:14.767 
+We've covered that.
+
+00:06:14.767 --> 00:06:16.927 
+We've covered data moment instructions and addressing modes.
+
+00:06:16.927 --> 00:06:21.580 
+Especially for data moment instructions, because data moment happens from memory and to memory,
+
+00:06:21.580 --> 00:06:24.127 
+their data addressing modes become very interesting.
+
+00:06:24.687 --> 00:06:27.327 
+Control flow instructions change the sequence of execution, right?
+
+00:06:27.527 --> 00:06:30.407 
+So if you've covered all of this, hopefully you're comfortable with this.
+
+00:06:31.167 --> 00:06:33.807 
+In the assembly programming lecture, you're going to see more of that.
+
+00:06:33.807 --> 00:06:36.207 
+You've covered conditional control flow, which is conditional branching.
+
+00:06:36.727 --> 00:06:38.167 
+So there's a lot more to cover on Isas.
+
+00:06:38.167 --> 00:06:43.125 
+I'm going to cover a little bit more before I, but before that, I'll give you a higher level picture
+
+00:06:43.125 --> 00:06:44.167 
+of program execution.
+
+00:06:45.367 --> 00:06:46.807 
+This is just to give you a higher level picture.
+
+00:06:46.807 --> 00:06:51.331 
+We're not going to be able to cover everything that happens here, but this higher level picture is
+
+00:06:51.331 --> 00:06:54.287 
+important because the question is basically you write a program.
+
+00:06:55.007 --> 00:06:59.367 
+How do you compile and run that program on a machine, right?
+
+00:06:59.527 --> 00:07:02.047 
+There are multiple steps that the program needs to go through.
+
+00:07:02.607 --> 00:07:04.847 
+You can write the program in high level code.
+
+00:07:04.887 --> 00:07:08.704 
+You can write the program in assembly code, which is what the assembly programming lecture is going
+
+00:07:08.704 --> 00:07:09.167 
+to be about.
+
+00:07:09.767 --> 00:07:15.709 
+If you start with a high level code, there is a compiler that takes the program and compiles into
+
+00:07:15.709 --> 00:07:16.567 
+assembly code.
+
+00:07:16.607 --> 00:07:18.807 
+Basically it generates the assembly instructions.
+
+00:07:18.807 --> 00:07:21.727 
+I'm going to show you some examples, but you've seen that also earlier.
+
+00:07:23.127 --> 00:07:26.856 
+And then if you're writing an assembly code, you directly enter from here as a programmer, then
+
+00:07:26.856 --> 00:07:29.447 
+you're an assembly programmer as opposed to high level programmer.
+
+00:07:29.727 --> 00:07:33.407 
+Most high level programmers don't even see this, right?
+
+00:07:34.047 --> 00:07:35.487 
+They should not be computer scientists.
+
+00:07:35.807 --> 00:07:37.007 
+They should be programmers here.
+
+00:07:38.367 --> 00:07:40.527 
+You're you're here for a computer science degree.
+
+00:07:40.527 --> 00:07:41.767 
+That's why you're seeing this, right?
+
+00:07:42.607 --> 00:07:44.367 
+A lot of people don't even know what happens.
+
+00:07:44.367 --> 00:07:44.927 
+It's magic.
+
+00:07:45.527 --> 00:07:47.967 
+Like underneath, I write a program, it magically executes.
+
+00:07:48.087 --> 00:07:51.047 
+Sounds great, and people don't even question how it executes, right?
+
+00:07:51.367 --> 00:07:57.375 
+So this is part of the magic, let's say the mystified, but you know this, it's just putting things
+
+00:07:57.375 --> 00:07:57.927 
+together.
+
+00:07:58.247 --> 00:08:03.990 
+So if you actually write assembly code, there's an assembler which assembles the program into
+
+00:08:03.990 --> 00:08:05.967 
+machine code essentially, right?
+
+00:08:06.367 --> 00:08:10.252 
+That's the idea, although it's not directly machine code because there's some somethings else that
+
+00:08:10.252 --> 00:08:10.887 
+needs to happen.
+
+00:08:11.247 --> 00:08:17.539 
+Assemble actually takes the program and produce an object file that's essentially the program with
+
+00:08:17.539 --> 00:08:21.007 
+some information like symbol table associated with it.
+
+00:08:21.647 --> 00:08:24.927 
+Because you don't know exactly where this program should go.
+
+00:08:25.087 --> 00:08:28.527 
+You don't know exactly what locations the memory addresses are.
+
+00:08:28.807 --> 00:08:33.315 
+They are determined and, and actually the process is a little bit more complicated because you may
+
+00:08:33.315 --> 00:08:37.455 
+actually your program may be calling some library in the operating system, for example, or
+
+00:08:37.455 --> 00:08:41.825 
+something else, though you need to actually, that's somebody else's program and that's somebody
+
+00:08:41.825 --> 00:08:44.447 
+else's program needs to be linked to your program, right?
+
+00:08:44.647 --> 00:08:48.247 
+So there needs to be multiple programs or pieces linked together.
+
+00:08:48.607 --> 00:08:53.669 
+That's why there's another step after the assembler so that you can actually take your object file
+
+00:08:53.669 --> 00:08:58.627 
+and have other object files and put them together, link them in some way such that you create an
+
+00:08:58.627 --> 00:09:01.727 
+executable and that executable actually has the instruction.
+
+00:09:01.727 --> 00:09:02.887 
+I'm going to show you pictures also.
+
+00:09:03.087 --> 00:09:08.116 
+That executable gets loaded into memory and once you load it into memory, you point the program
+
+00:09:08.116 --> 00:09:10.287 
+counter to the beginning of that program.
+
+00:09:11.047 --> 00:09:15.447 
+OK, in MIPS, you know that location 004000 something, right?
+
+00:09:15.807 --> 00:09:16.807 
+I, I always forget.
+
+00:09:16.807 --> 00:09:18.847 
+You don't need to remember anyway as a programmer.
+
+00:09:19.167 --> 00:09:23.104 
+But that gets loaded into that location in memory and then the program counter is set there and then
+
+00:09:23.104 --> 00:09:24.207 
+you can execute the program.
+
+00:09:24.607 --> 00:09:26.167 
+OK, so there's no magic over here.
+
+00:09:27.167 --> 00:09:28.527 
+Let me just give you an example.
+
+00:09:28.527 --> 00:09:33.774 
+You know this already because what is stored in memory, instructions and data in MIPS, instructions
+
+00:09:33.774 --> 00:09:34.887 
+are also called text.
+
+00:09:35.647 --> 00:09:36.247 
+There's data.
+
+00:09:36.247 --> 00:09:38.127 
+Data can be global or dynamic.
+
+00:09:38.407 --> 00:09:41.287 
+It could be allocated within program, allocated before program begins.
+
+00:09:41.607 --> 00:09:45.527 
+These are a bit different because it depends on how you address them, right?
+
+00:09:45.807 --> 00:09:52.168 
+Addressing is different, so there's different space in memory allocated for this, different types of
+
+00:09:52.168 --> 00:09:52.487 
+data.
+
+00:09:53.167 --> 00:09:56.327 
+And in MIPS, the memory happens to be only four gigabytes.
+
+00:09:57.207 --> 00:09:58.247 
+You may say this is small.
+
+00:09:58.247 --> 00:10:00.647 
+I agree it's small, but we're going to fix this problem.
+
+00:10:00.807 --> 00:10:06.567 
+In Lecture 2526, when we talk about virtual memory, right, this is actually virtual memory.
+
+00:10:07.007 --> 00:10:09.407 
+Programmer may actually get a lot more memory.
+
+00:10:09.567 --> 00:10:11.647 
+OK, so this is the MIPS memory map.
+
+00:10:11.647 --> 00:10:12.967 
+You don't need to understand everything.
+
+00:10:12.967 --> 00:10:17.847 
+If you want to know really more, I would recommend looking at Harris and Harris Chapter 6.6.
+
+00:10:18.047 --> 00:10:19.367 
+But this is where the program goes.
+
+00:10:19.367 --> 00:10:24.967 
+You can see that that number 004400 thousand in hex.
+
+00:10:25.567 --> 00:10:27.287 
+That's where the program counterpoints.
+
+00:10:27.607 --> 00:10:31.967 
+And your program can be this large, at least in memory, virtual.
+
+00:10:31.967 --> 00:10:34.327 
+With virtual memory, you can do as large as possible.
+
+00:10:35.367 --> 00:10:39.087 
+And then your static data which is allocated in the program goes here.
+
+00:10:39.127 --> 00:10:43.567 
+And then dynamic data, static data which is available before the program starts goes here.
+
+00:10:44.047 --> 00:10:49.646 
+For example, some inputs maybe here and your or some variables that are set to some values are here
+
+00:10:49.646 --> 00:10:52.927 
+and your dynamic data that's allocated within the program.
+
+00:10:52.967 --> 00:10:56.647 
+So if you're dynamically allocating a linked list or array, for example, goes here.
+
+00:10:56.807 --> 00:11:02.313 
+So there are different parts where the data is stored, but both programs and memory are in the same
+
+00:11:02.313 --> 00:11:02.647 
+place.
+
+00:11:03.167 --> 00:11:07.287 
+You can actually have a program over here, instructions over here, and you can jump there, right?
+
+00:11:07.367 --> 00:11:09.327 
+You know that with von Neumann architecture.
+
+00:11:09.967 --> 00:11:11.767 
+OK, so this is an example C code.
+
+00:11:11.767 --> 00:11:13.087 
+I'll not go through the details of it.
+
+00:11:13.087 --> 00:11:14.047 
+It does something.
+
+00:11:14.247 --> 00:11:18.487 
+It computes a sum of two things that are statically allocated.
+
+00:11:18.487 --> 00:11:21.047 
+As you can see, they're given values.
+
+00:11:21.127 --> 00:11:24.007 
+In fact, they're variables, global variables in this case.
+
+00:11:24.327 --> 00:11:26.967 
+And you take the sum and you return the results, right?
+
+00:11:28.207 --> 00:11:29.607 
+The assembly code is this.
+
+00:11:29.607 --> 00:11:36.228 
+You can verify it on your own, but this is so this high level program gets compiled by a compiler to
+
+00:11:36.228 --> 00:11:37.487 
+this assembly code.
+
+00:11:37.687 --> 00:11:39.647 
+OK, that's the assembly code.
+
+00:11:39.967 --> 00:11:40.687 
+You can do it.
+
+00:11:40.767 --> 00:11:42.647 
+You can give it to AI today.
+
+00:11:42.647 --> 00:11:43.287 
+It can do it.
+
+00:11:44.567 --> 00:11:48.047 
+Hopefully, hopefully it won't be wrong, but it should be able to do this.
+
+00:11:48.047 --> 00:11:50.167 
+This is not rocket science, even for AI.
+
+00:11:52.647 --> 00:11:57.339 
+Some things it's good at, some things it may not be very good at, but this thing it should be really
+
+00:11:57.339 --> 00:12:01.047 
+good at, you know, but you can do it also now that you learned MIPS ISA, right?
+
+00:12:01.367 --> 00:12:05.569 
+So there's some things that you do and you, you should watch the assembly programming lecture to
+
+00:12:05.569 --> 00:12:06.927 
+figure out how to do it better.
+
+00:12:07.407 --> 00:12:08.527 
+OK, that's assembly code.
+
+00:12:08.847 --> 00:12:17.687 
+And then this gets, let me go back to over here, This gets assembled into an object file.
+
+00:12:17.767 --> 00:12:23.417 
+I will not go through the object file in detail, but essentially here you can see that there are
+
+00:12:23.417 --> 00:12:25.007 
+variables over here, right?
+
+00:12:25.807 --> 00:12:28.647 
+For example, there's Y, there's G, there's F.
+
+00:12:29.207 --> 00:12:31.167 
+But in machine code there are no such things.
+
+00:12:31.287 --> 00:12:32.967 
+We need to allocate addresses to them, right?
+
+00:12:33.687 --> 00:12:35.647 
+So we need to be able to do that addresses.
+
+00:12:35.647 --> 00:12:38.567 
+So there's some symbol table that allocates addresses.
+
+00:12:38.567 --> 00:12:42.927 
+For example, this says main should start from this location where the PC should point to.
+
+00:12:43.487 --> 00:12:47.957 
+That's the beginning of the program sum, which is a function should start from this location in
+
+00:12:47.957 --> 00:12:48.287 
+memory.
+
+00:12:48.567 --> 00:12:53.801 
+And these are the global variables that are in the global part of the main memory where the
+
+00:12:53.801 --> 00:12:54.607 
+variables are.
+
+00:12:54.767 --> 00:12:59.087 
+So somebody needs to do that allocation of addresses to variables.
+
+00:12:59.087 --> 00:13:04.658 
+And that's what the assembler does and produces a symbol table and supplies it to the next level,
+
+00:13:04.658 --> 00:13:05.807 
+which is the linker.
+
+00:13:06.807 --> 00:13:12.037 
+And the linker essentially fixes all the addresses, including some addresses that may be coming from
+
+00:13:12.037 --> 00:13:17.216 
+some other programs that you call or some other operating system functions that you may call, which
+
+00:13:17.216 --> 00:13:20.407 
+we're not going to get into today, but later we may get into.
+
+00:13:20.967 --> 00:13:22.687 
+And essentially produces this executable.
+
+00:13:22.767 --> 00:13:26.607 
+An executable is some format where there's a header.
+
+00:13:26.687 --> 00:13:30.327 
+The header specifies some things like text size, data size, etcetera.
+
+00:13:30.647 --> 00:13:36.513 
+And then the next segment, there's a text segment, which is really the program over here with all of
+
+00:13:36.513 --> 00:13:37.687 
+the addresses fixed.
+
+00:13:38.567 --> 00:13:43.527 
+And then there's a data segment over here, OK, with with it, with the symbol table.
+
+00:13:43.887 --> 00:13:49.418 
+And then this program gets loaded into memory using all of this information in the executable,
+
+00:13:49.418 --> 00:13:54.127 
+because executable exactly specifies at which address what data you have, right?
+
+00:13:55.807 --> 00:13:57.167 
+So that's what happens.
+
+00:13:57.407 --> 00:14:02.973 
+So this is the, we're going back to the memory map program goes here, static data goes here in in
+
+00:14:02.973 --> 00:14:05.327 
+this program, we don't have dynamic data.
+
+00:14:05.887 --> 00:14:11.405 
+So it looks like this program goes here, you start from PC and then you start executing sequentially
+
+00:14:11.405 --> 00:14:13.447 
+unless there's a control flow change.
+
+00:14:13.927 --> 00:14:15.887 
+And these are the variables, OK.
+
+00:14:16.767 --> 00:14:17.687 
+And this is machine code.
+
+00:14:17.687 --> 00:14:21.007 
+Basically this is all the formats of the instructions and coding.
+
+00:14:21.407 --> 00:14:23.247 
+This is what goes to memory.
+
+00:14:23.927 --> 00:14:29.473 
+So hopefully this is a bit demystified right now and you'll learn more from the assembly programming
+
+00:14:29.473 --> 00:14:32.967 
+lecture as to how that machine code is generated from assembly.
+
+00:14:33.287 --> 00:14:34.887 
+You'll do these in your labs also.
+
+00:14:34.967 --> 00:14:38.327 
+So it's good to study this in my opinion, for your labs.
+
+00:14:39.487 --> 00:14:40.007 
+Sounds good.
+
+00:14:40.367 --> 00:14:42.207 
+How many of you have programmed the assembly so far?
+
+00:14:44.127 --> 00:14:44.927 
+OK, not many.
+
+00:14:44.927 --> 00:14:45.767 
+How many have not?
+
+00:14:46.767 --> 00:14:47.527 
+OK, that's good.
+
+00:14:47.887 --> 00:14:48.647 
+You're in for fun.
+
+00:14:53.242 --> 00:14:55.962 
+No, no, this is where actually the data goes static.
+
+00:14:56.322 --> 00:14:57.922 
+Essentially static variables go there.
+
+00:15:01.362 --> 00:15:01.762 
+Exactly.
+
+00:15:01.762 --> 00:15:02.922 
+There should be some actual values.
+
+00:15:02.922 --> 00:15:03.122 
+Yeah.
+
+00:15:03.122 --> 00:15:04.202 
+Initialized to values.
+
+00:15:04.402 --> 00:15:04.602 
+Yeah.
+
+00:15:04.602 --> 00:15:06.842 
+Your, your book didn't do a perfect job over there.
+
+00:15:06.842 --> 00:15:07.122 
+Maybe.
+
+00:15:07.122 --> 00:15:08.522 
+Yeah, yeah.
+
+00:15:09.122 --> 00:15:09.802 
+Or they could be.
+
+00:15:09.802 --> 00:15:10.682 
+Yeah, exactly.
+
+00:15:10.682 --> 00:15:11.642 
+They should be actual values.
+
+00:15:12.482 --> 00:15:13.002 
+Good question.
+
+00:15:14.402 --> 00:15:20.762 
+OK, so now that I've given you the big picture, hopefully you understand the entire process.
+
+00:15:22.802 --> 00:15:27.313 
+We're going to switch gears to ISA trade-offs a little bit more because ISA is very important in
+
+00:15:27.313 --> 00:15:27.642 
+design.
+
+00:15:27.802 --> 00:15:32.122 
+Every computer needs an ISA, some sort of essentially ISA is the hardware software interface, right?
+
+00:15:32.122 --> 00:15:32.682 
+What kind?
+
+00:15:32.882 --> 00:15:35.282 
+How do you actually communicate with this machine?
+
+00:15:37.522 --> 00:15:38.882 
+Every computer has an ISA.
+
+00:15:39.002 --> 00:15:42.162 
+It may not be exactly like this ISA that we have seen.
+
+00:15:43.042 --> 00:15:48.386 
+And I'm going to challenge you and think about, hopefully one of the key goals of this course is
+
+00:15:48.386 --> 00:15:49.722 
+think critically, right?
+
+00:15:50.282 --> 00:15:54.674 
+Not take anything as a given, and we're going to think critically and think about different types of
+
+00:15:54.674 --> 00:15:55.202 
+Isas, right?
+
+00:15:55.562 --> 00:16:00.802 
+In the end, every computer, people are very Gaga about quantum computing today, for example, right?
+
+00:16:01.082 --> 00:16:03.842 
+If you design A quantum computer, you have to communicate with the software.
+
+00:16:04.162 --> 00:16:07.682 
+This quantum computer will not magically figure out what people will do.
+
+00:16:08.202 --> 00:16:13.037 
+So in a quantum computer, in fact, people are proposing Isas that are very similar to what today's
+
+00:16:13.037 --> 00:16:13.482 
+Isas are.
+
+00:16:13.482 --> 00:16:18.330 
+But maybe they should be thinking bigger in how to actually exploit quantum computers, which may
+
+00:16:18.330 --> 00:16:21.562 
+happen 30 years down the road, or may not happen, We don't know.
+
+00:16:22.282 --> 00:16:25.562 
+Maybe 100 years down the road, if the Earth doesn't explode by then anyway.
+
+00:16:26.442 --> 00:16:31.452 
+But it's good to keep in mind that whatever computer you design, you have to communicate with it,
+
+00:16:31.452 --> 00:16:31.762 
+right?
+
+00:16:32.002 --> 00:16:33.162 
+And there needs to be an ISA.
+
+00:16:33.882 --> 00:16:38.120 
+Maybe it's going to be human language, but underneath there needs to be some ISA that the human
+
+00:16:38.120 --> 00:16:39.682 
+language gets translated to, right?
+
+00:16:40.082 --> 00:16:41.282 
+It's good to think about these things.
+
+00:16:41.762 --> 00:16:45.602 
+So I'm going to cover some more ISA trade-offs, which we started a little bit in the last lecture.
+
+00:16:47.242 --> 00:16:52.620 
+A key trade off in an ISA is how complex or simple should your instructions, data types and
+
+00:16:52.620 --> 00:16:53.802 
+addressing modes be?
+
+00:16:55.242 --> 00:17:00.632 
+If it's a complex instruction, this means that an instruction does a lot of work, meaning it does
+
+00:17:00.632 --> 00:17:01.522 
+many operations.
+
+00:17:02.242 --> 00:17:04.482 
+For example, it could be matrix multiply, right?
+
+00:17:04.482 --> 00:17:06.162 
+That's that's a pretty complex instruction.
+
+00:17:06.602 --> 00:17:10.122 
+It could be a convolution, which we're going to see in lecture 16 or so.
+
+00:17:10.442 --> 00:17:11.682 
+That's a pretty complex instruction.
+
+00:17:11.682 --> 00:17:15.722 
+It's could be fast Fourier transform, compute that thing, right?
+
+00:17:16.722 --> 00:17:25.383 
+Or do insert into a doubly linked list, or insert into a 10 dimensional array or, or query in a
+
+00:17:25.383 --> 00:17:26.842 
+database, right?
+
+00:17:26.922 --> 00:17:28.882 
+These are pretty high level concepts, right?
+
+00:17:30.482 --> 00:17:34.282 
+String copy is relatively high level also, but you could actually go even higher level.
+
+00:17:34.882 --> 00:17:39.642 
+So simple instructions on the other hand, are more primitive instructions, operations.
+
+00:17:39.642 --> 00:17:40.922 
+An instruction does little work.
+
+00:17:41.802 --> 00:17:44.602 
+It's a primitive using which complex operations can be built.
+
+00:17:45.202 --> 00:17:47.722 
+And you've seen you can have NAND, for example, right?
+
+00:17:47.722 --> 00:17:54.303 
+NAND is a simple instruction, add, XOR, multiply, multiply is a little bit more complex, a more
+
+00:17:54.303 --> 00:17:57.282 
+complex primitive shift, for example, jump.
+
+00:17:58.202 --> 00:17:59.042 
+It's good to think about.
+
+00:17:59.042 --> 00:18:02.482 
+Can you have a single instruction that can do everything that we discussed?
+
+00:18:03.122 --> 00:18:06.242 
+I'm not going to talk about that right now, but it's a good thought exercise.
+
+00:18:06.442 --> 00:18:11.602 
+Maybe can you have a single instruction ISA and write all the programs that you can write today?
+
+00:18:14.042 --> 00:18:18.338 
+So there's a basically you're faced with a fundamental trade-offs immediately when you're designing
+
+00:18:18.338 --> 00:18:18.642 
+an ISA.
+
+00:18:19.802 --> 00:18:22.122 
+You can of course say, I want both complex and simple.
+
+00:18:22.602 --> 00:18:24.242 
+Then your ISA is pretty complex, right?
+
+00:18:24.842 --> 00:18:26.562 
+Because you actually want to implement everything.
+
+00:18:26.882 --> 00:18:27.842 
+So why does this matter?
+
+00:18:28.002 --> 00:18:28.882 
+You've seen this also.
+
+00:18:28.882 --> 00:18:30.002 
+This is called the semantic gap.
+
+00:18:30.002 --> 00:18:35.287 
+Actually, you've seen that high level language, you get compiled to assembly or machine code
+
+00:18:35.287 --> 00:18:36.322 
+eventually, right?
+
+00:18:36.722 --> 00:18:40.762 
+Essentially, you have an high level language people are used to programming with.
+
+00:18:41.042 --> 00:18:43.082 
+Most people don't program with machine code.
+
+00:18:45.002 --> 00:18:47.722 
+Yeah, actually assembly, most people don't program with assembly code.
+
+00:18:47.722 --> 00:18:49.682 
+Even fewer people program with machine code.
+
+00:18:49.682 --> 00:18:51.362 
+Basically almost nobody.
+
+00:18:51.882 --> 00:19:00.707 
+But essentially how how complex your instructions, data types and addressing modes R determines the
+
+00:19:00.707 --> 00:19:09.265 
+semantic gap between your high level language, Java, C++, Python, pick your favorite and the ISA
+
+00:19:09.265 --> 00:19:11.762 
+hardware software interface.
+
+00:19:12.282 --> 00:19:13.522 
+If these are complex.
+
+00:19:13.602 --> 00:19:15.402 
+If you have many data types, for example data types.
+
+00:19:15.402 --> 00:19:17.162 
+For example a matrix is a data type, right?
+
+00:19:18.482 --> 00:19:24.032 
+Integers are data type, integers are more primitive, but matrix is a collection of integers that are
+
+00:19:24.032 --> 00:19:25.642 
+laid out in a particular way.
+
+00:19:25.642 --> 00:19:26.522 
+2 dimensional right?
+
+00:19:26.802 --> 00:19:30.762 
+You can have 10 dimensional a race that could be also data types, right?
+
+00:19:31.082 --> 00:19:33.002 
+Those are pretty complex data types at a high level.
+
+00:19:33.842 --> 00:19:36.442 
+A database itself could be a data type, for example, right?
+
+00:19:37.002 --> 00:19:39.682 
+Of course you need to specify a bit more to get it implemented.
+
+00:19:39.682 --> 00:19:44.322 
+But essentially if these are very high level, you have a very small semantic gap.
+
+00:19:45.362 --> 00:19:50.365 
+And if these are low level, meaning less complex, you have very few data types, simple things, then
+
+00:19:50.365 --> 00:19:51.882 
+you have a large semantic gap.
+
+00:19:52.642 --> 00:19:55.202 
+And this actually determines a lot of trade-offs.
+
+00:19:55.802 --> 00:20:00.242 
+For example, if these are high level, the compiler's job may be easier, right?
+
+00:20:00.842 --> 00:20:03.362 
+You can more easily map high level language to the ISA.
+
+00:20:03.802 --> 00:20:07.282 
+Potentially it's less work for the software designer.
+
+00:20:07.282 --> 00:20:08.962 
+But then there's a big gap over here.
+
+00:20:09.202 --> 00:20:10.402 
+And what does this gap mean?
+
+00:20:10.402 --> 00:20:14.042 
+You have these instructions and you need to build a machine that executes them, right?
+
+00:20:14.402 --> 00:20:15.442 
+That's what I specify.
+
+00:20:15.442 --> 00:20:17.602 
+The hardware control signals, control signals.
+
+00:20:17.602 --> 00:20:18.442 
+We're going to see a lot more.
+
+00:20:18.442 --> 00:20:20.122 
+You've seen control signals and data signals.
+
+00:20:20.362 --> 00:20:24.122 
+Control signals determine what the machine does every clock cycle.
+
+00:20:24.122 --> 00:20:26.362 
+Basically, you have some set of control signals, right?
+
+00:20:26.842 --> 00:20:30.282 
+Every state in a finite state machine generates a control signal.
+
+00:20:30.282 --> 00:20:33.682 
+For example, one control signal is what should the ALU do in this state?
+
+00:20:34.482 --> 00:20:36.682 
+What should the which?
+
+00:20:37.762 --> 00:20:40.722 
+What should be loaded onto the bus in the state, for example.
+
+00:20:41.362 --> 00:20:44.962 
+So if the ISA is very high level, that gap is huge.
+
+00:20:45.722 --> 00:20:48.642 
+As a result, hardware designer's job is harder.
+
+00:20:49.242 --> 00:20:51.802 
+OK, so this is the hardware software interface.
+
+00:20:51.802 --> 00:20:57.402 
+If you think about the blue line, if this part is small, software designer's job is easier, hardware
+
+00:20:57.402 --> 00:20:58.802 
+designer's job is harder.
+
+00:20:59.162 --> 00:21:05.219 
+Whereas on, in this case, this is large, meaning software designer needs to do more to get from very
+
+00:21:05.219 --> 00:21:07.642 
+high level to very primitive operations.
+
+00:21:08.322 --> 00:21:13.505 
+But the hardware designer doesn't need to do as much probably because they only need to implement
+
+00:21:13.505 --> 00:21:15.002 
+primitive operations, right?
+
+00:21:15.082 --> 00:21:17.402 
+They don't need to deal with a matrix multiply, for example.
+
+00:21:18.562 --> 00:21:24.469 
+So this is going to be a very critical trade off that will affect us a lot, especially when we talk
+
+00:21:24.469 --> 00:21:25.842 
+about execution models.
+
+00:21:25.842 --> 00:21:30.762 
+We'll talk about systolic arrays, we'll talk about GPU SIMD execution, we'll talk about VLIW.
+
+00:21:31.202 --> 00:21:36.482 
+And people have been trying to tackle this trade off and there is no escape.
+
+00:21:36.482 --> 00:21:38.922 
+In the end, you make this trade off, you can say I want both.
+
+00:21:39.282 --> 00:21:44.842 
+Yes, people have done that also because existing complex ISA is actually both in the end.
+
+00:21:44.922 --> 00:21:47.282 
+They don't forego NAND instructions for example.
+
+00:21:47.282 --> 00:21:51.562 
+They still have those instructions, but that's why they're more complex in hardware.
+
+00:21:52.042 --> 00:21:56.082 
+So basically here the optimization burden is also on hardware because there is a huge gap.
+
+00:21:56.722 --> 00:22:03.362 
+Optimization opportunity here is lower because of that small gap, whereas here the optimization
+
+00:22:03.362 --> 00:22:09.443 
+burden is on the software because software does a lot of the high level language to ISA
+
+00:22:09.443 --> 00:22:10.282 
+translation.
+
+00:22:10.722 --> 00:22:12.442 
+OK, it's good to think about that also, right?
+
+00:22:12.442 --> 00:22:13.722 
+Who does the optimization, right?
+
+00:22:15.042 --> 00:22:18.802 
+OK, and it's also good to think about here the hardware is more complex.
+
+00:22:18.922 --> 00:22:20.642 
+In the end here the hardware is simple.
+
+00:22:21.602 --> 00:22:24.122 
+So a complex instructions make hardware more complex.
+
+00:22:24.122 --> 00:22:26.682 
+Simple instructions make hardware simpler.
+
+00:22:27.482 --> 00:22:32.562 
+But for software it becomes the opposite, especially if you want optimised programs.
+
+00:22:33.202 --> 00:22:35.202 
+OK, OK.
+
+00:22:35.282 --> 00:22:38.042 
+I'm spending some time over here because it's going to be important.
+
+00:22:38.722 --> 00:22:43.786 
+So people have also thought about a lot of interesting things like changing the trade-offs that you
+
+00:22:43.786 --> 00:22:44.042 
+have.
+
+00:22:44.562 --> 00:22:51.222 
+For example, here you have an ISA that's very close to high level language and you have your
+
+00:22:51.222 --> 00:22:53.322 
+hardware is normally complex.
+
+00:22:53.762 --> 00:23:00.867 
+But if you insert something in the middle, meaning this is the programmer visible ISA, and you also
+
+00:23:00.867 --> 00:23:06.322 
+have some other instructions that's implementation ISA, that's much simpler.
+
+00:23:07.122 --> 00:23:08.922 
+Now you can change the trade-offs a little bit, right?
+
+00:23:09.922 --> 00:23:14.682 
+So there's one blue line over here that's visible to the programmer or the compiler.
+
+00:23:16.002 --> 00:23:19.722 
+And this blue line instructions that are not visible to the programmer.
+
+00:23:20.202 --> 00:23:22.122 
+This is the hardware designer decides this.
+
+00:23:24.122 --> 00:23:26.522 
+And these are simple, but these are complex.
+
+00:23:27.082 --> 00:23:32.953 
+So the programmer compiles into something complex, but then that complex thing gets translated into
+
+00:23:32.953 --> 00:23:33.962 
+something simple.
+
+00:23:34.842 --> 00:23:37.042 
+And then the question becomes who does that translation, right.
+
+00:23:37.562 --> 00:23:40.162 
+So that could become either software or hardware.
+
+00:23:40.682 --> 00:23:41.762 
+That's the fascinating part.
+
+00:23:41.922 --> 00:23:46.922 
+Basically, we call this ISA, the hardware software interface, but not exactly right?
+
+00:23:47.762 --> 00:23:51.682 
+You can translate that to something else later on in software or hardware as well.
+
+00:23:52.362 --> 00:23:56.066 
+So this is fascinating because now we have an indirection that you've added, you can change the
+
+00:23:56.066 --> 00:23:57.002 
+trade off significantly.
+
+00:23:58.042 --> 00:24:01.842 
+So this is actually done in essentially all general purpose processors today.
+
+00:24:02.042 --> 00:24:04.922 
+You compile into a very complex ISA today, X86.
+
+00:24:05.722 --> 00:24:12.634 
+It's one of the more most complicated ISA that is developed, but you can translate it into something
+
+00:24:12.634 --> 00:24:13.602 
+else internal.
+
+00:24:13.922 --> 00:24:16.482 
+Actually, that's not exactly what's done in existing processors.
+
+00:24:16.482 --> 00:24:17.802 
+This is something else.
+
+00:24:18.362 --> 00:24:22.162 
+This is what Apple's Rosetta 2 binary translator does.
+
+00:24:22.282 --> 00:24:29.518 
+What they do is basically they can also execute X86 code over here, but so X86 programs get
+
+00:24:29.518 --> 00:24:35.562 
+translated to the ARM ISA, which the processor is actually implemented with.
+
+00:24:36.282 --> 00:24:41.160 
+And that translation software is a translation software is a software basically with some hardware
+
+00:24:41.160 --> 00:24:43.002 
+support to make it faster and easier.
+
+00:24:43.322 --> 00:24:50.209 
+OK, so that's how they can execute programs that are not compatible with the hardware software
+
+00:24:50.209 --> 00:24:51.162 
+interface of.
+
+00:24:51.962 --> 00:24:57.323 
+Processor, you can design processor with some ISA, but you can execute programs written for some
+
+00:24:57.323 --> 00:24:57.882 
+other ISA.
+
+00:24:58.122 --> 00:25:01.762 
+OK, that's enables, that's enabled through this translation mechanism.
+
+00:25:02.202 --> 00:25:03.682 
+It's also called binary translation.
+
+00:25:03.882 --> 00:25:05.762 
+OK, so hopefully that's interesting.
+
+00:25:05.762 --> 00:25:06.922 
+This is different from a compiler.
+
+00:25:07.122 --> 00:25:10.886 
+Of course, the binary translator can optimise the code also, so it can do some of the compiler's
+
+00:25:10.886 --> 00:25:11.122 
+tasks.
+
+00:25:12.122 --> 00:25:14.642 
+OK, so it's done in real machines.
+
+00:25:15.922 --> 00:25:18.722 
+Intel and AMD machines do something different.
+
+00:25:18.842 --> 00:25:27.002 
+They basically take X86 code and they they translated into using hardware secret micro operations.
+
+00:25:27.362 --> 00:25:32.122 
+These are basically some implementation ISA that is with simpler instructions.
+
+00:25:32.602 --> 00:25:38.951 
+They basically don't want to do expensive, don't want to implement very expensive operations like
+
+00:25:38.951 --> 00:25:40.522 
+string copy for example.
+
+00:25:40.882 --> 00:25:46.353 
+They divide into smaller pieces that the hardware implements, but this translation actually happens
+
+00:25:46.353 --> 00:25:48.122 
+in hardware, so it's very quick.
+
+00:25:48.962 --> 00:25:54.036 
+OK, but then the hardware is still complex, right, If you think about it, but maybe not as complex
+
+00:25:54.036 --> 00:25:58.282 
+as if you had implemented all of those instructions that are specified by the ISA.
+
+00:25:58.282 --> 00:26:02.322 
+And X86 specifies 1000 plus instructions.
+
+00:26:02.402 --> 00:26:04.802 
+I'm going to show you a picture of the instruction set manual.
+
+00:26:04.802 --> 00:26:07.642 
+It's 5000 plus pages, and that was three years ago.
+
+00:26:07.642 --> 00:26:10.642 
+I don't want to go and find the X86 manual again.
+
+00:26:11.642 --> 00:26:15.042 
+OK, so these are actually real processors do this All real.
+
+00:26:15.042 --> 00:26:16.642 
+All Intel and AMD processors do it.
+
+00:26:19.082 --> 00:26:20.802 
+Other folks also do it, So and media.
+
+00:26:20.802 --> 00:26:27.166 
+For example, they implemented this interesting SoC processor where the instruction set architecture
+
+00:26:27.166 --> 00:26:33.402 
+was ARM, which is actually not as complex as X86, but they still wanted to simplify the hardware.
+
+00:26:33.402 --> 00:26:38.762 
+So they use a software translator to translate the ARM ISA to secret micro operations internally.
+
+00:26:38.882 --> 00:26:41.242 
+And if you're interested you can read more about that.
+
+00:26:41.242 --> 00:26:43.802 
+And they also do dynamic code optimization internally.
+
+00:26:43.802 --> 00:26:48.114 
+So when you translate from one piece of code to another piece of code, they may be written in
+
+00:26:48.114 --> 00:26:49.042 
+different languages.
+
+00:26:49.042 --> 00:26:50.482 
+You can still optimise the code, right?
+
+00:26:51.482 --> 00:26:53.602 
+And you can read more about if you're interested.
+
+00:26:54.962 --> 00:26:56.882 
+OK, this is an old idea.
+
+00:26:56.882 --> 00:26:58.282 
+People have actually tried to do this.
+
+00:26:58.402 --> 00:26:59.722 
+This is this.
+
+00:26:59.882 --> 00:27:02.922 
+How many people have heard about this processor called Transmeta?
+
+00:27:04.562 --> 00:27:06.322 
+No one, maybe some old folks.
+
+00:27:07.042 --> 00:27:07.802 
+OK, nobody.
+
+00:27:08.242 --> 00:27:13.608 
+But this was actually interesting because this is during the heyday of X86 where X86 processors were
+
+00:27:13.608 --> 00:27:18.922 
+dominating the world, which is actually different today, which is why this course is also important
+
+00:27:18.922 --> 00:27:23.162 
+because there's a huge challenge against how we design processors today, right?
+
+00:27:23.162 --> 00:27:26.762 
+People have been designing X86 processors and that was the dominant ISA.
+
+00:27:27.002 --> 00:27:32.805 
+And these folks, these bright folks at Transmeta, they wanted to basically say we want to be compete
+
+00:27:32.805 --> 00:27:38.375 
+with X86 and but we don't want to design these complicated processors because it's expensive and
+
+00:27:38.375 --> 00:27:42.322 
+Intel and AMD have a lot of expertise in designing these processors.
+
+00:27:42.722 --> 00:27:47.963 
+So what we're going to do is we're going to take X86 programs and design something called code
+
+00:27:47.963 --> 00:27:53.261 
+morphing software, which is essentially a binary translator with a lot of code optimization and
+
+00:27:53.261 --> 00:27:57.722 
+translate the ISA to some proprietary ISA that we're going to learn and lecture.
+
+00:27:57.722 --> 00:28:01.522 
+Something I forgot now probably 17 or 14.
+
+00:28:01.962 --> 00:28:06.997 
+Anyway, VLIWISA, which is actually extracting parallelism so you can actually do a lot of operations
+
+00:28:06.997 --> 00:28:07.602 
+in parallel.
+
+00:28:08.322 --> 00:28:15.442 
+And their goal was to actually outperform existing X86 processors using this sort of approach.
+
+00:28:16.042 --> 00:28:21.106 
+Now they didn't succeed, although they were able to produce very energy efficient processors at the
+
+00:28:21.106 --> 00:28:21.362 
+time.
+
+00:28:21.762 --> 00:28:27.478 
+Maybe they were not at the right time on on the market because energy efficiency became much more
+
+00:28:27.478 --> 00:28:29.482 
+important after they kind of died.
+
+00:28:30.162 --> 00:28:32.762 
+So this was a start up that tried to do something different, right?
+
+00:28:33.602 --> 00:28:39.202 
+So trying and failing is good actually because this inspired a lot of approaches later on.
+
+00:28:40.482 --> 00:28:44.042 
+OK, so the bigger principle here is indirection, right?
+
+00:28:44.722 --> 00:28:51.178 
+And essentially some people have said, David Wheeler said any problem in computer science can be
+
+00:28:51.178 --> 00:28:55.482 
+solved with another level of indirection may or may not be true.
+
+00:28:55.722 --> 00:28:58.002 
+But in this particular case, we're using indirection, right?
+
+00:28:58.642 --> 00:29:03.762 
+We have one level of ISA and then we have another level of ISA and we're basically translating.
+
+00:29:04.802 --> 00:29:09.918 
+So once you do that sort of translation or this sort of indirection, trade-offs can change and new
+
+00:29:09.918 --> 00:29:11.642 
+opportunities can become enabled.
+
+00:29:12.082 --> 00:29:17.550 
+You're basically not stuck with a complex instructions that that you have to implement in hardware,
+
+00:29:17.550 --> 00:29:17.882 
+right?
+
+00:29:18.522 --> 00:29:21.922 
+You can actually change the trade-offs if you actually insert some level of indirection.
+
+00:29:22.722 --> 00:29:26.202 
+The problem is this indirection comes with extra complexity and latency always, right?
+
+00:29:26.322 --> 00:29:31.202 
+That code morphing software and that hardware has additional latency.
+
+00:29:31.522 --> 00:29:32.082 
+Certainly.
+
+00:29:32.242 --> 00:29:36.720 
+Now if it optimises the program and it amortises the cost of that latency over many, many
+
+00:29:36.720 --> 00:29:40.042 
+executions, that may be good, but that may not be always possible.
+
+00:29:40.322 --> 00:29:46.101 
+OK, so we'll see this in direction again in Lecture 2526 when we talk about virtual memory where we
+
+00:29:46.101 --> 00:29:46.802 
+will insert.
+
+00:29:47.482 --> 00:29:50.122 
+So, so far we've seen memory addresses, right?
+
+00:29:50.722 --> 00:29:51.722 
+Memory addresses.
+
+00:29:51.962 --> 00:29:55.402 
+Specified by an instruction are physical memory addresses.
+
+00:29:56.002 --> 00:29:59.802 
+Now it turns out that's not a good idea, because physical memory may be limited.
+
+00:30:00.522 --> 00:30:06.134 
+So we'll insert another level of instruction, another level of indirection, where we will turn those
+
+00:30:06.134 --> 00:30:11.579 
+memory addresses specified by the program to virtual memory addresses, and we will translate them
+
+00:30:11.579 --> 00:30:14.442 
+to physical memory addresses in the machine itself.
+
+00:30:15.282 --> 00:30:22.719 
+That idea has been extremely useful, and that's been the dominant way of implementing memory today,
+
+00:30:22.719 --> 00:30:24.522 
+which is virtual memory.
+
+00:30:25.082 --> 00:30:32.163 
+So all of those addresses that you've seen are going to be virtual, meaning they don't exist in
+
+00:30:32.163 --> 00:30:33.282 
+physical space.
+
+00:30:33.322 --> 00:30:37.464 
+They're going to be translated to actual addresses in physical space later on because we want to
+
+00:30:37.464 --> 00:30:40.442 
+give the impression to the programmer that they have infinite memory.
+
+00:30:41.322 --> 00:30:46.722 
+OK, so if you didn't understand anything, hold off until lecture 25.
+
+00:30:47.402 --> 00:30:51.659 
+By that time you will understand virtual memory, but it's going to be the same high level principle
+
+00:30:51.659 --> 00:30:52.562 
+which is indirection.
+
+00:30:54.002 --> 00:30:54.482 
+Sounds good.
+
+00:30:56.082 --> 00:30:59.322 
+OK, so let me give you a couple of other ISA level trade-offs.
+
+00:30:59.322 --> 00:31:04.187 
+There are a lot of trade-offs actually, but I cannot cover everything because we have other things
+
+00:31:04.187 --> 00:31:04.882 
+to cover also.
+
+00:31:05.322 --> 00:31:06.922 
+Number of registers and other trade off, right?
+
+00:31:06.922 --> 00:31:11.986 
+When you design an ISA, assuming that you wanted registers in the ISA, how many registers do you
+
+00:31:11.986 --> 00:31:13.042 
+want to have, right.
+
+00:31:13.562 --> 00:31:19.867 
+This is actually a trade off that you need to decide almost immediately and this effects a lot of
+
+00:31:19.867 --> 00:31:20.322 
+things.
+
+00:31:20.402 --> 00:31:23.802 
+This effects, as you have seen, number of bits used for encoding the register address.
+
+00:31:23.962 --> 00:31:30.958 
+In LC3 we had eight registers, so you had three bits for source register, one source register 2 and
+
+00:31:30.958 --> 00:31:32.442 
+destination register.
+
+00:31:32.802 --> 00:31:35.722 
+So it actually consumes 9 bits in the instruction encoding.
+
+00:31:36.202 --> 00:31:41.143 
+In MIPS, it was 5 bits per register because we had 32 registers that consumes 15 bits instruction
+
+00:31:41.143 --> 00:31:41.602 
+and coin.
+
+00:31:41.602 --> 00:31:44.322 
+So instructions are immediately larger, right?
+
+00:31:45.042 --> 00:31:50.882 
+So it's, it's, it's also affects the number of values kept in fast storage, which is register file.
+
+00:31:50.962 --> 00:31:52.562 
+And we know the importance of this, right?
+
+00:31:52.722 --> 00:31:57.819 
+If you have a lot of variables that you're reusing multiple times in your program, you want more
+
+00:31:57.819 --> 00:31:58.722 
+registers, right?
+
+00:31:59.082 --> 00:32:05.647 
+If your registers, if the number of registers you have is only 8 and if you're using 9 values, 9
+
+00:32:05.647 --> 00:32:10.162 
+variables a lot together, we're going to talk about that later on.
+
+00:32:10.162 --> 00:32:14.002 
+Also, locality principle, then 8 is not enough, right?
+
+00:32:14.482 --> 00:32:16.122 
+You just needed one more register, right?
+
+00:32:16.962 --> 00:32:24.962 
+So the larger is better for reducing accesses to memory so that you don't go go far away to memory
+
+00:32:24.962 --> 00:32:32.962 
+to bring the value and you keep it in fast storage and in the micro architecture level it effects.
+
+00:32:32.962 --> 00:32:36.602 
+If you have a larger structure to hold values, this affects the size of it.
+
+00:32:36.602 --> 00:32:38.122 
+Clearly it's more expensive.
+
+00:32:38.442 --> 00:32:41.962 
+This affects the access time because it takes longer.
+
+00:32:41.962 --> 00:32:45.082 
+You need more, you need a bigger decoder, you need a wider Max.
+
+00:32:45.162 --> 00:32:49.122 
+Remember the memory structure that we designed, You need a bigger decoder, wider Max.
+
+00:32:49.122 --> 00:32:52.202 
+And those increase the latency of all of those structures, right?
+
+00:32:52.602 --> 00:32:59.183 
+Those increase the power consumption also if you have bigger decoders or hierarchy of the
+
+00:32:59.183 --> 00:33:06.282 
+hierarchical decoders as we have seen if you have for example 8 to 1 decoder, yeah, if you're if
+
+00:33:06.282 --> 00:33:12.938 
+you're decoding let's say 3 bits of address versus 5 bits of address, 5 bits of address is
+
+00:33:12.938 --> 00:33:16.562 
+definitely more right in terms of hardware logic.
+
+00:33:17.322 --> 00:33:18.722 
+And this increase the power consumption.
+
+00:33:18.802 --> 00:33:23.042 
+So clearly number of registers immediately effects everything we care about, right.
+
+00:33:24.522 --> 00:33:25.682 
+The problem is it's a trade off.
+
+00:33:26.002 --> 00:33:32.371 
+If you have large number of registers, you have fewer, it enables better registry allocation for
+
+00:33:32.371 --> 00:33:38.873 
+those values that you want to keep close to the the computation unit because you're dealing with a
+
+00:33:38.873 --> 00:33:39.802 
+lot of values.
+
+00:33:40.162 --> 00:33:44.802 
+And this actually leads to fewer accesses to memory, right?
+
+00:33:45.002 --> 00:33:45.962 
+Saves and restores.
+
+00:33:45.962 --> 00:33:49.962 
+If you watch the assembly programming lecture, you will see that also.
+
+00:33:50.442 --> 00:33:55.234 
+So you get better performance with larger number of registers, performance in the sense that you
+
+00:33:55.234 --> 00:33:57.082 
+have fewer accesses to memory, right?
+
+00:33:57.882 --> 00:34:02.991 
+But unfortunately you have larger instruction size which also affects your performance as we will
+
+00:34:02.991 --> 00:34:03.202 
+see.
+
+00:34:03.202 --> 00:34:08.904 
+Because this occupies now when you actually get your instructions from memory into the processor,
+
+00:34:08.904 --> 00:34:11.962 
+you need to fetch more things, right, Bigger things.
+
+00:34:12.682 --> 00:34:14.362 
+So that affects your performance also.
+
+00:34:14.762 --> 00:34:19.042 
+And you have a larger register file size, meaning your register file may take longer to access.
+
+00:34:19.802 --> 00:34:27.275 
+So clearly the first part, enabling better allocation in the registers or number of values kept in
+
+00:34:27.275 --> 00:34:30.402 
+fast storage gets you better performance.
+
+00:34:30.402 --> 00:34:33.642 
+But these two get you lower performance potentially.
+
+00:34:34.162 --> 00:34:41.049 
+In general, this is better because going to memory is very expensive and the benefit that you get by
+
+00:34:41.049 --> 00:34:47.522 
+not going to memory by having more registers overcomes the downsides, performance downsides of
+
+00:34:47.522 --> 00:34:51.242 
+this, but there are also energy and power consumption.
+
+00:34:51.962 --> 00:34:57.162 
+So we already saw this trade off somewhat in LC3 versus MIPS, right, Three bits versus 5 bits.
+
+00:34:57.242 --> 00:35:02.876 
+But keep this in mind essentially, OK, I don't want to cover more trade-offs in ISA because I want
+
+00:35:02.876 --> 00:35:08.567 
+to cover something bigger, which is a trade off in ISA, but not this is if you think about it, this
+
+00:35:08.567 --> 00:35:13.282 
+is a more, I don't want to call it a micro level trade off because it's important.
+
+00:35:13.602 --> 00:35:18.644 
+This is once you determine the execution model, this is an important trade off that you need to
+
+00:35:18.644 --> 00:35:19.282 
+think about.
+
+00:35:19.682 --> 00:35:24.762 
+But then there's a bigger thing that we may want to think about when we talk about Isas.
+
+00:35:26.162 --> 00:35:29.682 
+I'm going to show you these things.
+
+00:35:29.682 --> 00:35:35.427 
+If you're interested in learning more about Isas, we'd like to do a little bit more critical
+
+00:35:35.427 --> 00:35:41.611 
+thinking in designing Isas because maybe the execution model that we designed is not that great and
+
+00:35:41.611 --> 00:35:43.922 
+it's good to think about that, right?
+
+00:35:45.162 --> 00:35:46.842 
+OK, So what do you, what do I mean by that?
+
+00:35:46.842 --> 00:35:52.068 
+We talked about the von Neumann model, which is a great model, no question about that because it's
+
+00:35:52.068 --> 00:35:53.402 
+very easy to think about.
+
+00:35:53.562 --> 00:35:58.122 
+I think you have a stored program instructions that are data packed in that program.
+
+00:35:58.122 --> 00:36:03.967 
+And then you do sequential instruction processing, which is it's really the hallmark of von Neumann
+
+00:36:03.967 --> 00:36:04.322 
+model.
+
+00:36:05.162 --> 00:36:09.750 
+So I've already said the stored program memory is unified between instructions and data and the
+
+00:36:09.750 --> 00:36:12.842 
+interpretation of a stored value depends on the control signals.
+
+00:36:12.842 --> 00:36:15.322 
+We discussed this just to jog your memory.
+
+00:36:15.882 --> 00:36:17.802 
+When is the value interpreted as an instruction?
+
+00:36:17.802 --> 00:36:24.336 
+Basically, it depends on when that address is accessed in the instruction processing cycle or which
+
+00:36:24.336 --> 00:36:28.362 
+state in your finite state machine do you access the address?
+
+00:36:29.242 --> 00:36:33.642 
+OK, so in the fetch state you generate a memory address.
+
+00:36:33.922 --> 00:36:38.682 
+You go to that memory address and get something and put it in the instruction register.
+
+00:36:39.682 --> 00:36:43.722 
+That means that you've interpreted that thing in memory as an instruction.
+
+00:36:45.402 --> 00:36:47.002 
+OK, you could have access any part of memory.
+
+00:36:47.242 --> 00:36:51.002 
+As long as you point the PC to that part, you're going to get that as an instruction, right?
+
+00:36:51.562 --> 00:36:57.787 
+Which means that if you actually point PC to the wrong part, and the thing that you get doesn't
+
+00:36:57.787 --> 00:37:04.274 
+encode is not a valid encoding of an instruction, the machine will try to execute something that is
+
+00:37:04.274 --> 00:37:10.762 
+not an instruction and it will generate an exception saying that this is not an instruction, right?
+
+00:37:11.122 --> 00:37:14.162 
+It'll bar for you, meaning it'll stop, right?
+
+00:37:14.442 --> 00:37:15.722 
+We'll see exceptions later on.
+
+00:37:17.162 --> 00:37:18.722 
+OK, so that's the fetch state.
+
+00:37:18.722 --> 00:37:24.552 
+If you actually access memory in this fetch operand state, which is actually implemented as a state
+
+00:37:24.552 --> 00:37:26.202 
+in the finite state machine.
+
+00:37:26.242 --> 00:37:30.920 
+When you're implementing the machine, you interpret the memory value of the data, meaning you get
+
+00:37:30.920 --> 00:37:35.647 
+the address, you put it in the memory address register, and the memory responds in the memory data
+
+00:37:35.647 --> 00:37:36.082 
+register.
+
+00:37:36.402 --> 00:37:39.322 
+And that data goes to a register, right?
+
+00:37:39.322 --> 00:37:41.322 
+It doesn't go into the instruction register.
+
+00:37:41.322 --> 00:37:42.802 
+It goes into a general purpose register.
+
+00:37:43.562 --> 00:37:49.362 
+Now that data is inside your register file, so you're treating as data.
+
+00:37:49.642 --> 00:37:56.202 
+OK, so that basically resolves the first issue with von Neumann model.
+
+00:37:56.202 --> 00:37:57.162 
+You have a stored program.
+
+00:37:57.642 --> 00:37:58.482 
+You can change that also.
+
+00:37:58.482 --> 00:37:59.562 
+You could think about changing that.
+
+00:37:59.562 --> 00:38:05.402 
+You could basically say I'm never going to be able to access data and instructions, but let's not do
+
+00:38:05.402 --> 00:38:06.162 
+that for now.
+
+00:38:07.202 --> 00:38:08.962 
+Let's talk about sequential instruction processing.
+
+00:38:08.962 --> 00:38:10.442 
+We wanted to discuss this also.
+
+00:38:10.442 --> 00:38:15.482 
+We have a program counter instruction pointer that identifies a current instruction.
+
+00:38:15.482 --> 00:38:19.242 
+And this is advanced sequentially except for control transfer instructions, right?
+
+00:38:19.722 --> 00:38:22.322 
+So that's the von Neumann model that we've discussed.
+
+00:38:22.322 --> 00:38:23.642 
+If you're interested, you can read more.
+
+00:38:24.522 --> 00:38:25.642 
+And we built a lot of things.
+
+00:38:25.722 --> 00:38:30.002 
+The question I want to ask is, is this the only way that a computer can process programs, right?
+
+00:38:32.322 --> 00:38:32.802 
+Anybody.
+
+00:38:34.162 --> 00:38:37.802 
+That sounds good, of course, but I guess some people say no.
+
+00:38:37.802 --> 00:38:39.922 
+OK, basically no.
+
+00:38:41.442 --> 00:38:43.642 
+The qualified answer is basically no.
+
+00:38:43.642 --> 00:38:47.682 
+But it has been the dominant way we build general purpose machines.
+
+00:38:48.042 --> 00:38:52.962 
+OK, dominant paradigm for computing.
+
+00:38:53.122 --> 00:38:58.831 
+That's why it's been very powerful for N decades, although things that may be changing a little bit
+
+00:38:58.831 --> 00:39:03.042 
+with Fpgas, reconfigurable computing, we'll talk about that a little bit.
+
+00:39:03.042 --> 00:39:05.962 
+So let's examine a complete different model for processing computer program.
+
+00:39:05.962 --> 00:39:12.314 
+This is just one model and it's actually a pretty powerful model, and that's called the data flow
+
+00:39:12.314 --> 00:39:13.362 
+execution model.
+
+00:39:13.602 --> 00:39:16.482 
+Has anyone heard about data flow before?
+
+00:39:17.202 --> 00:39:18.042 
+Yes, maybe some.
+
+00:39:18.482 --> 00:39:24.153 
+OK, so basically if you look at the von Neumann model, an instruction is fetched and executing
+
+00:39:24.153 --> 00:39:25.722 
+control flow order, right?
+
+00:39:25.722 --> 00:39:27.922 
+You have a control flow order that you dictate.
+
+00:39:28.402 --> 00:39:32.466 
+You start from the program counter, you go to program counter, next program counter, next program
+
+00:39:32.466 --> 00:39:32.802 
+counter.
+
+00:39:32.802 --> 00:39:34.882 
+And that's sequential, right?
+
+00:39:34.922 --> 00:39:37.842 
+Basically you're everything is specified by this program counter.
+
+00:39:38.562 --> 00:39:43.453 
+Intel calls an instruction pointer, which is actually a much nicer and much more accurate name,
+
+00:39:43.453 --> 00:39:43.762 
+right?
+
+00:39:44.962 --> 00:39:50.322 
+But counter is also not inaccurate assuming you keep counting, right?
+
+00:39:50.322 --> 00:39:51.882 
+You're really counting except.
+
+00:39:51.962 --> 00:39:56.922 
+When you have a control flow instruction that changes that immediately.
+
+00:39:57.562 --> 00:40:03.190 
+OK, so basically you have sequential execution unless you have an explicit control flow instruction
+
+00:40:03.190 --> 00:40:05.522 
+that takes you to a non sequential place.
+
+00:40:06.922 --> 00:40:10.922 
+Whereas in data flow model an instruction is fetched and execute in data flow order.
+
+00:40:11.602 --> 00:40:12.722 
+Now this may not mean anything.
+
+00:40:12.722 --> 00:40:14.202 
+Hopefully it will mean something soon.
+
+00:40:15.042 --> 00:40:17.882 
+Basically, there is no program counter.
+
+00:40:18.282 --> 00:40:19.442 
+Forget about the program counter.
+
+00:40:19.442 --> 00:40:23.858 
+Program counter is nice because it tells you, OK, I'm at this instruction, but we're critically
+
+00:40:23.858 --> 00:40:26.602 
+thinking, right, why do you need to have a program counter?
+
+00:40:26.602 --> 00:40:26.842 
+Really.
+
+00:40:27.362 --> 00:40:31.602 
+Can you specify programs to execute on machines without having a program counter?
+
+00:40:31.602 --> 00:40:32.602 
+And the answer is yes.
+
+00:40:33.082 --> 00:40:41.016 
+Basically you you derive an execution model where an instruction gets fetched and executed when it's
+
+00:40:41.016 --> 00:40:42.762 
+all parents are ready.
+
+00:40:43.762 --> 00:40:49.911 
+This is data flow because an instruction has inputs and the inputs are the data through the
+
+00:40:49.911 --> 00:40:50.722 
+instruction.
+
+00:40:50.722 --> 00:40:59.065 
+For example, add an add operation has two inputs right as we have seen, and one output whenever both
+
+00:40:59.065 --> 00:41:01.402 
+of its inputs are generated.
+
+00:41:01.922 --> 00:41:03.202 
+You need to keep track of that of course.
+
+00:41:03.202 --> 00:41:08.762 
+Somehow the add instruction gets fetched from its location memory and gets executed.
+
+00:41:08.762 --> 00:41:10.682 
+At that point there is no program counter.
+
+00:41:11.842 --> 00:41:18.515 
+You can do it for every instruction multiply again two operations and not has 122 operands and not
+
+00:41:18.515 --> 00:41:20.082 
+has one operand, right?
+
+00:41:20.402 --> 00:41:21.522 
+Whenever that is ready.
+
+00:41:22.202 --> 00:41:23.242 
+Now, what does ready mean?
+
+00:41:23.682 --> 00:41:28.282 
+If it's actually specified in the program as a variable that's set, it's ready immediately.
+
+00:41:28.762 --> 00:41:35.513 
+If it's generated as an output of another instruction, that instruction needs to have executed first
+
+00:41:35.513 --> 00:41:38.282 
+and made that input operand ready, right?
+
+00:41:38.722 --> 00:41:40.002 
+OK, so that's the idea over here.
+
+00:41:40.002 --> 00:41:46.165 
+Basically, there is no program counter, which means instruction ordering is specified by data flow
+
+00:41:46.165 --> 00:41:49.122 
+dependencies that you have in a program, right?
+
+00:41:49.122 --> 00:41:50.602 
+I'm going to show you an example soon.
+
+00:41:51.762 --> 00:41:57.826 
+Meaning there needs to be some different encoding that you develop to actually enable this model,
+
+00:41:57.826 --> 00:41:58.202 
+right?
+
+00:41:58.962 --> 00:42:01.202 
+Meaning the hardware software interface is quite different.
+
+00:42:02.642 --> 00:42:07.402 
+OK, so each instruction specifies who, meaning which other instructions should receive the result.
+
+00:42:07.562 --> 00:42:09.722 
+So you need to somehow connect the instructions to each other.
+
+00:42:10.202 --> 00:42:12.322 
+And this actually nicely done graphically.
+
+00:42:12.842 --> 00:42:16.322 
+And we're going to do a little bit of graphical programming, if you will.
+
+00:42:17.402 --> 00:42:22.005 
+So an instruction can fire, meaning gets fetched and executed whenever all operands are received,
+
+00:42:22.005 --> 00:42:23.762 
+all its source operands are received.
+
+00:42:23.762 --> 00:42:27.722 
+So there needs to be a model where instructions monitor which operands are ready, right?
+
+00:42:28.602 --> 00:42:28.802 
+OK.
+
+00:42:28.922 --> 00:42:36.642 
+So the key realisation is that you're executing many instructions potentially at a time, right?
+
+00:42:36.962 --> 00:42:38.562 
+You're not limited to program counter.
+
+00:42:38.762 --> 00:42:39.842 
+I have this instruction only.
+
+00:42:41.002 --> 00:42:45.181 
+Many instructions may become ready at the same time and I may be executing all of them at the same
+
+00:42:45.181 --> 00:42:47.442 
+time, assuming I have enough AL use functional units.
+
+00:42:48.562 --> 00:42:50.162 
+So inherently this is more parallel.
+
+00:42:51.962 --> 00:42:58.281 
+You can argue about that, maybe anybody who wants to dispute this, maybe not, but we'll we'll see
+
+00:42:58.281 --> 00:43:04.405 
+some other methods in later lectures where we will try to get parallelism into this sequential
+
+00:43:04.405 --> 00:43:05.122 
+model also.
+
+00:43:06.322 --> 00:43:09.962 
+OK, so inherently this is more parallel because many instructions can be ready at the same time.
+
+00:43:09.962 --> 00:43:13.527 
+There's no program counter dictating you should be at this instruction and you cannot move to the
+
+00:43:13.527 --> 00:43:15.402 
+next instruction until you finish this instruction.
+
+00:43:16.442 --> 00:43:19.562 
+OK, so let's take a look at this pictorial.
+
+00:43:19.562 --> 00:43:22.122 
+You consider a von Neumann programme that looks like this.
+
+00:43:22.562 --> 00:43:27.242 
+I'm not going through the ISA here, but this is more, let's say you can understand this, right?
+
+00:43:27.242 --> 00:43:35.007 
+You have A+B, and then you do BB times 2, and then X gets v -, W, which is the result of these
+
+00:43:35.007 --> 00:43:36.082 
+instructions.
+
+00:43:36.602 --> 00:43:39.522 
+Y gets V + W and Z gets X * y.
+
+00:43:39.802 --> 00:43:41.562 
+So A&B are the inputs here.
+
+00:43:41.562 --> 00:43:42.522 
+Z is the only output.
+
+00:43:42.642 --> 00:43:44.402 
+Everything else is intermediate variables.
+
+00:43:45.842 --> 00:43:48.202 
+So this is sequential also by nature.
+
+00:43:48.202 --> 00:43:49.602 
+This looks very sequential, right?
+
+00:43:50.042 --> 00:43:54.858 
+I've written it that way, so it's good to think about what is the significance of the program order
+
+00:43:54.858 --> 00:43:55.442 
+here, right?
+
+00:43:55.882 --> 00:43:56.682 
+What does it help?
+
+00:43:56.722 --> 00:43:58.122 
+We're going to talk about that later on.
+
+00:43:58.802 --> 00:44:00.082 
+One thing it helps is readability.
+
+00:44:00.082 --> 00:44:05.602 
+Perhaps you can read it nicely sequentially again and maybe you can think more easily about that.
+
+00:44:05.602 --> 00:44:09.402 
+I don't know what is the significance of the storage location.
+
+00:44:09.402 --> 00:44:10.762 
+I kind of already said that, right?
+
+00:44:10.802 --> 00:44:12.802 
+A&B are inputs, Z is the only output.
+
+00:44:13.082 --> 00:44:18.202 
+This W which is going to be assigned A register is an intermediate result, right?
+
+00:44:18.402 --> 00:44:23.858 
+You don't really need it at the end of the program, but it's used as an input to another
+
+00:44:23.858 --> 00:44:24.602 
+instruction.
+
+00:44:25.042 --> 00:44:29.160 
+This V, which is assigned as the output of this instruction is used as the input of this
+
+00:44:29.160 --> 00:44:29.722 
+instruction.
+
+00:44:30.162 --> 00:44:35.732 
+This X similarly used as the output of this intermediate instruction to for, well, not the, I
+
+00:44:35.732 --> 00:44:41.422 
+shouldn't call it intermediate instruction, this instruction, but it's but it's an intermediate
+
+00:44:41.422 --> 00:44:41.842 
+output.
+
+00:44:42.202 --> 00:44:45.882 
+It's used as the input of this instruction Y also, etcetera.
+
+00:44:46.122 --> 00:44:51.122 
+OK, so this is a data flow program for this thing graphically expressed.
+
+00:44:52.282 --> 00:45:01.462 
+Now, if you look at this may be harder to read, I don't know, but I don't care about the things over
+
+00:45:01.462 --> 00:45:01.922 
+here.
+
+00:45:01.922 --> 00:45:03.322 
+I have three names over here, right?
+
+00:45:03.322 --> 00:45:11.420 
+Abz 2 inputs, 1 output, and I have only operations 4-5 operations just like here, but they're laid
+
+00:45:11.420 --> 00:45:18.362 
+out in a way that's not that where there's no dictation of the program order, right?
+
+00:45:19.122 --> 00:45:24.594 
+There's no order basically over here, except there has to be some order because some instructions
+
+00:45:24.594 --> 00:45:28.882 
+need to be executed before others so that their values are available, right?
+
+00:45:28.882 --> 00:45:30.162 
+Which is a data dependence order.
+
+00:45:30.522 --> 00:45:31.882 
+So this is the same program.
+
+00:45:31.882 --> 00:45:34.962 
+You can convince yourself that this is the same program, hopefully, right?
+
+00:45:36.162 --> 00:45:36.682 
+Do you agree?
+
+00:45:37.962 --> 00:45:40.322 
+OK, I don't need to go through everything here.
+
+00:45:40.522 --> 00:45:40.762 
+OK.
+
+00:45:41.242 --> 00:45:44.442 
+The question, I mean, one, there are many questions that could be asked over here, right?
+
+00:45:44.882 --> 00:45:48.242 
+But one question is which model is more natural to you as a programmer?
+
+00:45:49.202 --> 00:45:50.282 
+Who says the sequential 1?
+
+00:45:51.802 --> 00:45:52.562 
+OK, a lot of hands.
+
+00:45:53.042 --> 00:45:54.122 
+Who says the Dataflow one?
+
+00:45:54.762 --> 00:45:56.682 
+OK, fewer hands.
+
+00:45:56.682 --> 00:45:57.762 
+That's what I expected.
+
+00:46:00.042 --> 00:46:03.842 
+And then the next question to ask is, is it because you are exposed more to this?
+
+00:46:06.282 --> 00:46:07.522 
+It's good to think about that, right?
+
+00:46:08.482 --> 00:46:14.122 
+Or is it because there is an inherent bias in human nature to be more sequential, right?
+
+00:46:15.242 --> 00:46:19.442 
+It's very hard to believe that if you know how well, we don't know exactly how things work.
+
+00:46:19.442 --> 00:46:25.662 
+But if you know the parallelism that exists in brain, maybe our interface is limiting or maybe our
+
+00:46:25.662 --> 00:46:27.122 
+nurture is limiting us.
+
+00:46:27.202 --> 00:46:28.322 
+So it's good to think about that.
+
+00:46:29.522 --> 00:46:33.922 
+So a little bit more, I'll stop at some point soon.
+
+00:46:34.722 --> 00:46:37.722 
+In a data flow machine, a program consists of data flow notes.
+
+00:46:38.242 --> 00:46:40.162 
+So basically I've shown you data flow notes.
+
+00:46:40.562 --> 00:46:42.202 
+This is your program basically, right?
+
+00:46:43.442 --> 00:46:49.057 
+A data flow node fires, it gets fetched and executed when all of its inputs are ready, meaning when
+
+00:46:49.057 --> 00:46:50.362 
+all inputs have tokens.
+
+00:46:50.362 --> 00:46:52.762 
+So we're going to introduce this concept of tokens soon.
+
+00:46:53.482 --> 00:46:57.922 
+And you can actually implement this as an ISA, which is interesting, right?
+
+00:46:57.922 --> 00:47:01.242 
+You can actually translate this thing.
+
+00:47:01.242 --> 00:47:02.522 
+This is a multiply operation.
+
+00:47:02.842 --> 00:47:08.139 
+It has two inputs, argument one and argument 2, and it has one output which is the destination of
+
+00:47:08.139 --> 00:47:09.122 
+the result, right?
+
+00:47:09.122 --> 00:47:10.722 
+The result needs to go somewhere, right?
+
+00:47:10.722 --> 00:47:14.402 
+You need to you specify where does the result go, which note does the result go.
+
+00:47:14.762 --> 00:47:17.762 
+And R is the multiply is the up code over there.
+
+00:47:18.042 --> 00:47:20.642 
+And R is whether the argument one is ready.
+
+00:47:20.922 --> 00:47:22.642 
+And this R is whether argument 2 is ready.
+
+00:47:22.722 --> 00:47:25.402 
+So you need to keep track of the readiness of the operands.
+
+00:47:25.842 --> 00:47:31.922 
+Now, if you look over here, that's one way of actually translating this graphical thing into an ISA.
+
+00:47:33.002 --> 00:47:38.021 
+You could actually do this, or another way of doing this is let's assume that this is your program
+
+00:47:38.021 --> 00:47:40.122 
+and this is what you're going to execute.
+
+00:47:41.042 --> 00:47:44.082 
+You can build this directly in circuits, right?
+
+00:47:44.562 --> 00:47:47.762 
+You could take this graphical thing, put it into your circuit.
+
+00:47:47.882 --> 00:47:49.762 
+You have a design A multiplier.
+
+00:47:49.762 --> 00:47:55.679 
+Design A multiplier by two, which is going to be simpler than your multiplier, which is actually
+
+00:47:55.679 --> 00:48:01.042 
+shift by one, shift left by 1, and then design subtractor and adder another multiplier.
+
+00:48:01.042 --> 00:48:02.442 
+Put all of them on your FPGA.
+
+00:48:03.762 --> 00:48:06.482 
+Then your hardware software interface is something different, right?
+
+00:48:07.642 --> 00:48:12.782 
+It's essentially the bitstream that goes into your FPGA as opposed to something that's more
+
+00:48:12.782 --> 00:48:14.082 
+standardised like this.
+
+00:48:15.162 --> 00:48:17.442 
+OK, so it's good to think about it.
+
+00:48:17.842 --> 00:48:22.002 
+So there you can build actually a full graphical interface for this.
+
+00:48:23.202 --> 00:48:25.162 
+For example, you can have a conditional node.
+
+00:48:25.162 --> 00:48:26.722 
+This is a conditional branch implementation.
+
+00:48:26.962 --> 00:48:31.322 
+So you have a branch, you have an input coming here.
+
+00:48:32.162 --> 00:48:33.282 
+There are two inputs actually.
+
+00:48:33.402 --> 00:48:36.002 
+One is the data input, 1 is the control input.
+
+00:48:37.642 --> 00:48:44.224 
+What a branch node does or get a conditional node does, is if the control input is true, it takes
+
+00:48:44.224 --> 00:48:47.482 
+the data input and passes it into the true path.
+
+00:48:48.242 --> 00:48:51.722 
+If this is false, it takes the data input and passes it through the false path.
+
+00:48:52.122 --> 00:48:58.979 
+The key is this instruction gets fetched and executed when both inputs have tokens, meaning they are
+
+00:48:58.979 --> 00:49:01.242 
+available, OK when they're ready.
+
+00:49:01.642 --> 00:49:04.882 
+OK, OK, relational let's for example this one.
+
+00:49:04.882 --> 00:49:10.243 
+The result will go here X the data value over here goes here, which is connected to another data
+
+00:49:10.243 --> 00:49:10.802 
+flow node.
+
+00:49:10.842 --> 00:49:15.482 
+OK, here relational can determine whether it's something is false or true.
+
+00:49:15.922 --> 00:49:20.442 
+So for example, this relational test greater than if the left node.
+
+00:49:20.682 --> 00:49:27.402 
+So this this instruction or node gets fetched and executed when both the inputs are ready.
+
+00:49:28.282 --> 00:49:33.322 
+If the left input is greater than the right input, the output will have a true token.
+
+00:49:33.682 --> 00:49:35.082 
+Otherwise it will have a false token.
+
+00:49:35.522 --> 00:49:38.322 
+OK, so it can basically implement anything this way.
+
+00:49:39.202 --> 00:49:41.322 
+It's beautiful graphical instruction, right?
+
+00:49:41.322 --> 00:49:44.202 
+I'm not going to talk about barrier synchronisation right now, but you can think about it.
+
+00:49:46.322 --> 00:49:51.602 
+Maybe I'll go through this and some of you may want to look at look over it during the break.
+
+00:49:51.962 --> 00:49:54.362 
+So this is a simple data flow program.
+
+00:49:55.442 --> 00:49:58.002 
+Let me run through it to set the base.
+
+00:49:58.002 --> 00:50:04.042 
+So there are two inputs, 1 here and NN is a non negative integer.
+
+00:50:04.322 --> 00:50:05.042 
+That's important.
+
+00:50:05.122 --> 00:50:06.322 
+Non negative is very important.
+
+00:50:07.322 --> 00:50:08.562 
+And there's an output over here.
+
+00:50:08.882 --> 00:50:11.442 
+OK, so we have a bunch of nodes.
+
+00:50:11.442 --> 00:50:13.962 
+This is a branch node that you have seen over here earlier, right?
+
+00:50:14.082 --> 00:50:19.647 
+It has data, it has a boolean value, and node fires when both values are available and you get the
+
+00:50:19.647 --> 00:50:21.522 
+output when the boolean is false.
+
+00:50:21.722 --> 00:50:25.442 
+This may indicate you something we're going to reverse engineer what this program does.
+
+00:50:25.442 --> 00:50:26.682 
+That's going to be my question to you.
+
+00:50:26.682 --> 00:50:27.882 
+Basically, what does this program do?
+
+00:50:28.082 --> 00:50:29.602 
+What is the value of out basically?
+
+00:50:30.202 --> 00:50:31.522 
+So a couple of things.
+
+00:50:31.522 --> 00:50:33.322 
+This copy node basically copies.
+
+00:50:33.362 --> 00:50:35.602 
+It fires when an input is available over here.
+
+00:50:35.882 --> 00:50:39.242 
+It copies the value in the input to both places.
+
+00:50:39.762 --> 00:50:41.522 
+Basically, it has two destination.
+
+00:50:42.562 --> 00:50:45.202 
+So one of them goes here, which is the input of the branch.
+
+00:50:45.202 --> 00:50:48.442 
+The other goes here, which is whether that value is greater than 0.
+
+00:50:49.362 --> 00:50:53.282 
+And then you test that you get a false or true and then that gets copied.
+
+00:50:53.442 --> 00:50:55.882 
+And that controls these two branches over here, right?
+
+00:50:56.642 --> 00:50:59.722 
+Meaning that if this is false, you're going to get the output.
+
+00:50:59.722 --> 00:51:03.042 
+And also this output over this input over here will kind of die.
+
+00:51:03.042 --> 00:51:05.962 
+This is the this is the death node, if you will, the node.
+
+00:51:06.842 --> 00:51:08.882 
+Basically there is no destination for that token.
+
+00:51:08.882 --> 00:51:10.042 
+That token dies over there.
+
+00:51:10.042 --> 00:51:15.282 
+It gets killed, but that token continues to be alive if this boolean is true.
+
+00:51:15.522 --> 00:51:18.362 
+And if this is boolean true, this also continues to be alive.
+
+00:51:18.562 --> 00:51:18.842 
+OK?
+
+00:51:19.442 --> 00:51:22.122 
+So there's another copy, there's a decrement, there's a multiply.
+
+00:51:22.362 --> 00:51:26.202 
+And then there's this looping, which can be done better.
+
+00:51:26.202 --> 00:51:33.174 
+But the basic idea is when you have a loop, you basically supply another token to another iteration,
+
+00:51:33.174 --> 00:51:38.962 
+let's say, OK, so this one becomes something else in the next time because of this.
+
+00:51:38.962 --> 00:51:44.122 
+And this N becomes something else in the next time, next iteration, let's say.
+
+00:51:44.322 --> 00:51:49.882 
+OK, so basically you keep supplying tokens until this becomes false and you get the out.
+
+00:51:49.882 --> 00:51:54.002 
+The question is what is the value of out after you execute this data flow program?
+
+00:51:54.162 --> 00:51:55.882 
+And this is a great time to take a break.
+
+00:51:56.162 --> 00:52:02.907 
+Let's take a break until 1521 and then maybe, hopefully some of you will have answers to what this
+
+00:52:02.907 --> 00:52:03.802 
+program does.
+
+00:52:06.915 --> 00:52:08.915 
+Anybody figured out what this program is doing?
+
+00:52:10.075 --> 00:52:12.915 
+We have one hand, two hands, three hands.
+
+00:52:13.235 --> 00:52:14.115 
+Raise your hand higher.
+
+00:52:14.915 --> 00:52:15.555 
+OK, more.
+
+00:52:16.035 --> 00:52:17.075 
+More than three hands.
+
+00:52:17.755 --> 00:52:19.475 
+Have you figured out what this program is doing?
+
+00:52:19.675 --> 00:52:20.235 
+OK, good.
+
+00:52:22.755 --> 00:52:23.715 
+Okay du machst.
+
+00:52:25.315 --> 00:52:28.595 
+Many people have not figured out what this program is doing, which is fine.
+
+00:52:28.595 --> 00:52:28.995 
+Don't worry.
+
+00:52:31.115 --> 00:52:35.635 
+How many people tried but did not figure out or tried?
+
+00:52:35.915 --> 00:52:36.795 
+Maybe you figured it out.
+
+00:52:36.795 --> 00:52:39.595 
+OK, OK, So what is this program doing?
+
+00:52:41.315 --> 00:52:41.715 
+Go ahead.
+
+00:52:43.515 --> 00:52:44.875 
+It computes M factorial.
+
+00:52:45.315 --> 00:52:46.835 
+Do the other people agree?
+
+00:52:48.195 --> 00:52:49.795 
+Who says who has a different answer?
+
+00:52:51.755 --> 00:52:54.675 
+OK, I guess those of you who say M factorial win.
+
+00:52:55.635 --> 00:52:57.115 
+So this computes N factorial.
+
+00:52:57.435 --> 00:52:59.195 
+I'll go over this relatively quickly.
+
+00:53:00.795 --> 00:53:06.195 
+But essentially in the beginning you have two tokens, one and N Of course N is not N.
+
+00:53:06.315 --> 00:53:09.755 
+It's not supposed to be some value, but that's the mystery question.
+
+00:53:09.755 --> 00:53:13.635 
+It's let's assume that it's, I don't know 4, right?
+
+00:53:13.955 --> 00:53:15.475 
+Give it a value 4 and try.
+
+00:53:15.875 --> 00:53:16.795 
+4 is non negative.
+
+00:53:17.115 --> 00:53:21.475 
+As far as I know, there's not not been debunked by AI yet.
+
+00:53:22.035 --> 00:53:24.755 
+OK, so you have one over here and you have 4.
+
+00:53:24.755 --> 00:53:30.755 
+Let's say N it one goes to this node.
+
+00:53:31.035 --> 00:53:35.755 
+This node cannot fire because it has one token over here, but it doesn't have the boolean token yet.
+
+00:53:36.195 --> 00:53:37.515 
+So N goes to this node.
+
+00:53:37.515 --> 00:53:40.155 
+This node can fire because it has only one input.
+
+00:53:40.835 --> 00:53:42.635 
+This is remember the next iteration.
+
+00:53:42.995 --> 00:53:45.275 
+So it copies N over here, which is 4.
+
+00:53:45.395 --> 00:53:46.395 
+Let's assume it's 4.
+
+00:53:46.915 --> 00:53:50.115 
+So 4 goes here and four goes here.
+
+00:53:51.155 --> 00:53:55.195 
+This node cannot fire yet because it's it's waiting for the boolean token.
+
+00:53:55.635 --> 00:53:59.435 
+4 is greater than 0, so N is greater than 0 in this case.
+
+00:53:59.595 --> 00:54:02.635 
+So this becomes true.
+
+00:54:03.435 --> 00:54:08.862 
+So now true gets copied, that node fires, and this node fires immediately because there's only one
+
+00:54:08.862 --> 00:54:09.195 
+input.
+
+00:54:09.515 --> 00:54:10.955 
+True gets copied over here.
+
+00:54:11.595 --> 00:54:12.995 
+So this boolean becomes true.
+
+00:54:12.995 --> 00:54:18.315 
+This boolean becomes true, and both nodes fire at the same time because their values were ready.
+
+00:54:18.715 --> 00:54:23.515 
+One was one, the other was 4, which is N so this is true.
+
+00:54:23.635 --> 00:54:26.515 
+So one gets passed over here to the multiply node.
+
+00:54:26.515 --> 00:54:30.715 
+Multiply node cannot fire yet because it's other input is not ready.
+
+00:54:31.155 --> 00:54:34.195 
+This 4 gets passed over here.
+
+00:54:34.795 --> 00:54:35.795 
+This node can fire.
+
+00:54:35.795 --> 00:54:37.035 
+4 gets copied over here.
+
+00:54:37.035 --> 00:54:38.275 
+So four goes here.
+
+00:54:38.835 --> 00:54:42.715 
+4 also goes to the decrement node, 4 -, 1 becomes 3.
+
+00:54:43.315 --> 00:54:47.515 
+So this multiply computes 1 * 4, which is N.
+
+00:54:48.675 --> 00:54:50.555 
+So four goes here.
+
+00:54:51.835 --> 00:54:53.355 
+So it's goes here, right?
+
+00:54:53.355 --> 00:54:56.315 
+This four and this three goes here.
+
+00:54:56.555 --> 00:55:04.155 
+OK, so in the first iteration, if you will be multiplied one with four, one with N if you think
+
+00:55:04.155 --> 00:55:08.715 
+about it in the second and and also decremented N, right?
+
+00:55:10.035 --> 00:55:16.035 
+So we we multiplied one with N and decremented N to become three.
+
+00:55:16.995 --> 00:55:19.835 
+Now in the next iteration, what will happen is essentially the same thing.
+
+00:55:19.835 --> 00:55:24.315 
+If you go through this, because 3 is also greater than 0.
+
+00:55:24.315 --> 00:55:31.952 
+We will multiply whatever here is which is 4/4 by three and that result will go over here and three
+
+00:55:31.952 --> 00:55:34.035 
+will be decremented by one.
+
+00:55:34.035 --> 00:55:34.955 
+This will become two.
+
+00:55:35.435 --> 00:55:38.635 
+OK, so 4 by 3 is 12.
+
+00:55:38.915 --> 00:55:43.755 
+Four times, 3 will come here and 2 will come here.
+
+00:55:45.395 --> 00:55:50.115 
+So this will compute 4 * 3 * 2 in the next iteration, and this will be decremented by 1:00.
+
+00:55:51.235 --> 00:55:56.875 
+We will have one more iteration and also 4 * 3 * 2 will go here, which is 24 by the way.
+
+00:55:57.395 --> 00:56:03.408 
+So we'll have one more iteration where 24 will go here and one is greater than 0, so 1 will come
+
+00:56:03.408 --> 00:56:04.035 
+over here.
+
+00:56:04.195 --> 00:56:05.835 
+You could have prevented that iteration probably.
+
+00:56:07.595 --> 00:56:11.435 
+And you will multiply 24 by 1 and get 24.
+
+00:56:11.755 --> 00:56:18.674 
+At that point in time, in the next iteration, you'll have zero over here, 0 is not greater than 0,
+
+00:56:18.674 --> 00:56:21.075 
+OK, So this boolean will be false.
+
+00:56:21.075 --> 00:56:22.395 
+This boolean will be false.
+
+00:56:22.795 --> 00:56:29.235 
+So 24, which is N factorial will come from this multiply and this is false.
+
+00:56:29.315 --> 00:56:31.555 
+So output will become N factorial.
+
+00:56:32.435 --> 00:56:40.875 
+And this value, which is 0 in the end will die because it will go into this, let's say ground.
+
+00:56:41.635 --> 00:56:44.475 
+OK, so that's a relatively quick explanation.
+
+00:56:44.515 --> 00:56:47.595 
+You could have simulated this more of course, but that's the idea.
+
+00:56:47.595 --> 00:56:55.755 
+Every iteration calculates this input, times this input, and decrements N by 1.
+
+00:56:55.755 --> 00:57:00.155 
+And if you do that, that's N factorial in the end, assuming N is a non negative integer.
+
+00:57:00.795 --> 00:57:07.155 
+OK, so this is one way of implementing N factorial using a graphical data flow program.
+
+00:57:07.275 --> 00:57:09.035 
+You could come up with other implementations.
+
+00:57:09.515 --> 00:57:10.755 
+This is relatively sequential.
+
+00:57:11.355 --> 00:57:13.475 
+There could be better implementations that are parallel.
+
+00:57:13.915 --> 00:57:15.115 
+I'll let you think about that.
+
+00:57:16.435 --> 00:57:23.035 
+OK, so, but this gives you an example that we don't need a program country in ISA, right?
+
+00:57:23.035 --> 00:57:25.195 
+You could directly implement this in an FPGA.
+
+00:57:25.395 --> 00:57:28.675 
+Also, right, all of these can be circuits that are just doing M factorial.
+
+00:57:28.995 --> 00:57:32.635 
+If you want this M factorial program, this is it.
+
+00:57:32.715 --> 00:57:37.382 
+Potentially it may not be very high performance, but it's your program that could be baked into
+
+00:57:37.382 --> 00:57:40.035 
+hardware, so you could get some performance from that.
+
+00:57:41.275 --> 00:57:43.675 
+So do we want a program counter in the ISA?
+
+00:57:44.875 --> 00:57:47.355 
+So if you say yes, that's a very high level trade off.
+
+00:57:47.355 --> 00:57:51.880 
+Basically, if you say yes, you will get control driven sequential execution, which is very similar
+
+00:57:51.880 --> 00:57:53.035 
+to the von Neumann model.
+
+00:57:54.795 --> 00:57:56.675 
+PC automatically changes sequentially.
+
+00:57:56.755 --> 00:57:59.075 
+So that's where the sequentiality comes from, right?
+
+00:57:59.635 --> 00:58:04.155 
+And you're executing 1 instruction at a time, whereas if you say no, you get something else.
+
+00:58:04.155 --> 00:58:06.035 
+And data flow is one example of it.
+
+00:58:06.195 --> 00:58:10.929 
+You get more data-driven, more parallel execution and instructions executed when all its operands
+
+00:58:10.929 --> 00:58:11.955 
+values are available.
+
+00:58:11.955 --> 00:58:15.475 
+And you could actually build a full computing system this way you know everything.
+
+00:58:15.475 --> 00:58:21.761 
+You can view as graphs, you can view the interaction with the IO devices, output input all as
+
+00:58:21.761 --> 00:58:22.235 
+graphs.
+
+00:58:22.755 --> 00:58:25.075 
+So you can, you can think of the world as graphs, right?
+
+00:58:25.115 --> 00:58:29.306 
+And that could be your programming model and interaction model, which is actually a very powerful
+
+00:58:29.306 --> 00:58:32.115 
+way of thinking because it unleashes a lot of parallelism, right?
+
+00:58:32.475 --> 00:58:36.155 
+You're not limiting the parallelism to where the program counter points to you.
+
+00:58:36.155 --> 00:58:41.351 
+Actually, whenever something happens and an instruction becomes ready, beginning its input offends
+
+00:58:41.351 --> 00:58:43.155 
+are ready, you can execute it, OK.
+
+00:58:43.155 --> 00:58:47.435 
+And there could be thousands or millions of instructions that you can execute concurrently that way.
+
+00:58:48.195 --> 00:58:49.475 
+So there are many high level trade-offs.
+
+00:58:49.475 --> 00:58:50.435 
+I'm giving you one.
+
+00:58:50.435 --> 00:58:52.555 
+Ease of programming is another question, of course, right?
+
+00:58:52.795 --> 00:58:55.155 
+For average programmers, which one's easier?
+
+00:58:55.675 --> 00:58:58.075 
+Sequential is in general easier.
+
+00:58:58.075 --> 00:59:02.955 
+But then that is that a, is that a matter of how education systems are built, right.
+
+00:59:03.075 --> 00:59:07.035 
+Whenever you learn programming, you always learn sequential, right?
+
+00:59:07.195 --> 00:59:09.395 
+It's hard to break this vicious cycle.
+
+00:59:09.395 --> 00:59:13.235 
+Maybe if that education continues that way, right?
+
+00:59:14.475 --> 00:59:19.293 
+So it's good to think about that some some people who are actually very good with data flow think
+
+00:59:19.293 --> 00:59:20.635 
+data flow is better, right?
+
+00:59:21.635 --> 00:59:24.195 
+I think a few of you lifted your hands, so it's possible.
+
+00:59:24.835 --> 00:59:26.555 
+Ease of compilation is another question.
+
+00:59:26.555 --> 00:59:29.315 
+I'm not going to go into that, but you can think about it.
+
+00:59:29.395 --> 00:59:32.155 
+Compilers are also easier if they're sequential, right?
+
+00:59:32.675 --> 00:59:34.195 
+Parallel is harder in general.
+
+00:59:34.715 --> 00:59:36.195 
+Performance is another question.
+
+00:59:36.195 --> 00:59:39.235 
+Extraction of parallelism in general, it's a lot.
+
+00:59:39.235 --> 00:59:44.580 
+You can, you can have a lot more operations in parallel available in parallel with the data flow
+
+00:59:44.580 --> 00:59:44.915 
+model.
+
+00:59:44.915 --> 00:59:49.395 
+And that's why people have investigated this very, very heavily for many decades.
+
+00:59:49.955 --> 00:59:52.555 
+Hardware complexity is another question also, right?
+
+00:59:52.875 --> 00:59:54.995 
+Which one is more complex in hardware implement?
+
+00:59:54.995 --> 01:00:00.059 
+So I'm not going to answer a lot of these because this also goes into the implementation of the ISA,
+
+01:00:00.059 --> 01:00:01.275 
+not just the ISA itself.
+
+01:00:02.155 --> 01:00:04.155 
+But in general, data flow tends to be a bit harder.
+
+01:00:05.435 --> 01:00:10.355 
+OK, so here I will introduce a different level of trade off.
+
+01:00:10.435 --> 01:00:12.195 
+You can make this trade off at the ISA level.
+
+01:00:12.275 --> 01:00:14.075 
+You can say, oh, I want a program counter.
+
+01:00:14.075 --> 01:00:15.155 
+I don't want a program counter.
+
+01:00:15.155 --> 01:00:18.395 
+This is my execution model sequential versus data flow.
+
+01:00:18.955 --> 01:00:25.995 
+But you can say maybe I want my, I want to keep my ISA sequential because everybody in the world is
+
+01:00:25.995 --> 01:00:28.555 
+much more comfortable today with it.
+
+01:00:29.195 --> 01:00:35.475 
+But try to get the benefits of this data flow execution underneath at the micro architecture level.
+
+01:00:36.075 --> 01:00:40.475 
+So this here I will introduce this trade off at different parts.
+
+01:00:40.835 --> 01:00:45.955 
+So ISA specifies how the programmer sees the instructions to be executed, right?
+
+01:00:46.675 --> 01:00:53.275 
+It's really the hardware software interface micro architecture, which we will get into a little bit
+
+01:00:53.275 --> 01:00:54.675 
+more today and later.
+
+01:00:56.155 --> 01:01:00.075 
+It's really how the underlying implementation actually executes instructions.
+
+01:01:01.355 --> 01:01:08.968 
+Nobody said that micro architecture should do exactly the same thing ISA specifies, except for one
+
+01:01:08.968 --> 01:01:09.435 
+point.
+
+01:01:09.835 --> 01:01:15.935 
+The programmer needs to see what the ISA specifies because there's a contract, hardware, software
+
+01:01:15.935 --> 01:01:21.595 
+contract, and the processor or computing system you're building should obey that contract.
+
+01:01:21.715 --> 01:01:23.395 
+Otherwise programmers don't know what to do, right?
+
+01:01:23.395 --> 01:01:25.715 
+Otherwise people cannot write operating systems, compilers, whatever.
+
+01:01:26.235 --> 01:01:29.315 
+So you need to obey that interface, no question about that.
+
+01:01:29.795 --> 01:01:34.691 
+But underneath, as long as you obey that interface somehow internally, you can do many different
+
+01:01:34.691 --> 01:01:35.355 
+things right?
+
+01:01:36.315 --> 01:01:39.833 
+Internally, for example, whenever you're executing instructions, you don't need to execute 1
+
+01:01:39.833 --> 01:01:40.675 
+instruction at a time.
+
+01:01:41.395 --> 01:01:45.912 
+You can execute thousands of instructions at a time, but report back to the programmer as if you had
+
+01:01:45.912 --> 01:01:48.035 
+executed only one instruction at a time, right?
+
+01:01:48.835 --> 01:01:54.619 
+That's how you get high performance while preserving the hardware software interface that you are
+
+01:01:54.619 --> 01:01:55.275 
+bound with.
+
+01:01:56.035 --> 01:01:57.355 
+OK, so that's the idea over here.
+
+01:01:57.395 --> 01:02:02.000 
+So for I say, determines whether the programmer sees a sequential control flow execution order
+
+01:02:02.000 --> 01:02:03.715 
+versus a data flow execution order.
+
+01:02:04.235 --> 01:02:10.496 
+Micro architecture on the other hand, can execute an instruction in any order as the hardware
+
+01:02:10.496 --> 01:02:17.162 
+designer wants things to be executed, as long as the final results obeys the semantics specified by
+
+01:02:17.162 --> 01:02:21.875 
+the ISA when you make the instruction results visible to the software.
+
+01:02:22.795 --> 01:02:25.275 
+In other words, programmers should see the orders specified.
+
+01:02:25.355 --> 01:02:34.939 
+By the ISA, In other words, what we defined as architectural state in the past should not change in
+
+01:02:34.939 --> 01:02:38.715 
+a way that's inconsistent with the ISA.
+
+01:02:39.075 --> 01:02:41.675 
+OK, architectural state is what is visible to the programmer.
+
+01:02:41.675 --> 01:02:45.115 
+Memory registers PC.
+
+01:02:45.235 --> 01:02:46.115 
+Well, in this case you may not.
+
+01:02:46.555 --> 01:02:47.155 
+You may have PC.
+
+01:02:47.155 --> 01:02:48.915 
+Let's assume that you have a sequential execution model.
+
+01:02:49.315 --> 01:02:54.515 
+So all of those you cannot change, but internally you can do many, many other things.
+
+01:02:54.635 --> 01:02:57.155 
+And we'll see that all existing processors behave this way.
+
+01:02:57.155 --> 01:03:02.512 
+They have some sort of constraint in the contract, but internally they do something else to get high
+
+01:03:02.512 --> 01:03:03.155 
+performance.
+
+01:03:04.275 --> 01:03:09.306 
+Because if you actually execute the von Neumann model as is, you're executing 1 instruction at a
+
+01:03:09.306 --> 01:03:11.875 
+time, which is very poor in terms of performance.
+
+01:03:12.275 --> 01:03:16.395 
+If we were executing 1 instruction at a time, all of this AI stuff will not happen.
+
+01:03:16.395 --> 01:03:22.554 
+Basically, it happened because we had our hardware to actually train these models and fast do it
+
+01:03:22.554 --> 01:03:22.875 
+fast.
+
+01:03:23.595 --> 01:03:26.955 
+OK, OK, so we'll get back to the von Neumann model.
+
+01:03:26.955 --> 01:03:31.041 
+But if you learn to learn more about data flow, there's an old concept that has been examined and I
+
+01:03:31.041 --> 01:03:34.797 
+have some lecture videos on it if you're interested, much more detailed, like how do you do
+
+01:03:34.797 --> 01:03:35.995 
+function calls and data flow?
+
+01:03:35.995 --> 01:03:38.275 
+How do you deal with different data structures in data flow?
+
+01:03:38.715 --> 01:03:39.795 
+Very, very interesting things.
+
+01:03:41.035 --> 01:03:42.475 
+Any questions on data flow?
+
+01:03:44.555 --> 01:03:47.075 
+OK, let's talk about von Neumann model a little bit more.
+
+01:03:47.075 --> 01:03:50.315 
+So essentially all major instructions that architectures today use.
+
+01:03:50.875 --> 01:03:57.064 
+The von Neumann model, general purpose instructions and architectures, you may have seen some of
+
+01:03:57.064 --> 01:04:03.125 
+these names, but underneath at the micro architecture level, the execution model of almost all
+
+01:04:03.125 --> 01:04:09.315 
+implementations is very different, different from the what instruction set architecture specify.
+
+01:04:09.875 --> 01:04:13.395 
+OK, so for example, we do pipeline instruction execution.
+
+01:04:13.395 --> 01:04:17.252 
+As we will see, pipeline instruction execution means that whenever you're fetching an instruction,
+
+01:04:17.252 --> 01:04:18.355 
+you're decoding another one.
+
+01:04:19.035 --> 01:04:21.755 
+Whenever you're decoding another one, you're executing another one.
+
+01:04:21.835 --> 01:04:26.854 
+Whenever you're executing another one, you're you're actually doing memory access for another one,
+
+01:04:26.854 --> 01:04:27.315 
+etcetera.
+
+01:04:27.315 --> 01:04:30.195 
+So you're actually pipelining the execution of instruction and hardware.
+
+01:04:30.715 --> 01:04:33.235 
+This immediately violates the von Neumann model, right?
+
+01:04:33.235 --> 01:04:36.995 
+Von Neumann model says you are execute, you're supposed to execute only one instruction at a time.
+
+01:04:37.195 --> 01:04:38.675 
+You cannot move to the next instruction.
+
+01:04:39.195 --> 01:04:42.835 
+So pipelining violates this model, but we do it in all processors.
+
+01:04:43.275 --> 01:04:44.835 
+We do multiple instructions at a time.
+
+01:04:45.635 --> 01:04:50.675 
+Concurrent instructions, not like data flow, but you can do multiple.
+
+01:04:50.675 --> 01:04:53.515 
+You can fetch multiple instructions at a time and decode and execute.
+
+01:04:54.035 --> 01:04:55.475 
+That violates the von Neumann model.
+
+01:04:55.995 --> 01:04:57.355 
+We do auto order execution.
+
+01:04:57.395 --> 01:05:01.405 
+These are some of the earliest and more popular micro architectures that have introduced these and
+
+01:05:01.405 --> 01:05:02.715 
+we're going to see all of these.
+
+01:05:02.715 --> 01:05:07.402 
+Actually, multiple instructions at a time is called super scaler execution, not scaler, super
+
+01:05:07.402 --> 01:05:07.755 
+scaler.
+
+01:05:08.035 --> 01:05:14.574 
+As you can see, auto order execution means that you can execute, you can execute another instruction
+
+01:05:14.574 --> 01:05:19.675 
+that comes later in the instruction stream and you can do things out of order.
+
+01:05:21.435 --> 01:05:26.157 
+That clearly provides more performance and that actually takes advantage of some of the data flow
+
+01:05:26.157 --> 01:05:27.715 
+principles that we talked about.
+
+01:05:28.555 --> 01:05:34.352 
+As long as you don't update the programmer visible state with the results of those instructions,
+
+01:05:34.352 --> 01:05:34.715 
+right?
+
+01:05:34.715 --> 01:05:39.428 
+You update that programmer visible state as if you're doing things sequentially, but internally
+
+01:05:39.428 --> 01:05:41.115 
+you're doing things very parallel.
+
+01:05:41.555 --> 01:05:46.415 
+Things are going much faster than you would than they would be if you were doing things
+
+01:05:46.415 --> 01:05:51.388 
+sequentially, but you're reporting the results 1 by 1 as if the instructions are executed
+
+01:05:51.388 --> 01:05:52.115 
+sequentially.
+
+01:05:52.635 --> 01:05:55.835 
+We're going to talk about outer word execution again in lecture 15 or so.
+
+01:05:56.595 --> 01:05:58.195 
+We have separate instruction and data caches.
+
+01:05:58.195 --> 01:06:04.470 
+This also kind of violates the von Neumann model mildly because instruction and data are in a
+
+01:06:04.470 --> 01:06:05.955 
+unified memory, right?
+
+01:06:06.835 --> 01:06:12.360 
+OK, so basically you violate a lot of things, but what happens underneath that is not consistent
+
+01:06:12.360 --> 01:06:13.915 
+with the von Neumann model.
+
+01:06:13.915 --> 01:06:16.515 
+It's not exposed to the programmer or the software.
+
+01:06:17.155 --> 01:06:22.755 
+So they think that the machine is a von Neumann machine, right?
+
+01:06:23.115 --> 01:06:23.995 
+That's the interface.
+
+01:06:24.475 --> 01:06:26.955 
+And this is the key difference between ISA and micro architecture.
+
+01:06:26.955 --> 01:06:33.474 
+Basically, ISA is what is visible to the programmer, what they assume the machine will provide so
+
+01:06:33.474 --> 01:06:35.155 
+that they can program it.
+
+01:06:36.235 --> 01:06:39.595 
+But micro architecture is an implementation of the ISA.
+
+01:06:39.835 --> 01:06:44.995 
+It can, it can execute exactly like what von Neumann specified, 1 instruction at a time.
+
+01:06:44.995 --> 01:06:48.955 
+That's one implementation or it can do complete out of order execution, right?
+
+01:06:49.435 --> 01:06:52.915 
+So micro architecture is a specific implementation of an ISA basically.
+
+01:06:53.595 --> 01:06:57.275 
+So I've see I'm giving you this definition of computer architecture.
+
+01:06:57.555 --> 01:06:58.675 
+There are multiple definitions.
+
+01:06:59.395 --> 01:07:01.555 
+This is the ISA plus implementation definition.
+
+01:07:01.555 --> 01:07:05.911 
+It's the science and art of designing, selecting and interconnecting hardware components and design
+
+01:07:05.911 --> 01:07:09.475 
+the hardware software interface to create a computing system, which is important.
+
+01:07:09.835 --> 01:07:13.635 
+That means functional performance, energy consumption, cost and other specific goals.
+
+01:07:14.635 --> 01:07:21.933 
+But traditionally people have used this ISA only definition, which is not as you not much used
+
+01:07:21.933 --> 01:07:22.555 
+anymore.
+
+01:07:22.875 --> 01:07:25.155 
+But I'm going to talk about that a little bit more the term.
+
+01:07:25.315 --> 01:07:28.955 
+Architecture is used here to describe the attributes of a system as seen by the programmer.
+
+01:07:29.915 --> 01:07:37.175 
+OK, that was Gene Amdahl's definition when they designed IBM 360, which is a early processor that's
+
+01:07:37.175 --> 01:07:40.475 
+actually quite fast in its time in the 1960s.
+
+01:07:42.195 --> 01:07:46.115 
+Meaning the conceptual structure and functional behaviour as distinct from the organization of the
+
+01:07:46.115 --> 01:07:49.035 
+data flow and controls, the logic design and the physical implementation.
+
+01:07:49.795 --> 01:07:53.355 
+So this is part of this is micro architecture, data flow and controls, logic design, etcetera.
+
+01:07:54.275 --> 01:07:56.515 
+OK, so let's define these a little bit more carefully.
+
+01:07:56.995 --> 01:07:59.715 
+So this is the picture that I've shown you many times.
+
+01:08:00.235 --> 01:08:04.155 
+So ISA, micro architecture, microprocessor ISA is really the contract.
+
+01:08:04.275 --> 01:08:07.155 
+It's the agreed upon interface between software and hardware.
+
+01:08:07.995 --> 01:08:14.881 
+Or more more correctly, it's the book that's thrown at you by a manufacturer if you want to program
+
+01:08:14.881 --> 01:08:15.995 
+their processor.
+
+01:08:17.035 --> 01:08:17.915 
+That's the idea, right?
+
+01:08:19.155 --> 01:08:21.755 
+You can work with them to change that book, right?
+
+01:08:22.675 --> 01:08:23.515 
+But that's the book.
+
+01:08:23.515 --> 01:08:24.795 
+Basically, it's the contract.
+
+01:08:25.675 --> 01:08:30.687 
+So this is what the software or compiler or programmer assumes and this is what the hardware
+
+01:08:30.687 --> 01:08:31.995 
+promises, OK to provide.
+
+01:08:33.435 --> 01:08:39.240 
+In other words, it's what the software writer, any software writer needs to know to write and debug
+
+01:08:39.240 --> 01:08:45.045 
+user programs or system programs, OK, including compilers, operating systems, regular programs, any
+
+01:08:45.045 --> 01:08:45.515 
+program.
+
+01:08:45.515 --> 01:08:52.226 
+Basically, micro architecture is a specific implementation of that book of that contract
+
+01:08:52.226 --> 01:08:53.675 
+essentially, right?
+
+01:08:54.755 --> 01:08:56.075 
+It's not visible to the software.
+
+01:08:56.275 --> 01:09:01.555 
+Basically what is visible to the software is what that book specifies as visible to the software.
+
+01:09:01.835 --> 01:09:07.576 
+Micro architecture of course changes that, but what is done to change that is not visible to the
+
+01:09:07.576 --> 01:09:08.115 
+software.
+
+01:09:08.275 --> 01:09:08.595 
+OK.
+
+01:09:09.195 --> 01:09:14.741 
+Microprocessor today is defined as essentially all of those ISA, micro architecture and circuits
+
+01:09:14.741 --> 01:09:19.075 
+because ISA is a key part of micro architecture, Micro microprocessor also.
+
+01:09:19.955 --> 01:09:24.315 
+So people usually use the architecture term not in its purest form.
+
+01:09:24.315 --> 01:09:27.795 
+In 1960s, it's usually referred to as ISA plus micro architecture.
+
+01:09:28.235 --> 01:09:33.634 
+So people kind of abuse the term X86 architecture and then they also say Skylake architecture, for
+
+01:09:33.634 --> 01:09:34.075 
+example.
+
+01:09:35.035 --> 01:09:35.355 
+Yeah.
+
+01:09:36.435 --> 01:09:40.795 
+So don't get hung up on the, let's say lack of rigour and terminology.
+
+01:09:41.395 --> 01:09:42.275 
+That's just how it is.
+
+01:09:43.755 --> 01:09:49.200 
+OK, so let's talk about micro architecture a little bit because this is going to be what we will do
+
+01:09:49.200 --> 01:09:51.675 
+in the next N lectures, which is quite a few.
+
+01:09:52.795 --> 01:09:54.835 
+This is a specific implementation of the ISA.
+
+01:09:55.075 --> 01:09:57.635 
+Then the question becomes, how do we implement the ISA, right?
+
+01:09:58.075 --> 01:09:59.555 
+We will discuss this for many lectures.
+
+01:09:59.555 --> 01:10:04.999 
+And there can be many, many implementation of an ISA, for example, MIPS that your programming had
+
+01:10:04.999 --> 01:10:10.275 
+many, many implementations, including very wimpy simple ones, which is kind of similar to what
+
+01:10:10.275 --> 01:10:15.664 
+you're going to implement in your labs to very, very sophisticated ones which include auto order
+
+01:10:15.664 --> 01:10:20.155 
+execution, superscalar execution, many, many techniques that we're going to see.
+
+01:10:21.275 --> 01:10:24.435 
+There's also X86 that has many implementations.
+
+01:10:24.995 --> 01:10:27.995 
+POWER, IBM has many implementations.
+
+01:10:27.995 --> 01:10:33.115 
+ARM Alpha, RISC 5 these days has a lot of implementations.
+
+01:10:34.595 --> 01:10:36.395 
+And there's also other architectures like Z.
+
+01:10:37.435 --> 01:10:42.100 
+These are actually architectures that are quite interesting architectures, but they may not be
+
+01:10:42.100 --> 01:10:42.795 
+commonly used.
+
+01:10:43.075 --> 01:10:44.195 
+Z is, for example, IB, Ms.
+
+01:10:44.195 --> 01:10:49.635 
+architecture for a lot of banking systems in the world use these systems.
+
+01:10:49.635 --> 01:10:55.838 
+And these are huge systems that IBM sells for millions of dollars and they're not that big, you
+
+01:10:55.838 --> 01:10:57.275 
+know, still expensive.
+
+01:10:57.435 --> 01:10:59.515 
+You're not going to carry that in your pocket for sure.
+
+01:11:00.315 --> 01:11:02.635 
+They're big enough that you're not going to carry it in your pocket.
+
+01:11:03.995 --> 01:11:06.995 
+I guess you could carry it in your car if you're have that amount of money.
+
+01:11:08.035 --> 01:11:09.555 
+Well, I'll let you make that trade off.
+
+01:11:10.515 --> 01:11:13.795 
+OK, So ISA versus micro architecture.
+
+01:11:13.795 --> 01:11:18.955 
+One of the things that's good to talk about is what is part of the ISA versus micro architecture.
+
+01:11:18.955 --> 01:11:25.395 
+I like analogies and one of the best analogies that I have for this is really the gas pedal.
+
+01:11:25.795 --> 01:11:28.595 
+Although with self driving cars, things get blurred a little bit.
+
+01:11:28.595 --> 01:11:29.955 
+How many people drive cars here?
+
+01:11:30.915 --> 01:11:32.395 
+OK, trucks.
+
+01:11:34.315 --> 01:11:35.555 
+OK, some people, that's fine.
+
+01:11:36.315 --> 01:11:36.595 
+Yeah.
+
+01:11:38.955 --> 01:11:40.635 
+How many people drive self driving cars?
+
+01:11:42.075 --> 01:11:42.795 
+OK, I don't see any.
+
+01:11:42.795 --> 01:11:43.355 
+Interesting.
+
+01:11:44.635 --> 01:11:45.275 
+Why is that?
+
+01:11:47.195 --> 01:11:49.235 
+OK, OK.
+
+01:11:49.235 --> 01:11:59.433 
+Anyway, so basically as a driver, driver is a programmer, car is the hardware and implementation of
+
+01:11:59.433 --> 01:12:04.275 
+the car is micro architecture basically, right?
+
+01:12:04.635 --> 01:12:08.395 
+So there's an interface to drive this car, right?
+
+01:12:09.075 --> 01:12:14.115 
+And that interface is the ISA, in this case, instructions at architecture.
+
+01:12:14.115 --> 01:12:16.355 
+That's the architecture or instructions at architecture of the car.
+
+01:12:16.355 --> 01:12:17.035 
+You have a gas pedal.
+
+01:12:17.035 --> 01:12:18.155 
+Let's take one of them.
+
+01:12:18.515 --> 01:12:20.875 
+Gas pedal is the interface for acceleration, right?
+
+01:12:21.875 --> 01:12:22.715 
+That is specified.
+
+01:12:22.715 --> 01:12:24.595 
+You know exactly how it would behave, right?
+
+01:12:24.835 --> 01:12:25.235 
+You push.
+
+01:12:25.315 --> 01:12:29.636 
+It the car accelerates and there's a location also for that that's really important, you know,
+
+01:12:29.636 --> 01:12:32.395 
+because if you mess, mess it up, you may do the wrong thing.
+
+01:12:32.395 --> 01:12:33.715 
+You know, that location is important.
+
+01:12:33.715 --> 01:12:34.755 
+That's part of the interface.
+
+01:12:35.155 --> 01:12:38.435 
+And this interface doesn't change across many cars, right?
+
+01:12:39.115 --> 01:12:45.865 
+But internally the implementation of that acceleration can be very different across different cars,
+
+01:12:45.865 --> 01:12:46.275 
+right?
+
+01:12:46.275 --> 01:12:47.675 
+That's the internals of the engine, right?
+
+01:12:47.675 --> 01:12:53.875 
+Some of them may be very automated, right, very controlled by microprocessors.
+
+01:12:53.995 --> 01:12:56.235 
+Some of them may be much more powerful than others, right?
+
+01:12:56.755 --> 01:13:01.915 
+Some of them may be, I don't know the Mr.
+
+01:13:01.915 --> 01:13:05.395 
+Bean's car, he has a different way of accelerating maybe I don't know, right.
+
+01:13:05.395 --> 01:13:08.675 
+So basically there are many different ways of implementing that engine, right?
+
+01:13:09.355 --> 01:13:13.974 
+But the gas pedal doesn't change, interface doesn't change or at least there are not that many
+
+01:13:13.974 --> 01:13:14.515 
+interfaces.
+
+01:13:14.915 --> 01:13:20.395 
+OK, so that's I think a good analogy to think about ISA versus micro architecture.
+
+01:13:20.395 --> 01:13:24.667 
+Meaning micro architecture or implementation can be various as long as it satisfies the
+
+01:13:24.667 --> 01:13:25.355 
+specification.
+
+01:13:26.595 --> 01:13:32.659 
+If someone wants to give you a specification where the gas pedal is like in your hand, then that's a
+
+01:13:32.659 --> 01:13:34.115 
+different specification.
+
+01:13:34.195 --> 01:13:35.475 
+You need to learn it.
+
+01:13:36.115 --> 01:13:38.475 
+It can be implemented with somewhat similar internals.
+
+01:13:38.675 --> 01:13:41.915 
+Micro architecture may be similar, but then you need to program it differently.
+
+01:13:41.915 --> 01:13:43.315 
+You need to use it differently, right?
+
+01:13:44.835 --> 01:13:49.675 
+The same is true for the clutch or whatever you're using to change gears.
+
+01:13:49.915 --> 01:13:51.395 
+So you can actually expand the analogy.
+
+01:13:52.515 --> 01:13:54.315 
+And some of those, some of those Isas are different.
+
+01:13:54.315 --> 01:14:02.155 
+Actually, some cars have the shifting gear here on the right around the steering wheel, right?
+
+01:14:03.155 --> 01:14:06.995 
+I don't drive cars that much, so I'm happy not to drive anyway.
+
+01:14:07.755 --> 01:14:09.475 
+And some cars have it over here, right?
+
+01:14:09.955 --> 01:14:12.875 
+And if you're looking for it in the wrong place, you may have an accident.
+
+01:14:13.875 --> 01:14:17.795 
+OK, so in the hardware we have similar things, right?
+
+01:14:17.875 --> 01:14:18.955 
+You have an ADD instruction.
+
+01:14:19.235 --> 01:14:22.755 
+We've specified the semantics of the ADD instruction in the ISA.
+
+01:14:23.155 --> 01:14:25.355 
+But you may have many implementation of the adder, right?
+
+01:14:25.395 --> 01:14:27.915 
+Adder can be a ripple carry adder, Adder can be carry.
+
+01:14:27.915 --> 01:14:30.795 
+Look at adder and many different type of adders people have done.
+
+01:14:31.515 --> 01:14:34.315 
+And yeah, we've covered some of them.
+
+01:14:35.115 --> 01:14:36.315 
+There's also a bit serial adders.
+
+01:14:36.515 --> 01:14:39.715 
+You bit, you add one bit at a time every clock cycle.
+
+01:14:40.155 --> 01:14:43.155 
+If you want to add 32 bits, you need 32 clock cycles.
+
+01:14:43.755 --> 01:14:46.595 
+We didn't cover this that much, but you can imagine that sort of adder.
+
+01:14:46.595 --> 01:14:46.875 
+Also.
+
+01:14:47.515 --> 01:14:55.075 
+Similarly, XA6 has many implementations, but XA6 ISA doesn't change that much.
+
+01:14:55.315 --> 01:14:58.715 
+Basically, micro architecture usually changes faster than the ISA.
+
+01:14:59.155 --> 01:15:02.835 
+There are few IS as but many many many many micro architectures, right?
+
+01:15:02.875 --> 01:15:04.315 
+Over time, micro architectures evolve.
+
+01:15:04.315 --> 01:15:08.195 
+They add new instructions, but they normally don't remove instructions.
+
+01:15:10.715 --> 01:15:11.355 
+Why is that?
+
+01:15:11.355 --> 01:15:14.475 
+Can anybody guess why ISA doesn't change as much?
+
+01:15:16.115 --> 01:15:18.875 
+Yes, exactly.
+
+01:15:18.875 --> 01:15:25.862 
+Yeah, so you use 2 words that may be cryptic for many people, but backwards compatibility, meaning
+
+01:15:25.862 --> 01:15:28.715 
+people write programs assuming that ISA.
+
+01:15:29.475 --> 01:15:34.902 
+And if you actually change the ISA completely, those programs may not execute very well in your new
+
+01:15:34.902 --> 01:15:35.835 
+processor, right?
+
+01:15:36.435 --> 01:15:40.595 
+So you need to actually keep the ISA same.
+
+01:15:41.035 --> 01:15:43.995 
+You can add new things so that people can write new instructions.
+
+01:15:43.995 --> 01:15:44.395 
+That's fine.
+
+01:15:44.395 --> 01:15:49.782 
+But if you start removing instructions, for example, and changing the ISA significantly, people will
+
+01:15:49.782 --> 01:15:53.715 
+be very unhappy because their programs will not run on your new hardware.
+
+01:15:54.195 --> 01:15:54.475 
+OK.
+
+01:15:54.835 --> 01:15:56.515 
+That's why it's difficult to change the ISA.
+
+01:15:56.515 --> 01:16:00.155 
+We'll have more stories about that when people have tried to change the ISAS.
+
+01:16:00.155 --> 01:16:01.675 
+Similar to gas pedal, right?
+
+01:16:02.155 --> 01:16:07.817 
+You decide, oh, I want to put the gas pedal to the left of the brake or right of the brake today or
+
+01:16:07.817 --> 01:16:08.675 
+in my next car.
+
+01:16:09.635 --> 01:16:10.995 
+See how many people buy that car.
+
+01:16:10.995 --> 01:16:14.515 
+I guess it's a good experiment to do if you want to lose money, probably.
+
+01:16:15.755 --> 01:16:18.315 
+OK, So what does ISA specify?
+
+01:16:18.435 --> 01:16:20.475 
+Many things, actually.
+
+01:16:20.475 --> 01:16:21.715 
+It's more than instructions.
+
+01:16:21.835 --> 01:16:22.835 
+We've seen instructions.
+
+01:16:22.835 --> 01:16:23.995 
+We've seen memory.
+
+01:16:23.995 --> 01:16:24.995 
+We're going to see a lot more.
+
+01:16:25.395 --> 01:16:30.426 
+We're going to see more things like interrupt exception handling, like what happens when you cannot
+
+01:16:30.426 --> 01:16:31.595 
+execute an instruction?
+
+01:16:31.595 --> 01:16:31.755 
+Right.
+
+01:16:31.755 --> 01:16:32.635 
+ISA specifies that.
+
+01:16:32.635 --> 01:16:37.875 
+Also, access control, who can access what location ISA specifies it.
+
+01:16:37.875 --> 01:16:39.435 
+Also, how do you deal with IO devices?
+
+01:16:39.435 --> 01:16:41.195 
+How do you deal with tasks and threads?
+
+01:16:41.995 --> 01:16:45.395 
+How do you deal with power management, thermal management?
+
+01:16:45.395 --> 01:16:46.515 
+How do you deal with errors?
+
+01:16:46.835 --> 01:16:48.355 
+How do you deal with multiple processors?
+
+01:16:48.355 --> 01:16:50.715 
+We're going to talk about a lot of those later on.
+
+01:16:50.995 --> 01:16:57.075 
+But this manual, as you can see, well, maybe this one you can see a few years ago it was 5000 pages.
+
+01:16:58.915 --> 01:16:59.915 
+It's good bedtime reading.
+
+01:16:59.915 --> 01:17:04.675 
+If you're interested in reading the stuff then it keeps getting extended.
+
+01:17:05.675 --> 01:17:09.435 
+ARM is supposed to be a simpler ISA but it's competing as you can see.
+
+01:17:09.435 --> 01:17:11.075 
+5000 plus pages also here.
+
+01:17:13.435 --> 01:17:15.155 
+So a good bedtime reading if you're interested.
+
+01:17:16.155 --> 01:17:21.795 
+RISC 5 claims to be a simpler ISA but it's going to be 5000 pages if it's not already 5000 pages.
+
+01:17:23.355 --> 01:17:25.275 
+OK, so micro architecture.
+
+01:17:25.315 --> 01:17:31.071 
+There's really an implementation of the ISA under specific design constraints and goals, anything
+
+01:17:31.071 --> 01:17:34.395 
+done in hardware without exposure to software basically.
+
+01:17:34.955 --> 01:17:38.807 
+So there are many things that we're going to cover pipelining in order versus out of order
+
+01:17:38.807 --> 01:17:39.235 
+execution.
+
+01:17:39.235 --> 01:17:45.495 
+I'm not going to cover all of these right now, but for example, clock gating, when you're not using
+
+01:17:45.495 --> 01:17:51.755 
+part of the hardware, existing machines turn clock off so that you don't waste energy, waste power.
+
+01:17:52.435 --> 01:17:55.315 
+So this is something that's done without the programmer's knowledge, right?
+
+01:17:56.475 --> 01:17:58.555 
+You could also make it visible to the programmer.
+
+01:17:58.555 --> 01:18:01.715 
+You could basically add an instruction to the ISA saying clock gates.
+
+01:18:01.715 --> 01:18:05.515 
+And people have proposed things like that, but it's very difficult to control these things.
+
+01:18:06.075 --> 01:18:07.475 
+Error correction is another example.
+
+01:18:07.715 --> 01:18:10.915 
+OK, we're going to see some of these, but let's have some fun right now.
+
+01:18:11.275 --> 01:18:13.515 
+This is actually a good exam practice also.
+
+01:18:14.515 --> 01:18:19.035 
+So which one is a property of the ISA versus a property of the micro architecture?
+
+01:18:19.035 --> 01:18:19.915 
+Based on what we said?
+
+01:18:21.275 --> 01:18:24.755 
+Is this ISA or micro architecture add instructions opcode.
+
+01:18:24.915 --> 01:18:25.795 
+Who says ISA?
+
+01:18:26.835 --> 01:18:28.195 
+OK, who says micro architecture?
+
+01:18:29.435 --> 01:18:32.195 
+OK, nobody that's good, or at least I don't see the hands.
+
+01:18:33.155 --> 01:18:39.002 
+Yes, this is ISA because opcode needs to be specified so that the programmer can write a program,
+
+01:18:39.002 --> 01:18:44.971 
+right that can be executed on the machine type of adder used in the ALU, whether it's bit serial or
+
+01:18:44.971 --> 01:18:45.755 
+ripple carry.
+
+01:18:46.595 --> 01:18:48.955 
+Is this part of ISA or micro architecture?
+
+01:18:49.835 --> 01:18:50.675 
+Who says ISA?
+
+01:18:51.675 --> 01:18:52.795 
+Who says micro architecture?
+
+01:18:52.875 --> 01:18:53.635 
+OK, that's good.
+
+01:18:53.635 --> 01:18:54.315 
+I think we got it.
+
+01:18:55.355 --> 01:18:56.715 
+Maybe it'll become harder and harder.
+
+01:18:56.915 --> 01:18:58.555 
+The number of general purpose registers.
+
+01:18:58.675 --> 01:19:01.395 
+ISA, micro architecture.
+
+01:19:02.075 --> 01:19:03.355 
+OK, ISA wins.
+
+01:19:04.075 --> 01:19:07.919 
+General purpose registers need to be specified because they're part of the instruction and coding,
+
+01:19:07.919 --> 01:19:08.155 
+right?
+
+01:19:10.235 --> 01:19:13.275 
+Internally that may be different, but we'll talk about that later.
+
+01:19:13.635 --> 01:19:16.195 
+Number of cycles to execute the multiply instruction.
+
+01:19:16.955 --> 01:19:17.835 
+Who says ISA?
+
+01:19:19.075 --> 01:19:20.275 
+Who says micro architecture?
+
+01:19:20.515 --> 01:19:25.844 
+OK, micro architecture wins in this case, which is the majority because number of cycles is an
+
+01:19:25.844 --> 01:19:27.035 
+implementation thing.
+
+01:19:27.035 --> 01:19:28.875 
+ISA normally specifies multiply.
+
+01:19:29.315 --> 01:19:31.515 
+That said, some I you can change the ISA, of course.
+
+01:19:31.515 --> 01:19:37.359 
+You can write your own book that says I have a multiply with five cycles and the programmer assumes
+
+01:19:37.359 --> 01:19:43.145 
+that they write code assuming that and then you change the multiply to three cycles, you give them
+
+01:19:43.145 --> 01:19:46.275 
+another book and then you're causing problems, right.
+
+01:19:48.635 --> 01:19:59.496 
+Yes, not necessarily recommendations, but they may actually that book may say OK in this particular
+
+01:19:59.496 --> 01:20:03.995 
+micro architecture, it's 3 cycles, right.
+
+01:20:04.675 --> 01:20:09.595 
+So ISA is also this these books usually it's actually not just the ISA, it's also soft.
+
+01:20:09.595 --> 01:20:14.930 
+It's called the software developers and optimisers manual and knowing the number of cycles may be
+
+01:20:14.930 --> 01:20:18.395 
+helpful, but they do not specify it as part of the instruction.
+
+01:20:18.395 --> 01:20:23.035 
+They specify it as part of on this micro architecture like Skylake, it takes 3 cycles.
+
+01:20:23.035 --> 01:20:28.242 
+So if you're optimising for Skylake, do it, but we don't guarantee anything for any other micro
+
+01:20:28.242 --> 01:20:28.955 
+architecture.
+
+01:20:29.435 --> 01:20:34.555 
+OK, OK, Number of ports of the register file, ISA or micro architecture.
+
+01:20:35.555 --> 01:20:36.355 
+Who says ISA?
+
+01:20:37.395 --> 01:20:38.595 
+Who says micro architecture?
+
+01:20:38.795 --> 01:20:44.445 
+OK, micro architecture wins here again because number of ports of the register file is an
+
+01:20:44.445 --> 01:20:46.795 
+implementation choice as we will see.
+
+01:20:47.435 --> 01:20:52.369 
+ISA specifies how many registers you access for a given instruction, but you could actually have
+
+01:20:52.369 --> 01:20:57.458 
+thousands of ports of the register file if you want, or only one port and do it in multiple cycles,
+
+01:20:57.458 --> 01:20:58.435 
+for example, right?
+
+01:20:59.155 --> 01:21:01.955 
+OK, yeah, I think this is micro architecture.
+
+01:21:01.955 --> 01:21:04.195 
+I'll give it to you program counter.
+
+01:21:04.195 --> 01:21:06.995 
+Is that ISA or micro architecture, which is ISA?
+
+01:21:07.955 --> 01:21:16.565 
+OK, micro architecture, OK, it's ISAI made it hard for a lot of some people, but OK, you'll study it
+
+01:21:16.565 --> 01:21:18.115 
+and figure it out.
+
+01:21:18.475 --> 01:21:23.253 
+Remember basically the key is micro architecture is implementation of the ISA under specific design
+
+01:21:23.253 --> 01:21:24.315 
+constraints and goals.
+
+01:21:24.795 --> 01:21:27.835 
+Program counter is is part of the execution model.
+
+01:21:27.835 --> 01:21:30.275 
+Actually it is specified in that book, right?
+
+01:21:30.555 --> 01:21:33.155 
+For example, branch instruction changes the program counter this way.
+
+01:21:34.155 --> 01:21:36.315 
+Some other instruction changed the program counter this way.
+
+01:21:36.355 --> 01:21:39.955 
+It specifies how the instructions operate.
+
+01:21:40.235 --> 01:21:41.915 
+So the programmer needs to know this.
+
+01:21:43.395 --> 01:21:45.075 
+OK, so let's talk about design point.
+
+01:21:45.075 --> 01:21:50.826 
+Design point is also important because when we design A processor, which we're going to do in the
+
+01:21:50.826 --> 01:21:56.399 
+next end lectures, it's good to, you're always designing a processor for a particular purpose,
+
+01:21:56.399 --> 01:21:56.755 
+right?
+
+01:21:57.155 --> 01:22:03.795 
+You have a set of design considerations and you have a priority of or level of their importance.
+
+01:22:04.235 --> 01:22:08.875 
+This leads to trade-offs in both in structured architectures as well as micro architectures.
+
+01:22:09.195 --> 01:22:12.715 
+Now in structured architectures, if you can design instructions and architectures of course, right.
+
+01:22:13.475 --> 01:22:15.115 
+So there are many considerations here.
+
+01:22:15.115 --> 01:22:23.574 
+Cost, performance, maximum power consumption, thermal limits, energy consumption, availability of
+
+01:22:23.574 --> 01:22:24.795 
+the system or.
+
+01:22:25.315 --> 01:22:27.115 
+You can think of it as mean time to failure.
+
+01:22:27.235 --> 01:22:28.195 
+When does it fail?
+
+01:22:28.235 --> 01:22:33.919 
+What is the average time the system will be up, reliability and correctness, time to market, Many,
+
+01:22:33.919 --> 01:22:35.195 
+many things basically.
+
+01:22:35.195 --> 01:22:37.955 
+I, I could add more over here, but I'm not going to do that.
+
+01:22:38.235 --> 01:22:39.675 
+Privacy is for example, another one.
+
+01:22:40.115 --> 01:22:42.995 
+So this design point is really determined by what you're targeting.
+
+01:22:43.475 --> 01:22:44.915 
+What is the problem that you're trying to solve?
+
+01:22:44.915 --> 01:22:48.875 
+What are the applications or the intended users and market, right?
+
+01:22:48.875 --> 01:22:54.069 
+If it's a hyper, if it's a let's say high performance computer that's going to execute only
+
+01:22:54.069 --> 01:22:59.492 
+scientific simulations, that is a very different design point than a mobile phone in my pocket,
+
+01:22:59.492 --> 01:22:59.835 
+right?
+
+01:22:59.835 --> 01:23:06.123 
+Which is a very different design point than a than a machine learning accelerator that's going to
+
+01:23:06.123 --> 01:23:11.115 
+execute only large language model inference that comes from many, many users.
+
+01:23:11.395 --> 01:23:19.300 
+OK, So there is actually design point determines how you design the microprocessor application space
+
+01:23:19.300 --> 01:23:24.755 
+clearly determines a lot of things and this has never been a problem.
+
+01:23:24.755 --> 01:23:27.195 
+People have always come up come up with good applications.
+
+01:23:27.275 --> 01:23:34.632 
+I'd recommend this very nice paper from my PhD advisor, Yale Pat that was in 2001 that talks about
+
+01:23:34.632 --> 01:23:37.635 
+essentially how microprocessors evolved.
+
+01:23:37.755 --> 01:23:40.515 
+It's a bit dated, but the key principles are actually.
+
+01:23:41.835 --> 01:23:42.875 
+Very good over there.
+
+01:23:43.395 --> 01:23:46.115 
+And here is a quote from that base.
+
+01:23:46.115 --> 01:23:47.995 
+There are many different types of applications, right?
+
+01:23:47.995 --> 01:23:53.075 
+You may be designing for different one of them, you may be designing a general purpose processor and
+
+01:23:53.075 --> 01:23:54.955 
+you may be designing for all of them.
+
+01:23:55.475 --> 01:23:57.435 
+Then your task is much harder, right?
+
+01:23:58.075 --> 01:24:00.315 
+You cannot optimise for any single one easily.
+
+01:24:00.715 --> 01:24:03.515 
+And there are many other workloads today, especially over here.
+
+01:24:03.515 --> 01:24:08.435 
+You can see we do a lot of work on genome analysis, for example, machine learning, graph analytics.
+
+01:24:08.435 --> 01:24:13.939 
+These are actually really difficult workloads sometimes graph analytics being probably one of the
+
+01:24:13.939 --> 01:24:15.075 
+most difficult ones.
+
+01:24:15.835 --> 01:24:21.155 
+OK, so basically people keep generating new applications, applications push boundaries.
+
+01:24:21.155 --> 01:24:23.875 
+Computing platforms actually are becoming increasingly constrained.
+
+01:24:24.275 --> 01:24:28.355 
+So we're going to see general purpose models first in these lectures.
+
+01:24:28.355 --> 01:24:32.555 
+We're going to start with a very basic processor and then we're going to improve it to be higher and
+
+01:24:32.555 --> 01:24:35.075 
+higher performance, but we're going to keep general purpose.
+
+01:24:35.075 --> 01:24:39.279 
+And then we're going to examine things like GPUs, for example, which are designed to be special
+
+01:24:39.279 --> 01:24:43.529 
+purpose and they became a little bit more general purpose and they're becoming a little bit more
+
+01:24:43.529 --> 01:24:45.875 
+special purpose right now also with machine learning.
+
+01:24:46.315 --> 01:24:50.355 
+But they're also relatively general purpose, but less general purpose than CPUs.
+
+01:24:50.355 --> 01:24:53.813 
+And we're going to then talk about accelerators, like how machine learning accelerators are
+
+01:24:53.813 --> 01:24:54.155 
+designed.
+
+01:24:54.595 --> 01:24:59.914 
+So application space and how you want to design the processor for that application space determines
+
+01:24:59.914 --> 01:25:01.795 
+the trade-offs you can make, right?
+
+01:25:03.315 --> 01:25:08.287 
+So these trade-offs are actually the real soul of computer architecture And this sort of course,
+
+01:25:08.287 --> 01:25:13.311 
+basically, and this is really the critical part in my opinion, it's important to think critically
+
+01:25:13.311 --> 01:25:18.232 
+in all of these trade-offs because you have a lot of assuming that you're designing A computing
+
+01:25:18.232 --> 01:25:18.595 
+system.
+
+01:25:18.635 --> 01:25:25.784 
+Let's say, let's say you, you have your, you had the good fortune to be hired as a chief architect
+
+01:25:25.784 --> 01:25:32.715 
+of or you, you start your own company and you want to actually design your own computer, right?
+
+01:25:32.795 --> 01:25:34.075 
+Which is a difficult task.
+
+01:25:34.515 --> 01:25:37.875 
+And you have all the freedom in the world, right?
+
+01:25:38.715 --> 01:25:39.555 
+Where do you start?
+
+01:25:39.715 --> 01:25:41.355 
+So you really need to start making trade-offs.
+
+01:25:41.355 --> 01:25:45.437 
+You need to decide an ISA or you decide your own ISA and you figure out what are the trade-offs
+
+01:25:45.437 --> 01:25:46.555 
+associated with it, right?
+
+01:25:46.795 --> 01:25:48.355 
+And then you need to implement the ISA.
+
+01:25:48.355 --> 01:25:51.426 
+There are micro architecture level trade-offs that you need to make, which we're going to see a lot
+
+01:25:51.426 --> 01:25:51.675 
+of them.
+
+01:25:52.675 --> 01:25:56.315 
+You need to design your execution model, of course, with the ISA together with the ISA.
+
+01:25:56.515 --> 01:26:01.231 
+And then there's also system and test level trade-offs, which we didn't talk a whole lot about, but
+
+01:26:01.231 --> 01:26:05.851 
+we did actually start this lecture with which is really the where you place the ISA and where you
+
+01:26:05.851 --> 01:26:06.995 
+put the different tasks.
+
+01:26:06.995 --> 01:26:08.075 
+Do you put them in software?
+
+01:26:08.395 --> 01:26:09.395 
+Do you put them in hardware?
+
+01:26:10.035 --> 01:26:14.235 
+So essentially a computer architecture is really the, this is the broader definition.
+
+01:26:14.235 --> 01:26:18.635 
+It's really the science and art of making the appropriate trade off to meet a design point.
+
+01:26:19.195 --> 01:26:20.755 
+That's where the design point comes in, right?
+
+01:26:20.755 --> 01:26:22.035 
+The application space, right?
+
+01:26:22.315 --> 01:26:27.359 
+If your application space is accelerating only matrix multiplication, your task is a bit easier,
+
+01:26:27.359 --> 01:26:27.675 
+right?
+
+01:26:28.355 --> 01:26:34.435 
+If your application space is whatever people throw at me, your task is much harder, right?
+
+01:26:35.275 --> 01:26:38.635 
+Especially if you want to get high performance, energy efficiency, etcetera.
+
+01:26:39.515 --> 01:26:42.675 
+I've also mentioned that I say science and art all the time, right?
+
+01:26:43.635 --> 01:26:47.595 
+Some scientists don't like that because we don't think art has any place in science.
+
+01:26:47.675 --> 01:26:48.755 
+I completely disagree.
+
+01:26:49.195 --> 01:26:53.741 
+Art has a huge place in science because we don't know everything in the world and we cannot model
+
+01:26:53.741 --> 01:26:55.195 
+everything in the world, right?
+
+01:26:55.795 --> 01:27:00.275 
+So basically you're designing this thing, but this thing is not in isolation.
+
+01:27:00.275 --> 01:27:02.275 
+Basically, you don't know the full future, right?
+
+01:27:02.315 --> 01:27:07.089 
+You may think matrix multiplication done in some way is what you're designing for, but two years
+
+01:27:07.089 --> 01:27:09.675 
+later, somebody's going to do something else, right?
+
+01:27:10.155 --> 01:27:11.115 
+And you cannot control that.
+
+01:27:11.115 --> 01:27:15.395 
+You cannot model that as far as, at least currently, we don't know how to model the future.
+
+01:27:15.995 --> 01:27:17.235 
+If you know that, that'd be great.
+
+01:27:17.915 --> 01:27:18.955 
+Let me know if you know that.
+
+01:27:19.475 --> 01:27:19.835 
+OK?
+
+01:27:20.115 --> 01:27:23.924 
+So basically, you don't know the applications, you don't know the users, you don't know the market
+
+01:27:23.924 --> 01:27:24.235 
+exactly.
+
+01:27:24.915 --> 01:27:25.195 
+You can.
+
+01:27:25.315 --> 01:27:29.275 
+Have a guess and people who are successful that make very good guesses, right?
+
+01:27:29.675 --> 01:27:31.315 
+So basically it's art in the end.
+
+01:27:31.315 --> 01:27:32.395 
+And also things change.
+
+01:27:32.395 --> 01:27:35.715 
+At the top, people have different problems to solve.
+
+01:27:36.715 --> 01:27:38.115 
+There are new issues and capabilities.
+
+01:27:38.115 --> 01:27:38.555 
+At the bottom.
+
+01:27:38.555 --> 01:27:44.035 
+You may design an architecture using some technology and then that technology becomes obsolete.
+
+01:27:44.195 --> 01:27:49.715 
+Too high power and then you will need to do something else and think users change also.
+
+01:27:49.715 --> 01:27:50.755 
+Basically you cannot predict.
+
+01:27:50.755 --> 01:27:52.275 
+Future is also not constant, right?
+
+01:27:52.355 --> 01:27:55.315 
+Basically changes, people have changing demands, etcetera.
+
+01:27:56.435 --> 01:27:58.795 
+So I'd like this analogue for macro architecture.
+
+01:27:58.795 --> 01:28:02.795 
+I haven't done a lot of analogues from micro architecture in this class yet, but I'll do some.
+
+01:28:03.475 --> 01:28:05.635 
+So future is not constant in macro architecture.
+
+01:28:05.635 --> 01:28:11.044 
+There are a lot of similarities in real architecture, real meaning building type of architecture and
+
+01:28:11.044 --> 01:28:12.235 
+computer architecture.
+
+01:28:13.235 --> 01:28:19.155 
+So for example, people have used buildings designed for purpose X for some other purpose.
+
+01:28:19.955 --> 01:28:22.475 
+So there's another, this is from Zurich, for example.
+
+01:28:22.475 --> 01:28:30.195 
+If you've been to this mill, which was originally a brewery, it became something else right?
+
+01:28:30.195 --> 01:28:30.795 
+Now, right?
+
+01:28:30.955 --> 01:28:33.355 
+Over time, basically things change, right?
+
+01:28:33.915 --> 01:28:36.595 
+Even though the structure may not, may not change that much, right?
+
+01:28:36.675 --> 01:28:40.155 
+The application changes, but the application may not fit it very well, right?
+
+01:28:40.155 --> 01:28:41.035 
+It's good to think about that.
+
+01:28:41.035 --> 01:28:46.675 
+Also, maybe this doesn't bother us that much, but it bothers things much more with programmers.
+
+01:28:47.315 --> 01:28:47.915 
+I like this one.
+
+01:28:47.915 --> 01:28:48.235 
+Also.
+
+01:28:48.395 --> 01:28:50.595 
+You know, there's a coffee shop right now in Zurich.
+
+01:28:50.875 --> 01:28:53.475 
+It's used originally by EWZI.
+
+01:28:53.475 --> 01:28:59.434 
+Guess this is my favorite example from Pittsburgh, which I will be going to next week for a
+
+01:28:59.434 --> 01:29:00.155 
+conference.
+
+01:29:00.835 --> 01:29:07.155 
+I used to live there, but in the in the Zurich case, brewery became something else.
+
+01:29:07.155 --> 01:29:08.715 
+In this case, a church became a brewery.
+
+01:29:08.955 --> 01:29:11.875 
+So if you go to Pittsburgh, I'd recommend going there.
+
+01:29:12.195 --> 01:29:13.315 
+It's a church brew works.
+
+01:29:14.155 --> 01:29:14.555 
+OK.
+
+01:29:14.635 --> 01:29:16.155 
+So that's the end of this lecture.
+
+01:29:16.235 --> 01:29:18.395 
+I'd recommend you take a look at assembly programming.
+
+01:29:18.795 --> 01:29:21.515 
+Tomorrow we will start with micro architecture.
+
