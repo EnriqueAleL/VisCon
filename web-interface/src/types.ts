@@ -1,8 +1,8 @@
-export type CourseId = 'all' | 'linear-algebra' | 'analysis' | 'informatics';
+export type CourseId = string;
 
-export type Semester = 'autumn' | 'spring';
-export type Degree = 'bsc' | 'msc';
-export type StudyYear = 1 | 2 | 3;
+export type Semester = 'autumn' | 'spring' | 'unknown';
+export type Degree = 'bsc' | 'msc' | 'unspecified';
+export type StudyYear = 0 | 1 | 2 | 3;
 
 export interface CourseSelection {
   year: string;
@@ -32,6 +32,8 @@ export interface Segment {
   end: number;
   title: string;
   transcript: string;
+  summary?: string;
+  sourceId?: string;
 }
 
 export interface Lecture {
@@ -45,4 +47,16 @@ export interface Lecture {
   thumbnail: string;
   segments: Segment[];
   keywords: string[];
+  mediaUrl?: string | null;
+  captionsUrl?: string;
+  chaptersUrl?: string;
+  chapters?: Segment[];
+  demo?: boolean;
+  hasSummary?: boolean;
+}
+
+export interface LectureSummary {
+  overview: string;
+  sections: { heading: string; chapter_ids: string[]; start: number | null; points: string[] }[];
+  takeaways: string[];
 }

@@ -10,13 +10,14 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { courses } from '../data/lectures';
-import { degreeShortNames, semesterNames } from '../data/courseSelection';
-import type { CourseSelection, QuestionHistoryEntry } from '../types';
+import { selectionLabel } from '../data/courseSelection';
+import type { Course, CourseSelection, Lecture, QuestionHistoryEntry } from '../types';
 import { CoursePicker } from './CoursePicker';
 import { ArenaIcon } from './ArenaIcon';
 
 interface IconSidebarProps {
+  courses: Course[];
+  lectures: Lecture[];
   view: 'questions' | 'library' | 'saved';
   selectedCourse: CourseSelection | null;
   pickerRequest: number;
@@ -31,6 +32,7 @@ interface IconSidebarProps {
 }
 
 export function IconSidebar({
+  courses, lectures,
   view,
   selectedCourse,
   pickerRequest,
@@ -197,9 +199,7 @@ export function IconSidebar({
                         <small>
                           {courses.find((course) => course.id === entry.courseId)?.name}
                           {' · '}
-                          {semesterNames[entry.semester]} {entry.year}
-                          {' · '}
-                          {degreeShortNames[entry.degree]} · {entry.studyYear}. Jahr
+                          {selectionLabel(entry)}
                         </small>
                       </button>
                     ))}
@@ -243,6 +243,8 @@ export function IconSidebar({
           {panel === 'courses' && (
             <div id="course-picker-panel" className="rail-panel">
               <CoursePicker
+                courses={courses}
+                lectures={lectures}
                 selectedCourse={selectedCourse}
                 onClear={onClearCourse}
                 onSelect={(selection) => {
@@ -276,15 +278,7 @@ export function IconSidebar({
         >
           <Bookmark size={20} />
         </button>
-        <button
-          className="rail-button"
-          type="button"
-          title="Arena"
-          aria-label="Arena"
-          aria-disabled="true"
-        >
-          <ArenaIcon />
-        </button>
+        <a className="rail-button" href="/" title="Arena" aria-label="Arena"><ArenaIcon /></a>
       </nav>
       <div className="rail-bottom">
         <button

@@ -2,6 +2,10 @@
 const STOP = new Set(`aber als am an auch auf aus bei beim bis da das dass dem den der des die doch du ein eine einem einen einer eines er es etwas fuer fur hat haben hier ich im in ist ja kann kannst man mich mir mit nach nicht noch nun oder ohne sein seine sich sie sind so ueber uber um und uns vom von vor wann warum was welche welcher welchen wenn werde werden weshalb wie wir wird wo zu zum zur zusammen erklaer erklaere erklar erklaren erklare bitte verstehen funktioniert unterschied frage vorlesung the a an and are as at be can do does for from how i in is it me of on or please that this to what when why with you`.split(/\s+/));
 
 const GROUPS = [
+  ['pipeline', 'pipelines', 'pipelining', 'pipelined'],
+  ['hazard', 'hazards'],
+  ['cache', 'caches', 'caching'],
+  ['byte', 'bytes'],
   ['eigenwert', 'eigenwerte', 'eigenwerten', 'eigenvalue', 'eigenvalues'],
   ['eigenvektor', 'eigenvektoren', 'eigenvector', 'eigenvectors'],
   ['matrix', 'matrizen', 'matrices'],

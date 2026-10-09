@@ -1,0 +1,568 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-09T19:00:25.331124Z",
+  "title": "Design System: Basis Arena",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Cool Paper",
+        "tonalRamp": [
+          "oklch(15.00% 0.00700 268.55)",
+          "oklch(26.43% 0.00700 268.55)",
+          "oklch(37.86% 0.00700 268.55)",
+          "oklch(49.29% 0.00700 268.55)",
+          "oklch(60.71% 0.00700 268.55)",
+          "oklch(72.14% 0.00700 268.55)",
+          "oklch(83.57% 0.00700 268.55)",
+          "oklch(95.00% 0.00700 268.55)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Work White",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Plum Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.06603 285.23)",
+          "oklch(26.43% 0.06603 285.23)",
+          "oklch(37.86% 0.06603 285.23)",
+          "oklch(49.29% 0.06603 285.23)",
+          "oklch(60.71% 0.06603 285.23)",
+          "oklch(72.14% 0.06603 285.23)",
+          "oklch(83.57% 0.06603 285.23)",
+          "oklch(95.00% 0.06603 285.23)"
+        ]
+      },
+      "plum": {
+        "role": "neutral",
+        "displayName": "Navigation Plum",
+        "tonalRamp": [
+          "oklch(15.00% 0.06603 285.23)",
+          "oklch(26.43% 0.06603 285.23)",
+          "oklch(37.86% 0.06603 285.23)",
+          "oklch(49.29% 0.06603 285.23)",
+          "oklch(60.71% 0.06603 285.23)",
+          "oklch(72.14% 0.06603 285.23)",
+          "oklch(83.57% 0.06603 285.23)",
+          "oklch(95.00% 0.06603 285.23)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Study Violet",
+        "tonalRamp": [
+          "oklch(15.00% 0.13677 292.84)",
+          "oklch(26.43% 0.13677 292.84)",
+          "oklch(37.86% 0.13677 292.84)",
+          "oklch(49.29% 0.13677 292.84)",
+          "oklch(60.71% 0.13677 292.84)",
+          "oklch(72.14% 0.13677 292.84)",
+          "oklch(83.57% 0.13677 292.84)",
+          "oklch(95.00% 0.13677 292.84)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Deep Study Violet",
+        "tonalRamp": [
+          "oklch(15.00% 0.12524 293.52)",
+          "oklch(26.43% 0.12524 293.52)",
+          "oklch(37.86% 0.12524 293.52)",
+          "oklch(49.29% 0.12524 293.52)",
+          "oklch(60.71% 0.12524 293.52)",
+          "oklch(72.14% 0.12524 293.52)",
+          "oklch(83.57% 0.12524 293.52)",
+          "oklch(95.00% 0.12524 293.52)"
+        ]
+      },
+      "focus": {
+        "role": "primary",
+        "displayName": "Focus Lavender",
+        "tonalRamp": [
+          "oklch(15.00% 0.10008 300.94)",
+          "oklch(26.43% 0.10008 300.94)",
+          "oklch(37.86% 0.10008 300.94)",
+          "oklch(49.29% 0.10008 300.94)",
+          "oklch(60.71% 0.10008 300.94)",
+          "oklch(72.14% 0.10008 300.94)",
+          "oklch(83.57% 0.10008 300.94)",
+          "oklch(95.00% 0.10008 300.94)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted Plum",
+        "tonalRamp": [
+          "oklch(15.00% 0.03985 305.77)",
+          "oklch(26.43% 0.03985 305.77)",
+          "oklch(37.86% 0.03985 305.77)",
+          "oklch(49.29% 0.03985 305.77)",
+          "oklch(60.71% 0.03985 305.77)",
+          "oklch(72.14% 0.03985 305.77)",
+          "oklch(83.57% 0.03985 305.77)",
+          "oklch(95.00% 0.03985 305.77)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Paper Line",
+        "tonalRamp": [
+          "oklch(15.00% 0.01396 272.68)",
+          "oklch(26.43% 0.01396 272.68)",
+          "oklch(37.86% 0.01396 272.68)",
+          "oklch(49.29% 0.01396 272.68)",
+          "oklch(60.71% 0.01396 272.68)",
+          "oklch(72.14% 0.01396 272.68)",
+          "oklch(83.57% 0.01396 272.68)",
+          "oklch(95.00% 0.01396 272.68)"
+        ]
+      },
+      "success": {
+        "role": "secondary",
+        "displayName": "Success Teal",
+        "tonalRamp": [
+          "oklch(15.00% 0.07900 177.70)",
+          "oklch(26.43% 0.07900 177.70)",
+          "oklch(37.86% 0.07900 177.70)",
+          "oklch(49.29% 0.07900 177.70)",
+          "oklch(60.71% 0.07900 177.70)",
+          "oklch(72.14% 0.07900 177.70)",
+          "oklch(83.57% 0.07900 177.70)",
+          "oklch(95.00% 0.07900 177.70)"
+        ]
+      },
+      "danger": {
+        "role": "secondary",
+        "displayName": "Error Rose",
+        "tonalRamp": [
+          "oklch(15.00% 0.11439 10.37)",
+          "oklch(26.43% 0.11439 10.37)",
+          "oklch(37.86% 0.11439 10.37)",
+          "oklch(49.29% 0.11439 10.37)",
+          "oklch(60.71% 0.11439 10.37)",
+          "oklch(72.14% 0.11439 10.37)",
+          "oklch(83.57% 0.11439 10.37)",
+          "oklch(95.00% 0.11439 10.37)"
+        ]
+      },
+      "ochre": {
+        "role": "secondary",
+        "displayName": "Opponent Ochre",
+        "tonalRamp": [
+          "oklch(15.00% 0.10458 64.08)",
+          "oklch(26.43% 0.10458 64.08)",
+          "oklch(37.86% 0.10458 64.08)",
+          "oklch(49.29% 0.10458 64.08)",
+          "oklch(60.71% 0.10458 64.08)",
+          "oklch(72.14% 0.10458 64.08)",
+          "oklch(83.57% 0.10458 64.08)",
+          "oklch(95.00% 0.10458 64.08)"
+        ]
+      },
+      "nav-active": {
+        "role": "neutral",
+        "displayName": "Navigation Lavender",
+        "tonalRamp": [
+          "oklch(15.00% 0.07671 297.39)",
+          "oklch(26.43% 0.07671 297.39)",
+          "oklch(37.86% 0.07671 297.39)",
+          "oklch(49.29% 0.07671 297.39)",
+          "oklch(60.71% 0.07671 297.39)",
+          "oklch(72.14% 0.07671 297.39)",
+          "oklch(83.57% 0.07671 297.39)",
+          "oklch(95.00% 0.07671 297.39)"
+        ]
+      },
+      "nav-label": {
+        "role": "neutral",
+        "displayName": "Quiet Navigation Lavender",
+        "tonalRamp": [
+          "oklch(15.00% 0.03074 296.15)",
+          "oklch(26.43% 0.03074 296.15)",
+          "oklch(37.86% 0.03074 296.15)",
+          "oklch(49.29% 0.03074 296.15)",
+          "oklch(60.71% 0.03074 296.15)",
+          "oklch(72.14% 0.03074 296.15)",
+          "oklch(83.57% 0.03074 296.15)",
+          "oklch(95.00% 0.03074 296.15)"
+        ]
+      },
+      "field-border": {
+        "role": "neutral",
+        "displayName": "Field Line",
+        "tonalRamp": [
+          "oklch(15.00% 0.01541 273.83)",
+          "oklch(26.43% 0.01541 273.83)",
+          "oklch(37.86% 0.01541 273.83)",
+          "oklch(49.29% 0.01541 273.83)",
+          "oklch(60.71% 0.01541 273.83)",
+          "oklch(72.14% 0.01541 273.83)",
+          "oklch(83.57% 0.01541 273.83)",
+          "oklch(95.00% 0.01541 273.83)"
+        ]
+      },
+      "secondary-border": {
+        "role": "neutral",
+        "displayName": "Secondary Action Line",
+        "tonalRamp": [
+          "oklch(15.00% 0.01932 295.82)",
+          "oklch(26.43% 0.01932 295.82)",
+          "oklch(37.86% 0.01932 295.82)",
+          "oklch(49.29% 0.01932 295.82)",
+          "oklch(60.71% 0.01932 295.82)",
+          "oklch(72.14% 0.01932 295.82)",
+          "oklch(83.57% 0.01932 295.82)",
+          "oklch(95.00% 0.01932 295.82)"
+        ]
+      },
+      "secondary-hover": {
+        "role": "neutral",
+        "displayName": "Secondary Hover Tint",
+        "tonalRamp": [
+          "oklch(15.00% 0.01232 301.29)",
+          "oklch(26.43% 0.01232 301.29)",
+          "oklch(37.86% 0.01232 301.29)",
+          "oklch(49.29% 0.01232 301.29)",
+          "oklch(60.71% 0.01232 301.29)",
+          "oklch(72.14% 0.01232 301.29)",
+          "oklch(83.57% 0.01232 301.29)",
+          "oklch(95.00% 0.01232 301.29)"
+        ]
+      },
+      "lavender-wash": {
+        "role": "primary",
+        "displayName": "Lavender Wash",
+        "tonalRamp": [
+          "oklch(15.00% 0.02078 301.13)",
+          "oklch(26.43% 0.02078 301.13)",
+          "oklch(37.86% 0.02078 301.13)",
+          "oklch(49.29% 0.02078 301.13)",
+          "oklch(60.71% 0.02078 301.13)",
+          "oklch(72.14% 0.02078 301.13)",
+          "oklch(83.57% 0.02078 301.13)",
+          "oklch(95.00% 0.02078 301.13)"
+        ]
+      },
+      "badge-ink": {
+        "role": "neutral",
+        "displayName": "Badge Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.06849 306.31)",
+          "oklch(26.43% 0.06849 306.31)",
+          "oklch(37.86% 0.06849 306.31)",
+          "oklch(49.29% 0.06849 306.31)",
+          "oklch(60.71% 0.06849 306.31)",
+          "oklch(72.14% 0.06849 306.31)",
+          "oklch(83.57% 0.06849 306.31)",
+          "oklch(95.00% 0.06849 306.31)"
+        ]
+      },
+      "format-selected": {
+        "role": "primary",
+        "displayName": "Format Selection Tint",
+        "tonalRamp": [
+          "oklch(15.00% 0.01517 302.56)",
+          "oklch(26.43% 0.01517 302.56)",
+          "oklch(37.86% 0.01517 302.56)",
+          "oklch(49.29% 0.01517 302.56)",
+          "oklch(60.71% 0.01517 302.56)",
+          "oklch(72.14% 0.01517 302.56)",
+          "oklch(83.57% 0.01517 302.56)",
+          "oklch(95.00% 0.01517 302.56)"
+        ]
+      },
+      "player-wash": {
+        "role": "neutral",
+        "displayName": "Player Lavender",
+        "tonalRamp": [
+          "oklch(15.00% 0.02626 300.26)",
+          "oklch(26.43% 0.02626 300.26)",
+          "oklch(37.86% 0.02626 300.26)",
+          "oklch(49.29% 0.02626 300.26)",
+          "oklch(60.71% 0.02626 300.26)",
+          "oklch(72.14% 0.02626 300.26)",
+          "oklch(83.57% 0.02626 300.26)",
+          "oklch(95.00% 0.02626 300.26)"
+        ]
+      },
+      "player-ink": {
+        "role": "neutral",
+        "displayName": "Player Violet Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.11541 296.90)",
+          "oklch(26.43% 0.11541 296.90)",
+          "oklch(37.86% 0.11541 296.90)",
+          "oklch(49.29% 0.11541 296.90)",
+          "oklch(60.71% 0.11541 296.90)",
+          "oklch(72.14% 0.11541 296.90)",
+          "oklch(83.57% 0.11541 296.90)",
+          "oklch(95.00% 0.11541 296.90)"
+        ]
+      },
+      "opponent-wash": {
+        "role": "secondary",
+        "displayName": "Opponent Paper",
+        "tonalRamp": [
+          "oklch(15.00% 0.02450 71.47)",
+          "oklch(26.43% 0.02450 71.47)",
+          "oklch(37.86% 0.02450 71.47)",
+          "oklch(49.29% 0.02450 71.47)",
+          "oklch(60.71% 0.02450 71.47)",
+          "oklch(72.14% 0.02450 71.47)",
+          "oklch(83.57% 0.02450 71.47)",
+          "oklch(95.00% 0.02450 71.47)"
+        ]
+      },
+      "opponent-ink": {
+        "role": "secondary",
+        "displayName": "Opponent Ochre Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.09187 65.98)",
+          "oklch(26.43% 0.09187 65.98)",
+          "oklch(37.86% 0.09187 65.98)",
+          "oklch(49.29% 0.09187 65.98)",
+          "oklch(60.71% 0.09187 65.98)",
+          "oklch(72.14% 0.09187 65.98)",
+          "oklch(83.57% 0.09187 65.98)",
+          "oklch(95.00% 0.09187 65.98)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Home Display",
+        "purpose": "The home invitation; responsive sizes are described in DESIGN.md."
+      },
+      "headline": {
+        "displayName": "Page Headline",
+        "purpose": "Shared page titles."
+      },
+      "question": {
+        "displayName": "Question Title",
+        "purpose": "The question inside a working panel."
+      },
+      "title": {
+        "displayName": "Panel Title",
+        "purpose": "Settings, progress, and grouped information."
+      },
+      "body": {
+        "displayName": "Reading Text",
+        "purpose": "Ordinary prose; question prompts use a more open line-height."
+      },
+      "label": {
+        "displayName": "Field Label",
+        "purpose": "Visible labels above controls."
+      },
+      "button": {
+        "displayName": "Action Text",
+        "purpose": "Primary and secondary actions."
+      },
+      "nav": {
+        "displayName": "Navigation Text",
+        "purpose": "Main text navigation in the plum bar."
+      },
+      "badge": {
+        "displayName": "Context Label",
+        "purpose": "Compact informational badges."
+      },
+      "score": {
+        "displayName": "Match Score",
+        "purpose": "Player scores, with tabular numerals."
+      },
+      "code": {
+        "displayName": "Java Code",
+        "purpose": "Platform monospace stack inside the editor."
+      }
+    },
+    "shadows": [
+      {
+        "name": "toast",
+        "value": "0 8px 28px #29264b22",
+        "purpose": "Transient confirmation above the page."
+      },
+      {
+        "name": "dialog",
+        "value": "0 15px 60px #21162d30",
+        "purpose": "A modal decision above a #23182b66 scrim."
+      }
+    ],
+    "motion": [
+      {
+        "name": "button-hover",
+        "value": "background .15s",
+        "purpose": "Quiet color change for primary and secondary button hover."
+      },
+      {
+        "name": "round-review",
+        "value": "round-in .22s ease-out",
+        "purpose": "From brightness(1.04) and translateY(4px) to brightness(1) and translateY(0)."
+      },
+      {
+        "name": "loading-spin",
+        "value": "spin 1s linear infinite",
+        "purpose": "Loading icons rotate to 360deg."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation:none;transition:none;scroll-behavior:auto",
+        "purpose": "Applied under prefers-reduced-motion:reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-min",
+        "value": "1500px"
+      },
+      {
+        "name": "compact-max",
+        "value": "1150px"
+      },
+      {
+        "name": "tablet-max",
+        "value": "900px"
+      },
+      {
+        "name": "phone-max",
+        "value": "650px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The primary invitation, readiness, or answer action.",
+      "html": "<button class=\"ds-button-primary\" type=\"button\">Ready to play <svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-7-7 7 7-7 7\"/></svg></button>",
+      "css": ".ds-button-primary{font-family:'Manrope Variable',sans-serif;border:0;border-radius:6px;min-height:45px;padding:12px 20px;display:inline-flex;align-items:center;justify-content:center;gap:10px;font-size:13px;font-weight:700;line-height:1.5;white-space:nowrap;cursor:pointer;transition:background .15s;background:var(--accent,#6b54ad);color:#fff}.ds-button-primary:hover:not(:disabled){background:#594392}.ds-button-primary:focus-visible{outline:3px solid var(--focus,#a48bce);outline-offset:4px;}.ds-button-primary:disabled{opacity:.48;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-button-primary{transition:none}}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A quieter adjacent action with a white surface and fine border.",
+      "html": "<button class=\"ds-button-secondary\" type=\"button\">Back to Play</button>",
+      "css": ".ds-button-secondary{font-family:'Manrope Variable',sans-serif;border:0;border-radius:6px;min-height:45px;padding:12px 20px;display:inline-flex;align-items:center;justify-content:center;gap:10px;font-size:13px;font-weight:700;line-height:1.5;white-space:nowrap;cursor:pointer;transition:background .15s;background:#fff;border:1px solid #d7d4e2;color:var(--ink,#29264b)}.ds-button-secondary:hover:not(:disabled){background:#f6f3fc}.ds-button-secondary:focus-visible{outline:3px solid var(--focus,#a48bce);outline-offset:4px;}.ds-button-secondary:disabled{opacity:.48;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-button-secondary{transition:none}}"
+    },
+    {
+      "name": "Text Action",
+      "kind": "button",
+      "refersTo": "button-text",
+      "description": "A compact unfilled action for navigation or supporting tasks.",
+      "html": "<button class=\"ds-text-button\" type=\"button\">Leave room</button>",
+      "css": ".ds-text-button{font-family:'Manrope Variable',sans-serif;display:inline-flex;align-items:center;gap:7px;color:var(--accent,#6b54ad);background:none;border:0;padding:3px 0;font-size:12px;font-weight:650;line-height:1.5;text-align:left;cursor:pointer}.ds-text-button:hover{text-decoration:underline;text-underline-offset:3px}.ds-text-button:focus-visible{outline:3px solid var(--focus,#a48bce);outline-offset:4px;}.ds-text-button:disabled{opacity:.48;cursor:not-allowed}"
+    },
+    {
+      "name": "Labeled Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "A standard editable profile or configuration field.",
+      "html": "<div class=\"ds-field\"><label for=\"ds-display-name\">Display name</label><input id=\"ds-display-name\" value=\"Mateo\" placeholder=\"Your name\" minlength=\"2\" maxlength=\"24\"></div>",
+      "css": ".ds-field{font-family:'Manrope Variable',sans-serif;color:var(--ink,#29264b)}.ds-field label{display:block;font-size:12px;font-weight:700;line-height:1.5;margin-bottom:9px}.ds-field input{font-family:'Manrope Variable',sans-serif;width:100%;height:47px;border:1px solid #d4d7e2;border-radius:6px;padding:0 13px;color:var(--ink,#29264b);background:#fff;font-size:12px;min-width:0;caret-color:var(--accent,#6b54ad)}.ds-field input::placeholder{color:var(--muted,#685d75);opacity:1}.ds-field input:focus-visible{outline:3px solid var(--focus,#a48bce);outline-offset:4px;}.ds-field input:disabled{background:#f8f9fc;color:#716b80}@media(max-width:650px){.ds-field label{font-size:11px}.ds-field input{font-size:11px;height:44px;padding:0 9px}}"
+    },
+    {
+      "name": "Main Navigation",
+      "kind": "nav",
+      "refersTo": "nav",
+      "description": "The plum navigation field with an active lavender underline.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Main navigation\"><button type=\"button\" class=\"ds-nav-current\" aria-current=\"page\">Play</button><button type=\"button\">Match history</button><button type=\"button\">Leaderboard</button></nav>",
+      "css": ".ds-nav{font-family:'Manrope Variable',sans-serif;display:flex;align-items:stretch;gap:31px;height:80px;background:var(--plum,#29264b);padding:0 24px}.ds-nav button{font-family:'Manrope Variable',sans-serif;background:none;border:0;border-bottom:3px solid transparent;color:#cdc8de;padding:4px 0 0;font-weight:550;font-size:13px;line-height:1.5;cursor:pointer}.ds-nav button.ds-nav-current{color:#fff;border-bottom-color:#c6b7ed}.ds-nav button:hover{color:#fff}.ds-nav button:focus-visible{outline:3px solid var(--focus,#a48bce);outline-offset:4px;}@media(max-width:900px){.ds-nav{height:72px;gap:23px}}@media(max-width:650px){.ds-nav{height:49px;gap:28px;padding:0 20px}.ds-nav button{font-size:11px;padding:0}}"
+    },
+    {
+      "name": "Context Badge",
+      "kind": "chip",
+      "refersTo": "badge",
+      "description": "A noninteractive label for match context or progress.",
+      "html": "<span class=\"ds-badge\">1v1 room · Demo questions</span>",
+      "css": ".ds-badge{font-family:'Manrope Variable',sans-serif;display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:20px;background:#e9e4f3;color:#68547d;font-size:11px;line-height:1.5;font-weight:600;white-space:nowrap}"
+    },
+    {
+      "name": "Work Panel",
+      "kind": "card",
+      "refersTo": "work-panel",
+      "description": "A flat white area for a question, answer, or progress task.",
+      "html": "<section class=\"ds-work-panel\"><h2>Your answer</h2><p>Choose an answer, then lock it in.</p></section>",
+      "css": ".ds-work-panel{font-family:'Manrope Variable',sans-serif;background:#fff;border:1px solid var(--line,#dde0ea);border-radius:12px;padding:30px;min-width:0;color:var(--ink,#29264b)}.ds-work-panel h2{margin:0;font-size:18px;font-weight:740;line-height:1.35;letter-spacing:-.02em}.ds-work-panel p{font-size:14px;line-height:1.5;color:var(--muted,#685d75);margin:12px 0 0;max-width:72ch}@media(max-width:1150px){.ds-work-panel{padding:24px}}@media(max-width:650px){.ds-work-panel{padding:24px 22px}}"
+    },
+    {
+      "name": "Selected Format",
+      "kind": "button",
+      "refersTo": "format-option",
+      "description": "An option tile selected with a border, pale fill, and check cue.",
+      "html": "<button type=\"button\" class=\"ds-format ds-format-selected\" aria-pressed=\"true\"><span class=\"ds-format-icons\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m3 5 2 2 4-4M13 6h8M13 12h8M13 18h8m-18-1 2 2 4-4\"/></svg><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m20 6-11 11-5-5\"/></svg></span><strong>Quiz</strong><small>Choose the right answer</small></button>",
+      "css": ".ds-format{font-family:'Manrope Variable',sans-serif;background:#fff;border:1px solid #d4d7e2;padding:15px 14px;text-align:left;border-radius:7px;min-width:0;color:var(--ink,#29264b);line-height:1.5;cursor:pointer}.ds-format-selected{border:2px solid var(--accent,#6b54ad);padding:14px 13px;background:#f5f1fc}.ds-format-icons{display:flex;align-items:center;justify-content:space-between;color:var(--accent,#6b54ad);margin-bottom:12px;gap:48px}.ds-format strong{font-size:14px;display:block;font-weight:700}.ds-format small{font-size:10px;color:var(--muted,#685d75);display:block;margin-top:4px}.ds-format:focus-visible{outline:3px solid var(--focus,#a48bce);outline-offset:4px;}.ds-format:disabled{opacity:.48;cursor:not-allowed}@media(max-width:650px){.ds-format{padding:13px 11px}.ds-format-selected{padding:12px 10px}.ds-format strong{font-size:13px}.ds-format small{font-size:9px;line-height:1.5;margin-top:5px}}"
+    },
+    {
+      "name": "Paired Round Progress",
+      "kind": "custom",
+      "refersTo": "round-mark",
+      "description": "Aligned positions show each player’s current round and outcomes.",
+      "html": "<div class=\"ds-progress\"><div class=\"ds-progress-row\"><span>You</span><div><span class=\"ds-round ds-round-correct\" aria-label=\"Round 1 correct\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m20 6-11 11-5-5\"/></svg></span><span class=\"ds-round ds-round-current\" aria-label=\"Round 2 current\">2</span><span class=\"ds-round\">3</span><span class=\"ds-round\">4</span></div></div><div class=\"ds-progress-row ds-progress-other\"><span>Alex</span><div><span class=\"ds-round ds-round-incorrect\" aria-label=\"Round 1 incorrect\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m18 6-12 12M6 6l12 12\"/></svg></span><span class=\"ds-round ds-round-current\" aria-label=\"Round 2 current\">2</span><span class=\"ds-round\">3</span><span class=\"ds-round\">4</span></div></div></div>",
+      "css": ".ds-progress{font-family:'Manrope Variable',sans-serif;display:flex;flex-direction:column;gap:5px;margin:17px 3px 29px}.ds-progress-row{display:flex;gap:15px;align-items:center}.ds-progress-row>span{font-size:10px;width:90px;color:var(--muted,#685d75);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ds-progress-row>div{display:flex;gap:5px;flex:1;min-width:0}.ds-round{flex:1;max-width:64px;height:19px;border-radius:4px;background:#e8e5ef;color:var(--muted,#685d75);display:flex;align-items:center;justify-content:center;font-size:9px;font-variant-numeric:tabular-nums}.ds-round-current{background:#dad0ef;color:#654a9c;border:1px solid #aa95d0}.ds-round-correct{background:#d9ece5;color:var(--success,#267465)}.ds-round-incorrect{background:#efdedf;color:var(--danger,#9a4555)}.ds-progress-other .ds-round-current{background:#f0e1ca;border-color:#cfb288;color:#805921}@media(max-width:650px){.ds-progress{margin:15px 0 23px}.ds-progress-row{gap:8px}.ds-progress-row>span{width:48px;font-size:9px}.ds-progress-row>div{gap:3px}.ds-round{height:16px;font-size:8px}.ds-round>svg{width:10px}}"
+    },
+    {
+      "name": "Java Editor Shell",
+      "kind": "custom",
+      "refersTo": "editor",
+      "description": "The light file-tab and code typography; the app uses CodeMirror for editing.",
+      "html": "<div class=\"ds-editor\"><div class=\"ds-editor-tab\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m18 16 4-4-4-4M6 8l-4 4 4 4m12-9-4 18\"/></svg>Main.java<span>Java</span></div><textarea class=\"ds-code\" aria-label=\"Java code editor preview\" spellcheck=\"false\">public class Main {\n    public static void main(String[] args) {\n        System.out.println(42);\n    }\n}</textarea></div>",
+      "css": ".ds-editor{font-family:'Manrope Variable',sans-serif;border:1px solid #ddd7e6;border-radius:7px;overflow:hidden;max-width:100%;color:var(--ink,#29264b);background:#fff}.ds-editor-tab{display:flex;align-items:center;gap:7px;padding:11px 13px;background:#f4f1f8;border-bottom:1px solid #e1dbe8;font-size:11px;line-height:1.5}.ds-editor-tab span{margin-left:auto;color:var(--muted,#685d75);font-size:10px}.ds-code{display:block;width:100%;height:310px;border:0;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;text-align:left;background:#fff;color:var(--ink,#29264b);white-space:pre;resize:none;caret-color:var(--accent,#6b54ad)}.ds-code:focus{outline:2px solid var(--focus,#a48bce);outline-offset:-2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Campus scorebook",
+    "overview": "A clear university score sheet gives shared study a friendly competitive rhythm. Cool paper, white work areas, and a dark plum navigation bar hold the interface together. Violet identifies the player's actions; warm ochre distinguishes the opponent. The light appearance is the user-selected visual identity.\n\nThe atmosphere is composed, approachable, and focused on reading. Strong sentence-case headings sit above compact labels and generous work areas. Paired scores and round marks make the contest visible while questions, formulas, and code remain the main work. Imagery is code-native: Lucide SVG icons, mathematical notation, and a simple SVG rating chart.",
+    "keyCharacteristics": [
+      "Cool light ground with flat white work panels.",
+      "Self-hosted Manrope for headings, controls, and prose.",
+      "Violet player actions and ochre opponent identity.",
+      "Paired scores and aligned strips of round outcomes.",
+      "Restrained borders, moderate corners, and quiet state changes."
+    ],
+    "rules": [
+      {
+        "name": "The Color Has a Job Rule",
+        "body": "Use violet for the player's actions and selections, ochre for the opposing player, and success or error colors for outcomes with a written or icon cue.",
+        "section": "colors"
+      },
+      {
+        "name": "The Stable Numbers Rule",
+        "body": "Use tabular numerals for changing scores, clocks, ratings, and comparable numeric answers so columns and digit widths stay steady.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Work Surface Rule",
+        "body": "Keep ordinary cards and answer panels flat; reserve shadows for transient overlays.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** keep the user-selected light ground, white work panels, and plum navigation across new surfaces.",
+      "**Do** use self-hosted Manrope, sentence-case labels, and tabular numerals for scores and clocks.",
+      "**Do** preserve written or icon cues beside meaningful status colors.",
+      "**Do** keep both players' round positions aligned and the active timer visible on phones.",
+      "**Do** use local scrolling for long code, formulas, and tables while the page fits its viewport.",
+      "**Do** retain visible keyboard focus and honor reduced-motion preferences."
+    ],
+    "donts": [
+      "**Don't** substitute the earlier sketch's color values for the implemented tokens.",
+      "**Don't** add decorative photography or illustration to this code-native study world.",
+      "**Don't** add shadows to ordinary work panels or nest shadowed cards inside them.",
+      "**Don't** turn score, rating, and time numerals into proportional-width text.",
+      "**Don't** use a system display face or text glyphs in place of the shipped Manrope and SVG icon vocabulary."
+    ]
+  }
+}
