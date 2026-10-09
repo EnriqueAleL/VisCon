@@ -1,0 +1,3596 @@
+WEBVTT
+
+00:00:03.145 --> 00:00:07.305 
+Hi everyone, I think we shall start in 30 seconds.
+
+00:00:10.248 --> 00:00:12.248 
+OK, so who am I?
+
+00:00:12.248 --> 00:00:13.928 
+Who I always on or not here?
+
+00:00:14.288 --> 00:00:23.792 
+So I got my bachelor's and Master's from NTQA from Athens and I recently defended my PhD basically 2
+
+00:00:23.792 --> 00:00:24.648 
+days ago.
+
+00:00:25.048 --> 00:00:28.408 
+So you should have more faith in me right now delivering the lecture.
+
+00:00:29.178 --> 00:00:34.338 
+And in terms of research interests, I'm very interested in hardware OS Co design.
+
+00:00:34.378 --> 00:00:37.258 
+Like I will deliver the virtual memory course.
+
+00:00:37.258 --> 00:00:44.762 
+This was a topic of my PhD as well tomorrow and today I also worked a lot on hardware, software Co
+
+00:00:44.762 --> 00:00:45.298 
+design.
+
+00:00:45.298 --> 00:00:46.338 
+I worked on prefetching.
+
+00:00:46.698 --> 00:00:48.818 
+That's why I'm delivering the prefetching lecture as well.
+
+00:00:49.338 --> 00:00:54.178 
+And lately I'm also working in system and architecture for physical AI and robotics.
+
+00:00:54.618 --> 00:01:00.138 
+After some internships I did, but in this lecture, we're going to talk about prefetching again.
+
+00:01:00.298 --> 00:01:02.818 
+These are the readings for this week and the last week.
+
+00:01:03.098 --> 00:01:04.138 
+I suggest reading them.
+
+00:01:04.578 --> 00:01:09.178 
+If there's one that you would spend time on, it's the last one, in my opinion, the run ahead
+
+00:01:09.178 --> 00:01:11.778 
+execution, which I will dive much deeper into today.
+
+00:01:12.778 --> 00:01:17.578 
+So let's do a very, very quick recap of what you discussed last time.
+
+00:01:17.578 --> 00:01:19.858 
+So what is prefetching?
+
+00:01:19.858 --> 00:01:25.686 
+So we want to fetch the data before it is needed by the program and this way we prefetch them,
+
+00:01:25.686 --> 00:01:26.058 
+right?
+
+00:01:26.418 --> 00:01:31.364 
+This way when the program performs the memory access, it finds the data in the caches or in the
+
+00:01:31.364 --> 00:01:32.458 
+memory in some cases.
+
+00:01:32.458 --> 00:01:35.538 
+And this is much faster compared to waiting for it on demand.
+
+00:01:36.898 --> 00:01:39.138 
+Why do we need prefetching?
+
+00:01:39.138 --> 00:01:41.418 
+Because the memory latency is high.
+
+00:01:41.418 --> 00:01:48.450 
+If you have seen what's happening right now with all the memory manufacturers, there's a dramatic
+
+00:01:48.450 --> 00:01:55.410 
+increase in the memory subsystem price where like it's 3X4 X the amount of money you would spend
+
+00:01:55.410 --> 00:01:56.498 
+five years ago.
+
+00:01:56.498 --> 00:02:00.378 
+Because people care a lot about memory latency and memory capacity.
+
+00:02:00.898 --> 00:02:07.330 
+So if we find a way to fetch data earlier and in a very accurate manner this way we can eliminate
+
+00:02:07.330 --> 00:02:10.978 
+this latency, We can hide this latency from the system.
+
+00:02:12.378 --> 00:02:17.175 
+This way whenever we access the cast, for example to retrieve our data, we will find them there and
+
+00:02:17.175 --> 00:02:19.938 
+we don't need to wait fetching them from the main memory.
+
+00:02:20.418 --> 00:02:23.418 
+And this you can generalise it across beyond caches.
+
+00:02:23.418 --> 00:02:28.826 
+You could say that I will fetch the data from my disk to the memory so that next time I access it, I
+
+00:02:28.826 --> 00:02:32.018 
+find it in the memory and not fetch it again from the disk.
+
+00:02:33.178 --> 00:02:38.919 
+So the question is, can we eliminate all different types of cache misses, for example, capacity
+
+00:02:38.919 --> 00:02:41.458 
+misses, conflict misses, coherence misses.
+
+00:02:41.458 --> 00:02:47.978 
+And this is a challenge with prefetching and prefetching specifically has one key mission.
+
+00:02:47.978 --> 00:02:55.258 
+So we want to predict which address or which addresses will be needed in the future bar application.
+
+00:02:55.658 --> 00:03:02.364 
+So when the programmer writes, I want to access X at the index I, we need to find which would be the
+
+00:03:02.364 --> 00:03:04.578 
+index that they will access next.
+
+00:03:04.978 --> 00:03:06.058 
+Will it be a stride?
+
+00:03:06.058 --> 00:03:07.018 
+Will it be a stream?
+
+00:03:07.018 --> 00:03:07.938 
+Will it be a pointer?
+
+00:03:07.938 --> 00:03:09.098 
+Chasing what?
+
+00:03:09.098 --> 00:03:10.378 
+What would they access, right.
+
+00:03:11.778 --> 00:03:17.518 
+So this works very, very well in modern systems in your processors like in Apple processors, in the
+
+00:03:17.518 --> 00:03:22.738 
+AMD, Intel processors like it works very well if you have predictable misaddress patterns.
+
+00:03:23.298 --> 00:03:28.534 
+So if the pattern that the program is using is very predictable, then we make the life of a
+
+00:03:28.534 --> 00:03:29.858 
+prefetcher much easier.
+
+00:03:30.098 --> 00:03:37.109 
+It's very, it's much easier to anticipate what will happen in the future basically and a key
+
+00:03:37.109 --> 00:03:38.938 
+property of prefetching.
+
+00:03:38.938 --> 00:03:45.598 
+And that's why if you look today in a processor, there are more than like six to seven prefetching
+
+00:03:45.598 --> 00:03:52.055 
+prefetchers all the way from the core up to the storage in the SSD is that prefetching does not
+
+00:03:52.055 --> 00:03:56.338 
+affect correctness because it's a purely opportunistic process.
+
+00:03:56.818 --> 00:03:58.218 
+We make a prediction.
+
+00:03:58.258 --> 00:04:02.378 
+OK, our data is going to be fetched from index I.
+
+00:04:03.138 --> 00:04:03.818 
+We may be wrong.
+
+00:04:03.898 --> 00:04:04.498 
+Think about it.
+
+00:04:04.578 --> 00:04:05.738 
+But who cares, right?
+
+00:04:05.738 --> 00:04:12.517 
+We fetch the data, we spent a bit more power, maybe we spend a bit more bandwidth, but it doesn't
+
+00:04:12.517 --> 00:04:19.018 
+really matter because if we do not fetch the data correctly, simply we wasted some resources.
+
+00:04:19.018 --> 00:04:21.338 
+We do not affect the correctness of the actual program.
+
+00:04:21.738 --> 00:04:26.719 
+So there is no need for any sort of state recovery, which you might have seen when we have a
+
+00:04:26.719 --> 00:04:31.538 
+misprediction, for example, misspeculation in the reorder buffer of an out of order core.
+
+00:04:32.498 --> 00:04:34.018 
+So yes, search.
+
+00:04:34.018 --> 00:04:39.798 
+For example, if we do a branch misprediction, which is very, very tricky to handle, then we would
+
+00:04:39.798 --> 00:04:42.898 
+need to roll back to the point that our program was.
+
+00:04:43.098 --> 00:04:47.997 
+And that's a much more difficult scenario to handle compared to prefetching, whether we would simply
+
+00:04:47.997 --> 00:04:49.418 
+fetch the data and that's it.
+
+00:04:50.898 --> 00:04:58.789 
+So if we want to handle more complex patterns, for example multiple regular strides, see here an
+
+00:04:58.789 --> 00:05:02.818 
+example where we have plus 1 + 2 + 3 + 1 + 2 + 3.
+
+00:05:03.258 --> 00:05:05.698 
+Even though this is not a, this is a repeating pattern.
+
+00:05:06.058 --> 00:05:13.178 
+This is, let's say a hard to predict repeating pattern and other regular accesses as you have when
+
+00:05:13.178 --> 00:05:19.935 
+you write programs, for example in C or C++ or even Python in some cases where you use linked
+
+00:05:19.935 --> 00:05:24.658 
+traversals, where you use dictionaries, when you use hash tables.
+
+00:05:24.898 --> 00:05:30.532 
+In these cases you have irregular memory accesses and these are very hard to capture with a data
+
+00:05:30.532 --> 00:05:31.178 
+prefetcher.
+
+00:05:32.138 --> 00:05:37.696 
+You show that like one of these schemes that was proposed before, it's called the path confidence
+
+00:05:37.696 --> 00:05:43.198 
+based look ahead prefetcher where we would record a series of patterns, a series of strides that
+
+00:05:43.198 --> 00:05:48.814 
+appear in the programme and what happens the next time we see the first occurrence of a stride, we
+
+00:05:48.814 --> 00:05:52.138 
+are able to predict all the next strides in the programme.
+
+00:05:52.618 --> 00:05:56.258 
+This is an approach that you can think of as a record and replay approach.
+
+00:05:56.338 --> 00:06:01.765 
+I record what happened one time in the program and I predict based on this history, I replay the
+
+00:06:01.765 --> 00:06:02.218 
+history.
+
+00:06:02.578 --> 00:06:08.422 
+In this scenario, I predicted, I recorded that 7 was followed by -6, followed by 12, followed by
+
+00:06:08.422 --> 00:06:12.258 
+6:00 and then I predicted this in the next occurrence of seven.
+
+00:06:13.898 --> 00:06:16.898 
+So one of the works you discussed was Pithia.
+
+00:06:17.498 --> 00:06:23.384 
+We worked a lot with Rahul and the whole group on that where we show that like even this is not
+
+00:06:23.384 --> 00:06:23.818 
+enough.
+
+00:06:23.818 --> 00:06:29.770 
+Taking a look at the history is one way, but learning from the history is the one of is a better
+
+00:06:29.770 --> 00:06:30.018 
+way.
+
+00:06:30.178 --> 00:06:36.285 
+Basically, if we try to understand what sort of offsets strides, what sort of aggressiveness we
+
+00:06:36.285 --> 00:06:42.200 
+should use in prefetching and make the system dynamic and self evolving, that's where we can
+
+00:06:42.200 --> 00:06:44.258 
+achieve the best of performance.
+
+00:06:45.258 --> 00:06:50.418 
+So you discussed, I guess this whole thing last time where we have a demand request.
+
+00:06:50.898 --> 00:06:56.196 
+You have some features like what is the PC that the program is currently into, which were the last
+
+00:06:56.196 --> 00:06:58.738 
+three addresses that the program was accessing.
+
+00:06:59.058 --> 00:07:01.618 
+And based on these, we use AQ learning approach.
+
+00:07:01.618 --> 00:07:05.098 
+This is a reinforcement learning approach where it's very simple.
+
+00:07:05.098 --> 00:07:12.121 
+You basically track and you try to estimate which path, which decision, which action would give you
+
+00:07:12.121 --> 00:07:14.818 
+back the largest reward in the future.
+
+00:07:15.298 --> 00:07:21.418 
+So in this example, for example, we might see that like the best thing would you assume a stride of
+
+00:07:21.418 --> 00:07:24.138 
+three and prefetch with a look ahead of two.
+
+00:07:24.138 --> 00:07:30.938 
+Which means that like I will prefetch 2 axis upfront and then I will start with a stride of two.
+
+00:07:31.698 --> 00:07:37.707 
+And this way, we would generate the prefetch inserted into some queues and make sure we are able to
+
+00:07:37.707 --> 00:07:40.378 
+update based on what happened in the future.
+
+00:07:40.658 --> 00:07:45.194 
+The moment we send the request in reinforcement learning, we cannot basically anticipate what
+
+00:07:45.194 --> 00:07:46.658 
+happened in the future, right?
+
+00:07:47.098 --> 00:07:51.738 
+So what we need to do is we need to register in the log somewhere that we've issued this prefetch.
+
+00:07:52.218 --> 00:07:58.878 
+And then when the time comes and we find out that this prefetch was very useful, we need to update
+
+00:07:58.878 --> 00:08:05.471 
+our Q table to register the fact that, OK, this action that we took under this specific state was
+
+00:08:05.471 --> 00:08:07.578 
+very beneficial for the future.
+
+00:08:07.898 --> 00:08:10.658 
+And next time we see this again, we need to follow it.
+
+00:08:13.098 --> 00:08:17.832 
+This is the performance we observed with TOPI and it's very good like across many core
+
+00:08:17.832 --> 00:08:18.658 
+configurations.
+
+00:08:18.658 --> 00:08:19.978 
+This worked very nicely.
+
+00:08:20.618 --> 00:08:22.298 
+And I will not bother you more about that.
+
+00:08:22.298 --> 00:08:24.138 
+You can see Rahul's video on the topic.
+
+00:08:24.138 --> 00:08:26.578 
+Rahul is another graduate PG student.
+
+00:08:27.338 --> 00:08:28.338 
+And this is a great book.
+
+00:08:28.338 --> 00:08:33.523 
+Like if someone wants to understand deeply reinforcement learning statistics and how you can
+
+00:08:33.523 --> 00:08:38.258 
+navigate through the space of non supervised learning, I think this is a great read.
+
+00:08:38.258 --> 00:08:40.218 
+It's sort of a very nice read.
+
+00:08:40.218 --> 00:08:43.418 
+I read it in the first year of my PhD basically.
+
+00:08:44.938 --> 00:08:47.218 
+So now let's have more fun with prefetching.
+
+00:08:48.338 --> 00:08:53.418 
+So as I discussed before, a prefetcher needs to do many things right.
+
+00:08:53.658 --> 00:09:01.555 
+It might need to capture strides, you might need to capture weird stream patterns, multiple multi
+
+00:09:01.555 --> 00:09:02.858 
+stride patterns.
+
+00:09:02.858 --> 00:09:03.738 
+And that's why.
+
+00:09:03.898 --> 00:09:10.414 
+In most modern processors we are using multiple prefetchers to cover many access patterns and this
+
+00:09:10.414 --> 00:09:13.938 
+provides one key advantage, better prefetch coverage.
+
+00:09:13.938 --> 00:09:19.938 
+So what does that mean if my program is doing both streams, strides, irregular access patterns?
+
+00:09:20.418 --> 00:09:26.863 
+If I employ 3 prefetchers, one for it's objective, then I can basically capture all of them, but at
+
+00:09:26.863 --> 00:09:29.338 
+the cost of one thing, of many things.
+
+00:09:29.338 --> 00:09:32.058 
+Basically it's more complex, right?
+
+00:09:32.218 --> 00:09:35.178 
+I need to have many designs like the processors.
+
+00:09:35.178 --> 00:09:40.337 
+Right now the, the current processors you're using has six to seven prefetchers, some of the L1
+
+00:09:40.337 --> 00:09:41.858 
+cache, some of the L2 cache.
+
+00:09:42.058 --> 00:09:47.494 
+And the problem is that they, the whole research right now is moving around coordinating this
+
+00:09:47.494 --> 00:09:48.138 
+prefetcher.
+
+00:09:48.138 --> 00:09:53.342 
+So you basically need to find a way to activate 1 prefetcher for one part of the program, deactivate
+
+00:09:53.342 --> 00:09:58.338 
+the others for some other part of the program, and somehow holistically manage this thing right.
+
+00:09:59.418 --> 00:10:02.338 
+The second is that it's more bandwidth intensive.
+
+00:10:02.338 --> 00:10:03.298 
+And what does that mean?
+
+00:10:03.698 --> 00:10:09.273 
+If I have let's say 6 prefetchers in the system and I'm very aggressive when I turn them on all on,
+
+00:10:09.273 --> 00:10:12.258 
+then I start sending lots of requests to main memory.
+
+00:10:12.778 --> 00:10:18.465 
+So if my main memory does not have enough bandwidth to supply to provide all the data, then I start
+
+00:10:18.465 --> 00:10:24.152 
+saturating potentially both the prefetched requests because they cannot arrive in time and the data
+
+00:10:24.152 --> 00:10:29.725 
+requests would get hurt because you're prefetching so much that you're creating a bot link in the
+
+00:10:29.725 --> 00:10:32.138 
+pipe between the memory and the processor.
+
+00:10:34.818 --> 00:10:40.258 
+So in real systems, when we prefetching a multi core system, we want to prefetch shared data, right?
+
+00:10:40.618 --> 00:10:45.618 
+And in many cases with prefetching shared data, we avoid coherence misses.
+
+00:10:45.938 --> 00:10:46.938 
+So what does this mean?
+
+00:10:47.378 --> 00:10:53.510 
+So whenever a process accesses the L1 cache, right in the multi core lecture you figured out that
+
+00:10:53.510 --> 00:10:59.642 
+like there is a thing called coherence where we're basically trying to find out where is our data
+
+00:10:59.642 --> 00:11:04.258 
+did some other process access our data that does it have it in the cache?
+
+00:11:04.658 --> 00:11:10.292 
+So if I prefetch shared data, this means that I already prefetch this look up where I find out what
+
+00:11:10.292 --> 00:11:13.138 
+is the coherence, the coherent state of this data.
+
+00:11:14.658 --> 00:11:18.938 
+Second, prefetching efficiency is a lot more is a lot more important in the multicore systems.
+
+00:11:19.298 --> 00:11:19.698 
+Why?
+
+00:11:19.818 --> 00:11:26.213 
+Because in a multicore system where we have multiple processes competing for memory bandwidth, then
+
+00:11:26.213 --> 00:11:32.157 
+and we might have, let's say 10 cores with six prefetchers for each core, this might mean 60
+
+00:11:32.157 --> 00:11:36.098 
+prefetchers in the system working separately doing their job.
+
+00:11:36.098 --> 00:11:42.336 
+So we need to be a lot more trying to preserve the bandwidth so that we do not destroy the
+
+00:11:42.336 --> 00:11:46.218 
+performance of other cores running in the system, right?
+
+00:11:46.498 --> 00:11:51.334 
+For example, some of you might have seen this when you launch PowerPoint and your presentation is 20
+
+00:11:51.334 --> 00:11:51.818 
+megabytes.
+
+00:11:52.658 --> 00:11:56.178 
+If you try to run another application next to it, probably it's hurting so much.
+
+00:11:56.538 --> 00:12:01.781 
+That's because PowerPoint is trying to prefetch the next slides of the presentation you're going
+
+00:12:01.781 --> 00:12:02.218 
+through.
+
+00:12:02.378 --> 00:12:03.978 
+And this kills everything in your system.
+
+00:12:03.978 --> 00:12:05.418 
+I have the problem in my MacBook as well.
+
+00:12:05.418 --> 00:12:06.098 
+It's the same thing.
+
+00:12:07.778 --> 00:12:09.778 
+So, and the other problem is this, right?
+
+00:12:09.778 --> 00:12:14.098 
+So when one course and like say that one core would benefit a lot from prefetching, right?
+
+00:12:14.098 --> 00:12:18.186 
+The other course are, OK, they're not running anything or they're running some simplistic
+
+00:12:18.186 --> 00:12:18.738 
+application.
+
+00:12:19.858 --> 00:12:26.138 
+This core that generates lots of prefetches, it's fetching data at multiple levels of the caches.
+
+00:12:26.138 --> 00:12:32.277 
+So you might find data from this core and spill over in the last level cache which is shared across
+
+00:12:32.277 --> 00:12:32.898 
+all cores.
+
+00:12:33.578 --> 00:12:39.594 
+You have the bus contention as we discussed and as you have seen in DRAM where you have discussed a
+
+00:12:39.594 --> 00:12:45.428 
+lot, you start contending for resources in the banks which row would be activated, which part of
+
+00:12:45.428 --> 00:12:50.898 
+the bus will be affected and in generally creates a whole contention in the in the system.
+
+00:12:51.738 --> 00:12:59.724 
+So in this work, which was published in HPCA 2009, we demonstrated like I, I manually demonstrated
+
+00:12:59.724 --> 00:13:06.895 
+that like if you employ A specialised method for prefetching linked data structures like
+
+00:13:06.895 --> 00:13:14.881 
+dictionaries like hash tables or closed loop hash tables, then you basically can reduce a lot this
+
+00:13:14.881 --> 00:13:17.978 
+bandwidth requirements of prefetching.
+
+00:13:18.498 --> 00:13:24.552 
+And we also did more work on that where we showed that I man, again in Micro 2009, he showed that
+
+00:13:24.552 --> 00:13:30.606 
+like if you're using hierarchical control of prefetchers, which means I'm using both a prefetcher
+
+00:13:30.606 --> 00:13:36.722 
+at it's core, a controller at it's core that either toggles on and off the prefetcher as well as a
+
+00:13:36.722 --> 00:13:40.218 
+prefetcher that covers all the prefetchers of all cores.
+
+00:13:40.498 --> 00:13:42.458 
+Then I can also get better performance.
+
+00:13:43.778 --> 00:13:50.580 
+This work in a similar speed where we demonstrate that like it's very important that you tune the
+
+00:13:50.580 --> 00:13:54.578 
+furnace in the system and coordinate it with prefetching.
+
+00:13:55.258 --> 00:14:00.744 
+And this is very relevant for memory controllers as well DM controllers because if the memory
+
+00:14:00.744 --> 00:14:03.458 
+controller receives requests from prefetching.
+
+00:14:03.898 --> 00:14:06.498 
+They need to schedule them along with data requests.
+
+00:14:06.698 --> 00:14:12.726 
+So you need to have an algorithm to anticipate what would be the benefit of prefetching this data
+
+00:14:12.726 --> 00:14:14.778 
+versus servicing the actual data.
+
+00:14:15.018 --> 00:14:16.538 
+And this is what we are addressing this work.
+
+00:14:18.698 --> 00:14:23.058 
+This is one of the nicest and simplest words that I've seen on the field where Vivek actually
+
+00:14:23.058 --> 00:14:24.418 
+proposed the following thing.
+
+00:14:24.778 --> 00:14:29.378 
+So whenever you have a prefetcher, fetch data on your last level cast.
+
+00:14:29.978 --> 00:14:34.058 
+You do not know the actual benefit of this prefetch right a priori.
+
+00:14:34.338 --> 00:14:38.898 
+So you know it only posteriori because the data request will come later.
+
+00:14:39.378 --> 00:14:45.315 
+So what you do is you have a predictor, A specialised predictor beyond the prefetcher that tells
+
+00:14:45.315 --> 00:14:48.098 
+you, OK, this prefetch is going to be useful.
+
+00:14:48.258 --> 00:14:52.578 
+So prioritise keeping it in the cast because it's going to be useful in the future.
+
+00:14:53.138 --> 00:14:58.400 
+If you see that this request is not useful and it's going to be useless and you predict that using
+
+00:14:58.400 --> 00:15:02.858 
+your tiny predictor, then you simply insert it with very low priority in the cases.
+
+00:15:02.858 --> 00:15:08.774 
+So if a demand request need to take place in the CAS for instead of this prefetched request, then it
+
+00:15:08.774 --> 00:15:14.218 
+this will happen and it will you will get bad performance without sacrificing CAS resources.
+
+00:15:15.058 --> 00:15:19.138 
+And now the very exciting topics, execution based prefetching.
+
+00:15:19.138 --> 00:15:25.546 
+Right now we talked about the prefetcher where you're basically have as an input some stream of
+
+00:15:25.546 --> 00:15:27.098 
+memory accesses, right?
+
+00:15:27.538 --> 00:15:31.058 
+And you're trying to predict the following stream of memory accesses.
+
+00:15:31.058 --> 00:15:32.338 
+What will happen in the future?
+
+00:15:32.978 --> 00:15:36.578 
+But there is another class of works called execution based professors.
+
+00:15:37.178 --> 00:15:39.658 
+And in this example is that we will in this.
+
+00:15:39.778 --> 00:15:46.580 
+The idea of this paradigm is that we will pre execute a piece of program solely for prefetching
+
+00:15:46.580 --> 00:15:46.938 
+data.
+
+00:15:47.178 --> 00:15:55.532 
+So imagine if somehow your core was able to pre execute code that leads to cache misses before the
+
+00:15:55.532 --> 00:15:57.578 
+actual main thread runs.
+
+00:15:57.898 --> 00:16:04.578 
+And this way you can pre fill the data in the caches and you find them when the main thread arrives.
+
+00:16:05.938 --> 00:16:12.530 
+This could a speculative thread approach where the pre executed programme piece can be considered a
+
+00:16:12.530 --> 00:16:18.058 
+thread and the speculative thread in some cases can be executed on a separate core.
+
+00:16:18.138 --> 00:16:24.765 
+We execute it on a separate hardware thread context, which means that like I have two sort of lanes
+
+00:16:24.765 --> 00:16:30.858 
+in my core where I can execute both the main thread and the lightweight speculative thread.
+
+00:16:31.258 --> 00:16:37.410 
+Or in some cases you could use a single context which I will show you later where you could simply
+
+00:16:37.410 --> 00:16:41.178 
+swap between threads that prefetch and threads that execute.
+
+00:16:42.938 --> 00:16:47.538 
+So this is a very big paradigm like it's called freight based pre execution.
+
+00:16:47.538 --> 00:16:54.507 
+And there, these are three Seminole works on the topic that form the basis for many other works with
+
+00:16:54.507 --> 00:17:01.338 
+hundreds of citations where basically we we can achieve 2 things when we're executing the program.
+
+00:17:01.898 --> 00:17:05.338 
+In some cases we can fork something.
+
+00:17:05.338 --> 00:17:07.458 
+Fork means that we will duplicate.
+
+00:17:07.458 --> 00:17:11.738 
+We will basically create another instance of the program using a nano thread.
+
+00:17:12.018 --> 00:17:18.684 
+This nano thread you can think of it as a very simple form of thread that runs in parallel with your
+
+00:17:18.684 --> 00:17:23.618 
+main thread and tries to anticipate and calculate the outcome of a branch.
+
+00:17:23.938 --> 00:17:29.218 
+This is not only useful for prefetching, this is useful for predicting the outcome of a branch.
+
+00:17:29.698 --> 00:17:34.138 
+So you can figure out the outcome of branch much earlier and you don't need to make a prediction.
+
+00:17:34.138 --> 00:17:38.058 
+Basically you can say, OK, this is the result of the branch, you do not need to predict.
+
+00:17:38.258 --> 00:17:42.378 
+We avoid any sort of misspeculation like we are sure that this is the correct path taken.
+
+00:17:43.218 --> 00:17:49.498 
+At the same time you can fork another thread whose only job like has nothing to do with branches.
+
+00:17:49.778 --> 00:17:54.978 
+And what it does is is it executes some piece of code that replicates your program.
+
+00:17:55.858 --> 00:17:58.538 
+And this way it generates cache misses.
+
+00:17:58.538 --> 00:18:03.098 
+It pre generates the cache misses that your programme would generate in the future.
+
+00:18:03.578 --> 00:18:08.298 
+And this way when the programme reaches this load it experiences a cache hit.
+
+00:18:08.298 --> 00:18:08.618 
+Why?
+
+00:18:08.618 --> 00:18:14.538 
+Because the nano thread on the left fetch the data, executed the code, the simplistic version of the
+
+00:18:14.538 --> 00:18:19.098 
+code much earlier, fetch the data and you have a load that hit in the caches.
+
+00:18:19.098 --> 00:18:21.818 
+And this way you get very significant speed up.
+
+00:18:23.338 --> 00:18:24.138 
+Any questions?
+
+00:18:26.321 --> 00:18:27.801 
+There are three ways of doing that.
+
+00:18:29.481 --> 00:18:36.178 
+The first way is that you block basically the the main thread spawns the nano thread and you have 33
+
+00:18:36.178 --> 00:18:38.121 
+techniques to do that, right?
+
+00:18:38.441 --> 00:18:45.041 
+One is I stop, I wait for the nano thread that runs faster to to calculate the branch.
+
+00:18:45.761 --> 00:18:49.321 
+But this is meh for performance because I need to wait right?
+
+00:18:49.761 --> 00:18:54.921 
+So the second approach is called a synchronous non blocking, which means that I spawned the thread.
+
+00:18:55.201 --> 00:19:03.130 
+It runs in a separate core and I make sure that like the two contexts registers the stack, all of it
+
+00:19:03.130 --> 00:19:04.241 
+is replicated.
+
+00:19:04.601 --> 00:19:09.868 
+So there is no way that you would need synchronization or any other sort of primitive between these
+
+00:19:09.868 --> 00:19:10.081 
+two.
+
+00:19:10.481 --> 00:19:12.361 
+Also, it's purely opportunistic, right?
+
+00:19:12.761 --> 00:19:18.281 
+The only thing you need to do in terms of prefetching is either you find the data or not.
+
+00:19:19.041 --> 00:19:20.041 
+You do not need to.
+
+00:19:20.041 --> 00:19:24.671 
+If you if you pay the penalty of synchronising, then you might miss the benefits of what you did
+
+00:19:24.671 --> 00:19:24.961 
+right?
+
+00:19:26.161 --> 00:19:26.881 
+Is that clear?
+
+00:19:29.401 --> 00:19:29.961 
+Anyone else?
+
+00:19:32.241 --> 00:19:32.521 
+Thank you.
+
+00:19:34.881 --> 00:19:38.281 
+So I'm going to talk right now about run ahead execution.
+
+00:19:38.601 --> 00:19:46.325 
+Run ahead execution was the PSD thesis of my advisor and the whole thing is falling on me to
+
+00:19:46.325 --> 00:19:47.081 
+describe.
+
+00:19:47.601 --> 00:19:53.993 
+So we have the currently order buffers as you have seen, out of order course you have windows,
+
+00:19:53.993 --> 00:19:54.401 
+right?
+
+00:19:55.081 --> 00:19:59.521 
+And these windows basically support multiple in flight instructions.
+
+00:20:00.081 --> 00:20:03.561 
+So as you can see here, there's an 8 entry instruction window.
+
+00:20:03.881 --> 00:20:07.521 
+So we have at the top the old instruction Bing a load, right?
+
+00:20:08.241 --> 00:20:09.041 
+And what did we see?
+
+00:20:09.041 --> 00:20:13.361 
+We see that this load takes 100 cycles to execute.
+
+00:20:14.801 --> 00:20:18.281 
+We have a branch next and some more instructions next.
+
+00:20:18.721 --> 00:20:24.281 
+So can someone tell me what's the problem with the rest of the instructions in this window?
+
+00:20:24.401 --> 00:20:30.252 
+Given that the old instruction is the one that is basically causing the higher latent the highest
+
+00:20:30.252 --> 00:20:35.561 
+latency, can anyone anticipate what would happen with the with the rest of instructions?
+
+00:20:39.170 --> 00:20:45.438 
+That's one thing that can happen, but the main thing that happens is that we cannot commit them,
+
+00:20:45.438 --> 00:20:45.830 
+right?
+
+00:20:46.110 --> 00:20:47.310 
+We cannot get rid of them.
+
+00:20:47.310 --> 00:20:53.572 
+We might execute them, as you correctly say, but we cannot basically commit them and retire them and
+
+00:20:53.572 --> 00:20:59.710 
+free up resources because we're waiting for this one to finish the one that would take 100 cycles.
+
+00:21:00.150 --> 00:21:04.230 
+So all of these instructions are basically have a single point of failure.
+
+00:21:04.630 --> 00:21:11.380 
+The instruction that lives at the top of the window, if this instruction is not serviced as fast as
+
+00:21:11.380 --> 00:21:14.790 
+possible, all of the other instructions will wait.
+
+00:21:15.110 --> 00:21:20.739 
+And not only that, the younger instructions that might be available to fetch might also not be
+
+00:21:20.739 --> 00:21:25.710 
+executed because we do not have space in the instruction window to add them, right?
+
+00:21:26.270 --> 00:21:32.470 
+And the whole system, the whole processor is waiting until this miss is serviced.
+
+00:21:32.870 --> 00:21:38.622 
+And which means that the whole reorder buffer, the instruction window is waiting for 100 cycles
+
+00:21:38.622 --> 00:21:39.470 
+doing nothing.
+
+00:21:39.830 --> 00:21:41.470 
+It's not commuting anything basically.
+
+00:21:43.030 --> 00:21:48.950 
+So this long latency cast misses as responsible for all these full windows stalls here.
+
+00:21:50.350 --> 00:21:57.116 
+So in this plot honour basically for your thesis demonstrated that if we're using a 128 entry
+
+00:21:57.116 --> 00:22:04.173 
+window, 128 entries in the window, most of the penalty you get from waiting comes because of long
+
+00:22:04.173 --> 00:22:08.030 
+latency misses because you're missing up the L2 cast.
+
+00:22:09.110 --> 00:22:19.145 
+If you make the window many times larger, like 2048 entry window, then you see that this percent
+
+00:22:19.145 --> 00:22:21.550 
+that gets much smaller.
+
+00:22:21.990 --> 00:22:22.270 
+Why?
+
+00:22:22.270 --> 00:22:26.146 
+Because you make your window much larger, you can fetch more instructions and you have less
+
+00:22:26.146 --> 00:22:29.470 
+dependence on the top because you can keep fetching and fetching and fetching.
+
+00:22:29.830 --> 00:22:33.750 
+And the rate at which you fetch much is the rate at which you retire basically.
+
+00:22:35.870 --> 00:22:41.535 
+So the problem is that out of order execution, as you can understand, requires this sort of very
+
+00:22:41.535 --> 00:22:43.070 
+large instruction windows.
+
+00:22:43.070 --> 00:22:47.070 
+We want to have large instruction windows to tolerate all these memory latency.
+
+00:22:47.390 --> 00:22:51.150 
+The higher the memory latency, the largest the window we would need, right?
+
+00:22:51.510 --> 00:22:54.830 
+Because then we need to match the rate at which we fetch with the rate at which we commit.
+
+00:22:55.910 --> 00:23:02.300 
+So as memory latency increases, the problem is that we would need to scale the instruction window
+
+00:23:02.300 --> 00:23:02.630 
+size.
+
+00:23:03.830 --> 00:23:11.271 
+But if we want low power and energy consumption sort, critical path execution and load design and
+
+00:23:11.271 --> 00:23:18.867 
+verification complexity, we cannot afford that because jumping from A128 entry window to a 2K entry
+
+00:23:18.867 --> 00:23:26.462 
+window, it's a very, very expensive process, both for industry and for anyone who wants to design A
+
+00:23:26.462 --> 00:23:27.230 
+processor.
+
+00:23:28.350 --> 00:23:28.950 
+So running it.
+
+00:23:28.950 --> 00:23:38.510 
+Execution proposed at HPCA 2003 is a technique where you try to combine memory parallelism benefits.
+
+00:23:38.790 --> 00:23:41.310 
+Basically you try to get the the memory.
+
+00:23:41.990 --> 00:23:46.430 
+Level parallelism benefits assuming you have a very large instruction window.
+
+00:23:46.430 --> 00:23:50.390 
+It's as if you have a very large instruction window but without having it.
+
+00:23:51.230 --> 00:23:58.893 
+So when the old on the oldest instruction as I showed you before is a long latency cache miss, what
+
+00:23:58.893 --> 00:23:59.590 
+do we do?
+
+00:24:00.190 --> 00:24:04.590 
+We checkpoint the architectural state and enter the run ahead mode.
+
+00:24:04.590 --> 00:24:06.310 
+So which means we stop, right?
+
+00:24:06.630 --> 00:24:14.653 
+And we enter run ahead mode and then in run ahead mode we speculatively pre pre execute instructions
+
+00:24:14.653 --> 00:24:20.430 
+of the program while we're waiting for the main memory access to finish.
+
+00:24:21.270 --> 00:24:28.517 
+And this way when we pre execute, our only goal is to fetch the next data required by the processor
+
+00:24:28.517 --> 00:24:32.910 
+so that we issue pre fetches and we avoid future Cos misses.
+
+00:24:33.710 --> 00:24:40.257 
+This way we have long latency instruction to to achieve this we have long latency instructions like
+
+00:24:40.257 --> 00:24:46.407 
+divisions for example being marked as invalid and we drop them and we pray that they will not
+
+00:24:46.407 --> 00:24:48.590 
+affect us from prefetching right.
+
+00:24:49.750 --> 00:24:56.610 
+This way we can basically execute a lot more prefetches in the window that we have left, which whose
+
+00:24:56.610 --> 00:25:00.110 
+duration is usually the main memory access latency.
+
+00:25:01.350 --> 00:25:07.971 
+So when the original mystery turns where we're we're waiting, we we restore the checkpoint to the
+
+00:25:07.971 --> 00:25:12.750 
+execution state that we were, to the architectural state that we were.
+
+00:25:13.190 --> 00:25:19.638 
+We flash the pipeline with all these prefets, bug prefetch instructions and we resume the normal
+
+00:25:19.638 --> 00:25:20.310 
+execution.
+
+00:25:21.350 --> 00:25:22.750 
+This is an example of run here.
+
+00:25:23.070 --> 00:25:29.824 
+So you can see here a scenario where we have a very large run reorder buffer, many windows, many
+
+00:25:29.824 --> 00:25:36.367 
+number of entries in the window, and we have a perfect cache, which means that we hit always,
+
+00:25:36.367 --> 00:25:36.790 
+right?
+
+00:25:37.190 --> 00:25:42.230 
+So we compute the instruction, we hit, then we compute the next instruction, we hit again.
+
+00:25:42.230 --> 00:25:43.710 
+That's the perfect scenario, right?
+
+00:25:45.150 --> 00:25:52.857 
+What happens when we have a small window, we compute something, we have a miss from load one and we
+
+00:25:52.857 --> 00:25:53.870 
+need to wait.
+
+00:25:53.870 --> 00:25:56.790 
+Now we need to wait for this amount of time.
+
+00:25:57.590 --> 00:26:03.522 
+So next time we compute again for the next instruction of the head of the ROB or lower, we have a
+
+00:26:03.522 --> 00:26:08.110 
+miss at the load 2 and we need to wait again because there is no other way.
+
+00:26:08.110 --> 00:26:12.350 
+We need to wait to fetch it because it blocks the ROB right in run ahead.
+
+00:26:12.350 --> 00:26:13.470 
+What we do is the following.
+
+00:26:13.470 --> 00:26:17.310 
+When load one happens, we do not simply stall.
+
+00:26:17.590 --> 00:26:22.870 
+We try to leverage the existing resources of the core to enter in a special mode.
+
+00:26:23.150 --> 00:26:29.390 
+When we run ahead, we execute instructions opportunistically in order to fetch load two.
+
+00:26:29.390 --> 00:26:36.270 
+We start and generate here the miss for load 2A lot earlier compared to the small window case.
+
+00:26:37.750 --> 00:26:43.194 
+This way we have a load one hit, which was the case before as well because we waited for this amount
+
+00:26:43.194 --> 00:26:43.630 
+of time.
+
+00:26:44.150 --> 00:26:50.639 
+But after we compute this instruction, we have a load two hit because the load 2 was issued much
+
+00:26:50.639 --> 00:26:54.830 
+earlier compared to the small window without run ahead, right?
+
+00:26:55.390 --> 00:26:57.150 
+So what do you understand from this?
+
+00:26:57.150 --> 00:27:04.699 
+But if even if we use a small window, if we're able to leverage it and overlap the miss latency, the
+
+00:27:04.699 --> 00:27:11.871 
+stall with actual print computation, the run ahead mode, then we can basically hide many cycles
+
+00:27:11.871 --> 00:27:13.230 
+from the pipeline.
+
+00:27:15.070 --> 00:27:16.750 
+So what are the benefits of run ahead?
+
+00:27:16.950 --> 00:27:22.936 
+The pressure speculatively prefetches pre executes the program far ahead into the instruction stream
+
+00:27:22.936 --> 00:27:25.750 
+without stalling for long latency instructions.
+
+00:27:26.750 --> 00:27:32.503 
+And the very important one here is that pre executed loads and stores which are independent of the
+
+00:27:32.503 --> 00:27:38.080 
+L2 miss instructions, which means that like they do not depend on the ROB on the top of the ROB
+
+00:27:38.080 --> 00:27:42.190 
+instruction, they're very accurate because why are they very accurate?
+
+00:27:42.590 --> 00:27:44.790 
+Because you're executing the actual program.
+
+00:27:44.830 --> 00:27:51.131 
+So if you're executing the actual program this way, you make sure that the that data addresses
+
+00:27:51.131 --> 00:27:57.634 
+you're generating are correct and instructions in the predicted on the predicted program path are
+
+00:27:57.634 --> 00:28:01.590 
+prefetched into the instruction cast and other cast levels.
+
+00:28:01.990 --> 00:28:03.150 
+This is another benefit.
+
+00:28:03.630 --> 00:28:10.094 
+If I start executing instructions which are in the future then I will also prefer the instructions
+
+00:28:10.094 --> 00:28:13.590 
+of the programme, not just the date of the programme.
+
+00:28:15.510 --> 00:28:21.300 
+One more benefit is that if if we have more of these structures in the system that are history
+
+00:28:21.300 --> 00:28:21.670 
+based.
+
+00:28:22.070 --> 00:28:28.458 
+If I go into the future and start executing in futuristic instructions then I will basically pre
+
+00:28:28.458 --> 00:28:29.190 
+train them.
+
+00:28:29.390 --> 00:28:35.387 
+I will pre train both my hardware prefetcher that lives in the L2 cars and I will also pre train my
+
+00:28:35.387 --> 00:28:41.324 
+branch predictor tables and this way I can basically convert much faster to a system that has high
+
+00:28:41.324 --> 00:28:41.870 
+accuracy.
+
+00:28:44.190 --> 00:28:45.590 
+I wanted to show you an example.
+
+00:28:45.590 --> 00:28:47.950 
+Does anyone have any question on how run ahead works?
+
+00:28:47.950 --> 00:28:50.790 
+OK, I know.
+
+00:28:50.790 --> 00:28:51.190 
+Oh, Sir, Yes, Sir.
+
+00:28:52.310 --> 00:29:05.150 
+So I wanted to ask if during your own 100 execution you have another cache.
+
+00:29:05.710 --> 00:29:08.710 
+So yeah.
+
+00:29:08.710 --> 00:29:15.052 
+So in this scenario, right, So in run ahead, you're stopping when you have the load one miss, you're
+
+00:29:15.052 --> 00:29:20.190 
+stopping, right, because you the instructions at the top of the ROB and you stop.
+
+00:29:20.430 --> 00:29:26.312 
+So you remove all the instructions you had, you fetch the next one that would that should be
+
+00:29:26.312 --> 00:29:28.870 
+executed and you have another load miss.
+
+00:29:29.430 --> 00:29:31.150 
+So as you correctly say, what do we do?
+
+00:29:31.550 --> 00:29:37.190 
+So the whole point of run ahead is instead of waiting for this second load, you simply issue a
+
+00:29:37.190 --> 00:29:38.150 
+prefetch for it.
+
+00:29:38.710 --> 00:29:39.990 
+You just execute it.
+
+00:29:39.990 --> 00:29:45.660 
+You you you try to fetch the data in the cache hierarchy so that when the programme resumes from the
+
+00:29:45.660 --> 00:29:50.820 
+correct point, when it restores and continues with the correct instruction again, you would
+
+00:29:50.820 --> 00:29:54.790 
+basically fetch you would have already fetched in the cache hierarchy.
+
+00:29:55.350 --> 00:30:02.907 
+That's the whole point that you're basically waiting for the load one, the load 1 stall and at the
+
+00:30:02.907 --> 00:30:06.070 
+same time you're pre fetching the load 2.
+
+00:30:06.510 --> 00:30:13.297 
+So next when you restore from the load one miss stall time, you see that the load 2 is already
+
+00:30:13.297 --> 00:30:14.670 
+fetching the cache.
+
+00:30:14.710 --> 00:30:15.990 
+That's the effect of run ahead.
+
+00:30:16.230 --> 00:30:17.750 
+You do not need to use this load.
+
+00:30:17.750 --> 00:30:23.476 
+Potentially you might not need it to not to use it to execute the run ahead programme, but the whole
+
+00:30:23.476 --> 00:30:29.087 
+purpose of the run ahead programme is to simply fetch the data of load 2 so that next time you see
+
+00:30:29.087 --> 00:30:31.550 
+load 2, it's already brought in the caches.
+
+00:30:31.550 --> 00:30:31.710 
+No.
+
+00:30:31.710 --> 00:30:34.950 
+But when you fetch, you don't lose.
+
+00:30:38.750 --> 00:30:40.110 
+Yes, you're fetching in the background.
+
+00:30:40.110 --> 00:30:42.110 
+Yes, that's the you prefetched them, right?
+
+00:30:42.470 --> 00:30:46.110 
+So you do not need, it's not a blocking load, you do not need to block on this load.
+
+00:30:46.310 --> 00:30:50.670 
+You just issue it and you forget about it and you move on, executing the rest of the instructions.
+
+00:30:56.030 --> 00:31:01.510 
+Yes, I wanted to show a more, let's say illustrative example of how run ahead works.
+
+00:31:03.233 --> 00:31:07.513 
+So let's see the following scenario.
+
+00:31:09.393 --> 00:31:11.673 
+I have three different systems which I will show you.
+
+00:31:18.863 --> 00:31:20.463 
+And these systems comes from real life.
+
+00:31:20.463 --> 00:31:21.343 
+So the processor.
+
+00:31:21.983 --> 00:31:25.183 
+So let's say that this is restaurant one, right?
+
+00:31:25.583 --> 00:31:32.753 
+And in restaurant 1, there is one person working at the kitchen, only one, right?
+
+00:31:33.273 --> 00:31:35.633 
+And this person receives orders.
+
+00:31:36.433 --> 00:31:42.193 
+Order one, order two, order three, right?
+
+00:31:42.593 --> 00:31:48.326 
+And let's agree that the long latency instructions and orders are the soups because the soup takes a
+
+00:31:48.326 --> 00:31:49.473 
+lot of time to boil.
+
+00:31:50.153 --> 00:31:51.793 
+So let's say that here you have a soup.
+
+00:31:53.953 --> 00:31:59.801 
+So imagine what would happen if one chef sits on top of the soup waiting while not executing the
+
+00:31:59.801 --> 00:32:00.593 
+other orders.
+
+00:32:00.913 --> 00:32:05.447 
+So basically if every order was a soup, they would wait for two hours then they would do the other
+
+00:32:05.447 --> 00:32:05.633 
+one.
+
+00:32:05.633 --> 00:32:09.353 
+Everybody would not be happy as you can understand right?
+
+00:32:09.633 --> 00:32:10.833 
+So this is the bud system.
+
+00:32:11.353 --> 00:32:15.953 
+If one chef just waits until the soup is boiled, then we have a problem.
+
+00:32:16.593 --> 00:32:18.273 
+So the second system.
+
+00:32:19.393 --> 00:32:22.473 
+So can someone tell me how to improve this very easily?
+
+00:32:23.033 --> 00:32:25.793 
+Like what would what would happen if I had three serfs?
+
+00:32:26.513 --> 00:32:36.793 
+I would basically have three people, three orders.
+
+00:32:39.113 --> 00:32:40.393 
+And that's very easy again, right?
+
+00:32:40.593 --> 00:32:43.233 
+3 soups, 3 orders, everybody's looking at their own soup.
+
+00:32:43.593 --> 00:32:44.193 
+That's very easy.
+
+00:32:44.193 --> 00:32:48.553 
+The problem here is that like with an average Swiss salary, I'm broke.
+
+00:32:48.913 --> 00:32:52.833 
+Like if I have 3 serfs looting at one soup, right?
+
+00:32:53.233 --> 00:33:00.393 
+So the best way of dealing with that is basically I have one SEF that is very skilled.
+
+00:33:01.033 --> 00:33:10.962 
+And what they do is that they put the soup to boil, they handle this, it's boiling, and then they
+
+00:33:10.962 --> 00:33:20.995 
+have these two orders which they can see right, and they start the preparation for these while the
+
+00:33:20.995 --> 00:33:22.633 
+soup is boiling.
+
+00:33:23.153 --> 00:33:28.393 
+This way, the chef at the last table, the last restaurant.
+
+00:33:28.593 --> 00:33:33.928 
+Is as efficient is using the same resources of the safe in the first one, but it's gaining a lot of
+
+00:33:33.928 --> 00:33:38.833 
+time and servicing the customers in a much better way compared to the one in the first one.
+
+00:33:45.473 --> 00:33:46.513 
+How does it go down?
+
+00:33:48.713 --> 00:33:49.313 
+OK, sorry.
+
+00:33:52.553 --> 00:33:53.793 
+OK, Yeah, sorry.
+
+00:34:01.688 --> 00:34:02.008 
+Right?
+
+00:34:02.288 --> 00:34:07.448 
+It's very accurate for both for prefetches, for data and for instructions.
+
+00:34:08.048 --> 00:34:10.248 
+So it's because it follows the programme path, right?
+
+00:34:10.248 --> 00:34:13.968 
+As I said, the last chef knows the orders, so he won't make a mistake.
+
+00:34:14.208 --> 00:34:19.448 
+He won't fetch a random order just because he thought some customer would order something different.
+
+00:34:20.648 --> 00:34:22.288 
+So it's very simple to implement.
+
+00:34:22.288 --> 00:34:22.768 
+Why?
+
+00:34:22.888 --> 00:34:28.314 
+Because you're basically re executing code in the same piece of hardware that you would execute your
+
+00:34:28.314 --> 00:34:29.128 
+normal program.
+
+00:34:30.208 --> 00:34:33.048 
+And there is no way, no waste of hardware context.
+
+00:34:33.048 --> 00:34:37.602 
+Which means that again, you're using this main thread that you're using for computation, you're
+
+00:34:37.602 --> 00:34:39.328 
+using it to generate the prefetches.
+
+00:34:40.728 --> 00:34:45.808 
+Also, there is no need to have a separate special purpose component to pre execute.
+
+00:34:46.008 --> 00:34:47.688 
+You can use again the same core, right?
+
+00:34:48.888 --> 00:34:50.288 
+What are some disadvantages?
+
+00:34:50.288 --> 00:34:53.288 
+First, you're executing more instructions per second, right?
+
+00:34:53.608 --> 00:34:59.368 
+As the chef, you're doing more work per second, which means you're basically consuming more power.
+
+00:34:59.768 --> 00:35:06.698 
+Also, you have you're limited by the branch prediction accuracy, which means that like if run ahead
+
+00:35:06.698 --> 00:35:13.138 
+falls into a branch during run ahead mode, then it might start making decisions based on the
+
+00:35:13.138 --> 00:35:17.408 
+predictor which are irrelevant to what the programme will do.
+
+00:35:17.848 --> 00:35:21.328 
+This way you might prefer trash in many cases.
+
+00:35:22.808 --> 00:35:25.608 
+Third, you cannot prefer dependent cache misses.
+
+00:35:25.608 --> 00:35:31.954 
+This goes back to the question of like if I do not, if I wait for the L2 cache miss, then I break
+
+00:35:31.954 --> 00:35:34.048 
+the purpose of run ahead, right?
+
+00:35:34.048 --> 00:35:36.768 
+Because I do not generate the prefetch, I wait again.
+
+00:35:37.248 --> 00:35:43.147 
+So, but if I have a data dependent miss where one load depends on another one, that's a problem
+
+00:35:43.147 --> 00:35:46.128 
+which Honour tried to solve in his dissertation.
+
+00:35:47.848 --> 00:35:51.688 
+Also, we are limited by the effectiveness of the memory level parallelism.
+
+00:35:51.688 --> 00:35:52.448 
+What does this mean?
+
+00:35:52.768 --> 00:35:59.122 
+If my processor cannot service multiple preferred requests in parallel then we will have another
+
+00:35:59.122 --> 00:36:05.609 
+sort of bottleneck because we will create resource contention and last the prefetch distance which
+
+00:36:05.609 --> 00:36:11.964 
+means how far ahead of the main thread am I going to execute is basically limited at the current
+
+00:36:11.964 --> 00:36:13.288 
+state of the thread.
+
+00:36:13.328 --> 00:36:19.710 
+Like if I'm at instruction AI cannot go and fetch the I cannot fetch instructions and pre execute
+
+00:36:19.710 --> 00:36:22.408 
+from a very different point of execution.
+
+00:36:22.408 --> 00:36:24.008 
+I need to go to instruction A + 1.
+
+00:36:24.368 --> 00:36:32.962 
+Basically the all these benefits and simplicity and all the things I discussed were basically shown
+
+00:36:32.962 --> 00:36:41.208 
+at the Sunrock, IBM Power 6 and NVIDIA Denver who all implemented one or in another way the run
+
+00:36:41.208 --> 00:36:44.768 
+ahead execution, what is the performance?
+
+00:36:44.968 --> 00:36:52.916 
+This is a very important result we show here that if we employ run ahead execution, it's 22% better
+
+00:36:52.916 --> 00:36:56.208 
+than a no professor, no run ahead scheme.
+
+00:36:56.648 --> 00:36:59.888 
+And the most important thing is that like.
+
+00:37:00.248 --> 00:37:02.528 
+You can combine it together with the prefetcher.
+
+00:37:02.688 --> 00:37:05.488 
+Basically you combine run ahead with the prefetcher in your system.
+
+00:37:05.808 --> 00:37:09.168 
+We can get even better results compared to only doing run ahead.
+
+00:37:10.168 --> 00:37:12.288 
+But this is I think the most interesting one.
+
+00:37:12.768 --> 00:37:20.721 
+This result shows that a 128 entry window, the blue, the the sorry, the red bar, the 128 entry
+
+00:37:20.721 --> 00:37:25.968 
+window with run ahead, which means they have a very lean core.
+
+00:37:25.968 --> 00:37:33.602 
+With 128 entries in the reorder buffer can almost match the performance of a 512 entry window
+
+00:37:33.602 --> 00:37:41.237 
+because we're leveraging the parallelism that we can basically extract from while waiting for
+
+00:37:41.237 --> 00:37:44.768 
+instructions for load missions to complete.
+
+00:37:46.408 --> 00:37:51.729 
+These are other nice results where like my owner showed the benefits of run ahead in both in order
+
+00:37:51.729 --> 00:37:54.608 
+and out of order course, and naturally the overheads.
+
+00:37:54.608 --> 00:38:02.388 
+When you use an in order core, which cannot at all tolerate memory access latency because every
+
+00:38:02.388 --> 00:38:10.333 
+instruction is essentially at the head of the ROB, you basically get even higher performance, and
+
+00:38:10.333 --> 00:38:11.808 
+this was shown by.
+
+00:38:12.928 --> 00:38:19.570 
+Under Chowdhury in during August 20,000 and eight in a technical report where they demonstrate the
+
+00:38:19.570 --> 00:38:20.248 
+following.
+
+00:38:20.808 --> 00:38:27.294 
+As you can see in this red line, they implement A technique called Scout and they implemented this
+
+00:38:27.294 --> 00:38:30.008 
+in the Sun computer in the Sun processor.
+
+00:38:30.488 --> 00:38:36.877 
+And they demonstrate that if you use Scout, which is a version of run Ahead, basically their version
+
+00:38:36.877 --> 00:38:43.203 
+of run Ahead, something very close, you can almost get the same performance with a four MB L2 cache
+
+00:38:43.203 --> 00:38:45.248 
+as if you have a 12 MB L2 cache.
+
+00:38:45.568 --> 00:38:52.869 
+Which means that with prefetching, prefetching VR Anna head can basically give you a discount 20
+
+00:38:52.869 --> 00:38:56.368 
+megabytes of extra overhead of extra hardware.
+
+00:38:59.288 --> 00:39:00.368 
+Yes, this is the work.
+
+00:39:00.448 --> 00:39:00.848 
+I don't know.
+
+00:39:00.848 --> 00:39:05.848 
+Published and received a tremendous amount of awards and stuff.
+
+00:39:06.328 --> 00:39:15.482 
+The biggest one, I guess the test of the time I work given to 202115 years after the paper was
+
+00:39:15.482 --> 00:39:19.768 
+published and I think many works after that.
+
+00:39:19.768 --> 00:39:22.888 
+Even after that received best paper awards coming from other groups.
+
+00:39:22.928 --> 00:39:28.845 
+Like other groups that worked in the topic, they also still push the boundary of this specific
+
+00:39:28.845 --> 00:39:30.608 
+technique in different ways.
+
+00:39:32.608 --> 00:39:33.568 
+This is 1 work.
+
+00:39:33.608 --> 00:39:39.543 
+Again, this is the Sun computer where one of the architects wrote the paper about how they
+
+00:39:39.543 --> 00:39:42.248 
+implemented runahead in the Sun computer.
+
+00:39:42.688 --> 00:39:45.688 
+And this is again follow up.
+
+00:39:47.288 --> 00:39:52.216 
+Runahead was also implemented in the IBM Power Six or one version of runahead was implemented in the
+
+00:39:52.216 --> 00:39:52.808 
+IBM Power 6.
+
+00:39:53.448 --> 00:40:02.222 
+And they, they demonstrate that like if they used to gather conventional prefetchers and runahead,
+
+00:40:02.222 --> 00:40:06.968 
+they can add additional 6% to the performance, right?
+
+00:40:06.968 --> 00:40:10.168 
+So whenever they combine these two, they get even high performance.
+
+00:40:11.008 --> 00:40:17.288 
+And it was also implemented in the 64 bit ARM processor of NVIDIA, it's called Denver.
+
+00:40:18.328 --> 00:40:24.186 
+This is a nice article that summarizes all the the whole architecture and they show how how this
+
+00:40:24.186 --> 00:40:29.008 
+works here and the performance they get lots of performance benefits with that.
+
+00:40:31.488 --> 00:40:37.676 
+And Honor in his dissertation proposed many, let's say follow-ups on how to deal with different
+
+00:40:37.676 --> 00:40:42.888 
+things, the techniques for efficient processing and run ahead execution engines.
+
+00:40:43.208 --> 00:40:48.774 
+This was basically one of the techniques where he tried to reduce the power because executing extra
+
+00:40:48.774 --> 00:40:51.248 
+instructions leads to power increase, right?
+
+00:40:51.248 --> 00:40:56.442 
+I execute more stuff in the same amount of time, which means I I increase power and honor is trying
+
+00:40:56.442 --> 00:41:00.168 
+to show how you can employ techniques to reduce the power requirements.
+
+00:41:00.608 --> 00:41:01.488 
+In the 2nd paper.
+
+00:41:01.488 --> 00:41:09.409 
+The other's value delta prediction is showing how you can basically enable some hints so that you
+
+00:41:09.409 --> 00:41:15.208 
+can prefetch for content, do some sort of content directed prefetching.
+
+00:41:15.208 --> 00:41:21.379 
+Which means if I even if I have a data dependency during run ahead, I can resolve it in a with a
+
+00:41:21.379 --> 00:41:22.408 
+trick basically.
+
+00:41:23.008 --> 00:41:30.003 
+And also owners show that like in many cases, even if run ahead sometimes goes into the wrong path
+
+00:41:30.003 --> 00:41:31.288 
+of of speculation.
+
+00:41:31.568 --> 00:41:39.175 
+Let's say you see a branch you miss, you misspeculate during granahead in this work shows that even
+
+00:41:39.175 --> 00:41:46.244 
+in this scenario you might fetch data in the mispeculation path that might be useful for the
+
+00:41:46.244 --> 00:41:49.088 
+correct execution path in the future.
+
+00:41:49.088 --> 00:41:51.648 
+And this is a very counter intuitive thing, right?
+
+00:41:51.648 --> 00:41:57.600 
+Like I fetch data from the wrong execution path of the code and then I benefit in the correct
+
+00:41:57.600 --> 00:41:59.328 
+execution path of the code.
+
+00:42:00.848 --> 00:42:05.368 
+So energy inefficiency is one thing that he tried to deal with.
+
+00:42:05.608 --> 00:42:11.011 
+Then effectiveness for pointer intensive applications against this work and the resolvable branch
+
+00:42:11.011 --> 00:42:14.688 
+mispredictions in run ahead mode where he showed what I discussed.
+
+00:42:14.688 --> 00:42:21.511 
+Like if you cannot recover from an L2 misdata dependent branch, you still might have benefits from
+
+00:42:21.511 --> 00:42:22.208 
+run ahead.
+
+00:42:24.168 --> 00:42:26.928 
+Again, these were the works of his thesis.
+
+00:42:26.928 --> 00:42:29.208 
+This was in the IEEE microtopics.
+
+00:42:30.448 --> 00:42:36.048 
+This is the work where he predicted the linked list and the pointer chasing.
+
+00:42:36.608 --> 00:42:38.608 
+And how did this work in this paper?
+
+00:42:38.608 --> 00:42:39.728 
+That's very cute actually.
+
+00:42:40.208 --> 00:42:47.768 
+So you have a load L1 miss, and again, you need to go into the run ahead window, right?
+
+00:42:47.968 --> 00:42:49.408 
+You need to go into the run ahead mode.
+
+00:42:50.528 --> 00:42:56.808 
+When you see that you cannot compute an address, you basically mark it as invalid.
+
+00:42:56.888 --> 00:43:02.208 
+Normally it's like I do not know the registers because I they depend on load one.
+
+00:43:02.488 --> 00:43:07.688 
+I cannot prefetch anything because I do not know what the instructions should fetch, right?
+
+00:43:08.248 --> 00:43:12.504 
+So next time you have a load miss again, you're failing because we didn't prefetch anything for
+
+00:43:12.504 --> 00:43:12.728 
+load.
+
+00:43:14.528 --> 00:43:22.426 
+So what Arnold did here is that at the load one miss, he found a way to value predict, which means
+
+00:43:22.426 --> 00:43:30.405 
+that OK, I'm missing load one, but I will now predict the value that probably I will fetch for load
+
+00:43:30.405 --> 00:43:30.728 
+one.
+
+00:43:31.168 --> 00:43:36.208 
+And he showed that if this value is a pointer, for example, it's very easy to predict that.
+
+00:43:36.688 --> 00:43:43.284 
+So this way when load 2 comes, you can compute the address of load 2 which depends on the value that
+
+00:43:43.284 --> 00:43:44.208 
+you predicted.
+
+00:43:44.768 --> 00:43:52.415 
+So you make all these nested predictions and this way you fetch load two, you prefetch load 2, so
+
+00:43:52.415 --> 00:44:00.142 
+next time you execute the load two, you basically hit and this way you save important cycles which
+
+00:44:00.142 --> 00:44:03.848 
+were not saved before in the classic run ahead.
+
+00:44:04.488 --> 00:44:11.664 
+This is the work and looking in the past at the time there were many works that like were focusing
+
+00:44:11.664 --> 00:44:18.768 
+on increasing the reorder buffer size and designing bigger and more complicated machines and run.
+
+00:44:18.768 --> 00:44:24.486 
+I had basically is a very, let's say simple and efficient and intuitive way of dealing with the
+
+00:44:24.486 --> 00:44:24.968 
+problem.
+
+00:44:25.248 --> 00:44:30.033 
+It generated basically a different way of thinking of like let's keep the course small and try to
+
+00:44:30.033 --> 00:44:31.168 
+get the heck out of it.
+
+00:44:31.168 --> 00:44:32.248 
+Basically you try to.
+
+00:44:32.888 --> 00:44:37.768 
+Levered you that's not this possible, you use automat expect.
+
+00:44:37.848 --> 00:44:39.288 
+Execution only for prefetching.
+
+00:44:39.288 --> 00:44:40.368 
+You don't do it for anything else.
+
+00:44:40.368 --> 00:44:43.408 
+You don't pre compute, pre compute for any other reason.
+
+00:44:44.008 --> 00:44:46.848 
+And also you can have synergies with prefetching and branch prediction.
+
+00:44:47.248 --> 00:44:52.368 
+And they're like many, many lines of work that started from this one important precedent.
+
+00:44:52.408 --> 00:44:59.513 
+There was one paper in 1997 which was proposing something very similar to this, but for in order
+
+00:44:59.513 --> 00:45:00.328 
+processors.
+
+00:45:00.328 --> 00:45:07.781 
+This is from James Dundas and Trevor Muddz and inspiration comes from this called Whitey's like wild
+
+00:45:07.781 --> 00:45:14.937 
+and crazy ideas workshop, I think from 1998, where they show they like they provided some, let's
+
+00:45:14.937 --> 00:45:22.168 
+say very high level instructions on how how someone could do run ahead and looking to the future.
+
+00:45:22.488 --> 00:45:25.168 
+Micro architecture is very important, especially memory.
+
+00:45:25.648 --> 00:45:32.034 
+Run Ahead is a great example of harmonious industry, academia, academia collaboration honoured I
+
+00:45:32.034 --> 00:45:37.888 
+think explore Run ahead during his all of his internships in the first years of his PhD.
+
+00:45:38.368 --> 00:45:43.237 
+And it's a very fundamental problem, the problem of prefetching you will meet it in LLMS and
+
+00:45:43.237 --> 00:45:45.408 
+whatever you can imagine basically right.
+
+00:45:46.528 --> 00:45:52.430 
+And it is well fundamental solutions, the solutions that you see here about Run Ahead and the
+
+00:45:52.430 --> 00:45:58.333 
+processor, they can be used potentially for many other subsystems and many other subtopics of
+
+00:45:58.333 --> 00:45:58.968 
+computing.
+
+00:46:00.528 --> 00:46:06.208 
+Yes, as I said, like around I had received a citation for the test time test of the time award.
+
+00:46:07.288 --> 00:46:10.128 
+And I think this is the third one is the most important thing.
+
+00:46:10.568 --> 00:46:16.313 
+It's spawned a new area of research basically that people have worked a lot on and there are many
+
+00:46:16.313 --> 00:46:18.328 
+groups that even still work on it.
+
+00:46:20.248 --> 00:46:21.688 
+I will talk about this later.
+
+00:46:21.728 --> 00:46:28.238 
+So you can take a 10 minute break and then we can discuss again going into virtual memory and some
+
+00:46:28.238 --> 00:46:29.168 
+like pep talk.
+
+00:46:34.199 --> 00:46:38.599 
+Ok, Let's continue so on.
+
+00:46:38.719 --> 00:46:47.039 
+Here has some like nice advice for you like following your passion do not get delayed by naysayers.
+
+00:46:47.039 --> 00:46:50.679 
+I guess this applies probably this your block courses, right?
+
+00:46:50.679 --> 00:46:54.039 
+So this applies to this sort of spirit.
+
+00:46:54.359 --> 00:47:00.039 
+And I agree with him on that being resilient, yes, you might fail one course that doesn't mean much.
+
+00:47:00.919 --> 00:47:01.879 
+You can take it again.
+
+00:47:04.199 --> 00:47:09.719 
+And this is during research as well, where we probably receive a lot more rejects than accepts.
+
+00:47:10.119 --> 00:47:15.584 
+In general in your research career, in your career in general, the bad moments are going to be more
+
+00:47:15.584 --> 00:47:16.799 
+than the good moments.
+
+00:47:19.159 --> 00:47:19.359 
+Yeah.
+
+00:47:19.359 --> 00:47:22.119 
+But again, this is true for your courses also in general.
+
+00:47:22.119 --> 00:47:28.274 
+Like if you focus on the through learning part, regardless of exams and all these things, things
+
+00:47:28.274 --> 00:47:30.519 
+will go well at the end of the day.
+
+00:47:32.399 --> 00:47:39.020 
+This is true also in research and learning, like yeah, the quality of how you study, for example,
+
+00:47:39.020 --> 00:47:43.799 
+can define your grades, your impact, anything that you work on, right.
+
+00:47:44.599 --> 00:47:46.839 
+And yes, you can make a good impact.
+
+00:47:47.159 --> 00:47:47.759 
+Let's see.
+
+00:47:47.839 --> 00:47:48.799 
+I'm not sure about that.
+
+00:47:50.719 --> 00:47:59.077 
+So there is a lot more on running head execution from Carnegie Mellon University, the lectures when
+
+00:47:59.077 --> 00:48:07.435 
+honour was there from the Computer architecture course, it's all on YouTube and there is a lot more
+
+00:48:07.435 --> 00:48:14.359 
+recommending material on prefetching, but owner has already given it's all online.
+
+00:48:14.599 --> 00:48:20.159 
+And now I will stop with the prefetching lecture and I will switch to the virtual memory lecture.
+
+00:48:33.538 --> 00:48:35.978 
+This is very nice blueprint that owner has written.
+
+00:48:35.978 --> 00:48:42.098 
+It's called Intelligent Architectures for Intelligent Computing Systems, where he does a very nice,
+
+00:48:42.098 --> 00:48:48.032 
+like, let's say, summary of research on how to design intelligence systems, which should be data
+
+00:48:48.032 --> 00:48:50.258 
+centric, data-driven and data aware.
+
+00:48:50.578 --> 00:48:56.065 
+So right now we're in an era where like everything is dominated by data and the decisions would take
+
+00:48:56.065 --> 00:48:59.578 
+at the core level, the decisions would take at the memory level.
+
+00:48:59.818 --> 00:49:04.978 
+And all of this is driven by the data that basically are accessed by the applications.
+
+00:49:06.498 --> 00:49:08.938 
+So virtual memory is one of the cornerstones of data.
+
+00:49:08.938 --> 00:49:11.898 
+Basically it's one of the cornerstones of modern computing systems.
+
+00:49:12.338 --> 00:49:16.178 
+And there are many nice reads here.
+
+00:49:16.498 --> 00:49:21.578 
+I would suggest the memory systems book, the handbook from 2014.
+
+00:49:22.018 --> 00:49:28.582 
+And I think we in our work in ASPLOS 2025 would do a nice background where someone can basically
+
+00:49:28.582 --> 00:49:32.138 
+learn the basics and fundamentals of virtual memory.
+
+00:49:32.938 --> 00:49:34.298 
+So what is a virtual memory?
+
+00:49:34.298 --> 00:49:40.378 
+So when you write the program, let's say you write your C, your Python, C++ program, right?
+
+00:49:40.658 --> 00:49:42.058 
+You basically do 2 things.
+
+00:49:42.138 --> 00:49:43.738 
+You write store instructions.
+
+00:49:43.938 --> 00:49:46.578 
+I store something in memory and load instructions.
+
+00:49:46.578 --> 00:49:48.058 
+So this is how you view memories.
+
+00:49:48.258 --> 00:49:49.658 
+Load, store, load, store, right?
+
+00:49:50.218 --> 00:49:56.038 
+So the ideal memory that you have in your mind while writing, writing this program is that it has
+
+00:49:56.038 --> 00:49:57.058 
+zero access time.
+
+00:49:57.058 --> 00:49:58.538 
+You don't care about its latency.
+
+00:49:58.898 --> 00:50:00.458 
+It has infinite capacity.
+
+00:50:00.458 --> 00:50:04.418 
+You do not write the program assuming you're constrained by memory capacity, right?
+
+00:50:05.818 --> 00:50:07.658 
+Has 0 cost and infinite bandwidth.
+
+00:50:08.498 --> 00:50:14.018 
+So the programmer sees virtual memory, though the programmer does not see physical memory.
+
+00:50:14.618 --> 00:50:17.538 
+This way the programmer can assume that the memory is infinite.
+
+00:50:18.298 --> 00:50:24.338 
+In reality though, the physical memory size is much smaller compared to what the programmer assumes.
+
+00:50:24.818 --> 00:50:31.787 
+So the system somehow, in a magic way, system software and hardware together, they map virtual
+
+00:50:31.787 --> 00:50:33.938 
+addresses to physical memory.
+
+00:50:34.458 --> 00:50:39.338 
+So the system automatically manages the physical memory transparently to the programmer.
+
+00:50:39.778 --> 00:50:45.138 
+And the programmer does not even know anything about the physical size of memory nor manage it.
+
+00:50:45.138 --> 00:50:50.612 
+And this way, if small physical memory we have in the system might appear very large when it comes
+
+00:50:50.612 --> 00:50:51.618 
+to the programmer.
+
+00:50:52.218 --> 00:50:55.258 
+I want to show another example, not with restaurants, but.
+
+00:51:00.649 --> 00:51:02.569 
+So imagine you write your program right?
+
+00:51:03.009 --> 00:51:04.489 
+Let's say your program is this.
+
+00:51:04.489 --> 00:51:07.889 
+You do something very simple in C or C++.
+
+00:51:08.169 --> 00:51:09.529 
+You can map this to Python.
+
+00:51:10.009 --> 00:51:10.649 
+You do this.
+
+00:51:15.009 --> 00:51:22.149 
+So what this does, you're saying I want to use an array which has 10 integers, right?
+
+00:51:23.589 --> 00:51:28.749 
+And the name that you're using when you write the program, let's say you want to do this.
+
+00:51:34.059 --> 00:51:39.633 
+So let's say that you were not, we were not using virtual memory and there is a physical memory in
+
+00:51:39.633 --> 00:51:40.259 
+the system.
+
+00:51:40.819 --> 00:51:45.179 
+Let's say that this is a physical memory, right?
+
+00:51:54.789 --> 00:51:59.389 
+And we need to store this X0 somewhere, so in.
+
+00:52:00.269 --> 00:52:03.869 
+Very but szenario the programer what say ok.
+
+00:52:04.509 --> 00:52:11.349 
+I will go to the physical location #1 because that's what I chose and I would store X of 0.
+
+00:52:13.429 --> 00:52:23.929 
+OK, so can someone tell me what would happen if another programmer who runs another program in the
+
+00:52:23.929 --> 00:52:34.538 
+system does this and this programmer decides that I need to also choose the physical location of my
+
+00:52:34.538 --> 00:52:44.717 
+data and I accidentally I want to use this location then can someone tell me what's the problem
+
+00:52:44.717 --> 00:52:45.789 
+with that?
+
+00:52:45.789 --> 00:52:53.484 
+I mean the first programmer now doesn't access the data that it probably is assumed that it would
+
+00:52:53.484 --> 00:52:55.309 
+still be there exactly.
+
+00:52:55.429 --> 00:53:00.989 
+So this programmer was writing one and let's say this programmer overwrote with 10.
+
+00:53:01.669 --> 00:53:03.709 
+So what is the problem here?
+
+00:53:03.709 --> 00:53:10.259 
+The problem is that the in this system the programmers were not given something which we call a
+
+00:53:10.259 --> 00:53:10.949 
+namespace.
+
+00:53:11.669 --> 00:53:17.149 
+So X here and X here are not in.
+
+00:53:17.149 --> 00:53:19.429 
+This should not be in the same namespace.
+
+00:53:19.829 --> 00:53:23.909 
+So we should name this something.
+
+00:53:23.989 --> 00:53:25.349 
+We should name this something.
+
+00:53:25.349 --> 00:53:31.309 
+They might be the same, but they should not map to the same thing in physical memory.
+
+00:53:31.589 --> 00:53:37.429 
+So basically, even though we gave them, the programmer gives them the same names.
+
+00:53:37.789 --> 00:53:40.309 
+They are X0 and X0.
+
+00:53:41.109 --> 00:53:42.269 
+They should not map.
+
+00:53:42.269 --> 00:53:48.913 
+We should design a system so that these two variables are not mapped to the same spot in the
+
+00:53:48.913 --> 00:53:50.069 
+physical memory.
+
+00:53:50.109 --> 00:53:52.469 
+And without virtual memory, we cannot guarantee this.
+
+00:53:53.029 --> 00:53:58.669 
+Like there is no way that we can force everybody to manage the physical memory in their own way.
+
+00:53:58.669 --> 00:54:00.469 
+This is a very hard person to do.
+
+00:54:00.749 --> 00:54:07.210 
+So we need to create something like an intermediate space where we have a dictionary essentially and
+
+00:54:07.210 --> 00:54:11.669 
+we will say, so virtual memory is a dictionary at the end of the day.
+
+00:54:12.229 --> 00:54:14.349 
+So virtual memory would do the following.
+
+00:54:14.509 --> 00:54:15.349 
+It's very simple.
+
+00:54:15.589 --> 00:54:25.862 
+It would say programmer 1 is using X0 and he will not choose the physical location that the data
+
+00:54:25.862 --> 00:54:27.789 
+will be stored to.
+
+00:54:28.549 --> 00:54:35.069 
+The system will choose it a system that is global and can basically coordinate between between these
+
+00:54:35.069 --> 00:54:38.069 
+two and says OK I will store it in position 1.
+
+00:54:38.989 --> 00:54:50.541 
+Then when programmer 2 also wants to use X 0 / y zero or anything, there is no way that here the the
+
+00:54:50.541 --> 00:54:56.549 
+system will not give one because 1 is already taken.
+
+00:54:56.749 --> 00:55:00.149 
+You cannot basically force in any way.
+
+00:55:00.149 --> 00:55:04.589 
+The programmer 2 cannot force the system to give it location one it's already taken.
+
+00:55:04.909 --> 00:55:09.500 
+There is no way that you can override the data and this is one of the main things that virtual
+
+00:55:09.500 --> 00:55:10.429 
+memory is used for.
+
+00:55:14.989 --> 00:55:17.149 
+Any questions before we continue?
+
+00:55:21.211 --> 00:55:23.531 
+So what's the problem with what I described in the board?
+
+00:55:23.651 --> 00:55:30.215 
+The system becomes more complex because I need a runtime or some sort of mechanism that magically
+
+00:55:30.215 --> 00:55:36.644 
+sees all the virtual addresses and somehow manages them and places them in the physical memory,
+
+00:55:36.644 --> 00:55:37.051 
+right?
+
+00:55:37.971 --> 00:55:44.327 
+And this is a classic example of should they offload everything to the programmers and make sure
+
+00:55:44.327 --> 00:55:50.485 
+that they place data in the correct physical spot, or should I design A runtime or a hardware
+
+00:55:50.485 --> 00:55:53.531 
+component that manages this sort of isolation?
+
+00:55:54.851 --> 00:55:59.944 
+So this is one of the reasons we need virtual memory and the benefits of the following The
+
+00:55:59.944 --> 00:56:05.434 
+programmer does not deal with physical addresses as as we discussed, each process has its own and
+
+00:56:05.434 --> 00:56:07.811 
+it has a very large virtual address space.
+
+00:56:09.011 --> 00:56:13.931 
+So it's it's programme has an independent mapping of virtual to physical addresses.
+
+00:56:14.211 --> 00:56:19.983 
+And that's very good because your Pro 2 programmes 2 same programmes might use the same virtual
+
+00:56:19.983 --> 00:56:25.331 
+addresses, but they map to different physical addresses and the runtime guarantees that.
+
+00:56:26.731 --> 00:56:31.171 
+This way we enable code and data to be located anywhere in physical memory.
+
+00:56:31.491 --> 00:56:34.611 
+You might see one visual location, but your data can live anywhere.
+
+00:56:34.731 --> 00:56:36.131 
+You can place the main anywhere you want.
+
+00:56:37.371 --> 00:56:40.451 
+And this way we can relocate and flexibly locate data.
+
+00:56:40.851 --> 00:56:45.777 
+And 2nd and the most important one is the isolation and separation of code and data of different
+
+00:56:45.777 --> 00:56:46.291 
+processes.
+
+00:56:47.691 --> 00:56:49.331 
+Also we can have data sharing.
+
+00:56:49.571 --> 00:56:51.091 
+How can we have data sharing?
+
+00:56:51.611 --> 00:56:58.552 
+If somehow the system can make sure that 22 virtual addresses point to the same data, then we can
+
+00:56:58.552 --> 00:57:05.135 
+treat this piece of data shared between two processes and we can do it for 10 processes, 100
+
+00:57:05.135 --> 00:57:05.851 
+processes.
+
+00:57:06.331 --> 00:57:12.291 
+And the benefit of this is that I basically the duplicate memory.
+
+00:57:12.411 --> 00:57:18.374 
+If you open up the same PowerPoint presentation again 10 times, it doesn't mean that like your
+
+00:57:18.374 --> 00:57:20.531 
+memory is going to explode by 10X.
+
+00:57:21.531 --> 00:57:25.491 
+Every process is going to basically point to the same physical data as the presentation.
+
+00:57:28.291 --> 00:57:32.491 
+So this is an example with a system that only uses physical memory.
+
+00:57:32.651 --> 00:57:38.211 
+And this was through in most early supercomputers and early PCs and many other embedded systems.
+
+00:57:38.211 --> 00:57:42.371 
+In this way, you have this system, you have ACPU that uses directly the physical addresses.
+
+00:57:42.371 --> 00:57:44.251 
+It's not using any sort of virtual addresses.
+
+00:57:44.851 --> 00:57:48.531 
+So the problem though is that the physical memory is of limited size.
+
+00:57:48.931 --> 00:57:50.531 
+So what happens if you need more?
+
+00:57:51.171 --> 00:57:57.655 
+So for example, if you have a disk, should the programmer make sure that some data is in the disk
+
+00:57:57.655 --> 00:58:00.731 
+and some other data is in the physical memory?
+
+00:58:00.731 --> 00:58:05.571 
+Should it try to like manipulate the movement, orchestrate the movement between devices?
+
+00:58:06.331 --> 00:58:10.091 
+And what happens if multiple programs may need the physical memory as we discussed?
+
+00:58:10.091 --> 00:58:15.556 
+Like in this scenario the programmer would need to make sure that different programs do not touch
+
+00:58:15.556 --> 00:58:19.331 
+the same physical locations if you were using only physical memory.
+
+00:58:20.291 --> 00:58:28.229 
+Also, the ISA, as you discussed before, for example, might have 64 bits for its memory address,
+
+00:58:28.229 --> 00:58:28.731 
+right?
+
+00:58:28.931 --> 00:58:33.611 
+So it has a other space that's much larger compared to the physical memory space.
+
+00:58:33.811 --> 00:58:38.171 
+You might have a 64 bit other space with by addressability.
+
+00:58:38.771 --> 00:58:42.091 
+What if you don't have enough physical memory?
+
+00:58:42.091 --> 00:58:47.111 
+Like what happens if you choose a virtual address that's going beyond the scope of the physical
+
+00:58:47.111 --> 00:58:47.851 
+memory, right?
+
+00:58:49.131 --> 00:58:52.091 
+So these are the difficulties of direct physical addressing.
+
+00:58:52.091 --> 00:58:56.027 
+Like the programmer needs to manage the physical memory space, which is very inconvenient and
+
+00:58:56.027 --> 00:58:56.451 
+difficult.
+
+00:58:57.291 --> 00:58:59.851 
+It's difficult to support code and data relocation.
+
+00:59:00.331 --> 00:59:03.651 
+So the addresses are directly specified in the program.
+
+00:59:03.891 --> 00:59:07.091 
+And it's difficult to also support multiple processes because of the concurrency.
+
+00:59:07.091 --> 00:59:12.894 
+Like we would need another sort of mechanism that guarantees isolation, which is very hard to
+
+00:59:12.894 --> 00:59:13.331 
+design.
+
+00:59:13.971 --> 00:59:17.691 
+And it would be also difficult to support data and code sharing across processes.
+
+00:59:18.131 --> 00:59:23.422 
+So one important thing is that like if you would need to share data between two processes, then the
+
+00:59:23.422 --> 00:59:28.606 
+two processes would need to agree before running that this is the location in the physical memory
+
+00:59:28.606 --> 00:59:30.851 
+that we will place the common data, right?
+
+00:59:32.291 --> 00:59:33.851 
+So how does virtual memory work?
+
+00:59:33.851 --> 00:59:39.433 
+So we give each programme the illusion of a very large address space, the virtual address space,
+
+00:59:39.433 --> 00:59:42.051 
+even if we have a very small physical memory.
+
+00:59:42.451 --> 00:59:47.878 
+And this way the programmer does not worry about managing their physical memory within a process or
+
+00:59:47.878 --> 00:59:48.811 
+across processes.
+
+00:59:49.171 --> 00:59:51.851 
+And they assume that they have an infinite amount of physical memory.
+
+00:59:52.851 --> 00:59:58.255 
+And the hardware and the software, specifically the operating system and the hardware cooperatively
+
+00:59:58.255 --> 01:00:03.114 
+automatically manage the physical memory space to provide the illusion that everything is
+
+01:00:03.114 --> 01:00:04.971 
+maintained by independent process.
+
+01:00:05.571 --> 01:00:08.931 
+And the basic mechanism is in direction and mapping of addresses.
+
+01:00:09.611 --> 01:00:15.540 
+So when you write your program and you're accessing let's say again X of 0, right, you're generating
+
+01:00:15.540 --> 01:00:20.936 
+and you do a printf or a print and you try to see the address of this X0, that is a virtual
+
+01:00:20.936 --> 01:00:21.411 
+address.
+
+01:00:21.411 --> 01:00:28.651 
+You cannot see the physical address without probably some escalated privileges in the system, right?
+
+01:00:30.131 --> 01:00:35.971 
+So it is not the physical address, the one you're seeing which we send to the physical memory.
+
+01:00:36.371 --> 01:00:42.742 
+This is called linear address in X86 and the system, the processor, as I will describe probably
+
+01:00:42.742 --> 01:00:49.114 
+tomorrow, has a mechanism that maps this virtual address to a physical one while the program is
+
+01:00:49.114 --> 01:00:49.651 
+running.
+
+01:00:50.091 --> 01:00:55.418 
+So even though the programmer writes requests and programs with visual addresses, these
+
+01:00:55.418 --> 01:01:00.011 
+automatically at the hardware level get translated into physical addresses.
+
+01:01:00.971 --> 01:01:02.851 
+This is called the real address in X86.
+
+01:01:03.491 --> 01:01:07.691 
+So other translation is a mechanism that can be implemented in the hardware and software together.
+
+01:01:08.331 --> 01:01:10.251 
+And you can see here 2 applications, right?
+
+01:01:10.731 --> 01:01:12.091 
+You can see two applications.
+
+01:01:12.211 --> 01:01:17.491 
+They have two different visual address spaces and this is your physical memory that represents the
+
+01:01:17.491 --> 01:01:18.731 
+physical address space.
+
+01:01:19.371 --> 01:01:26.552 
+So the first thing we do is this is a convention, we split the whole space in something called
+
+01:01:26.552 --> 01:01:27.011 
+pages.
+
+01:01:27.531 --> 01:01:35.271 
+These are fixed chunks, usually in most systems 4 kilobytes, where and the mapping we established is
+
+01:01:35.271 --> 01:01:35.891 
+between.
+
+01:01:36.211 --> 01:01:41.371 
+Four KB virtual pages to four KB physical pages.
+
+01:01:42.331 --> 01:01:48.486 
+However, this requires an indirection because then we need to map 1 virtual page number to a
+
+01:01:48.486 --> 01:01:49.891 
+physical page number.
+
+01:01:50.451 --> 01:01:55.991 
+And this indirection is provided by a virtual to physical address mapping, which you can very easily
+
+01:01:55.991 --> 01:01:57.211 
+think as a dictionary.
+
+01:01:57.491 --> 01:01:59.411 
+I go with my virtual page number.
+
+01:01:59.611 --> 01:02:01.971 
+I retrieve back my physical page number.
+
+01:02:03.371 --> 01:02:06.331 
+There are four key issues with this sort of indirection mapping.
+
+01:02:06.931 --> 01:02:08.771 
+First is when do we map?
+
+01:02:08.931 --> 01:02:14.451 
+Like when do I make a decision of mapping a virtual address to a physical address?
+
+01:02:15.531 --> 01:02:17.931 
+Most modern systems, what they do is the following.
+
+01:02:18.171 --> 01:02:22.011 
+Whenever you write your program and you do a write, you write.
+
+01:02:22.011 --> 01:02:24.291 
+You initialize an array with zeros, for example.
+
+01:02:24.611 --> 01:02:28.971 
+It immediately creates all the virtual to physical mappings.
+
+01:02:28.971 --> 01:02:30.611 
+It puts the zeros in memory.
+
+01:02:32.371 --> 01:02:34.011 
+What is the mapping granularity?
+
+01:02:34.171 --> 01:02:37.211 
+As I said, most modern systems use 4 kilobytes.
+
+01:02:37.931 --> 01:02:42.131 
+The chunk size that we split memory into is 4 kilobytes.
+
+01:02:42.531 --> 01:02:47.781 
+There are also more systems, for example Apple right now is not using 4 kilobytes, using 16
+
+01:02:47.781 --> 01:02:51.531 
+kilobytes and maybe transitions to a new page size in the future.
+
+01:02:53.451 --> 01:02:57.331 
+Then where and how do we store the virtual to physical mappings?
+
+01:02:57.331 --> 01:03:01.171 
+So there is a dictionary as we discussed, right, that contains the translations.
+
+01:03:01.571 --> 01:03:03.851 
+The question is, how do we store this?
+
+01:03:04.051 --> 01:03:06.211 
+Do we store it at the software level?
+
+01:03:06.491 --> 01:03:08.611 
+Do we keep hardware structures for it?
+
+01:03:10.211 --> 01:03:14.771 
+And last, what do we do when the other space is full?
+
+01:03:15.051 --> 01:03:18.611 
+So let's say that all of the physical sports are used, right?
+
+01:03:19.771 --> 01:03:25.426 
+We need to decide somehow, whenever we want to map something new, what to evict from the main memory
+
+01:03:25.426 --> 01:03:29.611 
+which we will place potential in the disk or we will place somewhere else.
+
+01:03:31.451 --> 01:03:37.414 
+So this is the abstractions, it's the visual other space is divided into pages and the physical
+
+01:03:37.414 --> 01:03:39.611 
+other space is divided into frames.
+
+01:03:40.051 --> 01:03:43.491 
+Essentially there is no difference between frames and pages as an abstraction.
+
+01:03:43.931 --> 01:03:50.197 
+We just use different names because it's weird saying virtual pages, physical pages and the virtual
+
+01:03:50.197 --> 01:03:56.337 
+page is mapped to a physical frame if the page is in physical memory and the location of the disk
+
+01:03:56.337 --> 01:03:56.971 
+otherwise.
+
+01:03:58.451 --> 01:04:02.971 
+So even access visual page is not in memory but on the disk.
+
+01:04:03.331 --> 01:04:04.411 
+We need to do the following.
+
+01:04:04.411 --> 01:04:11.356 
+We need to fetch the data from the disk inside the memory and establish a mapping from the visual
+
+01:04:11.356 --> 01:04:17.371 
+page to the location that we fetch the data in from the disk and the data structure.
+
+01:04:17.371 --> 01:04:22.611 
+The dictionary that stores the mappings, the visual, the physical mappings is the page table.
+
+01:04:23.891 --> 01:04:26.251 
+So you can think of physical memory as a cast.
+
+01:04:26.251 --> 01:04:31.371 
+And in other words, like physical memory is a cast of pages which we store in the disk.
+
+01:04:31.771 --> 01:04:37.855 
+So you can think of it as a fully associative cast in modern systems because a virtual page can
+
+01:04:37.855 --> 01:04:43.491 
+reside in any location in the in any physical frame, in any location in physical memory.
+
+01:04:43.971 --> 01:04:50.652 
+And there are similar casting issues that exist that we have covered in earlier lectures, like where
+
+01:04:50.652 --> 01:04:56.131 
+and how to find a page in the cast, when to remove, what to remove from the cache.
+
+01:04:56.571 --> 01:04:59.211 
+Like should we use large small pages?
+
+01:04:59.211 --> 01:05:01.371 
+Like do we use different page sizes?
+
+01:05:01.771 --> 01:05:02.971 
+And what's a write policy?
+
+01:05:02.971 --> 01:05:07.988 
+For example, if I write something in my memory and then I need to evict it in the disk, do I do it
+
+01:05:07.988 --> 01:05:10.651 
+in a write back manner or in a write through manner?
+
+01:05:11.691 --> 01:05:13.571 
+This is the analogies that you can see here.
+
+01:05:14.211 --> 01:05:17.731 
+And this is an example of what can happen actually in a real system.
+
+01:05:18.131 --> 01:05:20.891 
+You can see visual addresses coming here from the programme, right?
+
+01:05:21.291 --> 01:05:29.485 
+And some of these pages, as you can see, especially the white ones, are basically mapped to your
+
+01:05:29.485 --> 01:05:30.851 
+physical memory.
+
+01:05:30.931 --> 01:05:36.625 
+This means that you can translate them normally with a page table right while the program is
+
+01:05:36.625 --> 01:05:40.091 
+running, while some of them are stored in the hard disk.
+
+01:05:40.571 --> 01:05:46.210 
+So if the program is running and you do not find something in the page table, this means that data
+
+01:05:46.210 --> 01:05:47.131 
+is in your disk.
+
+01:05:47.531 --> 01:05:53.621 
+So you need to stop the program execution, you need to let the OS take over, bring your data from
+
+01:05:53.621 --> 01:05:59.585 
+the hard drive, place it in the memory, create the mapping, and then your page table is updated
+
+01:05:59.585 --> 01:06:02.411 
+with the correct address and the translation.
+
+01:06:03.371 --> 01:06:10.404 
+This is an example that created where you have a virtual memory size which is let's say 2 gigabytes
+
+01:06:10.404 --> 01:06:13.531 
+and a physical memory size at 128 megabytes.
+
+01:06:15.091 --> 01:06:19.091 
+And this is the total size of memory is 2 to the power of 27 bytes, right?
+
+01:06:19.451 --> 01:06:22.011 
+So the page size is 4 kilobytes with the power of 12.
+
+01:06:22.491 --> 01:06:24.291 
+And this is the organization.
+
+01:06:24.291 --> 01:06:26.931 
+We have 31 bits for the virtual address.
+
+01:06:27.411 --> 01:06:33.481 
+You can see here is because it's two to the 31 bytes 27 bits for the physical address because we
+
+01:06:33.481 --> 01:06:36.011 
+have to do the 27 bytes physical memory.
+
+01:06:36.651 --> 01:06:38.571 
+And the page offset is 12 bits.
+
+01:06:39.731 --> 01:06:45.985 
+So the number of virtual pages we have in the system is 2 to the power of 31 / 2 to the power of 12,
+
+01:06:45.985 --> 01:06:52.053 
+which means we have 19 bits for the virtual page number and we have 15 bits for the physical page
+
+01:06:52.053 --> 01:06:52.491 
+number.
+
+01:06:54.331 --> 01:06:55.651 
+And this is how we translate.
+
+01:06:56.611 --> 01:07:06.003 
+So we need to translate only the top bits of the virtual page of the virtual address to the physical
+
+01:07:06.003 --> 01:07:07.131 
+page number.
+
+01:07:07.451 --> 01:07:10.531 
+Can someone tell me why we don't need to translate the offset?
+
+01:07:11.131 --> 01:07:16.651 
+Like if we use a four KB page, why don't I need to translate the last 12 bits?
+
+01:07:16.651 --> 01:07:24.531 
+Because the pages are a nine so that the offset is always the same, correct?
+
+01:07:24.891 --> 01:07:30.131 
+Yes, which means that the offset does not change when I have a four KB chunk.
+
+01:07:30.451 --> 01:07:36.131 
+I do not need to translate internally in the four KB chunk, the address will not change, right?
+
+01:07:36.491 --> 01:07:38.331 
+I simply need to use the same offset.
+
+01:07:38.811 --> 01:07:45.393 
+What I need to translate is the upper bits is the location of the 19 bits to this 15 bits in the
+
+01:07:45.393 --> 01:07:46.491 
+physical memory.
+
+01:07:46.771 --> 01:07:48.851 
+So that's what I'm responsible for translating.
+
+01:07:49.691 --> 01:07:55.091 
+So can you tell me, can someone tell me what happens if the page offset becomes very large?
+
+01:07:55.571 --> 01:07:57.451 
+Like what is the effect here?
+
+01:07:57.451 --> 01:08:06.211 
+Like if a page offset becomes 25 bits, that's true.
+
+01:08:07.891 --> 01:08:12.771 
+We restrict, that's true because I mean, the chunk becomes larger, right?
+
+01:08:12.891 --> 01:08:14.091 
+But what is the benefit?
+
+01:08:14.091 --> 01:08:19.251 
+We get more pages or no?
+
+01:08:19.251 --> 01:08:22.291 
+But if you increase the page offset, you don't get more pages, right?
+
+01:08:24.211 --> 01:08:31.706 
+If you increase the page offset from let's say 4 kilobytes to 2 megabytes or one GB, then yes, the
+
+01:08:31.706 --> 01:08:39.124 
+dictionary becomes smaller because you need to map 1 GB virtual pages to 1 GB physical pages, and
+
+01:08:39.124 --> 01:08:43.331 
+there are only a few 1 GB physical pages in the system.
+
+01:08:43.651 --> 01:08:47.091 
+So this immediately makes your dictionary a lot smaller.
+
+01:08:48.811 --> 01:08:56.253 
+So the page table is essentially a structure that has an entry for each virtual page and it has a
+
+01:08:56.253 --> 01:08:57.251 
+validity bit.
+
+01:08:57.491 --> 01:09:02.251 
+The validity bit tells us whether the virtual page is located in physical memory or not.
+
+01:09:02.611 --> 01:09:06.011 
+If it's not valid, it means that probably it's located in the disk.
+
+01:09:06.411 --> 01:09:09.131 
+There are more complicated scenarios which I won't discuss now.
+
+01:09:09.691 --> 01:09:12.731 
+And the second and most important thing, it has the physical page number.
+
+01:09:13.291 --> 01:09:18.451 
+The physical page number is where the virtual page is located in the physical memory.
+
+01:09:19.171 --> 01:09:25.251 
+Also it has some more information, some metadata like it was this page frequently used?
+
+01:09:25.891 --> 01:09:28.291 
+Is this page dirty or modified?
+
+01:09:28.571 --> 01:09:30.211 
+Do I have permissions to access it?
+
+01:09:31.091 --> 01:09:37.259 
+And this is what you can see for example as a page table where you have some specific pages being
+
+01:09:37.259 --> 01:09:39.931 
+allocated and their physical page numbers.
+
+01:09:41.571 --> 01:09:42.651 
+Let's see this example.
+
+01:09:42.931 --> 01:09:44.931 
+So in this example, we want to do the following.
+
+01:09:45.451 --> 01:09:54.371 
+We want to take this address that we had before as well, the zero X0002 with a page offset of
+
+01:09:54.371 --> 01:09:55.331 
+75-C7047C.
+
+01:09:55.811 --> 01:09:57.531 
+And then we want to translate it, right?
+
+01:09:57.851 --> 01:10:01.771 
+So we want to translate only the visual page number, the offset, we leave it as is.
+
+01:10:02.331 --> 01:10:07.181 
+And if there's any question in your exam, don't translate the offset, OK, because many of you do
+
+01:10:07.181 --> 01:10:08.091 
+that in the exams.
+
+01:10:09.891 --> 01:10:12.291 
+Just note this down do not translate the offset.
+
+01:10:13.171 --> 01:10:20.371 
+OK, so you take the virtual page number and then you want to map it to the physical memory by taking
+
+01:10:20.371 --> 01:10:22.891 
+a look at what the page table says.
+
+01:10:23.691 --> 01:10:26.331 
+So the virtual page number is 2.
+
+01:10:26.611 --> 01:10:28.011 
+So what I do is very simple.
+
+01:10:28.651 --> 01:10:39.222 
+I go to the third entry in the page table 012, so it's 012, and I see that the page table tells me,
+
+01:10:39.222 --> 01:10:40.931 
+oh, that's nice.
+
+01:10:41.171 --> 01:10:49.571 
+The page, the page is valid, the virtual page is valid, and the physical page number is 0X7 FFF.
+
+01:10:50.291 --> 01:10:57.851 
+So when I want to form right now, the physical address, I take the physical page number which is 0X7
+
+01:10:57.851 --> 01:11:03.371 
+FFF and I concatenate it with a page offset, which doesn't change, right?
+
+01:11:03.371 --> 01:11:04.691 
+These are the 12 last bits.
+
+01:11:05.371 --> 01:11:15.171 
+So my final physical address after accessing the page table is 0X7 FFF 47 C Any questions here?
+
+01:11:17.451 --> 01:11:25.211 
+OK, so one question is how does the hardware know where to start looking at?
+
+01:11:25.611 --> 01:11:28.971 
+Because this is a an array of contiguous elements right?
+
+01:11:29.531 --> 01:11:36.051 
+So hardware in order to be able to take a look at the second entry of the page table, it has a.
+
+01:11:36.211 --> 01:11:40.131 
+Specific register which we call the page stable base register.
+
+01:11:40.611 --> 01:11:45.011 
+The page stable base register gives us directly a pointer to the first entry.
+
+01:11:45.451 --> 01:11:52.230 
+This way we can form the index to the second element of the page table in this scenario and we can
+
+01:11:52.230 --> 01:11:58.594 
+access the correct piece of data, retrieve the 0X7 FFF the physical page number and form the
+
+01:11:58.594 --> 01:11:59.771 
+physical address.
+
+01:12:06.371 --> 01:12:15.131 
+OK, so the next one is like what is the physical address of virtual address 0X5F20?
+
+01:12:15.651 --> 01:12:20.948 
+So the first thing we would need to do in this scenario again is to find the page table entry that
+
+01:12:20.948 --> 01:12:24.571 
+contains the translation for the corresponding virtual page number.
+
+01:12:25.571 --> 01:12:33.489 
+And we want to then look up the physical page number and form this way the physical address like
+
+01:12:33.489 --> 01:12:40.171 
+this is the actual data physical address that we're fetching the page table from.
+
+01:12:40.531 --> 01:12:43.931 
+It's the page table register, the base register which points here.
+
+01:12:44.251 --> 01:12:48.851 
+This is index 0 plus the VPN which acts as a key.
+
+01:12:49.131 --> 01:12:54.291 
+Like if I want to access the first VPN, I will go to 0 because this will be 0.
+
+01:12:54.731 --> 01:13:03.022 
+If I want to access VPN equals 1 then I would go to PT size which is 8 bytes which means I would add
+
+01:13:03.022 --> 01:13:07.251 
+PTPTB R + 8 which points to the second entry right?
+
+01:13:08.171 --> 01:13:09.851 
+Is it clear for everyone this one?
+
+01:13:11.651 --> 01:13:15.571 
+OK and then how do we how do I search again?
+
+01:13:15.571 --> 01:13:17.491 
+This is a more difficult scenario.
+
+01:13:17.851 --> 01:13:22.331 
+Let's say I have VPN 5 and page offset F20 right?
+
+01:13:22.691 --> 01:13:25.891 
+So I have 0X0005.
+
+01:13:26.491 --> 01:13:35.125 
+I go to the 6th location here it's like 012345 which is the 6th 1 and I find out that this data is
+
+01:13:35.125 --> 01:13:39.971 
+mapped to the physical page number which is equal to 1.
+
+01:13:40.531 --> 01:13:47.018 
+So I form the physical address by concatenating the one which is the physical page number and the
+
+01:13:47.018 --> 01:13:48.691 
+page offset which is F20.
+
+01:13:48.931 --> 01:13:55.396 
+The page offset gives me the internal index into the page and the physical page number gives me the
+
+01:13:55.396 --> 01:13:57.291 
+external index into the page.
+
+01:13:58.411 --> 01:14:01.571 
+So what happens if we have this address VPN 7?
+
+01:14:02.211 --> 01:14:11.531 
+In VPN 7 we go to the for 8th to the 8th index and unfortunately we find that our data is not in
+
+01:14:11.531 --> 01:14:12.211 
+memory.
+
+01:14:12.491 --> 01:14:12.931 
+Why?
+
+01:14:12.931 --> 01:14:15.691 
+Because the validity bit is 0.
+
+01:14:16.651 --> 01:14:18.891 
+This means that the page table says.
+
+01:14:19.251 --> 01:14:26.879 
+I'm don't have a clue of where is the data, so someone needs to basically handle this specific
+
+01:14:26.879 --> 01:14:27.691 
+exception.
+
+01:14:27.891 --> 01:14:29.611 
+In modern systems, this is an exception.
+
+01:14:30.011 --> 01:14:35.976 
+Whenever your processor says OK, the paid table doesn't have the data, it immediately lands an
+
+01:14:35.976 --> 01:14:36.611 
+exception.
+
+01:14:36.611 --> 01:14:38.211 
+It stops executing the program.
+
+01:14:38.491 --> 01:14:42.771 
+The operating system takes over and tries to resolve the location of the data.
+
+01:14:44.691 --> 01:14:49.531 
+So there is a big a big a big issue with the paid table and what I described.
+
+01:14:49.811 --> 01:14:55.571 
+Let's say that we have a 64 bit virtual address and a 40 bit physical address.
+
+01:14:56.091 --> 01:15:04.199 
+So the question is if I need to form one key for each virtual page number, how large would the page
+
+01:15:04.199 --> 01:15:08.131 
+table be if I allocated like a very large array?
+
+01:15:08.891 --> 01:15:20.211 
+Can someone tell me almost it's to the power of 52 because yes.
+
+01:15:20.491 --> 01:15:23.931 
+So can we allocate such an array in our memories?
+
+01:15:23.931 --> 01:15:24.771 
+I don't think so.
+
+01:15:24.771 --> 01:15:28.331 
+This is at the order of like beta, right?
+
+01:15:28.651 --> 01:15:29.331 
+So.
+
+01:15:30.411 --> 01:15:31.971 
+And that would be just for one process.
+
+01:15:31.971 --> 01:15:36.731 
+So imagine if for one process I allocate to the power of 54 bytes.
+
+01:15:37.491 --> 01:15:45.041 
+So the basic reason why we don't need to allocate this amount, this large amount of of an array is
+
+01:15:45.041 --> 01:15:51.051 
+that probably my program will not use the whole physical address space, right?
+
+01:15:51.451 --> 01:15:58.875 
+And the whole design of the page table in modern processors is shaped around this assumption that my
+
+01:15:58.875 --> 01:16:06.225 
+virtual, the, the program that I'm running is not using even the 50 or the 20% of the whole virtual
+
+01:16:06.225 --> 01:16:12.091 
+address space that's available, all the 40 bits, let's say, or all the 64 bits.
+
+01:16:13.971 --> 01:16:17.891 
+So the challenge one then is that the page table is large.
+
+01:16:18.531 --> 01:16:24.891 
+So we need to make sure that though that some part of it is at least located in the physical memory.
+
+01:16:25.491 --> 01:16:30.331 
+And one solution to that is multi level hierarchical page tables.
+
+01:16:31.411 --> 01:16:32.491 
+So how does this work?
+
+01:16:32.771 --> 01:16:36.131 
+We want to organize the page table in hierarchical.
+
+01:16:36.251 --> 01:16:36.651 
+Manner.
+
+01:16:37.171 --> 01:16:43.291 
+And we want to do that so that only some parts of the page table are allocated in physical memory.
+
+01:16:44.331 --> 01:16:45.451 
+So how does this work?
+
+01:16:46.211 --> 01:16:48.811 
+I will try to give you the intuitive idea.
+
+01:16:48.811 --> 01:16:49.171 
+First.
+
+01:16:50.491 --> 01:16:58.776 
+If there are big chunks of your of your page table which are not used, we want to simply encode them
+
+01:16:58.776 --> 01:16:59.771 
+with a zero.
+
+01:16:59.771 --> 01:17:06.971 
+We want to simply encode them with a zero and say OK, I will have a zero there and I do not need
+
+01:17:06.971 --> 01:17:08.771 
+this will point nowhere.
+
+01:17:08.771 --> 01:17:14.091 
+Basically this will mean that the data at the last level is empty.
+
+01:17:14.091 --> 01:17:15.811 
+I do not need to map anything to it.
+
+01:17:16.411 --> 01:17:18.411 
+This is essentially what this structure does.
+
+01:17:18.411 --> 01:17:22.531 
+So the first level of the page table will have a small first level.
+
+01:17:22.531 --> 01:17:25.931 
+It has a small number of entries, let's say 50.
+
+01:17:27.731 --> 01:17:29.771 
+Is is needs to be in physical memory.
+
+01:17:29.851 --> 01:17:36.401 
+So we only need to store this and then needed second level page table will be kept in physical
+
+01:17:36.401 --> 01:17:43.091 
+memory only if it stores some physical addresses, the information about some physical addresses.
+
+01:17:43.611 --> 01:17:44.971 
+So this is an example, right?
+
+01:17:45.531 --> 01:17:51.331 
+So you can see here that I'm splitting right now my virtual address into more chunks.
+
+01:17:51.451 --> 01:17:58.771 
+And I'm saying, OK, I will try to map first these 9 bits to the page table.
+
+01:17:59.251 --> 01:18:09.404 
+I take them, it's like 0, which means that if these 9 bits are 0, this means that from this 512
+
+01:18:09.404 --> 01:18:12.611 
+entries, this is valid, right?
+
+01:18:12.851 --> 01:18:21.986 
+This means that from my whole virtual address space, right, only two, two chunks are mapped to
+
+01:18:21.986 --> 01:18:26.651 
+physical memory, the first one and the last one.
+
+01:18:27.011 --> 01:18:32.084 
+This means that the first one, the the second one and the last one, the first one, all the
+
+01:18:32.084 --> 01:18:35.411 
+intermediate ones and this one do not need to be allocated.
+
+01:18:35.411 --> 01:18:39.931 
+We do not need to create a page table for them because they're not mapped in the physical memory.
+
+01:18:40.331 --> 01:18:47.639 
+So in this scenario, we would create the last level page table entry, another level just for the
+
+01:18:47.639 --> 01:18:49.771 
+last part and the last part.
+
+01:18:49.771 --> 01:18:55.891 
+Here this chunk would create a pointer would store a pointer to the last level of the page table.
+
+01:18:57.371 --> 01:19:05.463 
+So in this example we would need how many accesses, how many memory accesses would we need to fetch
+
+01:19:05.463 --> 01:19:06.771 
+the translation?
+
+01:19:07.451 --> 01:19:12.808 
+Like from the moment we start from the virtual address till the moment we resolve the final physical
+
+01:19:12.808 --> 01:19:13.451 
+page number?
+
+01:19:13.691 --> 01:19:15.651 
+How many memory accesses do I need to do?
+
+01:19:15.651 --> 01:19:19.611 
+How many steps do I need to follow in this example?
+
+01:19:27.639 --> 01:19:39.799 
+And then OK, so you have two accesses for the page table and one for the final data fetch right?
+
+01:19:40.799 --> 01:19:44.759 
+Because you do not need to do more than two access for the page table.
+
+01:19:45.559 --> 01:19:48.359 
+You you load first this one right?
+
+01:19:49.079 --> 01:19:51.439 
+You use this as a pointer to the final level.
+
+01:19:52.999 --> 01:20:00.251 
+You fetch the final level and basically we did 2 accesses for the page table and three for the whole
+
+01:20:00.251 --> 01:20:01.919 
+physical memory access.
+
+01:20:02.119 --> 01:20:07.679 
+Like after you form the physical address, you send the whole of it to the memory hierarchy.
+
+01:20:09.159 --> 01:20:13.886 
+I will also explain more things about the page table tomorrow because it's the hardest concept of
+
+01:20:13.886 --> 01:20:16.519 
+virtual memory, especially the multi level page table.
+
+01:20:16.839 --> 01:20:21.044 
+In modern systems they're not using 2 levels, they're using 4, which makes things even more
+
+01:20:21.044 --> 01:20:21.599 
+complicated.
+
+01:20:23.279 --> 01:20:32.636 
+So you can see here how X86 does that, where there is a 32 bit system where you have basically 2
+
+01:20:32.636 --> 01:20:33.319 
+levels.
+
+01:20:33.679 --> 01:20:39.068 
+You would basically use the top bits to access the first level of the page table and then you
+
+01:20:39.068 --> 01:20:41.039 
+recursively try to reach the leaf.
+
+01:20:41.039 --> 01:20:42.359 
+You can think of it as a tree.
+
+01:20:42.559 --> 01:20:48.199 
+This is called the prefix tree in computer science where you start forming.
+
+01:20:49.239 --> 01:20:54.800 
+Let's say you take part of the address, you access a piece of data with a larger piece of the
+
+01:20:54.800 --> 01:20:55.279 
+address.
+
+01:20:55.439 --> 01:21:01.359 
+By using the next number of bits, you access another piece of data until you find a leaf.
+
+01:21:01.759 --> 01:21:04.319 
+I can give you pointers to more about the radix.
+
+01:21:04.599 --> 01:21:05.679 
+This called the radix 3.
+
+01:21:05.879 --> 01:21:13.159 
+Basically the important thing is like as I said before, in X86 we need a base pointer.
+
+01:21:13.159 --> 01:21:19.999 
+We need to know where is the first route of the page table and that's what the role of the CR 3 is.
+
+01:21:20.159 --> 01:21:23.639 
+The CR 3 is controlled editor 3 in X86 systems.
+
+01:21:24.079 --> 01:21:29.722 
+With the operating system sets it for a process and then the hardware can basically say, OK, I will
+
+01:21:29.722 --> 01:21:33.599 
+fetch the first level of the page table from this specific register.
+
+01:21:34.239 --> 01:21:39.676 
+The first level would have already the pointers for the next level, so we do not need to store extra
+
+01:21:39.676 --> 01:21:43.319 
+registers because they would already be fetched by the next levels.
+
+01:21:45.119 --> 01:21:53.119 
+So the page table in the next 8664, in most of your systems right now, it's organise in this way.
+
+01:21:53.119 --> 01:21:54.039 
+It has four levels.
+
+01:21:54.039 --> 01:22:02.086 
+You need to split your address into four different parts and then you recursively access four
+
+01:22:02.086 --> 01:22:06.759 
+different frames, four different blocks of page table.
+
+01:22:07.119 --> 01:22:13.116 
+You access the first level, you find the pointer to the next level, you concatenate it with the 9
+
+01:22:13.116 --> 01:22:19.176 
+bits, you go and find the pointer from the next level, and only from the last level you're able to
+
+01:22:19.176 --> 01:22:21.279 
+retrieve the physical page number.
+
+01:22:22.039 --> 01:22:25.439 
+So all these requires 4 memory accesses.
+
+01:22:25.439 --> 01:22:33.409 
+So in a in a system you need to access 4 levels of the dictionary to be able to retrieve the page
+
+01:22:33.409 --> 01:22:36.039 
+table, the physical page number.
+
+01:22:37.959 --> 01:22:41.759 
+So we discussed a lot about challenge number one.
+
+01:22:42.839 --> 01:22:48.229 
+So the second challenge is that right now, as we discussed, the page table needs to do more memory
+
+01:22:48.229 --> 01:22:48.999 
+access, right?
+
+01:22:49.359 --> 01:22:54.713 
+So for each memory access you're doing, you need to be able to fetch more data than simply the
+
+01:22:54.713 --> 01:22:56.479 
+actual data fetch you're doing.
+
+01:22:56.479 --> 01:22:57.759 
+You need to fetch the page table.
+
+01:22:58.679 --> 01:23:05.546 
+And you would do, in the best case scenario, one access, 1 memory access for the other translation,
+
+01:23:05.546 --> 01:23:09.639 
+and one access to data to the physical address of the data.
+
+01:23:11.239 --> 01:23:17.984 
+So you would need 2 memory accesses at least to serving to service the instruction Fets or a load
+
+01:23:17.984 --> 01:23:21.879 
+and store and this would greatly degrade execution time.
+
+01:23:23.279 --> 01:23:30.363 
+So imagine if you have N levels of paid stable of a paid stable, then the number of accesses would
+
+01:23:30.363 --> 01:23:33.399 
+increase with a number of levels you have.
+
+01:23:35.199 --> 01:23:37.799 
+But there are many techniques which try to deal with that.
+
+01:23:38.679 --> 01:23:44.919 
+So let's see how we perform other translation of the hardware level to support visual memory.
+
+01:23:44.919 --> 01:23:46.959 
+We want both hardware and software support.
+
+01:23:46.959 --> 01:23:52.486 
+So the page table as I described before is stored in the main memory and it's the job of the
+
+01:23:52.486 --> 01:23:58.254 
+software in this scenario, the operating system to basically populate the page table, update the
+
+01:23:58.254 --> 01:24:01.679 
+dictionary and decide what to replace in physical memory.
+
+01:24:02.479 --> 01:24:07.096 
+It probably also needs to update the page table based register like the the pointer to the page
+
+01:24:07.096 --> 01:24:10.839 
+table whenever you switch the process that you're running in the core, right?
+
+01:24:11.639 --> 01:24:13.239 
+You also need to handle page faults.
+
+01:24:13.639 --> 01:24:16.359 
+Pageful is the process of not finding a mapping.
+
+01:24:16.799 --> 01:24:21.963 
+So I go to the page table, the page table says I don't have a mapping and this raises A pageful
+
+01:24:21.963 --> 01:24:23.159 
+which is an exception.
+
+01:24:24.719 --> 01:24:29.599 
+So how does the CPU discover the visual to physical mapping without this translation?
+
+01:24:30.559 --> 01:24:32.639 
+So let me see.
+
+01:24:33.119 --> 01:24:41.827 
+OK, the core right now that you have in your systems sends a virtual address to the memory hierarchy
+
+01:24:41.827 --> 01:24:46.879 
+and the memory hierarchy somehow has the page table in it.
+
+01:24:47.159 --> 01:24:50.879 
+You access the page table, you retrieve back the page table entry.
+
+01:24:51.239 --> 01:24:57.616 
+The page table entry we refer to as the last level of the page table or the final level of the page
+
+01:24:57.616 --> 01:25:02.319 
+table that stores the actual page table number, the physical page number.
+
+01:25:03.239 --> 01:25:09.723 
+But if we would do this every time, then I would need to send one request for the page for for the
+
+01:25:09.723 --> 01:25:12.039 
+page table in every memory request.
+
+01:25:12.479 --> 01:25:14.679 
+And the question is how can we speed up this process?
+
+01:25:16.439 --> 01:25:21.679 
+So you can think of the pays table again as A tag store, which is what you saw in caches, right?
+
+01:25:21.959 --> 01:25:24.759 
+It's a stag store for the physical memory data store.
+
+01:25:25.199 --> 01:25:28.279 
+It stores the mapping between virtual memory and physical memory.
+
+01:25:28.759 --> 01:25:36.079 
+And it needs the validity bit, the tag bits, support for placement, dirty bits, protection bits.
+
+01:25:36.719 --> 01:25:40.839 
+We're going to talk tomorrow about protection, which is another key aspect of virtual memory.
+
+01:25:41.519 --> 01:25:45.199 
+So now let's see who, who and how we establish the physical mapping.
+
+01:25:46.439 --> 01:25:48.559 
+So we have a, an application, right?
+
+01:25:48.559 --> 01:25:50.239 
+And we have the virtual address space.
+
+01:25:50.239 --> 01:25:52.759 
+So you're doing again, X of 0 = 1.
+
+01:25:52.879 --> 01:25:54.479 
+That's the only thing the application is doing.
+
+01:25:55.399 --> 01:25:58.399 
+And X of 0 belongs in that part of the virtual address space.
+
+01:25:58.399 --> 01:26:02.319 
+You can think of it, it's in the square part in the physical memory.
+
+01:26:02.639 --> 01:26:06.279 
+We want to ideally place our data there, right?
+
+01:26:06.919 --> 01:26:09.439 
+So the question is who places the data?
+
+01:26:10.399 --> 01:26:17.751 
+The answer is that we first the the core first raise an exception, a fault because the virtual
+
+01:26:17.751 --> 01:26:20.959 
+address is not mapped to physical memory.
+
+01:26:21.239 --> 01:26:23.559 
+So it loaded the page stable, figured out the data.
+
+01:26:23.759 --> 01:26:29.926 
+Up there and the data is finally not mapped in physical memory, so the operating system takes over
+
+01:26:29.926 --> 01:26:32.759 
+which handles the physical memory allocation.
+
+01:26:33.079 --> 01:26:38.356 
+You can think of the operating system as an entity is as another piece of software that while the
+
+01:26:38.356 --> 01:26:43.688 
+application is running, you stop the application, you fetch another piece of software which is the
+
+01:26:43.688 --> 01:26:47.279 
+operating system and is responsible for performing the allocation.
+
+01:26:48.599 --> 01:26:49.439 
+How does it do it?
+
+01:26:49.759 --> 01:26:53.719 
+It stalls the application very order buffer and everything is stopped.
+
+01:26:54.159 --> 01:26:59.359 
+You flash it, you checkpoint it, and then you start fetching A handler for the page fault.
+
+01:26:59.719 --> 01:27:02.239 
+A handler is a specific event triggered program.
+
+01:27:03.039 --> 01:27:03.959 
+A page fault happened.
+
+01:27:03.959 --> 01:27:06.879 
+I fetch the handler and the operating system.
+
+01:27:07.079 --> 01:27:11.719 
+The main thing that it does is at first searches for free physical space in memory.
+
+01:27:12.039 --> 01:27:15.319 
+If there is free space in memory, then I can allocate my data there, right?
+
+01:27:16.359 --> 01:27:18.079 
+This is the case of a minor fault.
+
+01:27:18.999 --> 01:27:19.999 
+That's the easy thing.
+
+01:27:20.399 --> 01:27:28.348 
+The hard thing is when the OS, the operating system finds out that OK, this X0 refers to some file
+
+01:27:28.348 --> 01:27:36.217 
+that is stored in a disk and it's not in memory, it's in the disk and I need to fetch it from the
+
+01:27:36.217 --> 01:27:37.759 
+disk to the memory.
+
+01:27:38.079 --> 01:27:43.279 
+And not only that, I also need to find free space in the physical memory for this piece of the file.
+
+01:27:43.879 --> 01:27:48.079 
+This is called the major page fault and this is very expensive in the system.
+
+01:27:48.319 --> 01:27:54.015 
+It might cause it might take order of milliseconds to run because it needs to issue a data fetch
+
+01:27:54.015 --> 01:27:57.279 
+from the disk and copy the data in the physical memory.
+
+01:27:59.039 --> 01:28:05.158 
+After the operating system does that, it stores or updates the visual, the new virtual to physical
+
+01:28:05.158 --> 01:28:09.279 
+address mapping in the page table, which is also stored in memory.
+
+01:28:09.479 --> 01:28:14.559 
+But the OS has direct access to physical memory and it doesn't need to go through virtual to
+
+01:28:14.559 --> 01:28:15.719 
+physical translation.
+
+01:28:15.719 --> 01:28:18.279 
+It can simply update the page table.
+
+01:28:18.839 --> 01:28:19.679 
+Any questions?
+
+01:28:23.279 --> 01:28:33.403 
+OK, so if a page is not in physical memory but in the disk, then the page table indicates that the
+
+01:28:33.403 --> 01:28:36.399 
+visual page is not in memory.
+
+01:28:36.479 --> 01:28:40.679 
+And access to the to this sort of page triggers the exception, right?
+
+01:28:41.279 --> 01:28:47.823 
+So the OS we invoke it, it moves the data from disk to memory and then other process could continue
+
+01:28:47.823 --> 01:28:49.079 
+executing normally.
+
+01:28:49.639 --> 01:28:54.493 
+But this, this process cannot execute normally because the OS has the full control over the data
+
+01:28:54.493 --> 01:28:54.999 
+placement.
+
+01:28:55.879 --> 01:28:57.559 
+So this is what would happen, right?
+
+01:28:57.639 --> 01:29:03.039 
+You would have these two virtual pages which would point to the disk in the beginning.
+
+01:29:03.279 --> 01:29:09.100 
+And after the fault is resolved, one of these pages, the second one here would now point to memory
+
+01:29:09.100 --> 01:29:11.239 
+because we have mapped it in memory.
+
+01:29:11.239 --> 01:29:12.479 
+We brought the data to memory.
+
+01:29:12.799 --> 01:29:14.039 
+It's not in the disk anymore.
+
+01:29:15.719 --> 01:29:19.039 
+This operation happens without involving the CPU.
+
+01:29:19.719 --> 01:29:26.050 
+Modern systems have something which is called ADMA Engine Direct Memory Access Engine and we need
+
+01:29:26.050 --> 01:29:30.359 
+that for the simple following reason and we will finish with that.
+
+01:29:31.439 --> 01:29:38.759 
+So why don't I want the CPU to be involved in transferring the data from the memory to the disk?
+
+01:29:38.759 --> 01:29:40.159 
+Does anyone have an idea?
+
+01:29:43.362 --> 01:29:44.082 
+I agree.
+
+01:29:44.722 --> 01:29:47.042 
+Also you would need to store them in the classes, right?
+
+01:29:47.522 --> 01:29:48.802 
+You're going to fetch them in the classes.
+
+01:29:48.802 --> 01:29:54.568 
+So yes, we want to avoid fetching data in the CPU, making the CPU run instructions for energy
+
+01:29:54.568 --> 01:29:58.722 
+reasons to just move the data between the disk and the main memory.
+
+01:29:59.002 --> 01:30:05.512 
+So we would fetch the data from the disk via the DMA engine, a specialised unit inside the main
+
+01:30:05.512 --> 01:30:09.762 
+memory, and this way we do not need to involve at all the CPU.
+
+01:30:09.962 --> 01:30:16.063 
+The CPU might be able to run another process for example in this scenario while we're waiting for
+
+01:30:16.063 --> 01:30:18.202 
+the page fault to to be performed.
+
+01:30:18.802 --> 01:30:25.974 
+And there are many ways to decide what to evict and what not from main memory when we fetch the data
+
+01:30:25.974 --> 01:30:29.202 
+from the disk, which I will discuss tomorrow.
+
+01:30:29.682 --> 01:30:34.522 
+So thanks everyone for your attention and I'll see you tomorrow.
+

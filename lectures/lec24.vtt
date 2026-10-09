@@ -1,0 +1,3434 @@
+WEBVTT
+
+00:00:02.396 --> 00:00:10.693 
+Hi everyone, This is the last lecture of the course and 1st we're going to continue with the topic
+
+00:00:10.693 --> 00:00:13.996 
+we discussed yesterday, virtual memory.
+
+00:00:14.196 --> 00:00:18.356 
+I'm going to continue with the hardware side of how things work in virtual memory.
+
+00:00:18.876 --> 00:00:22.996 
+And then Muhammad is delivered is going to deliver the epilogue of his of this course.
+
+00:00:23.716 --> 00:00:26.956 
+So let's start with a very quick recap.
+
+00:00:27.116 --> 00:00:32.062 
+I would suggest that you take a look at this work if you want to figure out more things about how
+
+00:00:32.062 --> 00:00:35.836 
+can we design intelligent architectures for intelligent computing systems.
+
+00:00:36.956 --> 00:00:41.236 
+Again, we argued yesterday that things should be data centric, data-driven and data aware.
+
+00:00:41.516 --> 00:00:44.556 
+And these are the recommended readings for virtual memory.
+
+00:00:45.756 --> 00:00:52.044 
+So we discussed yesterday's about some of the benefits of automatic memory management, where the
+
+00:00:52.044 --> 00:00:56.236 
+programmer does not need to deal with physical addresses at all.
+
+00:00:56.956 --> 00:01:02.133 
+And each process has its own view of a virtual address space, which is very large independent
+
+00:01:02.133 --> 00:01:06.476 
+mappings between virtual and physical addresses for each one of the processes.
+
+00:01:06.916 --> 00:01:10.596 
+And this enables code and data to be located anywhere in physical memory.
+
+00:01:11.076 --> 00:01:17.609 
+The programmers do not need to care about where data is and code and data can be shared by mapping
+
+00:01:17.609 --> 00:01:22.876 
+different virtual addresses to the same and pointing to the same physical ones.
+
+00:01:24.876 --> 00:01:26.676 
+This is what we discussed yesterday a lot.
+
+00:01:26.676 --> 00:01:32.637 
+So we would have two different virtual address spaces, one for its application, applications one and
+
+00:01:32.637 --> 00:01:32.876 
+two.
+
+00:01:33.356 --> 00:01:36.396 
+Then we would split this into chunks which we call pages.
+
+00:01:36.956 --> 00:01:40.796 
+And then we would map the pages, the virtual pages to physical pages.
+
+00:01:41.276 --> 00:01:46.101 
+And we discussed that we need a way to establish the virtual to physical address mapping, which
+
+00:01:46.101 --> 00:01:47.676 
+requires a sort of indirection.
+
+00:01:47.676 --> 00:01:53.596 
+We go through a page table essentially and we perform the translation between the virtual page
+
+00:01:53.596 --> 00:01:59.706 
+number translate we get back the physical page number and as we discussed yesterday, this is done
+
+00:01:59.706 --> 00:02:04.116 
+through the page table which is organised as a multi level radix tree.
+
+00:02:04.676 --> 00:02:13.067 
+And after we perform 4 consecutive accesses then we can retrieve the physical frame number and form
+
+00:02:13.067 --> 00:02:15.356 
+the whole physical address.
+
+00:02:17.116 --> 00:02:22.248 
+So one of the things that we discussed yesterday is like we didn't discuss yesterday's how the CPU
+
+00:02:22.248 --> 00:02:24.396 
+discovers the visual to physical mapping.
+
+00:02:24.716 --> 00:02:26.916 
+What we do discuss is.
+
+00:02:27.036 --> 00:02:34.379 
+How we serve is basically the faults and yesterday I stopped the lecture where when the DMA engine
+
+00:02:34.379 --> 00:02:41.722 
+is basically responsible for fetching your data from the disk to the memory transparently from the
+
+00:02:41.722 --> 00:02:42.996 
+processor itself.
+
+00:02:42.996 --> 00:02:49.908 
+The processor does not get involved in this process and the way the reason we do this is because we
+
+00:02:49.908 --> 00:02:54.516 
+do not want to impose more traffic and more work to the processor.
+
+00:02:54.596 --> 00:02:56.996 
+This process can happen transparently to it.
+
+00:02:58.636 --> 00:03:02.236 
+What we did not discuss and I will jump into today is the following.
+
+00:03:02.676 --> 00:03:08.484 
+So let's say that your physical memory is full, which means that your laptops are using the whole
+
+00:03:08.484 --> 00:03:12.916 
+available physical memory and at some point you need to access a new file.
+
+00:03:13.756 --> 00:03:19.357 
+So when you access a new file, the first thing you need to do is you need to find that this file is
+
+00:03:19.357 --> 00:03:20.036 
+in the disk.
+
+00:03:20.396 --> 00:03:22.716 
+So you first find the location of the file in the disk.
+
+00:03:23.436 --> 00:03:31.474 
+Then the second thing you need to do is decide which location, which physical page in memory I am
+
+00:03:31.474 --> 00:03:39.596 
+going to evict to bring in the new data and the modern operating systems can they use through LRU?
+
+00:03:40.036 --> 00:03:46.118 
+The problem with through LRU is that if I have let's say 4 gigabyte memory, 4 KB pages, the
+
+00:03:46.118 --> 00:03:52.535 
+possibilities of ordering, keeping track of metadata to figure out which was the most least, the
+
+00:03:52.535 --> 00:03:59.152 
+least recently used or the most recently used, and understanding the recency basically is something
+
+00:03:59.152 --> 00:04:00.556 
+very, very expensive.
+
+00:04:01.396 --> 00:04:09.156 
+So modern systems use an approximation of LRU to achieve to perform the replacement policy.
+
+00:04:09.756 --> 00:04:13.636 
+This is many operating systems use what we call the clock algorithm.
+
+00:04:14.116 --> 00:04:20.796 
+And there are more sophisticated algorithms which take the clock and make it a lot more advanced.
+
+00:04:20.996 --> 00:04:25.676 
+For example, the arc algorithm for from fast to 2003.
+
+00:04:26.756 --> 00:04:28.836 
+So let's see how the clock algorithm works.
+
+00:04:29.756 --> 00:04:33.516 
+So you need to keep a circular list of all the physical frames in memory.
+
+00:04:33.516 --> 00:04:40.076 
+This means that for every list, for every physical page, I have a single node that represents it.
+
+00:04:40.316 --> 00:04:42.796 
+And this node is simply a bit, one bit.
+
+00:04:43.156 --> 00:04:48.476 
+So I associate its physical page with one bit, zero or one.
+
+00:04:49.236 --> 00:04:55.516 
+I keep a pointer, the hand of the clock to the most recently used physical page.
+
+00:04:55.916 --> 00:05:03.556 
+So if this page was brought in by the operating system inside the memory, I keep a pointer to it.
+
+00:05:04.596 --> 00:05:13.036 
+And what I do is that when a page is accessed, then I set the reference bit in the PT.
+
+00:05:13.076 --> 00:05:19.782 
+This means that I will update the pointer that this bit of the page saying that, OK, this page was
+
+00:05:19.782 --> 00:05:21.836 
+recently accessed in the past.
+
+00:05:22.196 --> 00:05:28.076 
+So make sure that you probably, we probably need it and you do not evict it in the future.
+
+00:05:28.796 --> 00:05:30.316 
+So what happens is the following.
+
+00:05:30.316 --> 00:05:34.436 
+So when we need to replace a frame, so this clock, how does it work?
+
+00:05:34.956 --> 00:05:41.436 
+It starts ticking, basically trying to find pages whose bit is not set.
+
+00:05:41.876 --> 00:05:47.556 
+This means that there's a higher probability that the page will not be referenced in the future.
+
+00:05:48.036 --> 00:05:51.996 
+In this example, what happens the following?
+
+00:05:52.316 --> 00:05:53.956 
+We would start with 0, right?
+
+00:05:54.036 --> 00:06:00.836 
+We would see that this page immediately is not going to be referenced in the future.
+
+00:06:01.036 --> 00:06:03.276 
+It's at least one of the least recently used.
+
+00:06:03.596 --> 00:06:07.636 
+So this page here would be a very good candidate for replacing it.
+
+00:06:07.756 --> 00:06:09.836 
+In order to place our data coming from the disk.
+
+00:06:10.636 --> 00:06:16.678 
+If we would start from this page, if the tick pointer was here, then we would first clear the bit
+
+00:06:16.678 --> 00:06:22.596 
+because this page we need to give it a second chance that OK, this might be used in the future.
+
+00:06:22.596 --> 00:06:26.876 
+So I will give you a second chance and progress the pointer, the clock pointer.
+
+00:06:27.556 --> 00:06:30.596 
+We will do this process until we find a 0 bit.
+
+00:06:31.156 --> 00:06:36.313 
+Next time we find a 0 bit, we will replace the page, fetch the data from the disk and place them
+
+00:06:36.313 --> 00:06:36.636 
+there.
+
+00:06:38.516 --> 00:06:42.276 
+So you can think of again physical memory as a cache for the disk.
+
+00:06:42.716 --> 00:06:46.956 
+It's managed by the system software which via the virtual memory subsystem.
+
+00:06:47.236 --> 00:06:53.079 
+And the page replacement is treated the same way as cache replacement is because the page table is
+
+00:06:53.079 --> 00:06:56.716 
+essentially the tag store for the physical memory data store.
+
+00:06:57.156 --> 00:06:58.876 
+So the key difference is the following.
+
+00:07:00.036 --> 00:07:04.036 
+When I want to replace my data in the caches, I need to do it very fast.
+
+00:07:04.156 --> 00:07:09.596 
+I need a secret to basically decide which data should be replaced in the cache.
+
+00:07:10.556 --> 00:07:16.843 
+In the case of the operating system that decides, I have a lot more flexibility because I can run
+
+00:07:16.843 --> 00:07:22.937 
+software that runs an algorithm, potentially more sophisticated algorithm that decides what to
+
+00:07:22.937 --> 00:07:26.956 
+evict from the physical memory or what to bring from the disk.
+
+00:07:27.116 --> 00:07:33.296 
+What to prevent from the disk, what to proactively evict from physical memory, and all these
+
+00:07:33.296 --> 00:07:34.036 
+operations?
+
+00:07:35.076 --> 00:07:38.196 
+Second, the number of locks in a cast versus physical memory.
+
+00:07:38.196 --> 00:07:39.796 
+That creates a significant difference.
+
+00:07:40.356 --> 00:07:46.320 
+We need to we have a lot more choices to make when it comes to the operating system and choosing
+
+00:07:46.320 --> 00:07:52.161 
+physical pages to replace In the case of caches in a 32 KB cache, you have a limited number of
+
+00:07:52.161 --> 00:07:52.596 
+blocks.
+
+00:07:52.756 --> 00:07:56.156 
+In the case of physical memory, you have a huge number of pages.
+
+00:07:56.396 --> 00:08:02.596 
+And as memories become larger and larger, this choice is going to be much more complicated as well.
+
+00:08:04.156 --> 00:08:09.276 
+Also, we have a tolerable amount of time to find the replacement candidate again in the caches.
+
+00:08:09.636 --> 00:08:15.910 
+I need to make a decision right now, in the next 10 cycles, in the next 20 cycles, about which cast
+
+00:08:15.910 --> 00:08:18.636 
+line to replace and how to evict it, right?
+
+00:08:18.956 --> 00:08:24.036 
+In the case of physical memory in the disk, the process is as follows.
+
+00:08:24.036 --> 00:08:26.956 
+The disk, let's say takes 10 milliseconds to access, right?
+
+00:08:27.316 --> 00:08:31.676 
+So I have not ten, OK, that's too much one millisecond to access.
+
+00:08:31.956 --> 00:08:39.404 
+So if I have one millisecond to access the disk, I can overlap this one millisecond by running with
+
+00:08:39.404 --> 00:08:46.777 
+running an actual algorithm that predicts or that suggests some physical page to evict in order to
+
+00:08:46.777 --> 00:08:49.636 
+fetch the SSD block or the disk block.
+
+00:08:52.356 --> 00:08:59.296 
+And virtual memory plays a key role in our systems, not just because it provides this sort of
+
+00:08:59.296 --> 00:09:03.476 
+isolation or infinite memory space and all these things.
+
+00:09:03.636 --> 00:09:06.596 
+It also plays the role of the memory protection in the system.
+
+00:09:07.196 --> 00:09:13.836 
+This means that when multiple programs run concurrently, its process has its own page table.
+
+00:09:14.316 --> 00:09:19.316 
+I cannot access or view the page table of one process from another process.
+
+00:09:19.956 --> 00:09:26.148 
+This way, its process can use its entire virtual other space without worrying about where other
+
+00:09:26.148 --> 00:09:26.996 
+programs are.
+
+00:09:26.996 --> 00:09:29.996 
+What are other programs doing So?
+
+00:09:29.996 --> 00:09:35.340 
+A process can only access physical pages mapped in its page table and cannot overwrite the memory of
+
+00:09:35.340 --> 00:09:36.196 
+another process.
+
+00:09:36.676 --> 00:09:42.111 
+This provides protection and isolation and it enables also access control mechanism per page which I
+
+00:09:42.111 --> 00:09:43.036 
+will discuss now.
+
+00:09:44.236 --> 00:09:49.240 
+So as you can see here, there's an example where we have two different processes with a different
+
+00:09:49.240 --> 00:09:51.356 
+the two different virtual address spaces.
+
+00:09:51.676 --> 00:09:58.414 
+This process one is using V PVP1VP2 and the virtual address space for process 2 is using again
+
+00:09:58.414 --> 00:09:58.916 
+VP1VP2.
+
+00:09:59.476 --> 00:10:00.956 
+So what is the key difference here?
+
+00:10:01.636 --> 00:10:07.316 
+VP1 is a virtual page that gets mapped to physical memory to physical page 2.
+
+00:10:08.356 --> 00:10:14.036 
+And in this case, physical page 2 is a page that belongs only, as you can see, to process one.
+
+00:10:14.676 --> 00:10:24.372 
+However, you can see that VP 2 from process one and VP one from the process 2 map to physical page
+
+00:10:24.372 --> 00:10:25.956 
+7, both of them.
+
+00:10:26.196 --> 00:10:34.697 
+This means that they share data and the data have a specific property so that no one messes up with
+
+00:10:34.697 --> 00:10:35.556 
+this data.
+
+00:10:35.876 --> 00:10:37.716 
+The property is that it's read.
+
+00:10:37.716 --> 00:10:39.516 
+It's a read only library code.
+
+00:10:39.996 --> 00:10:45.151 
+This means that when you for example spawn 2 applications right and they want to use the same
+
+00:10:45.151 --> 00:10:50.584 
+library, let's say Pythorx, which is a very common machine learning framework and you want to they
+
+00:10:50.584 --> 00:10:53.356 
+want to they want to both use the Pythorx library.
+
+00:10:53.836 --> 00:11:00.213 
+This is going to be instantiated by the operating system as read only because if one of the two
+
+00:11:00.213 --> 00:11:06.456 
+processes changes something in the library, the other one should not see it in your operating
+
+00:11:06.456 --> 00:11:07.396 
+system course.
+
+00:11:07.396 --> 00:11:12.531 
+Later probably you will discuss how this is handled because there is a scenario here in in some
+
+00:11:12.531 --> 00:11:16.316 
+cases where process one might want to change something in the library.
+
+00:11:16.716 --> 00:11:23.636 
+So you can you need to transition from a read only state to a state that is visible only to process
+
+00:11:23.636 --> 00:11:23.916 
+one.
+
+00:11:24.556 --> 00:11:30.203 
+But in in the simplest case they simply share the physical page and everybody can read from it, but
+
+00:11:30.203 --> 00:11:31.516 
+no one can write to it.
+
+00:11:33.356 --> 00:11:39.956 
+So virtual memory implements access control and protection and it does it at the page level.
+
+00:11:40.316 --> 00:11:47.288 
+So not every process is allowed to access every page and it needs supervisor level privilege to
+
+00:11:47.288 --> 00:11:48.756 
+access system pages.
+
+00:11:48.756 --> 00:11:53.754 
+For example, when you write your C code, your Python code, you cannot access the operating system
+
+00:11:53.754 --> 00:11:54.476 
+memory at all.
+
+00:11:54.796 --> 00:11:56.036 
+Like you're not allowed to do that.
+
+00:11:56.756 --> 00:12:00.756 
+And you may also not be able to execute pages in execute instructions.
+
+00:12:00.756 --> 00:12:07.940 
+Some pages, some of the most, let's say sophisticated attacks that try to escalate privileges in
+
+00:12:07.940 --> 00:12:15.274 
+modern systems, like very high key attacks, are basically trying to execute some data that are not
+
+00:12:15.274 --> 00:12:16.996 
+supposed to be execute.
+
+00:12:17.516 --> 00:12:20.876 
+And this way you can gain for example kernel level privileges.
+
+00:12:21.636 --> 00:12:26.556 
+So the idea to prevent this is to store access control information at the.
+
+00:12:27.036 --> 00:12:33.703 
+Its basis in the process page table and this way we can enforce access control time as the same as
+
+00:12:33.703 --> 00:12:35.676 
+the same time as translation.
+
+00:12:35.676 --> 00:12:42.927 
+Which means that visual memory serves 2 purposes, 1 I translate, I find my physical location memory
+
+00:12:42.927 --> 00:12:49.885 
+and 2nd I find whether I have read permissions, write permissions, execute permissions, who has
+
+00:12:49.885 --> 00:12:52.596 
+permissions like is it a shared page?
+
+00:12:52.596 --> 00:12:53.876 
+Is it a non shared page?
+
+00:12:54.076 --> 00:12:59.556 
+I find all this piece of information and some additional metadata bits stored in the page table.
+
+00:13:01.036 --> 00:13:02.076 
+So yes.
+
+00:13:04.356 --> 00:13:10.956 
+So you can see an example again here where we have process I, it has three different virtual pages,
+
+00:13:10.956 --> 00:13:13.756 
+virtual Page 1, virtual page zero and two.
+
+00:13:14.236 --> 00:13:19.156 
+And as you can see in this case virtual Page 1 can be both read.
+
+00:13:19.836 --> 00:13:23.396 
+It can be written too and it maps to the physical page 4.
+
+00:13:24.396 --> 00:13:31.927 
+As you can see, V PVP0 can be read, you cannot write to it, you can only read it and it maps to
+
+00:13:31.927 --> 00:13:33.196 
+physical page 6.
+
+00:13:34.396 --> 00:13:41.759 
+Also, you can see that process J is the only one who also has a pointer to VP6 to physical page 6,
+
+00:13:41.759 --> 00:13:45.516 
+but this is the one responsible for writing to it.
+
+00:13:46.076 --> 00:13:51.636 
+So only process J from process J's perspective you can write to physical page 6.
+
+00:13:51.836 --> 00:13:55.836 
+You cannot write from process i's perspective to physical page 6.
+
+00:13:56.076 --> 00:13:59.836 
+And it's a nice property because this way you can have fine grained protections.
+
+00:14:00.116 --> 00:14:05.916 
+Some application, some processes can write to the physical page 6 or to memory.
+
+00:14:06.036 --> 00:14:11.792 
+Some other processes can only read from this piece of memory and these are the privileged levels,
+
+00:14:11.792 --> 00:14:16.836 
+for example, that you have in most of your systems where the level 0 can do anything.
+
+00:14:16.956 --> 00:14:24.356 
+Basically you go into a, let's say, very privileged mode where you can read and write and execute to
+
+00:14:24.356 --> 00:14:25.836 
+any memory location.
+
+00:14:26.196 --> 00:14:30.476 
+However, applications of course would not live in that space because then it would be mayhem.
+
+00:14:30.836 --> 00:14:37.026 
+So you will basically have applications beyond Level 3 where you have a paid stable for each one of
+
+00:14:37.026 --> 00:14:41.716 
+the processes and you enforce this, this access controller protection bits.
+
+00:14:43.836 --> 00:14:50.707 
+So essentially in in X86 system, the ring 0 is what we call the highest privilege, the ring one and
+
+00:14:50.707 --> 00:14:56.676 
+two, they're not widely used because mostly they're not supported by hardware anymore.
+
+00:14:57.236 --> 00:15:01.956 
+And the ring 3 is the lowest privilege where users application user applications live.
+
+00:15:02.636 --> 00:15:12.690 
+And so if you take a closer look at the page table entry of the X86 contract, then you can see the
+
+00:15:12.690 --> 00:15:13.716 
+following.
+
+00:15:14.276 --> 00:15:20.230 
+So let's assume here that we have a 32 bit system where you have two levels in the page table, the
+
+00:15:20.230 --> 00:15:22.236 
+first level and the second level.
+
+00:15:22.876 --> 00:15:26.756 
+As you can see, the PD is the page called page directory entry.
+
+00:15:26.756 --> 00:15:29.916 
+This is the first level of the page table and these are its contents.
+
+00:15:30.236 --> 00:15:36.116 
+So other its contents, it's the address of the next level of the page table and some bits here, as
+
+00:15:36.116 --> 00:15:36.836 
+you can see.
+
+00:15:37.196 --> 00:15:41.596 
+So all these bits represent this access control and protection bits.
+
+00:15:43.116 --> 00:15:49.527 
+This is a pointer to the PT and these are the flags and this is the PT, this is the last level of
+
+00:15:49.527 --> 00:15:56.071 
+the page table, the page table entry, the final one, This gives us directly the address of the four
+
+00:15:56.071 --> 00:15:58.716 
+KB frame, the physical address actually.
+
+00:16:00.116 --> 00:16:03.996 
+And these are the flags that correspond to the last level.
+
+00:16:05.956 --> 00:16:13.880 
+So the interesting part here is this that the last level of the page table as you can figure out
+
+00:16:13.880 --> 00:16:15.036 
+from this one.
+
+00:16:15.036 --> 00:16:15.756 
+Can someone tell?
+
+00:16:16.196 --> 00:16:16.556 
+Sorry.
+
+00:16:19.716 --> 00:16:21.436 
+So what is the property here?
+
+00:16:21.436 --> 00:16:22.516 
+A nice property here.
+
+00:16:22.756 --> 00:16:27.116 
+The last level of the page table covers 14 KB page.
+
+00:16:27.116 --> 00:16:30.916 
+So you can associate protection for 1/4 KB page.
+
+00:16:31.476 --> 00:16:38.516 
+The question is how many pages can I protect just by picking a flag in the PT?
+
+00:16:38.756 --> 00:16:46.996 
+Like if I set the flag here so that I cannot read any page, what does this mean for the PT?
+
+00:16:47.116 --> 00:16:48.156 
+Can someone tell me?
+
+00:16:52.276 --> 00:16:58.503 
+So essentially what happens the following PD is the second level of the page table, the first level
+
+00:16:58.503 --> 00:16:59.636 
+of the page table.
+
+00:17:00.076 --> 00:17:05.756 
+And what you achieve is that you encapsulate many last level page table entries.
+
+00:17:06.236 --> 00:17:14.242 
+So if you set the flag here to be, for example, no read, then all the pages from the last level of
+
+00:17:14.242 --> 00:17:21.596 
+the page table that you point to from the first level are not going to be able to be read.
+
+00:17:21.956 --> 00:17:25.836 
+That's the key property that is leveraged in modern systems.
+
+00:17:25.836 --> 00:17:26.956 
+Basically what?
+
+00:17:27.036 --> 00:17:29.796 
+What you can do is that you can have many of these combinations.
+
+00:17:30.116 --> 00:17:37.217 
+So if your page directory entry can basically say that this is the access type, then the PT has
+
+00:17:37.217 --> 00:17:39.236 
+another combination, right?
+
+00:17:39.476 --> 00:17:43.236 
+Some of them might be right from the user space being read only read, right?
+
+00:17:43.636 --> 00:17:50.171 
+And then you do some sort of, let's say, an and operation so that you can find the final permissions
+
+00:17:50.171 --> 00:17:50.956 
+of the page.
+
+00:17:51.316 --> 00:17:52.996 
+That's not a very important feature.
+
+00:17:52.996 --> 00:17:55.676 
+So I don't want to spend more time on that.
+
+00:17:56.156 --> 00:18:02.153 
+And what I want to spend some time is to give you an understanding of the importance of this
+
+00:18:02.153 --> 00:18:03.196 
+protection bits.
+
+00:18:04.076 --> 00:18:10.938 
+So let's say that hardware is very unreliable and I'm able to flip the access protection bits From a
+
+00:18:10.938 --> 00:18:17.526 
+securities point of view, let's say that somehow we find a way that you can, we can flip bits in
+
+00:18:17.526 --> 00:18:19.036 
+the page table, right?
+
+00:18:19.636 --> 00:18:26.360 
+This way, what would we achieve If someone goes and changes who can read pages, like whether the
+
+00:18:26.360 --> 00:18:33.295 
+page is in a supervisor mode or a user mode, then we can also flip the access control bit from user
+
+00:18:33.295 --> 00:18:34.276 
+to supervisor.
+
+00:18:34.716 --> 00:18:36.916 
+And the question is whether this can happen.
+
+00:18:37.396 --> 00:18:41.836 
+And this is one of the first, let's say iterations of Row Hammer.
+
+00:18:42.276 --> 00:18:47.811 
+And this has been shown by Google basically where you can use Row Hammer that where we can
+
+00:18:47.811 --> 00:18:53.716 
+predictably induce errors in most data memory chips in order to change the page stable contents.
+
+00:18:54.236 --> 00:19:01.196 
+Basically this was the first iteration of using Row Hammer to basically gain gain kernel privileges.
+
+00:19:02.756 --> 00:19:05.316 
+So let's do a quick recap of Row Hammer.
+
+00:19:05.556 --> 00:19:06.876 
+You can predictably, yes.
+
+00:19:06.876 --> 00:19:06.996 
+Yeah.
+
+00:19:06.996 --> 00:19:14.213 
+I was wondering then you would know where physically this page table is and then how you would know
+
+00:19:14.213 --> 00:19:17.276 
+that that's the what the attack relies on.
+
+00:19:17.516 --> 00:19:19.476 
+I will show you exactly how they do it.
+
+00:19:19.956 --> 00:19:21.876 
+They what you say is correct.
+
+00:19:21.876 --> 00:19:28.542 
+What they try to do is introduce some predictability so that you know that you're going to flip page
+
+00:19:28.542 --> 00:19:32.076 
+stable entries and not just flip a random page entry.
+
+00:19:35.636 --> 00:19:38.516 
+So they have an initial paper of row hammer.
+
+00:19:38.996 --> 00:19:42.636 
+We have shown that more than 80% of the tested DRAM chips are vulnerable.
+
+00:19:43.196 --> 00:19:48.686 
+And this was the first example of how a very simple failure mechanism, A reliability problem, can
+
+00:19:48.686 --> 00:19:51.516 
+create a widespread system security vulnerability.
+
+00:19:52.156 --> 00:19:54.316 
+And there are some news on it.
+
+00:19:54.436 --> 00:19:56.396 
+And the key idea here is the following.
+
+00:19:57.036 --> 00:19:59.236 
+We open up a row in DRAM, right?
+
+00:19:59.716 --> 00:20:01.516 
+And we close a row.
+
+00:20:01.916 --> 00:20:03.556 
+We open a row, we close a row.
+
+00:20:04.036 --> 00:20:08.476 
+And what happens is that we create bit flips in the neighboring rows.
+
+00:20:08.916 --> 00:20:16.024 
+So by simply opening up and closing a row in the middle of a DRAM bang, let's say, we can cause bit
+
+00:20:16.024 --> 00:20:22.774 
+flips in in the victim rows, what we call a victim row, which are the neighboring rows of this
+
+00:20:22.774 --> 00:20:23.636 
+hammer draw.
+
+00:20:24.956 --> 00:20:26.556 
+If we do it enough times of course.
+
+00:20:26.556 --> 00:20:32.803 
+And there are lots of follow up studies on how many times we need to do this to achieve bit flips in
+
+00:20:32.803 --> 00:20:34.116 
+the neighboring rows.
+
+00:20:34.716 --> 00:20:40.076 
+This is an example program where we demonstrate let's say errors on X86 systems.
+
+00:20:40.716 --> 00:20:44.116 
+So this is what we call a disturbance kernel.
+
+00:20:44.636 --> 00:20:51.219 
+The disturbance kernel when it executes it basically enforces it forces 2 rows to be opened and
+
+00:20:51.219 --> 00:20:54.476 
+closed one after the other over and over again.
+
+00:20:54.836 --> 00:20:57.036 
+And this way it induce many errors in the module.
+
+00:20:57.876 --> 00:21:05.030 
+And this program essentially avoids cuss heats because as you can see here, we first flash X from
+
+00:21:05.030 --> 00:21:05.916 
+the classes.
+
+00:21:05.916 --> 00:21:06.836 
+So what we do is the following.
+
+00:21:06.836 --> 00:21:08.796 
+Let me go in detail.
+
+00:21:09.156 --> 00:21:10.876 
+So we perform a move instruction.
+
+00:21:10.876 --> 00:21:14.236 
+This opens up one row, let's say it opens up row X.
+
+00:21:15.036 --> 00:21:17.076 
+Then we move Y, right?
+
+00:21:17.076 --> 00:21:18.596 
+This opens up row Y.
+
+00:21:19.396 --> 00:21:22.196 
+And then we flash X&Y from the classes.
+
+00:21:22.396 --> 00:21:23.356 
+Why do we do that?
+
+00:21:23.356 --> 00:21:28.436 
+Because if we retrieve again X&Y from the classes, then we would not access memory.
+
+00:21:28.796 --> 00:21:31.236 
+So we would need to repeatedly access memory.
+
+00:21:31.716 --> 00:21:41.017 
+So what we need to do is access X&Y many times repeatedly to induce bit flips to the neighboring
+
+00:21:41.017 --> 00:21:44.796 
+rows in between X&Y or above and below.
+
+00:21:45.476 --> 00:21:51.236 
+And this way we avoid cache hits with a sealed flash instructions and we avoid row hits to X.
+
+00:21:51.516 --> 00:21:56.476 
+If we would simply open up X, then we would hammer X, which would be an open row.
+
+00:21:56.476 --> 00:21:57.956 
+We would not close the row.
+
+00:21:57.956 --> 00:22:03.004 
+The memory controller would tell us, OK, this row is very important for me to keep alive, I will
+
+00:22:03.004 --> 00:22:03.636 
+keep it hot.
+
+00:22:03.956 --> 00:22:05.956 
+And then you would not experience row hammer.
+
+00:22:05.956 --> 00:22:16.107 
+So you need to close row X, open row Y, close row Y, open row X repeatedly like that and that's what
+
+00:22:16.107 --> 00:22:18.036 
+happens at the end.
+
+00:22:18.156 --> 00:22:25.377 
+You might have bit flips on the top of row XA lot of bit flips in between X&Y because they have an
+
+00:22:25.377 --> 00:22:26.556 
+additive effect.
+
+00:22:27.356 --> 00:22:34.082 
+In the in between rows and then some more bit flips on the bottom of a row Y and we have shown in
+
+00:22:34.082 --> 00:22:40.947 
+the initial paper that there are many errors that you can induce with different systems and we show
+
+00:22:40.947 --> 00:22:44.276 
+that it's a real reliability and security issue.
+
+00:22:45.196 --> 00:22:52.653 
+This is the initial work and this is the work from Project 0 from Google, which tried to use raw
+
+00:22:52.653 --> 00:22:57.236 
+hammer as a bug actually to gain a kernel level privileges.
+
+00:22:58.596 --> 00:23:05.854 
+And raw hammer is a problem with some very recent DRAM devices also, not only the ones from like
+
+00:23:05.854 --> 00:23:10.996 
+DDR3 and DDR4 back in the days has been shown in DDR5 very recently.
+
+00:23:13.596 --> 00:23:16.996 
+So let me walk you through the attack, the Google's original attack.
+
+00:23:17.516 --> 00:23:20.876 
+These slides are from the from Black hot talk from Google.
+
+00:23:21.436 --> 00:23:27.636 
+And the attack is actually very nice in terms of like the thinking process.
+
+00:23:27.636 --> 00:23:30.236 
+It's based on what you said actually.
+
+00:23:30.236 --> 00:23:36.036 
+It's like so the X86 page stable entries are dense and trusted.
+
+00:23:36.236 --> 00:23:42.579 
+And by dense means that you're trying to pack the physical page number, the metadata for access,
+
+00:23:42.579 --> 00:23:46.676 
+control and protection in the same bytes, in the same 8 bytes.
+
+00:23:48.036 --> 00:23:50.396 
+So they control the access to the physical memory.
+
+00:23:50.396 --> 00:23:56.221 
+Which means if I change the physical page number on the of the content of the page table entry, then
+
+00:23:56.221 --> 00:23:59.076 
+I can basically point to another memory location.
+
+00:23:59.636 --> 00:24:04.436 
+Also, if I flip a bit in the protection bits, I can change the protection.
+
+00:24:05.276 --> 00:24:07.116 
+So what do we want to do?
+
+00:24:07.356 --> 00:24:15.339 
+The aim of this exploit was to get access to the page table which gives access to all of physical
+
+00:24:15.339 --> 00:24:15.916 
+memory.
+
+00:24:15.916 --> 00:24:22.433 
+Because I can for example make a page change make with row hammer, I can change the contents of the
+
+00:24:22.433 --> 00:24:27.436 
+physical page number, and I can also change the contents of the access bits.
+
+00:24:27.436 --> 00:24:36.956 
+Which means if I make a page to be in user mode, it will be in super in privilege mode.
+
+00:24:37.236 --> 00:24:39.716 
+Then I can make it point anywhere I want, essentially.
+
+00:24:42.276 --> 00:24:48.756 
+So the key idea to avoid the problem that you mentioned is something called spraying, where you're
+
+00:24:48.756 --> 00:24:51.996 
+trying to spray physical memory with page tables.
+
+00:24:52.276 --> 00:24:58.795 
+So you're trying to instantiate many page tables in the physical memory to increase the probability
+
+00:24:58.795 --> 00:25:01.956 
+that you cause a bit flip inside the page table.
+
+00:25:02.836 --> 00:25:05.916 
+Then you try to check for useful repeatable bit flips.
+
+00:25:06.636 --> 00:25:07.716 
+So how does that work?
+
+00:25:09.276 --> 00:25:10.756 
+You're running your program, right?
+
+00:25:11.036 --> 00:25:14.836 
+And many programs do some some stuff which are very regular.
+
+00:25:15.116 --> 00:25:15.996 
+What does this mean?
+
+00:25:16.516 --> 00:25:19.756 
+So I want to map a file with read write permissions.
+
+00:25:20.116 --> 00:25:21.076 
+So how does that work?
+
+00:25:21.076 --> 00:25:27.036 
+I do in like in C or in Python, I do open like like file equals open, right?
+
+00:25:27.436 --> 00:25:28.396 
+So what does this do?
+
+00:25:28.876 --> 00:25:33.316 
+It creates a virtual page that points to a physical page.
+
+00:25:33.316 --> 00:25:34.036 
+That's the file.
+
+00:25:35.396 --> 00:25:37.996 
+But what does the operating system do as well?
+
+00:25:38.156 --> 00:25:42.556 
+It creates the page table that points to this file.
+
+00:25:43.356 --> 00:25:50.997 
+So the question is, what happens if I create many of these memory objects that point to the same
+
+00:25:50.997 --> 00:25:51.396 
+file?
+
+00:25:51.996 --> 00:25:53.796 
+Then what would happen is this.
+
+00:25:54.156 --> 00:26:00.971 
+I would create many page table entries that point all to the same file and this is what is my final
+
+00:26:00.971 --> 00:26:01.316 
+goal.
+
+00:26:01.516 --> 00:26:06.996 
+I can fill the physical memory with paid stable entries that all point to the same file.
+
+00:26:07.356 --> 00:26:15.302 
+So my physical memory at the end of the day would look like 99 five percent of paid stables and 5%
+
+00:26:15.302 --> 00:26:23.086 
+which is the file and what do they do They want to change basically one of the one of these paid
+
+00:26:23.086 --> 00:26:30.384 
+stable entries, make the correct flip, the correct bit to be flipped and then gain control
+
+00:26:30.384 --> 00:26:31.276 
+privileges.
+
+00:26:32.356 --> 00:26:33.716 
+What can we achieve with this?
+
+00:26:34.236 --> 00:26:41.431 
+If we make sure that the this paid stable is changed, then we can basically point to another paid
+
+00:26:41.431 --> 00:26:42.396 
+stable entry.
+
+00:26:42.916 --> 00:26:49.767 
+So if we change this right now, then we can basically change directly the contents of another paid
+
+00:26:49.767 --> 00:26:50.676 
+stable entry.
+
+00:26:50.876 --> 00:26:57.860 
+If you think about it like, we just need to make sure that we create a new direction, which means
+
+00:26:57.860 --> 00:27:03.116 
+that this virtual page, I flipped my bits in this page stable entry here.
+
+00:27:04.076 --> 00:27:11.343 
+And I make sure that right now this page stable entry points to another page stable entry by mistake
+
+00:27:11.343 --> 00:27:13.596 
+because we flipped bits, right?
+
+00:27:14.116 --> 00:27:20.440 
+So whenever, right now we write to this location, we can basically write directly to the page
+
+00:27:20.440 --> 00:27:20.916 
+stable.
+
+00:27:21.316 --> 00:27:23.996 
+And that's a obvious vulnerability, right?
+
+00:27:24.196 --> 00:27:26.996 
+If the user space program can write.
+
+00:27:27.076 --> 00:27:33.110 
+Directly to the page table, we can form any address we want, we can form any access control we want
+
+00:27:33.110 --> 00:27:34.756 
+and any protection we want.
+
+00:27:36.756 --> 00:27:43.141 
+And this way we can basically have an attacker that can read and write the page tables and they can
+
+00:27:43.141 --> 00:27:43.916 
+do anything.
+
+00:27:43.956 --> 00:27:47.076 
+After this point, their system is basically done.
+
+00:27:48.316 --> 00:27:56.916 
+So there's, let's see more issues in virtual memory, which I studied a lot during my PhD.
+
+00:27:57.436 --> 00:28:06.411 
+And the one of the most important ones that have been let's say started for the last, I would say 30
+
+00:28:06.411 --> 00:28:14.937 
+to 40 years is the concept of the concept of how we can speed up translation and access control
+
+00:28:14.937 --> 00:28:15.476 
+check.
+
+00:28:15.916 --> 00:28:22.556 
+So yesterday we discussed how we can for example establish the virtual to physical mapping.
+
+00:28:22.956 --> 00:28:25.996 
+But I did not discuss at all how the hardware does that.
+
+00:28:26.356 --> 00:28:34.316 
+I discussed how basically we can use the page table to record the virtual to physical mapping.
+
+00:28:34.876 --> 00:28:40.236 
+We discussed how we can access the page table to discover the virtual physical mapping.
+
+00:28:40.716 --> 00:28:45.316 
+But what we did not discuss is how the hardware does it on runtime.
+
+00:28:47.636 --> 00:28:50.356 
+So how fast is other translation?
+
+00:28:50.356 --> 00:28:57.524 
+So the idea is that we want to use a hardware structure at the core level that somehow keeps track
+
+00:28:57.524 --> 00:29:04.618 
+of the most hot, the most recent page table entries and reduces the number of accesses to look up
+
+00:29:04.618 --> 00:29:05.716 
+the page table.
+
+00:29:06.916 --> 00:29:11.156 
+And this is how address translation works in almost all modern processors.
+
+00:29:11.716 --> 00:29:15.956 
+So we have our core here and we need to access a virtual address, right?
+
+00:29:16.196 --> 00:29:20.896 
+The the core does not speak language of physical addresses, it speaks only language of virtual
+
+00:29:20.896 --> 00:29:21.396 
+addresses.
+
+00:29:21.916 --> 00:29:28.362 
+So it sends the virtual address to a unit called the Memory management unit, which is a hardware
+
+00:29:28.362 --> 00:29:31.116 
+unit responsible for address translation.
+
+00:29:31.436 --> 00:29:37.867 
+So it's only job is basically to talk to the memory hierarchy, to the caches, to the main memory, to
+
+00:29:37.867 --> 00:29:42.756 
+load the page table, discover the mapping, the visual, the physical mapping.
+
+00:29:43.156 --> 00:29:48.536 
+And so that the core can basically use the correct physical address and does not rely on using the
+
+00:29:48.536 --> 00:29:51.996 
+visual address which doesn't correspond to a physical location.
+
+00:29:53.236 --> 00:29:57.956 
+So the memory management unit is responsible for resolving other translation requests.
+
+00:29:58.396 --> 00:30:01.156 
+And we have one memory management unit per core.
+
+00:30:01.996 --> 00:30:04.596 
+So the MMU, we call it an MMU.
+
+00:30:04.596 --> 00:30:07.876 
+And the MMU has typically three key components.
+
+00:30:08.316 --> 00:30:14.902 
+It has translation look aside buffers, and you can think of a translation look aside buffer as a
+
+00:30:14.902 --> 00:30:19.156 
+small cast for recently used virtual to physical translations.
+
+00:30:19.476 --> 00:30:26.499 
+So we basically probe the TLB and we find directly given the virtual address, the physical
+
+00:30:26.499 --> 00:30:27.436 
+translation.
+
+00:30:27.436 --> 00:30:33.262 
+This is as if we pack the most recently paid, the most recently used paid stable entries, the
+
+00:30:33.262 --> 00:30:35.956 
+hottest ones inside the hardware structure.
+
+00:30:36.476 --> 00:30:39.196 
+Same way, the same way that caches work for data.
+
+00:30:40.796 --> 00:30:43.636 
+The second component it's paid table classes.
+
+00:30:44.156 --> 00:30:50.036 
+So I always discussed like in the last lecture, there are some intermediate pointers that you need
+
+00:30:50.036 --> 00:30:53.516 
+to walk through to reach the last level of the page table.
+
+00:30:54.436 --> 00:31:00.345 
+These pointers would lead to more memory accesses, but modern processors use page stable work *****
+
+00:31:00.345 --> 00:31:06.194 
+for the work process of the page table so that you can find the intermediate pointers very quickly
+
+00:31:06.194 --> 00:31:09.716 
+without going and retrieving them from the physical memory.
+
+00:31:10.836 --> 00:31:17.330 
+And last, there is a component called the hardware page table worker that generates all the requests
+
+00:31:17.330 --> 00:31:21.876 
+needed to walk the page table in a sequential pointer changing manner.
+
+00:31:23.396 --> 00:31:25.196 
+Does anyone have any question on this?
+
+00:31:28.356 --> 00:31:30.076 
+So this is how it looks in the system.
+
+00:31:30.436 --> 00:31:33.876 
+So you have typically two types of TLBS.
+
+00:31:34.276 --> 00:31:37.876 
+You have one TLB that caches translations for data.
+
+00:31:38.276 --> 00:31:44.796 
+So whenever we want to cut to translate data, then we go through the green TLB.
+
+00:31:45.356 --> 00:31:49.276 
+Whenever we want to translate instructions, then we go through the yellow TLB.
+
+00:31:50.076 --> 00:31:56.484 
+If we're missing these structures, then we go to NL 2 unified TLB and we call it unified because it
+
+00:31:56.484 --> 00:31:59.916 
+can cast translations for both data and instructions.
+
+00:32:00.396 --> 00:32:07.102 
+So if we in the worst case scenario that we miss in both TLBS and we do not find the translation in
+
+00:32:07.102 --> 00:32:12.116 
+these, then we need to go through the hardware page stable walk circuitry.
+
+00:32:12.716 --> 00:32:14.636 
+So the hardware page stable walk circuitry.
+
+00:32:14.636 --> 00:32:21.250 
+You can think of it as a very simple FSM in Verilog that simply generates addresses that need to be
+
+00:32:21.250 --> 00:32:26.796 
+accessed in order to fetch the last level page stable entry and these addresses we.
+
+00:32:27.476 --> 00:32:33.405 
+If they're also part of the paid table of classes, so that we can skip basically some pointer
+
+00:32:33.405 --> 00:32:33.916 
+chasing.
+
+00:32:35.796 --> 00:32:39.156 
+So the idea, let's jump to the translation look ahead bar for TLBS.
+
+00:32:39.396 --> 00:32:44.356 
+The idea is that we want to cast the page table entries in the hardware structure to speed up
+
+00:32:44.356 --> 00:32:44.996 
+translation.
+
+00:32:45.876 --> 00:32:52.316 
+And you can think of it as a very small cast of recently accessed paid stable entries.
+
+00:32:52.596 --> 00:32:59.123 
+And this way we reduce the number of memory accesses to perform the translation for instruction
+
+00:32:59.123 --> 00:33:01.116 
+fetches and loads and stores.
+
+00:33:01.676 --> 00:33:06.661 
+If we would need to go to the page stable every time we do a translation, we would need in the
+
+00:33:06.661 --> 00:33:08.836 
+modern system for memory access to do it.
+
+00:33:09.276 --> 00:33:15.793 
+If we have the hit in the first level of the TLB or in the second level of the TLB, we just perform
+
+00:33:15.793 --> 00:33:18.756 
+one hardware access directly inside the TLBS.
+
+00:33:18.956 --> 00:33:24.543 
+We retrieve the translation and we do not need to walk the page table, which means that we reduce
+
+00:33:24.543 --> 00:33:26.156 
+this 4 memory accesses to 0.
+
+00:33:26.436 --> 00:33:30.956 
+Basically this is how it works.
+
+00:33:30.956 --> 00:33:33.476 
+And this is very, very similar to how caches work.
+
+00:33:33.956 --> 00:33:40.676 
+So we're basically we have 4 different, let's say, properties, the index.
+
+00:33:41.116 --> 00:33:47.014 
+So we take the virtual page number, we take some, we mask some bits from the virtual page number and
+
+00:33:47.014 --> 00:33:48.076 
+we form the index.
+
+00:33:48.516 --> 00:33:51.396 
+And the index gives us basically the set index.
+
+00:33:51.396 --> 00:33:54.836 
+It gives us the index at which we need to retrieve our translation from.
+
+00:33:55.676 --> 00:33:56.756 
+Then we have A tag.
+
+00:33:57.156 --> 00:34:04.417 
+The tag is used same way as Cus is use A tag to make sure that this whole VPN is mapped to this
+
+00:34:04.417 --> 00:34:04.876 
+index.
+
+00:34:05.476 --> 00:34:09.636 
+And then we have data whenever we want to fetch the.
+
+00:34:09.676 --> 00:34:14.996 
+If the tag matches at the specific index, then we want to fetch the page stable entry.
+
+00:34:14.996 --> 00:34:19.116 
+And the page stable entry as we discussed before contains 2 things.
+
+00:34:19.436 --> 00:34:21.556 
+Do I have permission to access this page?
+
+00:34:21.836 --> 00:34:23.916 
+What is the physical address of this page?
+
+00:34:24.596 --> 00:34:31.630 
+And based on these two, it progresses the execution and they're the usual design choices where
+
+00:34:31.630 --> 00:34:38.665 
+there's much literature in that where we would basically try to place data, replace data, have
+
+00:34:38.665 --> 00:34:40.836 
+multi level TL, BS, etcetera.
+
+00:34:42.756 --> 00:34:47.516 
+So the problem with the TLB is that it cannot hold the whole page stable.
+
+00:34:47.916 --> 00:34:53.036 
+Think of a process that uses, let's say 100 gigabytes of memory, right?
+
+00:34:53.236 --> 00:34:56.756 
+The page stable might be 500 megabytes large.
+
+00:34:57.116 --> 00:35:04.619 
+We cannot have a hardware component that uses a 500 megabyte large space because then it would kill
+
+00:35:04.619 --> 00:35:10.076 
+all our power budget, energy budget, area budget, and everything, right?
+
+00:35:10.876 --> 00:35:18.518 
+So in some cases we need to walk the page stable watching the page table again, it might lead to 4
+
+00:35:18.518 --> 00:35:20.156 
+memory access, right?
+
+00:35:20.396 --> 00:35:24.956 
+And this would lead in return to large performance penalties.
+
+00:35:25.956 --> 00:35:32.661 
+There of course better TLB management and prefetching techniques which we can use to reduce TLB
+
+00:35:32.661 --> 00:35:33.156 
+misses.
+
+00:35:33.476 --> 00:35:38.556 
+And this is one of the last works of my PhD on how we can prefetch entries for the TLB.
+
+00:35:39.396 --> 00:35:42.116 
+But the key question is who handles the TLB misses?
+
+00:35:42.116 --> 00:35:48.695 
+And even though I told you that modern modern hardware uses a specialised circuit to generate the
+
+00:35:48.695 --> 00:35:53.036 
+addresses and the specialised FSM, this was not always the case.
+
+00:35:53.036 --> 00:35:56.356 
+For example, CPU's 30 years ago were not working like that.
+
+00:35:57.356 --> 00:36:02.916 
+In some CPU's we were handling TLB misses at the software level, not at the hardware level.
+
+00:36:03.836 --> 00:36:06.796 
+So right now the approach is hardware managed right?
+
+00:36:07.236 --> 00:36:11.156 
+So the hardware does the page table work with this specialised circuitry.
+
+00:36:11.516 --> 00:36:15.396 
+It fetches the page stable entry, inserts it into the TLB.
+
+00:36:15.796 --> 00:36:19.156 
+If the TLB is full, the entry replaces another entry.
+
+00:36:19.636 --> 00:36:21.836 
+And this is done transparent to the system software.
+
+00:36:21.836 --> 00:36:26.543 
+It's which means that I do not need to stop my application just because I had the missing the TLB
+
+00:36:26.543 --> 00:36:28.436 
+and I do not know the physical address.
+
+00:36:29.316 --> 00:36:33.196 
+So this way we can also employ the specialized structures.
+
+00:36:33.196 --> 00:36:34.796 
+I talked about the page work caches.
+
+00:36:35.036 --> 00:36:39.760 
+I can basically use some specialized caches where I find it the pointers for the intermediate
+
+00:36:39.760 --> 00:36:40.116 
+levels.
+
+00:36:40.996 --> 00:36:45.516 
+The second approach, which was used for example in MIPS based processors is a software managed.
+
+00:36:46.236 --> 00:36:48.516 
+In this approach the hardware.
+
+00:36:48.636 --> 00:36:52.076 
+If we're missing the TLB, the hardware would raise an exception.
+
+00:36:52.436 --> 00:36:55.836 
+The world would stop, the processors world would stop.
+
+00:36:56.396 --> 00:36:58.876 
+The operating system would do the page stable work.
+
+00:36:59.316 --> 00:37:06.564 
+It would fetch the PT and putting insert and evict entries in the TLB using software though not
+
+00:37:06.564 --> 00:37:08.396 
+using a hardware module.
+
+00:37:09.516 --> 00:37:17.343 
+Can someone tell me what are the benefits of using a hardware managed still be compared to a
+
+00:37:17.343 --> 00:37:20.236 
+software managed still be correct?
+
+00:37:21.476 --> 00:37:26.756 
+So it's very fast because we do not need to have a an exception.
+
+00:37:27.236 --> 00:37:31.985 
+Otherwise, we would need to raise an exception trap into the operating system, jump to operating
+
+00:37:31.985 --> 00:37:34.756 
+system software code and this would take lots of cycles.
+
+00:37:35.476 --> 00:37:40.377 
+Also, we do not need to bring any sort of new data or instructions into the caches because of the
+
+00:37:40.377 --> 00:37:41.236 
+operating system.
+
+00:37:41.836 --> 00:37:50.047 
+Now can someone tell me what's a disadvantage of having a hardware managed to still be that's a bit
+
+00:37:50.047 --> 00:37:55.356 
+more advanced, but yeah, it it, it requires hardware complexity.
+
+00:37:55.356 --> 00:37:56.156 
+I agree with this.
+
+00:37:56.716 --> 00:38:07.796 
+Anything else that's very good.
+
+00:38:07.796 --> 00:38:12.771 
+Yeah, that's one of the, that's one of the problems that like the way you would evict and managed
+
+00:38:12.771 --> 00:38:14.516 
+steel beats is going to be static.
+
+00:38:14.996 --> 00:38:26.996 
+And one more like let's say that right now I create a new operating system that has a new page table
+
+00:38:26.996 --> 00:38:30.236 
+that is not a tree exactly.
+
+00:38:30.236 --> 00:38:32.436 
+That's one of the big disadvantage of this approach.
+
+00:38:32.596 --> 00:38:34.956 
+But it's works in a static way.
+
+00:38:34.956 --> 00:38:39.196 
+If I need to change the dictionary that stores my translations, I'm done.
+
+00:38:39.196 --> 00:38:39.796 
+I cannot do it.
+
+00:38:39.796 --> 00:38:44.827 
+Basically, I cannot use any process that exists in the wild because the the contract is fixed
+
+00:38:44.827 --> 00:38:47.316 
+between the hardware and the operating system.
+
+00:38:47.596 --> 00:38:53.196 
+Now they agreed that the hardware is going to work with four level radix work.
+
+00:38:53.436 --> 00:38:57.156 
+I cannot make even the levels larger in an easy way.
+
+00:38:57.316 --> 00:38:59.396 
+I cannot have 5 levels or 6 levels.
+
+00:38:59.676 --> 00:39:01.196 
+I need to work only four levels.
+
+00:39:01.796 --> 00:39:05.516 
+And this agreement is very problematic in many ways, which I will not discuss now.
+
+00:39:06.836 --> 00:39:10.556 
+So let's see right now the benefits of software managed TLBS.
+
+00:39:10.556 --> 00:39:25.869 
+What is one key benefit of doing software managed TLB management exactly so the OS can define the
+
+00:39:25.869 --> 00:39:29.816 
+paid stable organization.
+
+00:39:30.376 --> 00:39:36.541 
+We have more sophisticated TLB replacement policies, but unfortunately, we need to generate, as I
+
+00:39:36.541 --> 00:39:42.579 
+discussed before, an exception like we need to stop the program, raise an exception and I would
+
+00:39:42.579 --> 00:39:47.156 
+have a performance overhead because I would flash the whole application.
+
+00:39:47.156 --> 00:39:52.980 
+I would fed the operating system, execute it, be more intelligent, be more flexible, but at the cost
+
+00:39:52.980 --> 00:39:54.436 
+of much higher penalties.
+
+00:39:56.276 --> 00:40:01.476 
+So let's talk right now about how the L1 data TLB works in this scenario.
+
+00:40:01.796 --> 00:40:07.727 
+We have separate L1 data TL BS for different page sizes in modern processors, which we haven't
+
+00:40:07.727 --> 00:40:09.116 
+discussed a lot about.
+
+00:40:09.796 --> 00:40:16.008 
+So one of the reasons we have different page sizes in modern processors is because we want to reduce
+
+00:40:16.008 --> 00:40:18.556 
+the number of mappings whenever possible.
+
+00:40:19.076 --> 00:40:25.340 
+If we use only four KB pages, the number of mappings we need from virtual to physical memory are a
+
+00:40:25.340 --> 00:40:25.596 
+lot.
+
+00:40:26.116 --> 00:40:33.360 
+The moment we make the page size 512 times larger into two megabytes, then we immediately reduce the
+
+00:40:33.360 --> 00:40:35.316 
+number of mappings we need.
+
+00:40:35.596 --> 00:40:42.436 
+We need to map small number of chunks from virtual memory to physical memory.
+
+00:40:43.916 --> 00:40:50.676 
+So modern Linux uses both 4 KB, 2 megabyte and one GB large pages.
+
+00:40:50.916 --> 00:40:53.076 
+But always on always.
+
+00:40:53.676 --> 00:40:58.855 
+When you configure it too, it doesn't do it without you configuring it to do it, because there are
+
+00:40:58.855 --> 00:41:02.396 
+also performance penalties associated with allocating a large page.
+
+00:41:02.396 --> 00:41:09.743 
+Can someone tell me one performance problem that that gets created when I want to allocate A2 MB
+
+00:41:09.743 --> 00:41:12.116 
+page instead of a four KB page?
+
+00:41:19.296 --> 00:41:20.336 
+That's one.
+
+00:41:20.336 --> 00:41:22.096 
+That's a very big one, yes.
+
+00:41:22.416 --> 00:41:28.656 
+So let's say they allocate 2 megabyte pages for an array that I created which has 10 elements.
+
+00:41:29.056 --> 00:41:34.216 
+Then the problem is that I would not use 80 percent, 90% of this piece of memory.
+
+00:41:34.856 --> 00:41:36.456 
+And what would be a second problem?
+
+00:41:37.096 --> 00:41:39.376 
+It's a very more hardware level problem.
+
+00:41:40.636 --> 00:41:48.276 
+So when I allocate the memory, what do I need to make sure that does not break security?
+
+00:41:49.156 --> 00:41:55.754 
+What I need to do something to this piece of memory that I allocate so they do not break security
+
+00:41:55.754 --> 00:41:58.476 
+guarantees you need to clear it exactly.
+
+00:41:58.476 --> 00:42:02.836 
+And what happens if I need to clear A2 MB page instead of a four KB page?
+
+00:42:02.836 --> 00:42:08.716 
+2 megabyte much slower exactly.
+
+00:42:08.876 --> 00:42:15.436 
+So this would basically lead to much higher what we call tail latency, which means some requests
+
+00:42:15.436 --> 00:42:22.132 
+would basically would take for them, let's say 512 extra time to clear the page compared to simply
+
+00:42:22.132 --> 00:42:23.636 
+allocating A4 KB page.
+
+00:42:25.636 --> 00:42:26.916 
+So let's see.
+
+00:42:27.036 --> 00:42:32.285 
+Write down how virtual to physical mappings are inserted into the corresponding TLB after the TLB
+
+00:42:32.285 --> 00:42:32.556 
+miss.
+
+00:42:33.156 --> 00:42:38.407 
+So one of the ways that the processor is doing it, and we're not sure about that because it's not
+
+00:42:38.407 --> 00:42:39.436 
+public information.
+
+00:42:39.436 --> 00:42:47.036 
+This is a guess basically that the processor right now is accessing all three TL BS in parallel.
+
+00:42:47.836 --> 00:42:55.436 
+So why do we need to access all three TL BS and not just for example access the four KB TLB only?
+
+00:42:56.036 --> 00:42:56.996 
+Does anyone have any idea?
+
+00:42:56.996 --> 00:43:02.076 
+Don't overlap any of different sizes.
+
+00:43:02.076 --> 00:43:02.796 
+That's yes.
+
+00:43:03.036 --> 00:43:07.236 
+Yes, but like first, do I know the page size before?
+
+00:43:07.236 --> 00:43:11.636 
+I mean we have no idea where it is exactly.
+
+00:43:13.756 --> 00:43:14.356 
+Exactly.
+
+00:43:14.356 --> 00:43:17.156 
+So the page size creates the following problem, right?
+
+00:43:17.676 --> 00:43:24.236 
+If I if I have many different page sizes and many different pages in terms of size, I cannot.
+
+00:43:24.356 --> 00:43:25.596 
+I need to guess it somehow.
+
+00:43:25.596 --> 00:43:32.456 
+I need to find what would be the correct page size and I need to guess it because as I will show you
+
+00:43:32.456 --> 00:43:35.956 
+the the offset changes when I change the page size.
+
+00:43:36.196 --> 00:43:37.156 
+What does this mean?
+
+00:43:37.516 --> 00:43:44.605 
+In the case of accessing the four KB TLB, I need to assume that the offset is 12 bits because a four
+
+00:43:44.605 --> 00:43:47.796 
+KB page has to do the part of 12 bytes right?
+
+00:43:48.116 --> 00:43:55.236 
+However, the offset, what is the offset I need to use when I use A2 MB page like?
+
+00:43:55.236 --> 00:43:56.716 
+Why do I start from here?
+
+00:43:58.156 --> 00:44:06.916 
+Because the index that I'm using in this case is 1 because this L12 MB LB has two sets right?
+
+00:44:07.316 --> 00:44:13.676 
+So I need one bit to describe the set index, and for some reason I'm using more bits here.
+
+00:44:13.676 --> 00:44:15.716 
+For the offset I'm using 21.
+
+00:44:15.716 --> 00:44:22.644 
+Yes, because like if there are two megabytes, you need to be able to iterate over every single MB
+
+00:44:22.644 --> 00:44:25.716 
+exactly, which is 21 bits in this scenario.
+
+00:44:25.996 --> 00:44:30.476 
+And when I do the same for one GB pages, I need to use 30 bits.
+
+00:44:30.836 --> 00:44:37.396 
+So in parallel I create multiple indices and multiple offsets and I act as a three TLBS.
+
+00:44:38.156 --> 00:44:42.196 
+And maybe my translation will be fine in one of those, right?
+
+00:44:42.716 --> 00:44:46.556 
+There is no chance that my translation will be fine in all of those.
+
+00:44:46.756 --> 00:44:49.596 
+It will be fine only in one or zero.
+
+00:44:50.356 --> 00:44:50.716 
+Why?
+
+00:44:50.716 --> 00:44:56.673 
+Because I would map a page only at the four KB granularity, at the two MB granularity or the one GB
+
+00:44:56.673 --> 00:44:57.396 
+granularity.
+
+00:44:57.836 --> 00:45:03.245 
+Of course, someone could say that I could describe pages that belong in A1 GB granularity at the
+
+00:45:03.245 --> 00:45:06.796 
+four KB one, but this would make things a lot more complicated.
+
+00:45:09.116 --> 00:45:13.356 
+So let's take a short break and we can continue later 10 minutes.
+
+00:45:17.535 --> 00:45:22.735 
+OK, let's see now how we can perform accesses to the L2 TLB.
+
+00:45:23.175 --> 00:45:29.598 
+So for the L1 we discussed that we need to access the 3L1 TL BS in parallel because we do not know
+
+00:45:29.598 --> 00:45:30.975 
+the page size, right?
+
+00:45:31.575 --> 00:45:37.895 
+And for the L2 unified TLB we have a different architecture in most cores.
+
+00:45:38.375 --> 00:45:40.015 
+So what is the difference here?
+
+00:45:40.935 --> 00:45:48.322 
+We only have two separate L2 TLB structures, one that stores translations for both 4 KB and two MB
+
+00:45:48.322 --> 00:45:52.695 
+pages, and what that stores translations for one GB pages.
+
+00:45:53.175 --> 00:46:00.455 
+So in most modern processors you can see L2 TL BS, a very large one that has 1.5 K entries.
+
+00:46:00.815 --> 00:46:04.575 
+Much higher latency compared to the L1 TLB because of the number of entries.
+
+00:46:05.255 --> 00:46:13.375 
+And the challenge is how can the L2 TLB support both 4 KB and two MB pages using a single structure?
+
+00:46:13.375 --> 00:46:23.695 
+Can someone think of any way like how can I store both 4 KB and two MB translations in the same TLB?
+
+00:46:31.435 --> 00:46:34.075 
+So the way to do this is by accessing.
+
+00:46:39.972 --> 00:46:45.212 
+OK, that could be that could work in some cases.
+
+00:46:45.412 --> 00:46:46.892 
+In some others it may not.
+
+00:46:48.532 --> 00:46:54.467 
+The way that one of the ways in the literature that we know of is something we call pseudo
+
+00:46:54.467 --> 00:46:57.172 
+associativity where you do the following.
+
+00:46:57.492 --> 00:47:04.292 
+You do not access the L2 till be one time but you might need to access it two times the first time.
+
+00:47:04.732 --> 00:47:09.492 
+In the first step you make the assumption that the page size is 4 kilobytes.
+
+00:47:10.172 --> 00:47:17.551 
+This way you form your index bits and the tag bits based on this assumption that the offset is 12
+
+00:47:17.551 --> 00:47:17.932 
+bits.
+
+00:47:19.692 --> 00:47:26.639 
+If the tag matches and you find an entry, this means that you've have the translation and the data
+
+00:47:26.639 --> 00:47:33.161 
+is at the fork is mapped at the four KB granularity, but otherwise you still do not have the
+
+00:47:33.161 --> 00:47:34.012 
+translation.
+
+00:47:34.612 --> 00:47:39.292 
+But you know that the L2 TLB can support 2 megabyte pages as well.
+
+00:47:39.772 --> 00:47:45.092 
+So in the next step you change the assumption and you're like, OK, maybe it's a 2 megabyte page.
+
+00:47:45.412 --> 00:47:51.692 
+So I will recalculate the offset, which is 21 bits now, and the index and the tag.
+
+00:47:52.252 --> 00:47:57.492 
+And I will access the L2 TLBTLB again with these different properties.
+
+00:47:57.972 --> 00:48:00.172 
+And if the tag matches, it is a hit.
+
+00:48:00.972 --> 00:48:03.852 
+If the tag does not match, it's an L2 TLB miss.
+
+00:48:04.612 --> 00:48:11.607 
+And the general algorithm is that I'm basically recalculating the index and the tag and the probe
+
+00:48:11.607 --> 00:48:14.492 
+the TLB for all the remaining page size.
+
+00:48:14.492 --> 00:48:20.649 
+This way I can have for example 10 page sizes and I need to check all the 10 page sizes before I
+
+00:48:20.649 --> 00:48:25.332 
+proceed in discovering that all the TLB misses and the data is not there.
+
+00:48:27.132 --> 00:48:29.092 
+So how do we do that?
+
+00:48:29.092 --> 00:48:32.012 
+We first calculate the index for the four KB page.
+
+00:48:32.292 --> 00:48:38.572 
+In this scenario we have four sets in the L2 TLB, 2 bits are used for the index, the rest 12.
+
+00:48:38.732 --> 00:48:41.612 
+The last ones are the offset.
+
+00:48:42.012 --> 00:48:45.972 
+And in this context the set 0 contains, let's say our data, right?
+
+00:48:46.292 --> 00:48:48.372 
+But let's see what happens if it doesn't contain it.
+
+00:48:48.932 --> 00:48:51.412 
+Then we need to change the index and the offset.
+
+00:48:51.732 --> 00:48:54.172 
+So we change the offset to 21 bits.
+
+00:48:54.172 --> 00:49:01.907 
+Assuming that our phase is 2 megabyte, we change the index to 01 because the L2 TLB requires 2 bits
+
+00:49:01.907 --> 00:49:07.612 
+for the set index and we're searching whether the data is in the set one.
+
+00:49:08.372 --> 00:49:14.812 
+So the advantage of this approach is that it's very simple and it's a very practical implementation.
+
+00:49:15.052 --> 00:49:22.612 
+You basically need to have a controller and FSM in the TLB that is producing the different schemes
+
+00:49:22.612 --> 00:49:28.012 
+that you need the different set index in the different offsets, right?
+
+00:49:28.492 --> 00:49:31.652 
+So can someone mention any disadvantage of this approach?
+
+00:49:41.302 --> 00:49:45.662 
+So what would happen if I only have two MB pages?
+
+00:49:50.256 --> 00:49:56.416 
+And if I hit every time in for a 2 megabyte page, then what does it increase as you correctly say?
+
+00:49:58.216 --> 00:50:01.816 
+So let's say that I hit in the TLB and I find my 2 megabyte translation, right?
+
+00:50:02.136 --> 00:50:03.896 
+But I spent 2 steps to do it.
+
+00:50:04.296 --> 00:50:13.376 
+Then what do I increase exactly?
+
+00:50:13.456 --> 00:50:17.856 
+I increase the heat latency, the heat latency, not just the missed latency, right?
+
+00:50:18.336 --> 00:50:20.496 
+So and if I miss, what do I increase?
+
+00:50:22.216 --> 00:50:28.256 
+I if I miss a lot in the TLB then I will need to spend a lot more time into performing checks.
+
+00:50:28.616 --> 00:50:34.412 
+Which basically means that if I employ 10 page sizes, I would need to put do 10 checks for
+
+00:50:34.412 --> 00:50:40.016 
+everything we missed would increase significantly the critical path of the memory axis.
+
+00:50:42.016 --> 00:50:49.658 
+Can anyone think of any optimization like how can I reduce this time while checking for all page
+
+00:50:49.658 --> 00:50:50.136 
+sizes?
+
+00:50:55.200 --> 00:51:00.710 
+Yes, you can enforce an order, but would you enforce it based on the size or based on something
+
+00:51:00.710 --> 00:51:01.000 
+else?
+
+00:51:02.760 --> 00:51:10.070 
+Like if your programme is allocating only two MB pages, do you really need to check first for 4
+
+00:51:10.070 --> 00:51:10.840 
+kilobytes?
+
+00:51:11.200 --> 00:51:15.240 
+So based on what you would enforce the order exactly.
+
+00:51:15.320 --> 00:51:18.280 
+So you would do it based on what the operating system does.
+
+00:51:18.800 --> 00:51:24.593 
+If the operating system could tell you that all my pages that I'm going to allocate for you are two
+
+00:51:24.593 --> 00:51:25.120 
+MB pages.
+
+00:51:25.320 --> 00:51:28.880 
+So do not try the four KB probe first.
+
+00:51:28.880 --> 00:51:30.280 
+Try A2 MB probe.
+
+00:51:30.440 --> 00:51:32.840 
+Probe first and another way.
+
+00:51:38.366 --> 00:51:42.406 
+Yes, which would basically be what what would be the total latency in this case?
+
+00:51:45.366 --> 00:51:46.766 
+Yes, exactly.
+
+00:51:46.766 --> 00:51:50.166 
+But like it will be the maximum of all the checks, right.
+
+00:51:50.926 --> 00:51:51.486 
+Exactly.
+
+00:51:51.486 --> 00:51:54.926 
+So that's the first way you do parallel look UPS.
+
+00:51:54.966 --> 00:52:00.805 
+You have hardware that in parallel has a circuitry where you check all the page sizes, but you need
+
+00:52:00.805 --> 00:52:01.926 
+different decoders.
+
+00:52:01.926 --> 00:52:03.286 
+You need many different things, right?
+
+00:52:03.286 --> 00:52:09.854 
+Because I need to for example bring in tags from three locations in parallel, which is a lot more
+
+00:52:09.854 --> 00:52:12.766 
+complex compared to accessing a single tag.
+
+00:52:14.166 --> 00:52:17.526 
+The second is what you have been discussing, the page size prediction.
+
+00:52:17.606 --> 00:52:24.018 
+Like if I see the operating system is allocating 2 megabyte pages for me, or I seen my history of
+
+00:52:24.018 --> 00:52:30.496 
+translations and hits, but most of the pages are two MB pages, then I do not need to check for the
+
+00:52:30.496 --> 00:52:31.686 
+4 kilobytes first.
+
+00:52:31.686 --> 00:52:34.246 
+I will just simply check the 2 megabytes first.
+
+00:52:35.806 --> 00:52:40.126 
+So now let's see how the hardware page stable worker is organised.
+
+00:52:40.406 --> 00:52:45.747 
+So this is a per core hardware component that works the multi level page stable to avoid the
+
+00:52:45.747 --> 00:52:48.766 
+expensive contact switches in the software handling.
+
+00:52:49.526 --> 00:52:55.412 
+It has mainly 2 components, a state machine and FSM that is designed to be aware of the
+
+00:52:55.412 --> 00:53:01.772 
+architecture's page stable structure and some registers that keep track of the outstanding TLB
+
+00:53:01.772 --> 00:53:02.246 
+misses.
+
+00:53:02.606 --> 00:53:10.380 
+So the worker essentially needs a log that says oh I have to service this misses from the L2 TLB and
+
+00:53:10.380 --> 00:53:16.366 
+I will have a state machine that generates the addresses for the page stable.
+
+00:53:16.446 --> 00:53:19.246 
+So you can think of it in this way and the advance.
+
+00:53:19.286 --> 00:53:25.874 
+The advantages is that you don't need to perform contact switches and you overlap the LB misses with
+
+00:53:25.874 --> 00:53:27.126 
+useful computation.
+
+00:53:27.446 --> 00:53:33.378 
+You support concurrent LB misses, but there are hardware area and power overheads because you need
+
+00:53:33.378 --> 00:53:36.526 
+to have a new hardware secretary limits flexibility.
+
+00:53:37.246 --> 00:53:41.286 
+So let me walk you through the example.
+
+00:53:41.926 --> 00:53:47.767 
+So let's see how a software paid stable worker would work and how this would lead to lower
+
+00:53:47.767 --> 00:53:51.726 
+performance compared to having a hardware paid stable worker.
+
+00:53:52.646 --> 00:54:00.016 
+So let's say that we use a software TLB miss handler and we are trying to perform a load A that
+
+00:54:00.016 --> 00:54:01.646 
+targets VPN equals 1.
+
+00:54:02.046 --> 00:54:04.806 
+So then we have a TLB miss.
+
+00:54:05.486 --> 00:54:10.206 
+And as I said with the the page table walk handler is software based.
+
+00:54:10.526 --> 00:54:17.086 
+So we have a contact switch, the operating system gets invoked here, it accesses the paid stable, it
+
+00:54:17.086 --> 00:54:23.383 
+inserts the entry back in the TLB and then we perform a load B to VPN equals 5 and we have a TLB
+
+00:54:23.383 --> 00:54:23.646 
+hit.
+
+00:54:25.166 --> 00:54:29.646 
+So in the case of a hardware paid stable worker, we again have a TLB miss.
+
+00:54:29.966 --> 00:54:36.206 
+But the key thing here is that we can at the same time perform the load B.
+
+00:54:36.766 --> 00:54:40.686 
+We can perform the load B because this did not raise an exception here.
+
+00:54:41.166 --> 00:54:47.219 
+There is a hardware component here that is servicing this TLB miss so the load B can continue and we
+
+00:54:47.219 --> 00:54:52.970 
+experience the heat which is parallelised with the page stable work process and this is what we
+
+00:54:52.970 --> 00:54:54.726 
+gain back in terms of cycles.
+
+00:54:56.526 --> 00:54:59.766 
+Now the page stable work classes, I will not go deep into this.
+
+00:55:00.086 --> 00:55:03.126 
+The page stable work classes essentially have a single job to do.
+
+00:55:03.366 --> 00:55:08.046 
+They cast translations from the entries of the page stable that are pointer based.
+
+00:55:08.446 --> 00:55:14.497 
+If I load a page table entry and it's from the first level, the second level, or the third level
+
+00:55:14.497 --> 00:55:20.486 
+which is not the final level, this entry will contain will contain a pointer to the next level.
+
+00:55:21.366 --> 00:55:24.846 
+I simply cast these pointers into the page work classes.
+
+00:55:26.566 --> 00:55:33.206 
+So there are some more let's say issues that we can cover in others translation.
+
+00:55:33.606 --> 00:55:38.046 
+And one of them is when do we do the address translation, right?
+
+00:55:38.246 --> 00:55:42.406 
+So do we do it before or after accessing the L1 cast?
+
+00:55:42.686 --> 00:55:46.886 
+Will I access the L1 cast with a virtual address or with a physical address?
+
+00:55:47.566 --> 00:55:54.375 
+So in other words, is the cast being tagged and addressed with a virtual address or with a physical
+
+00:55:54.375 --> 00:55:54.926 
+address?
+
+00:55:55.766 --> 00:56:02.686 
+And there are some problems basically and issues with using a virtually addressed cast.
+
+00:56:03.086 --> 00:56:04.806 
+Can someone tell me one of them?
+
+00:56:04.806 --> 00:56:13.566 
+So let's say yes, yes, but why do you need to do that?
+
+00:56:18.747 --> 00:56:19.987 
+OK, I agree.
+
+00:56:20.827 --> 00:56:23.427 
+So how could you change your classes to avoid this?
+
+00:56:28.280 --> 00:56:33.960 
+OK, allocating the cast of different processes is a bit of a very complex scenario.
+
+00:56:41.717 --> 00:56:47.640 
+That is one way you need to access to see if I have you need to access some bits to figure out if
+
+00:56:47.640 --> 00:56:49.717 
+you have permissions to this page.
+
+00:56:50.357 --> 00:56:58.298 
+But another easy way is that I can simply say, oh, this data belongs to application A, so you don't
+
+00:56:58.298 --> 00:57:05.037 
+have access to it as application B and you need to keep track of that in the caches.
+
+00:57:05.317 --> 00:57:11.316 
+So your tag could not only contain the virtual tag, it also needs to contain some PID, the process
+
+00:57:11.316 --> 00:57:17.315 
+ID or thread ID or something like that so that you know that this data belongs to this process and
+
+00:57:17.315 --> 00:57:19.397 
+doesn't belong to another process.
+
+00:57:20.437 --> 00:57:23.117 
+So this is what we call as a synonym problem.
+
+00:57:25.077 --> 00:57:28.037 
+This is one of the problems there is like the homonym and the synonym problems.
+
+00:57:28.277 --> 00:57:35.431 
+So the synonym problem is that you might have two different virtual addresses that map to the same
+
+00:57:35.431 --> 00:57:42.658 
+physical address and this way the physical address can be present in multiple locations in the cast
+
+00:57:42.658 --> 00:57:44.557 
+which is very problematic.
+
+00:57:44.957 --> 00:57:46.877 
+This can lead to inconsistency in the data.
+
+00:57:46.877 --> 00:57:51.477 
+That's why you would need to flash every time because you might lead to inconsistencies.
+
+00:57:53.237 --> 00:57:56.077 
+So there are two types of problems, the homonyms and the synonyms.
+
+00:57:56.437 --> 00:58:03.606 
+And in this scenario, the homonyms are basically caused when you have the same virtual address that
+
+00:58:03.606 --> 00:58:10.631 
+can map to two different physical addresses, while in the synonyms you can have different virtual
+
+00:58:10.631 --> 00:58:14.397 
+addresses that can map to the same physical address.
+
+00:58:15.117 --> 00:58:16.477 
+So why?
+
+00:58:16.477 --> 00:58:18.237 
+Why do we have homonyms, right?
+
+00:58:18.637 --> 00:58:25.966 
+Because we might have virtual addresses in different processes and synonyms, we have different pages
+
+00:58:25.966 --> 00:58:30.437 
+that can share the physical frame within or across processes.
+
+00:58:30.837 --> 00:58:34.077 
+And the reason would be shared libraries and more, right?
+
+00:58:35.717 --> 00:58:41.137 
+So a big question which I don't think I will answer in this lecture because it gets more
+
+00:58:41.137 --> 00:58:46.557 
+complicated, is whether these synonyms and homonyms create problems when we have a cast.
+
+00:58:47.117 --> 00:58:50.037 
+So everything basically depends on this.
+
+00:58:50.757 --> 00:58:56.077 
+The whether the synonyms or the homonyms create problems is when do you do translation?
+
+00:58:56.477 --> 00:59:03.549 
+Do you do it directly after the CPU issues the request and you do it via the TLBS and you determine
+
+00:59:03.549 --> 00:59:09.837 
+the physical address and then you send the data the the physical request to the classes?
+
+00:59:10.277 --> 00:59:11.037 
+Do you do it?
+
+00:59:11.037 --> 00:59:14.597 
+Do you access first the L1, let's say data class and then?
+
+00:59:14.677 --> 00:59:19.437 
+With the translation, do you somehow access them in parallel?
+
+00:59:19.437 --> 00:59:26.644 
+Which means that I am accessing the TLB with a virtual address waiting for the physical address, but
+
+00:59:26.644 --> 00:59:33.491 
+at the same time I'm doing the tag look up in the cache to overlap a bit the latencies and gain
+
+00:59:33.491 --> 00:59:34.717 
+some performance.
+
+00:59:35.517 --> 00:59:40.357 
+This also creates problems, but this is also how the process right now work.
+
+00:59:40.997 --> 00:59:50.074 
+They use part of the virtual address to access the L1D and do the to to find the set basically in
+
+00:59:50.074 --> 00:59:50.917 
+the cast.
+
+00:59:51.157 --> 00:59:55.581 
+And then they're waiting for the translation for the physical address to determine the tag and do
+
+00:59:55.581 --> 00:59:56.357 
+the tag matching.
+
+00:59:57.557 --> 01:00:03.294 
+And here you can see the evolution of the virtual memory subsystem, which in the latest years it has
+
+01:00:03.294 --> 01:00:04.557 
+changed significantly.
+
+01:00:04.557 --> 01:00:11.637 
+So back in the days it had like the only thing you had was one one data TLB and L1 instruction TLB.
+
+01:00:11.797 --> 01:00:16.917 
+And if you miss in either of those, you basically trigger software paid table work.
+
+01:00:16.917 --> 01:00:19.477 
+We didn't have a hardware ship with to do the work.
+
+01:00:21.157 --> 01:00:28.855 
+And this also how things have changed, like in AA14, let's say processor back in the days in an
+
+01:00:28.855 --> 01:00:36.717 
+iPhone 12 Pro, you might have had like an L2 TLB with 3000 entries and 16 kilobytes of page size.
+
+01:00:36.717 --> 01:00:44.681 
+While the X86 consortium like an Intel AMD ARM, ARM is not in the X86, but like it's using a similar
+
+01:00:44.681 --> 01:00:45.717 
+architecture.
+
+01:00:46.117 --> 01:00:51.397 
+It would have, let's say 4 KB pages with 1.5 K entries, right?
+
+01:00:51.677 --> 01:00:53.757 
+Completely different sort of approaches to it.
+
+01:00:55.237 --> 01:01:01.381 
+But of course, virtual memory creates some overheads, right, as we discussed, and this is what I
+
+01:01:01.381 --> 01:01:03.877 
+explored a lot in my thesis, as I said.
+
+01:01:03.877 --> 01:01:10.697 
+And we propose this simulation framework so that we are able to find out these overheads and
+
+01:01:10.697 --> 01:01:12.477 
+evaluate new techniques.
+
+01:01:13.037 --> 01:01:18.408 
+And the key idea of course was that like the, the key assumption is that like virtual memory was the
+
+01:01:18.408 --> 01:01:20.557 
+cornerstone of computing systems, right?
+
+01:01:20.557 --> 01:01:26.428 
+Like CPU's have it and network interface cars are using it, CPU's are using it, but it does not come
+
+01:01:26.428 --> 01:01:26.957 
+for free.
+
+01:01:27.597 --> 01:01:31.946 
+So we have virtual memory that causes this high performance overheads because of two reasons that we
+
+01:01:31.946 --> 01:01:33.077 
+discussed in this lecture.
+
+01:01:33.597 --> 01:01:39.659 
+First, because the operating system needs at some point to create the mapping, it needs to allocate
+
+01:01:39.659 --> 01:01:45.477 
+physical memory for the application and then the hardware needs to perform address translation.
+
+01:01:46.237 --> 01:01:52.096 
+So we have workloads like for example the lens is a good workload to think about where they are
+
+01:01:52.096 --> 01:01:54.317 
+spawned with a very high throughput.
+
+01:01:54.357 --> 01:01:56.117 
+Right now, data centres receive.
+
+01:01:56.477 --> 01:02:04.261 
+A huge amount of requests for LMS especially there is a class of them called sorting, sort output LM
+
+01:02:04.261 --> 01:02:11.812 
+inference, where the amount of time we spent on the operating system to perform the allocation is
+
+01:02:11.812 --> 01:02:16.717 
+much, sometimes a lot smaller compared to the actual execution.
+
+01:02:17.037 --> 01:02:23.194 
+For example, you might receive all your tokens in one second and to allocate the whole memory you
+
+01:02:23.194 --> 01:02:26.877 
+need to perform this inference, you might spend 2 seconds.
+
+01:02:28.997 --> 01:02:35.877 
+So basically this short execution time cannot amortize the operating system routines.
+
+01:02:36.397 --> 01:02:42.698 
+And we profiled some workloads where we show that like on average, in some cases 32% of execution
+
+01:02:42.698 --> 01:02:45.557 
+time is spent on physical memory allocation.
+
+01:02:47.997 --> 01:02:51.077 
+And the second part of the overhead is other translation overheads.
+
+01:02:51.517 --> 01:02:58.017 
+These do not appear in this short running workloads, but mostly in applications which are very
+
+01:02:58.017 --> 01:03:02.997 
+stable and have long running properties with very large data footprints.
+
+01:03:03.317 --> 01:03:09.444 
+So usually these have run, let's say more than 100 seconds, let's say a big database server where
+
+01:03:09.444 --> 01:03:11.277 
+you're sending many requests.
+
+01:03:11.277 --> 01:03:17.191 
+And if you do many operations or for example, you're running a Google search where you do page rank,
+
+01:03:17.191 --> 01:03:18.197 
+let's say, right?
+
+01:03:18.597 --> 01:03:24.049 
+And in these scenarios, you would have lots of irregular memory accesses where you cause multiple
+
+01:03:24.049 --> 01:03:29.277 
+TLB misses, multiple page table walks that basically stop you from fetching the data quickly.
+
+01:03:29.597 --> 01:03:33.797 
+You need to spend a lot of time on other translation before you can fetch data.
+
+01:03:35.117 --> 01:03:40.944 
+We showed again, this come from a real system, like on average 26% of execution time is spent on
+
+01:03:40.944 --> 01:03:43.797 
+other translation in these irregular workloads.
+
+01:03:44.957 --> 01:03:50.861 
+And together you can see that this subsystem is causing many diverse types of overheads in the
+
+01:03:50.861 --> 01:03:53.877 
+system which are expected to increase basically.
+
+01:03:54.397 --> 01:04:00.846 
+So as you can see, if you see like modern systems, you're using a GPU which has one type of memory,
+
+01:04:00.846 --> 01:04:07.296 
+this sort of HBM high bandwidth memories which are used for both gaming and like AI inference right
+
+01:04:07.296 --> 01:04:07.557 
+now.
+
+01:04:07.957 --> 01:04:14.437 
+And you have ACPU which has a much larger memory, but it's a lot more slow.
+
+01:04:14.677 --> 01:04:17.117 
+Our bandwidth compared to CPUGPU memory.
+
+01:04:18.357 --> 01:04:22.197 
+Lately we also have systems which have direct storage access.
+
+01:04:22.197 --> 01:04:25.957 
+We can access this as D directly without invoking the operating system.
+
+01:04:26.437 --> 01:04:32.355 
+We also have memory segregation which means that in a cloud scenario I can not only have access to
+
+01:04:32.355 --> 01:04:38.214 
+my local memory, but I can have access to another remote memory that exists somewhere in the data
+
+01:04:38.214 --> 01:04:38.637 
+centre.
+
+01:04:38.997 --> 01:04:42.997 
+And this way I can effectively increase my memory capacity at low latency.
+
+01:04:44.677 --> 01:04:50.333 
+And in this work, we basically had a simulation framework which we integrated with many
+
+01:04:50.333 --> 01:04:56.705 
+architectural simulators and built a specific tool that has many virtual memory techniques used in
+
+01:04:56.705 --> 01:05:02.946 
+the literature to basically validate against the high end server grade CPU and showcase multiple
+
+01:05:02.946 --> 01:05:03.597 
+use cases.
+
+01:05:03.917 --> 01:05:09.917 
+And we did this in order to discover new insights and to provide to the community a way to evaluate
+
+01:05:09.917 --> 01:05:11.797 
+these overheads in an easy way.
+
+01:05:13.477 --> 01:05:17.717 
+This is a website, you can easily get started with it.
+
+01:05:17.717 --> 01:05:18.597 
+It's very simple.
+
+01:05:19.357 --> 01:05:24.678 
+And this is the one of the works that the first work that I did on other translation, it's called
+
+01:05:24.678 --> 01:05:25.117 
+Victima.
+
+01:05:25.597 --> 01:05:33.509 
+It's one of the ways to basically extend the amount of memory covered by a TLB hierarchy by using
+
+01:05:33.509 --> 01:05:38.077 
+also the classes as a substrate for storing TLB entries.
+
+01:05:38.077 --> 01:05:45.037 
+Because right now caches in the systems cannot be used as TLBN cannot store any sort of TLB entries.
+
+01:05:46.677 --> 01:05:53.320 
+And this is the second work that I did in other translation where we demonstrate that like if we
+
+01:05:53.320 --> 01:05:59.964 
+keep the visual memory subsystem as flexible as possible, then we start facing overheads because
+
+01:05:59.964 --> 01:06:04.117 
+this requires expensive page tables, very large page tables.
+
+01:06:04.397 --> 01:06:10.637 
+So one key idea is that leverage hashing in order to map a virtual address directly to a virtual
+
+01:06:10.637 --> 01:06:13.237 
+address, directly to a physical address.
+
+01:06:13.597 --> 01:06:17.477 
+And this way we can lower a lot the size of the translation structures.
+
+01:06:18.757 --> 01:06:23.908 
+This one of the earliest works of the group where we completely rethink the way virtual memory
+
+01:06:23.908 --> 01:06:24.237 
+works.
+
+01:06:24.597 --> 01:06:30.797 
+And we have two types of virtual memory, two types of other translation, one on the front end.
+
+01:06:31.077 --> 01:06:36.984 
+Basically you do it before accessing the cast, you do one translation and then you do one more after
+
+01:06:36.984 --> 01:06:39.997 
+you access the after you access the cast hierarchy.
+
+01:06:40.277 --> 01:06:46.290 
+And you do this so that you remove it from the critical path of the execution as fast as as best as
+
+01:06:46.290 --> 01:06:46.837 
+possible.
+
+01:06:47.597 --> 01:06:52.197 
+So in summary, virtual memory gives the illusion of an infinite capacity.
+
+01:06:52.637 --> 01:06:55.717 
+A subset of virtual pages are located in the physical memory.
+
+01:06:55.797 --> 01:06:57.437 
+Some other ones are stored in the disk.
+
+01:06:57.877 --> 01:07:01.557 
+The page table is a structure that maps virtual pages to physical pages.
+
+01:07:02.197 --> 01:07:02.637 
+How?
+
+01:07:02.637 --> 01:07:04.237 
+With the process of other translation?
+
+01:07:04.717 --> 01:07:09.197 
+The TLBS in the memory management unit speeds up the other translation.
+
+01:07:09.477 --> 01:07:14.197 
+We have multi level page tables that keep the page table table size in check.
+
+01:07:14.277 --> 01:07:20.461 
+We do not store a monolithically a huge array that's a page table and if we can use different page
+
+01:07:20.461 --> 01:07:24.437 
+tables for different programs we can provide memory protection.
+
+01:07:25.557 --> 01:07:31.445 
+There is a lot more on on this topic like how do you handle other translation in AV in AVM in a
+
+01:07:31.445 --> 01:07:32.437 
+virtual machine.
+
+01:07:33.877 --> 01:07:38.898 
+In this scenario, you would use A2 level address translation, one from the guest to the host and one
+
+01:07:38.898 --> 01:07:40.757 
+from the host to the physical memory.
+
+01:07:41.877 --> 01:07:43.677 
+So some parting thoughts.
+
+01:07:43.677 --> 01:07:49.645 
+Virtual memory is one of the most successful examples of architectural support for programmers, how
+
+01:07:49.645 --> 01:07:55.434 
+we can partition the hardware and the software effectively and it poses the programmer architect
+
+01:07:55.434 --> 01:07:56.037 
+trade off.
+
+01:07:56.797 --> 01:08:02.677 
+So going forward, we need to see how to scale virtual memory in the future with four key trends.
+
+01:08:03.517 --> 01:08:07.117 
+As I said, we have huge physical memories at this point.
+
+01:08:08.037 --> 01:08:12.917 
+We have hybrid physical memory systems with both very large Intel obtained.
+
+01:08:12.917 --> 01:08:19.465 
+For example, if you have seen and like DDR interfaces, we have many accelerators like GPU's and
+
+01:08:19.465 --> 01:08:20.637 
+other components.
+
+01:08:21.197 --> 01:08:22.757 
+And also we have virtualised systems.
+
+01:08:22.757 --> 01:08:26.157 
+We've virtualised a lot, a lot more, which complicates the virtual memory.
+
+01:08:26.837 --> 01:08:28.557 
+There's some lectures on it as well.
+
+01:08:28.557 --> 01:08:31.197 
+I would suggest taking a look at that if you're very interested in the topic.
+
+01:08:31.877 --> 01:08:35.837 
+And I will conclude my talk and I will give the states Mohammed.
+
+01:08:43.736 --> 01:08:46.256 
+OK, Thanks a lot Constantinos.
+
+01:08:46.736 --> 01:08:48.296 
+I actually enjoyed his lecture.
+
+01:08:48.296 --> 01:08:51.016 
+I thought I know virtual memory, but today actually I learnt more.
+
+01:08:51.856 --> 01:08:53.256 
+It's a very exciting topic.
+
+01:08:55.016 --> 01:09:01.376 
+So I'm going to quickly go over epilogue of this course and we'll see if I get chance to present
+
+01:09:01.376 --> 01:09:03.496 
+future of Computer architecture.
+
+01:09:04.536 --> 01:09:06.816 
+Today is actually another epilogue also for me.
+
+01:09:08.176 --> 01:09:14.123 
+Today's going to be my last day in ETH so but I will hopefully attend your exam, so I'm going to see
+
+01:09:14.123 --> 01:09:15.016 
+you also there.
+
+01:09:16.256 --> 01:09:20.776 
+OK, so I'm going to start with some recall from this course.
+
+01:09:21.176 --> 01:09:27.176 
+So remember that we started with basically major high level goals for this course.
+
+01:09:27.536 --> 01:09:32.216 
+We wanted to understand basics, principles of designs and also precedents.
+
+01:09:32.656 --> 01:09:35.016 
+And actually we covered all of it.
+
+01:09:35.016 --> 01:09:37.856 
+So we covered a lot of principles and precedents.
+
+01:09:38.336 --> 01:09:43.496 
+We provide a lot of examples from real world, real processor, real system that people have designed.
+
+01:09:44.296 --> 01:09:50.243 
+And the the goal was to basically from this understanding, we learn how a modern computer works on
+
+01:09:50.243 --> 01:09:56.191 
+their knees and to evaluate trade-offs of different designs and ideas and to implement a principle
+
+01:09:56.191 --> 01:09:56.616 
+design.
+
+01:09:57.376 --> 01:10:00.096 
+You learn how to design A processor.
+
+01:10:00.776 --> 01:10:04.216 
+Maybe you're not that fascinated about it.
+
+01:10:04.456 --> 01:10:10.578 
+It was a kind of simple processor, but hopefully as you if you're interested, you can actually build
+
+01:10:10.578 --> 01:10:13.456 
+on it and make much more complicated processor.
+
+01:10:14.936 --> 01:10:20.536 
+Also during your labs, you learn how to systematically debug increasingly complex systems.
+
+01:10:20.536 --> 01:10:22.616 
+So a lot of labs actually was about that.
+
+01:10:23.336 --> 01:10:27.536 
+So that all of this hopefully enable you to develop novel and out-of-the-box designs.
+
+01:10:27.536 --> 01:10:33.936 
+So one of the core, I would say juice of this course was to teach you how to think critically.
+
+01:10:34.256 --> 01:10:39.372 
+So every idea that today also, for example, that Constantinos was presenting, he was asking what are
+
+01:10:39.372 --> 01:10:40.856 
+the, you know, pros and cons?
+
+01:10:41.296 --> 01:10:44.616 
+And actually he made it quite interactive, which I enjoyed a lot.
+
+01:10:44.616 --> 01:10:49.216 
+So you guys also went over pros and cons together with him, which is amazing.
+
+01:10:49.696 --> 01:10:53.936 
+And I think that was very nice summary of the course that we had.
+
+01:10:56.296 --> 01:11:01.990 
+So, and also remember that why we had these calls because essentially it's very important for
+
+01:11:01.990 --> 01:11:04.256 
+different topics in computer science.
+
+01:11:04.776 --> 01:11:09.244 
+And so with this course actually, regardless of your future direction, you're going to know how to
+
+01:11:09.244 --> 01:11:11.296 
+design better hardwares if you're interested.
+
+01:11:11.936 --> 01:11:17.623 
+Also by knowing the hardware, how cache works, how prefetching works, virtual memory, what are the
+
+01:11:17.623 --> 01:11:23.252 
+important things about it, You know, you can hopefully write better quotes and better make better
+
+01:11:23.252 --> 01:11:24.936 
+software with virtual memory.
+
+01:11:24.936 --> 01:11:31.416 
+Also understanding of that can make you better systems and also in the end knowing about trade-offs,
+
+01:11:31.416 --> 01:11:37.377 
+critical analysis, all of them would make you, you know, some skills that can use for better
+
+01:11:37.377 --> 01:11:37.896 
+systems.
+
+01:11:39.096 --> 01:11:44.773 
+So, and I would like to mention that essentially this course teaches us how to solve problems
+
+01:11:44.773 --> 01:11:48.376 
+better, how to think in parallel and also think critically.
+
+01:11:50.856 --> 01:11:52.296 
+So we have come a long way.
+
+01:11:52.656 --> 01:11:59.006 
+We started from transistors as the building block and actually we accomplish quite a lot and we get
+
+01:11:59.006 --> 01:12:02.856 
+to build up to virtual memory and system software mechanics.
+
+01:12:03.376 --> 01:12:08.999 
+And we in between actually we talked about logic design, combinational sequential circuits,
+
+01:12:08.999 --> 01:12:15.054 
+execution model, ISA, micro architecture, many execution paradigm that we also covered like out of
+
+01:12:15.054 --> 01:12:20.616 
+world, AVLIW, systolic, the SIMD and GPU and also we covered quite a lot in memory system.
+
+01:12:22.096 --> 01:12:25.816 
+So I think we actually accomplished a lot of interesting topics.
+
+01:12:26.256 --> 01:12:31.978 
+It's very hard actually to combine all these topics in one course, but hopefully this course
+
+01:12:31.978 --> 01:12:37.576 
+actually gave you quite a nice abstraction of the whole the entire stack of the competing.
+
+01:12:38.736 --> 01:12:41.656 
+So there are some takeaways that I'm going over them very quickly.
+
+01:12:41.976 --> 01:12:47.599 
+So the first takeaways that all we covered is real and used in real systems and you have seen a lot
+
+01:12:47.599 --> 01:12:48.736 
+of examples of that.
+
+01:12:48.936 --> 01:12:56.472 
+Even some of the topics like VLIW that when people design VLIW, they actually they get they got a
+
+01:12:56.472 --> 01:13:04.009 
+lot of naysayers that this is not going to be adopted, which might be the case in some cases like
+
+01:13:04.009 --> 01:13:06.496 
+in general purpose applications.
+
+01:13:06.816 --> 01:13:13.230 
+But nowadays actually VLIW has been used in some other domains like embedded systems, some
+
+01:13:13.230 --> 01:13:14.656 
+accelerators and so.
+
+01:13:15.096 --> 01:13:20.841 
+So there are a lot of similar examples that we have had in this course regarding caching and we
+
+01:13:20.841 --> 01:13:26.646 
+provide a lot of examples and also the usage of them them also in our real life that we had some
+
+01:13:26.646 --> 01:13:32.573 
+analogy that we discussed through the course like pipelining, we discussed about caching locality,
+
+01:13:32.573 --> 01:13:35.416 
+all of them that we have also in our real life.
+
+01:13:36.576 --> 01:13:38.976 
+And the the second take away actually is that principles.
+
+01:13:39.056 --> 01:13:45.098 
+We covered apply broadly not only in computer architecture and we have had a lot of examples of
+
+01:13:45.098 --> 01:13:45.416 
+that.
+
+01:13:45.816 --> 01:13:51.386 
+And most importantly the third take away is that trade off analysis and critical taking that you are
+
+01:13:51.386 --> 01:13:53.336 
+exposed to apply even more broadly.
+
+01:13:53.696 --> 01:13:59.016 
+So this going to be actually very important in many, many other things that you're doing in future.
+
+01:13:59.376 --> 01:14:05.964 
+The basically your carrier and in company, if you're doing some consulting for a company, if you're
+
+01:14:05.964 --> 01:14:12.553 
+starting a new company, if you're doing research, all of it actually is very important how to think
+
+01:14:12.553 --> 01:14:15.216 
+critically and evaluate different ideas.
+
+01:14:16.376 --> 01:14:21.929 
+So we are done with all of this micro architecture, pipelining, precise exception, out of order
+
+01:14:21.929 --> 01:14:23.216 
+super scale execution.
+
+01:14:24.056 --> 01:14:30.272 
+We have covered a lot of different paradigm of computing and we actually also look into a lot
+
+01:14:30.272 --> 01:14:34.016 
+different ways to extract instruction level concurrency.
+
+01:14:34.376 --> 01:14:40.167 
+And we visited a lot of these topics and now that you know, all of these topics actually is nice
+
+01:14:40.167 --> 01:14:45.536 
+food for thought that you think about trade-offs of these different processing paradigms.
+
+01:14:47.216 --> 01:14:51.576 
+We are also now done with these the memory organization.
+
+01:14:51.576 --> 01:14:55.856 
+So we have covered actually quite a lot in about memory system.
+
+01:14:56.016 --> 01:15:01.576 
+It's it's so you cannot, you cannot be really enough with memory system.
+
+01:15:01.856 --> 01:15:02.736 
+It's kind of endless.
+
+01:15:02.736 --> 01:15:08.310 
+You know, there are a lot of topics, a lot of challenges, but this course actually provides a lot of
+
+01:15:08.310 --> 01:15:13.716 
+basics about memory system as well as cutting edge topics like Constantinus actually, he actually
+
+01:15:13.716 --> 01:15:18.176 
+touched some very state of our topics like the papers that he was presenting to.
+
+01:15:20.016 --> 01:15:23.376 
+So now you are very familiar with memory system which is great.
+
+01:15:24.416 --> 01:15:30.619 
+And now also you can think of trade off of many different memory system designs and ideas and how
+
+01:15:30.619 --> 01:15:34.456 
+memory system is actually interacting with processor design.
+
+01:15:34.456 --> 01:15:41.856 
+So and so basically how can we optimise both a memory and processor together in a more balanced way?
+
+01:15:42.496 --> 01:15:44.096 
+Hopefully so.
+
+01:15:44.096 --> 01:15:49.608 
+And we actually had this transformation hierarchy that we try actually to have a more expanded view
+
+01:15:49.608 --> 01:15:52.616 
+of computer architecture from algorithm to the device.
+
+01:15:53.376 --> 01:15:59.019 
+And essentially virtual memory that Constantinos presented is has been known as one of the most
+
+01:15:59.019 --> 01:16:03.416 
+successful hardware software code design that people designed for decades.
+
+01:16:03.536 --> 01:16:06.096 
+And it's actually, it's been very successful.
+
+01:16:06.896 --> 01:16:12.465 
+So that's actually a very good example how hardware and software can work together to make, you
+
+01:16:12.465 --> 01:16:17.976 
+know, to make a big impact on how we write programs and how we run our programs in the system.
+
+01:16:19.256 --> 01:16:25.101 
+So that can apply in many different topics like in like in prefetching, in the how do you handle
+
+01:16:25.101 --> 01:16:27.416 
+your caches, how you handle processor.
+
+01:16:27.576 --> 01:16:31.296 
+So a lot of time you can actually benefit from this cooperation between hardware and software.
+
+01:16:32.176 --> 01:16:37.636 
+And it's also another recall that essentially this course brings learning experience, long term
+
+01:16:37.636 --> 01:16:40.856 
+trade off analysis, critical taking and decision making.
+
+01:16:42.216 --> 01:16:48.274 
+And so I don't want to repeat it again, but essentially what we saw changed the world and endured
+
+01:16:48.274 --> 01:16:49.336 
+the test of time.
+
+01:16:49.376 --> 01:16:51.456 
+And it will be more important.
+
+01:16:51.856 --> 01:16:57.664 
+You may not all be future architect, but your development and thinking can greatly benefit from the
+
+01:16:57.664 --> 01:17:00.656 
+concept trade off principles and critical thinking.
+
+01:17:01.576 --> 01:17:05.416 
+And it's important that we focus on understanding, learning and critical analysis.
+
+01:17:07.216 --> 01:17:09.816 
+And these are actually the agents for your growth.
+
+01:17:09.816 --> 01:17:12.576 
+And the course is designed to activate these agents.
+
+01:17:13.536 --> 01:17:20.136 
+And if I'm not successful enough to convince you, I also brought this quote on college education.
+
+01:17:21.336 --> 01:17:23.176 
+Do you know who's this quote from?
+
+01:17:26.456 --> 01:17:26.816 
+Yes.
+
+01:17:29.096 --> 01:17:29.456 
+Yes.
+
+01:17:29.656 --> 01:17:30.096 
+Correct.
+
+01:17:30.296 --> 01:17:30.536 
+Yeah.
+
+01:17:31.496 --> 01:17:38.843 
+So the basic Einstein mentioned that it's not so very important for a person to learn facts because
+
+01:17:38.843 --> 01:17:43.816 
+facts you can learn, you can forget, you can lead, lead learn them.
+
+01:17:44.416 --> 01:17:50.941 
+But it's there are things that the value of an education in a liberal arts college, which you can
+
+01:17:50.941 --> 01:17:54.776 
+think of as a more like it can be applied to any college.
+
+01:17:54.776 --> 01:17:58.136 
+So there is a context that where Einstein was presenting this talk.
+
+01:17:58.576 --> 01:18:03.820 
+But essentially the value of an education in a, in any college is not the learning of many facts,
+
+01:18:03.820 --> 01:18:08.416 
+but the training of the mind to think something that cannot be learnt from textbooks.
+
+01:18:08.976 --> 01:18:11.496 
+So you can actually made it also at home.
+
+01:18:11.496 --> 01:18:16.811 
+Think about a lot of things that we taught this in this course and see what are the things that you
+
+01:18:16.811 --> 01:18:22.072 
+can actually easily learn from textbooks and what are the things that you cannot really, you know,
+
+01:18:22.072 --> 01:18:23.576 
+learn easily from textbooks.
+
+01:18:23.576 --> 01:18:28.641 
+And actually you benefit from this interaction in the lecture with the with the president, with the
+
+01:18:28.641 --> 01:18:29.256 
+instructors.
+
+01:18:30.816 --> 01:18:32.576 
+There are also some more quotes.
+
+01:18:33.256 --> 01:18:35.416 
+I don't know how much time I have, but let's see.
+
+01:18:36.136 --> 01:18:36.696 
+10 minutes.
+
+01:18:36.696 --> 01:18:38.656 
+OK, so I guess I'm good.
+
+01:18:42.216 --> 01:18:43.976 
+This course is also one of my favorite.
+
+01:18:45.976 --> 01:18:51.796 
+So the reasonable man adapts himself to the world, the unreasonable 1 persists in trying to adapt
+
+01:18:51.796 --> 01:18:53.056 
+the world to himself.
+
+01:18:53.496 --> 01:19:00.184 
+Therefore, all progress depends on the unreasonable man, which to me actually, this is one of the
+
+01:19:00.184 --> 01:19:06.528 
+the most complicated thing for a lot of school systems, like not only in in this country, in
+
+01:19:06.528 --> 01:19:13.078 
+everywhere, like all the time, actually teachers, they really want to make sure that, you know,
+
+01:19:13.078 --> 01:19:17.216 
+students are following some, you know, some specific things.
+
+01:19:17.776 --> 01:19:21.496 
+And there are always some students that they don't want to, you know, comfort.
+
+01:19:22.136 --> 01:19:24.736 
+And that can actually cause problems.
+
+01:19:24.776 --> 01:19:28.616 
+Like how to deal with that actually is a big challenge.
+
+01:19:28.776 --> 01:19:35.483 
+And I can say that in many, many school systems actually try, they try to make students and people
+
+01:19:35.483 --> 01:19:38.016 
+to follow similar rules, all of them.
+
+01:19:38.736 --> 01:19:41.056 
+And that is kind of against.
+
+01:19:41.056 --> 01:19:45.896 
+So we should be careful about that because that is actually kind of against of how progress makes.
+
+01:19:46.416 --> 01:19:50.056 
+So it's important to be unreasonable in some cases as well.
+
+01:19:52.616 --> 01:19:54.896 
+So this quote is from George Menard Shaw.
+
+01:19:56.296 --> 01:20:06.896 
+He also has another, he's actually an Irish person and which won novel in Nobel Prize in Literature.
+
+01:20:07.576 --> 01:20:10.016 
+And there are a lot of interesting things about him.
+
+01:20:10.016 --> 01:20:11.816 
+You can also check if you're interested.
+
+01:20:11.976 --> 01:20:16.742 
+He also had another quote which is very similar to the previous one that progress is impossible
+
+01:20:16.742 --> 01:20:20.656 
+without change and those who cannot change their minds cannot change anything.
+
+01:20:22.856 --> 01:20:28.212 
+So this actually also very important as a juice of this course, you know, how how you deal with
+
+01:20:28.212 --> 01:20:33.456 
+different ideas, how you deal with different techniques, how you critically think about them.
+
+01:20:34.096 --> 01:20:40.352 
+So I don't know if if we showed in this course, but there are some things related to, you know, how
+
+01:20:40.352 --> 01:20:46.481 
+people evaluate different mechanism and some, some reviewers, for example, they say that it works
+
+01:20:46.481 --> 01:20:49.136 
+OK, you know, why do we need to change it?
+
+01:20:49.576 --> 01:20:54.406 
+And that's completely against of this talk, this code, you know, because yes, so no progress is
+
+01:20:54.406 --> 01:20:55.576 
+going to happen at all.
+
+01:20:56.336 --> 01:20:58.296 
+So it's important to think about such things.
+
+01:21:00.016 --> 01:21:06.583 
+There's also another thing, one poem which I'm not going to read it, so you can actually read it if
+
+01:21:06.583 --> 01:21:08.176 
+you're interested later.
+
+01:21:08.416 --> 01:21:13.989 
+But I would say that actually integrity of mind is very important and that's really need to
+
+01:21:13.989 --> 01:21:16.256 
+prioritise a lot as much as possible.
+
+01:21:17.976 --> 01:21:22.016 
+OK, so let's quickly also see what we did not cover.
+
+01:21:23.456 --> 01:21:29.742 
+We actually we couldn't cover a lot of things because computer architecture is very rich and there
+
+01:21:29.742 --> 01:21:33.976 
+are a lot of ideas, lots creativity, many trade-offs and problems.
+
+01:21:34.576 --> 01:21:39.536 
+And as a scaling performance, energy, reliability, security issues become worse in circuits and in
+
+01:21:39.536 --> 01:21:42.776 
+software, computer architecture will be more and more important.
+
+01:21:44.296 --> 01:21:50.269 
+So we, we are all of these actually already obvious in AIM and accelerators in hardware security
+
+01:21:50.269 --> 01:21:56.180 
+issues in novel execution paradigms like trust in memory that I'm trying to, I will try to talk
+
+01:21:56.180 --> 01:22:00.536 
+about it a little bit today, but essentially these are very important.
+
+01:22:00.536 --> 01:22:05.843 
+So if you're interested, I would also recommend that you check memory centric lecture, memory
+
+01:22:05.843 --> 01:22:09.496 
+centric computing lecture that we had before about these topics.
+
+01:22:10.536 --> 01:22:15.336 
+So in Safari, actually we are working on many different domains in computer architecture.
+
+01:22:15.856 --> 01:22:22.696 
+And so I can summarise them actually in the in these five, let's say, major research topics.
+
+01:22:23.296 --> 01:22:28.987 
+So you've seen a little bit of robust architectures when we talk about row hammer row Press, those
+
+01:22:28.987 --> 01:22:29.336 
+stuff.
+
+01:22:29.336 --> 01:22:33.576 
+So making architecture secure, reliable and safe are very important.
+
+01:22:33.976 --> 01:22:36.616 
+How can we fundamentally make system energy efficient?
+
+01:22:36.616 --> 01:22:42.947 
+Which memory centric computing is actually one of the big part of it that essentially one of the
+
+01:22:42.947 --> 01:22:49.016 
+main or one of the, let's say dominant source of consuming energy is actually data movement.
+
+01:22:49.456 --> 01:22:55.156 
+And in today's architecture, in conventional computing we are doing, we are having a lot of data
+
+01:22:55.156 --> 01:22:59.016 
+movement because data is stored far from where we are processing.
+
+01:22:59.456 --> 01:23:04.388 
+So you need to bring data from storage for example to the to the main memory and then from main
+
+01:23:04.388 --> 01:23:07.816 
+memory to caches to the registers and then try to compute on them.
+
+01:23:07.816 --> 01:23:09.576 
+So that you there are a lot of data movement.
+
+01:23:09.856 --> 01:23:16.925 
+And we actually, I think Professor Muthu, actually, he showed some data from Delhi that the energy
+
+01:23:16.925 --> 01:23:24.067 
+that you're consuming for bringing data is orders of magnitude more compared to the energy that you
+
+01:23:24.067 --> 01:23:26.376 
+consume to operate on that data.
+
+01:23:26.976 --> 01:23:32.988 
+So that's is a lot of the the topic that essentially if you want to fundamentally make things energy
+
+01:23:32.988 --> 01:23:36.896 
+efficient, it's good to try to do computation where data resides.
+
+01:23:37.296 --> 01:23:38.816 
+So if your data resides in.
+
+01:23:39.056 --> 01:23:44.091 
+Storage, you can actually try to do compute inside the storage and that's a lot that we are doing in
+
+01:23:44.091 --> 01:23:46.056 
+Safari about storage centric computing.
+
+01:23:46.576 --> 01:23:51.336 
+Or if your data actually resides in memory, so you don't have to bring that to the processor.
+
+01:23:51.336 --> 01:23:56.843 
+You can try to compute as much as possible inside the memory and that can actually make in the end
+
+01:23:56.843 --> 01:24:02.070 
+make your system much more data centric and the the whole processing is going to be much more
+
+01:24:02.070 --> 01:24:02.576 
+balanced.
+
+01:24:03.536 --> 01:24:08.896 
+So and in the end it's going to give you better energy, better performance and also sustainability.
+
+01:24:10.336 --> 01:24:15.216 
+We also work a lot on how to make things lower latency and predictable.
+
+01:24:15.776 --> 01:24:21.157 
+So today we are actually dealing with a lot of long latency operations like long latency memory
+
+01:24:21.157 --> 01:24:25.576 
+accesses and a lot of things are that we are designing are actually around it.
+
+01:24:25.976 --> 01:24:32.140 
+Just try to hide that latency, like think about caching, like caching is to is there to hide memory
+
+01:24:32.140 --> 01:24:37.930 
+access latency or pre fetching that we have there is to hide basically try to hide like cache
+
+01:24:37.930 --> 01:24:39.176 
+misses, for example.
+
+01:24:39.936 --> 01:24:45.954 
+So but if you can try to make memory faster, then you are actually solving a more fundamental
+
+01:24:45.954 --> 01:24:52.295 
+problem, you know, and that can actually relief the system from a lot of costs that we are causing
+
+01:24:52.295 --> 01:24:54.496 
+now just to try to hide latencies.
+
+01:24:54.576 --> 01:24:54.936 
+OK.
+
+01:24:55.376 --> 01:25:00.256 
+So that's why designing systems that they are fundamentally low latency are very important.
+
+01:25:00.856 --> 01:25:06.318 
+Predictability is also very much important because we are dealing with a lot of deadlines like hard
+
+01:25:06.318 --> 01:25:11.559 
+and soft deadlines and a lot of applications they have quality of service that you need to make
+
+01:25:11.559 --> 01:25:13.656 
+them predictable in your architecture.
+
+01:25:15.016 --> 01:25:19.216 
+Also we work a lot on making system data-driven and data aware.
+
+01:25:19.736 --> 01:25:25.970 
+So by data-driven like these, today's application have a lot of data they are operating on and you
+
+01:25:25.970 --> 01:25:31.696 
+can actually use this data characteristics of them to learn how to become a better system.
+
+01:25:32.256 --> 01:25:36.616 
+So you actually see a glimpse of that in like in prefetching lecture.
+
+01:25:36.616 --> 01:25:43.376 
+I think in PTR that for example we use machine learning for for for prefetching.
+
+01:25:43.616 --> 01:25:49.631 
+Also in branch prediction, I think you learn about perceptron learning that we can use that in for
+
+01:25:49.631 --> 01:25:50.736 
+branch prediction.
+
+01:25:50.936 --> 01:25:56.236 
+So these are kind of techniques that we can learn from the system, from data characteristics and we
+
+01:25:56.236 --> 01:25:57.896 
+make a better system decisions.
+
+01:25:58.376 --> 01:26:04.116 
+Also you can think of making systems data aware, which by transferring the semantics of your data
+
+01:26:04.116 --> 01:26:09.976 
+from the software layer to the hardware like as we are also doing in hardware software code design.
+
+01:26:10.256 --> 01:26:13.856 
+Then you actually at the hardware you can make much more intelligent decisions.
+
+01:26:14.096 --> 01:26:20.458 
+Like for example, if you know that your software is late, it can tolerate some errors, then actually
+
+01:26:20.458 --> 01:26:26.758 
+you can have a, you know, architecture or memory which you can trade off some, you know, errors for
+
+01:26:26.758 --> 01:26:29.176 
+better performance, for better energy.
+
+01:26:29.536 --> 01:26:35.199 
+And if you are careful about the design of that, actually you can have a system which is higher
+
+01:26:35.199 --> 01:26:38.896 
+performance, better energy efficiency and also still accurate.
+
+01:26:39.416 --> 01:26:41.856 
+So these are actually very interesting things to do.
+
+01:26:42.056 --> 01:26:48.264 
+And also we are using these all these topics, data centric, data-driven and data ever architectures
+
+01:26:48.264 --> 01:26:54.348 
+in order to design architectures for many important applications, including machine learning, AI,
+
+01:26:54.348 --> 01:26:57.296 
+genomics, medicine, health, and so on so forth.
+
+01:26:58.696 --> 01:27:02.176 
+And we always look into the the entire stack of computing.
+
+01:27:02.696 --> 01:27:07.216 
+So it's going to be very much the core of these all these ideas.
+
+01:27:08.296 --> 01:27:13.495 
+So if you're interested, you can actually also watch this lecture from Professor Muthu that he
+
+01:27:13.495 --> 01:27:17.976 
+explained, you know, that introduce software research group in a bit more detail.
+
+01:27:19.056 --> 01:27:24.921 
+And essentially one of the axiom that we have is that we need intelligent architectures and these
+
+01:27:24.921 --> 01:27:26.856 
+architectures handles data Bill.
+
+01:27:27.696 --> 01:27:33.890 
+So we need to make sure that they don't basically this huge data amount that we have today in in our
+
+01:27:33.890 --> 01:27:34.696 
+applications.
+
+01:27:35.496 --> 01:27:39.136 
+Basically the the hardware does not get overwhelmed.
+
+01:27:39.736 --> 01:27:44.945 
+And also we we can take advantage of vast amounts of data and metadata and we understand and exploit
+
+01:27:44.945 --> 01:27:46.456 
+properties of different data.
+
+01:27:46.896 --> 01:27:49.936 
+And that brings us essentially to these domains.
+
+01:27:50.176 --> 01:27:54.136 
+So instead of designing processor centric, we can be much more data centric.
+
+01:27:54.616 --> 01:28:00.945 
+And instead of being designer dictated decisions, we can make data-driven decisions and also we can
+
+01:28:00.945 --> 01:28:02.416 
+make systems data away.
+
+01:28:03.096 --> 01:28:05.976 
+So I think I'm going to conclude here.
+
+01:28:06.416 --> 01:28:12.016 
+So architectures for intelligent machines needs to be data centric, data-driven and data away.
+
+01:28:12.216 --> 01:28:17.176 
+And that's the juice for, in my opinion, how the future computer architecture is going to look like.
+
+01:28:18.216 --> 01:28:19.496 
+So thanks a lot everyone.
+
+01:28:19.496 --> 01:28:21.256 
+I hope you actually enjoy the course.
+
+01:28:21.456 --> 01:28:24.456 
+And this is going to be the last lecture, I guess.
+
+01:28:26.016 --> 01:28:30.896 
+I guess in a in a way that they're going to be hopefully some problem solving sessions as well.
+
+01:28:32.576 --> 01:28:34.176 
+Also before the exam.
+
+01:28:34.176 --> 01:28:36.216 
+I think the exam is sometime in August.
+
+01:28:36.216 --> 01:28:38.976 
+I don't know the exact date but yeah, I hope.
+
+01:28:39.256 --> 01:28:42.536 
+Hope you you study well and prepare for the exam.
+
+01:28:42.936 --> 01:28:44.216 
+Don't worry much about the exam.
+
+01:28:44.216 --> 01:28:45.896 
+I think you're going to do a great job there.
+
+01:28:47.256 --> 01:28:50.056 
+And yeah, and I wish you also the best.
+
+01:28:50.056 --> 01:28:54.056 
+I hope you also have some time to, you know, have a good semester break as well.
+
+01:28:54.056 --> 01:28:55.696 
+So enjoy your time.
+
+01:28:55.696 --> 01:28:57.096 
+Don't think much about the exam.
+
+01:28:57.416 --> 01:28:59.656 
+And yeah, and wish you all the best.
+
+01:29:00.776 --> 01:29:01.176 
+Thank you.
+

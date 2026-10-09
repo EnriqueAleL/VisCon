@@ -1,0 +1,4607 @@
+WEBVTT
+
+00:00:02.128 --> 00:00:08.008 
+We're going to continue where we left off in caching and we're going to look at a lot of interesting
+
+00:00:08.008 --> 00:00:09.008 
+design decisions.
+
+00:00:09.168 --> 00:00:10.768 
+Let me reduce this a little bit.
+
+00:00:11.408 --> 00:00:12.088 
+Is it better?
+
+00:00:13.048 --> 00:00:16.488 
+Let's echo maybe, maybe a little bit more.
+
+00:00:18.168 --> 00:00:18.768 
+How about now?
+
+00:00:19.768 --> 00:00:21.048 
+OK, a little bit better.
+
+00:00:22.808 --> 00:00:24.248 
+Let's stay like this for a while.
+
+00:00:24.648 --> 00:00:25.568 
+Maybe that's even better.
+
+00:00:25.968 --> 00:00:28.328 
+OK, people can still hear me in the back, right?
+
+00:00:28.568 --> 00:00:29.008 
+All good.
+
+00:00:29.848 --> 00:00:32.248 
+OK, so we're going to go more into caching.
+
+00:00:32.768 --> 00:00:39.845 
+This is an important topic because locality is very strong in programs as you have been exposed to
+
+00:00:39.845 --> 00:00:40.568 
+last time.
+
+00:00:41.248 --> 00:00:43.728 
+Like locality is a very strong and a lot of things we do right.
+
+00:00:44.048 --> 00:00:49.409 
+One of the things that Mohammed gave as an example of locality, like temporal locality is you're
+
+00:00:49.409 --> 00:00:54.939 
+probably sitting in a, well, spatial locality is you're probably sitting in the same place you were
+
+00:00:54.939 --> 00:00:56.168 
+sitting before, right?
+
+00:00:57.368 --> 00:00:57.968 
+That's true.
+
+00:00:58.048 --> 00:01:00.128 
+And you're sitting together with similar people.
+
+00:01:00.328 --> 00:01:01.848 
+That's kind of spatial locality, right?
+
+00:01:02.128 --> 00:01:09.088 
+The temporal locality is you kind of basically come back every time around the same time.
+
+00:01:09.088 --> 00:01:10.688 
+So that's the temporal locality aspect.
+
+00:01:10.688 --> 00:01:12.768 
+So I can actually exploit both types of locality.
+
+00:01:13.208 --> 00:01:17.088 
+And this exploitation has been very strong in programs.
+
+00:01:17.688 --> 00:01:19.728 
+It's a property of programs.
+
+00:01:20.248 --> 00:01:23.208 
+And as a result, most of our systems are dedicated to caches.
+
+00:01:23.368 --> 00:01:26.448 
+Today's now we're going to deconstruct that later on.
+
+00:01:26.448 --> 00:01:27.808 
+Is this the right way of building systems?
+
+00:01:27.808 --> 00:01:28.688 
+It's always good task.
+
+00:01:28.688 --> 00:01:29.448 
+Can we do better?
+
+00:01:29.928 --> 00:01:36.120 
+And the answer is maybe we have lots of cache in our systems because we're not doing things right,
+
+00:01:36.120 --> 00:01:42.186 
+because we're basically moving data a lot across the memory hierarchy from the process, from the
+
+00:01:42.186 --> 00:01:44.208 
+storage system to the processor.
+
+00:01:44.368 --> 00:01:49.328 
+If you actually do computation much closer to memory units, maybe we don't need to move that data.
+
+00:01:49.328 --> 00:01:50.528 
+So it's good to think about that.
+
+00:01:50.888 --> 00:01:52.648 
+But that's not how things evolved so far.
+
+00:01:53.048 --> 00:01:57.348 
+That's what we would like things to be evolving into the future so that we save a lot of energy as
+
+00:01:57.348 --> 00:01:57.568 
+well.
+
+00:02:00.888 --> 00:02:02.528 
+But let's get started.
+
+00:02:02.888 --> 00:02:07.568 
+Actually, I'll give you another example of locality principle that was violated.
+
+00:02:07.648 --> 00:02:10.288 
+I was in the US for a conference recently.
+
+00:02:11.088 --> 00:02:15.368 
+I was supposed to arrive yesterday, the previous day, but I arrived yesterday, unfortunately.
+
+00:02:15.888 --> 00:02:21.370 
+And one of the reasons was, well, there are multiple reasons I was supposed to fly from Atlanta to
+
+00:02:21.370 --> 00:02:23.328 
+Chicago and then Chicago to Zurich.
+
+00:02:24.328 --> 00:02:26.728 
+First of all, I should have done better.
+
+00:02:26.728 --> 00:02:30.048 
+I should have flew directly from Atlanta to Chicago to Zurich.
+
+00:02:30.288 --> 00:02:32.488 
+But OK, there may be reasons why not to do that.
+
+00:02:33.088 --> 00:02:38.968 
+And then weather appeared in Chicago, thunderstorms, so I couldn't go to Chicago.
+
+00:02:38.968 --> 00:02:47.656 
+They put me on another flight, which is supposed to be safe, meaning going from Atlanta to
+
+00:02:47.656 --> 00:02:51.808 
+Washington, DC OK, that sounds good, right?
+
+00:02:52.008 --> 00:02:53.048 
+I was pretty happy.
+
+00:02:53.048 --> 00:02:55.208 
+I will go to Washington, DC and then come to Zurich.
+
+00:02:56.088 --> 00:03:04.146 
+Now, the problem is they didn't really follow the principle of locality when they were scheduling
+
+00:03:04.146 --> 00:03:04.728 
+planes.
+
+00:03:05.368 --> 00:03:13.488 
+So the plane that was supposed to go from Atlanta to Washington DC was coming from Chicago.
+
+00:03:14.768 --> 00:03:17.128 
+I couldn't make it because there's weather in Chicago, right?
+
+00:03:17.888 --> 00:03:18.768 
+So I can see that.
+
+00:03:19.088 --> 00:03:21.368 
+And then I had to actually fly to New York and etcetera.
+
+00:03:21.368 --> 00:03:23.688 
+In the end, in the end, I did fly, but one day later.
+
+00:03:25.208 --> 00:03:32.101 
+The issue is if they actually kind of partitioned the country a little bit, I'm not going to tell
+
+00:03:32.101 --> 00:03:38.781 
+you the name of the air airline partitioned the country and actually exploited locality within
+
+00:03:38.781 --> 00:03:45.248 
+those partitions and never actually, let's say, connected planes across the entire country.
+
+00:03:45.568 --> 00:03:48.688 
+They could have actually done a much better job in scheduling in my opinion.
+
+00:03:48.688 --> 00:03:53.808 
+I know there's a lot of other things that they need to take into account in scheduling things, but
+
+00:03:53.808 --> 00:03:58.824 
+if you actually localise communication as much as possible, in this case, communication is where
+
+00:03:58.824 --> 00:04:00.288 
+you route the planes, right?
+
+00:04:00.288 --> 00:04:06.474 
+If you don't route unless you absolutely need it across a bigger global space, if you keep it local,
+
+00:04:06.474 --> 00:04:12.413 
+you can actually optimize for other unpredictable events as well more easily if every plane goes
+
+00:04:12.413 --> 00:04:14.208 
+through Chicago, for example.
+
+00:04:14.208 --> 00:04:17.473 
+If you've done that routing that way, then you're in big trouble basically, and everybody who
+
+00:04:17.473 --> 00:04:18.808 
+depends on you is in big trouble also.
+
+00:04:19.608 --> 00:04:21.888 
+So I thought I could spin this as a.
+
+00:04:22.008 --> 00:04:24.288 
+Locality principle, and you can see that it's a locality principle.
+
+00:04:24.288 --> 00:04:28.688 
+Actually, there's another principle over here which is minimising communication as much as possible.
+
+00:04:29.128 --> 00:04:30.448 
+That's going to be very important.
+
+00:04:30.448 --> 00:04:36.138 
+Also, if you minimise communication across the systems you design, you can in general do better
+
+00:04:36.138 --> 00:04:41.649 
+because long distance communication is almost always much more expensive than short distance
+
+00:04:41.649 --> 00:04:42.488 
+communication.
+
+00:04:43.008 --> 00:04:46.008 
+That's true for planes, that's true for circuits also.
+
+00:04:46.568 --> 00:04:49.368 
+Basically minimise communication, minimise movement in general.
+
+00:04:50.088 --> 00:04:51.928 
+OK, so that's the benefit of caches.
+
+00:04:51.928 --> 00:04:57.319 
+Basically they exploit locality principle really well when locality principle exists and then
+
+00:04:57.319 --> 00:05:01.088 
+locality exists in programs and they also minimise communication.
+
+00:05:01.648 --> 00:05:04.528 
+But maybe there is a broader aspects that minimises communication.
+
+00:05:04.928 --> 00:05:09.941 
+If you actually can do computation inside the memory inside DM for example, maybe you need less
+
+00:05:09.941 --> 00:05:11.208 
+caches in the processor.
+
+00:05:11.208 --> 00:05:12.088 
+So keep that in mind.
+
+00:05:13.368 --> 00:05:14.688 
+OK, with that, let's get started.
+
+00:05:14.688 --> 00:05:17.808 
+These are some readings that we have that you're familiar with.
+
+00:05:18.208 --> 00:05:19.768 
+This is the memory hierarchy example.
+
+00:05:19.768 --> 00:05:24.408 
+We build these memory hierarchies so that we don't go to memory as much as possible.
+
+00:05:25.808 --> 00:05:29.408 
+The problem is you cannot build something fast and and big.
+
+00:05:29.888 --> 00:05:35.642 
+So you actually progressively build faster and small things and make them bigger and slower and put
+
+00:05:35.642 --> 00:05:37.328 
+them together in a hierarchy.
+
+00:05:37.368 --> 00:05:39.208 
+Then the question is, how do you manage this hierarchy?
+
+00:05:39.208 --> 00:05:44.610 
+So managing this hierarchy has been the subject of many, many works, and there's a lot of work that
+
+00:05:44.610 --> 00:05:46.848 
+has actually got into a processor design.
+
+00:05:46.848 --> 00:05:52.119 
+If you look at a very complex processor design today, there are a lot of algorithms that are used in
+
+00:05:52.119 --> 00:05:53.648 
+managing the cache hierarchy.
+
+00:05:53.848 --> 00:05:56.168 
+We're going to touch the surface of some of them.
+
+00:05:56.328 --> 00:05:57.328 
+There is a whole lot more.
+
+00:05:58.408 --> 00:05:59.808 
+OK, this is another memory hierarchy.
+
+00:05:59.928 --> 00:06:04.728 
+I should also say that memory hierarchy is actually bigger than what was depicted earlier.
+
+00:06:06.408 --> 00:06:08.088 
+Basically, you have a single machine.
+
+00:06:08.848 --> 00:06:13.968 
+Single machine can host a lot of memory today, especially terabytes and terabytes and terabytes.
+
+00:06:14.328 --> 00:06:16.848 
+But even that's not enough for some workloads that we have today.
+
+00:06:16.848 --> 00:06:23.008 
+Very large workloads like AI training data or some other workloads like data centre workloads, then
+
+00:06:23.008 --> 00:06:25.248 
+you need actually multiple machines.
+
+00:06:25.808 --> 00:06:29.528 
+What we actually do is memory extend the memory hierarchy beyond a single machine.
+
+00:06:29.848 --> 00:06:36.260 
+You may have some compute nodes where you do computation and you have a local memory hierarchy and
+
+00:06:36.260 --> 00:06:39.008 
+you may connect very large memories to it.
+
+00:06:39.288 --> 00:06:43.866 
+These are called memory nodes in data centres and you access remote memory through a low latency
+
+00:06:43.866 --> 00:06:44.248 
+network.
+
+00:06:44.328 --> 00:06:46.768 
+This is how a data centre setting looks like.
+
+00:06:46.768 --> 00:06:49.568 
+And I'll go into a little bit more detail over here.
+
+00:06:49.968 --> 00:06:52.048 
+So this is a system with memory blades.
+
+00:06:52.568 --> 00:06:58.250 
+So you have some computation blades where you have compute and a lot of memory, but that memory is
+
+00:06:58.250 --> 00:06:58.888 
+not enough.
+
+00:06:58.888 --> 00:07:04.248 
+So you actually go off chip or off the blade to some other memory blades.
+
+00:07:04.248 --> 00:07:06.768 
+It could be in some other rack, it could be in the same rack, right?
+
+00:07:07.408 --> 00:07:11.899 
+And this memory blade architecture can differ of course, but it may, it may actually have
+
+00:07:11.899 --> 00:07:16.088 
+lightweight CPUs, memory controllers, etcetera, and lots of memory connected to it.
+
+00:07:16.568 --> 00:07:19.168 
+And the purpose of that is to serve data essentially.
+
+00:07:19.928 --> 00:07:20.888 
+It's good to think about that.
+
+00:07:20.888 --> 00:07:25.041 
+This is the amount of data that we're dealing with today and it's, it keeps increasing basically in
+
+00:07:25.041 --> 00:07:26.048 
+all of the applications.
+
+00:07:26.048 --> 00:07:27.928 
+I've shown you that in lecture one, right?
+
+00:07:28.528 --> 00:07:35.009 
+So you can see that our designs, large scale designs have adapted to storing that data and serving
+
+00:07:35.009 --> 00:07:36.928 
+compute units with that data.
+
+00:07:37.528 --> 00:07:40.608 
+OK, Basically this is part of the memory hierarchy essentially.
+
+00:07:41.488 --> 00:07:45.648 
+And this is local memory that's on the CPU that we're kind of examining.
+
+00:07:46.248 --> 00:07:47.408 
+And this is remote memory.
+
+00:07:47.648 --> 00:07:51.568 
+So if you actually miss in the local memories, you go to the remote memories.
+
+00:07:51.688 --> 00:07:56.048 
+That's actually a longer penalty to access, but that's higher capacity, right?
+
+00:07:56.728 --> 00:08:01.208 
+OK, there's work in this area, including some of the work that we have done a long time ago.
+
+00:08:01.208 --> 00:08:06.236 
+You can take a look at it, but let's get back to our cache example and build up some of the policies
+
+00:08:06.236 --> 00:08:08.248 
+that are employed in real systems today.
+
+00:08:08.888 --> 00:08:11.048 
+So you've seen a direct map cache, you remember it.
+
+00:08:11.048 --> 00:08:16.196 
+Hopefully direct map means a given main memory block can be placed in on one, only one possible
+
+00:08:16.196 --> 00:08:17.768 
+location in the cache, right?
+
+00:08:18.168 --> 00:08:20.288 
+This is very restrictive mapping basically.
+
+00:08:21.168 --> 00:08:27.011 
+And that direct map where exactly a particular block is mapped is based on the physical address of
+
+00:08:27.011 --> 00:08:27.608 
+the block.
+
+00:08:27.808 --> 00:08:34.591 
+And you take, you index the cache using a piece of that physical address that determines which set
+
+00:08:34.591 --> 00:08:39.368 
+you're in and a set of locations, there's only one possible location.
+
+00:08:39.488 --> 00:08:41.568 
+Basically that's the idea of a direct map cache.
+
+00:08:41.648 --> 00:08:42.568 
+Very inflexible.
+
+00:08:43.248 --> 00:08:49.810 
+If two addresses that you're operating on at around the same time happen to map to the same index,
+
+00:08:49.810 --> 00:08:55.168 
+then you're in trouble because you cannot have both of them in the cache, right?
+
+00:08:55.168 --> 00:08:58.688 
+And we solved this problem to by adding set associativity, right?
+
+00:08:59.088 --> 00:09:06.715 
+Set associativity enables the cache or or a single or a given memory block to potentially reside in
+
+00:09:06.715 --> 00:09:08.488 
+two possible locations.
+
+00:09:08.688 --> 00:09:14.529 
+If it cannot go into one of those sets because somebody else is using that location, and that's it,
+
+00:09:14.529 --> 00:09:17.008 
+you can actually put it in some other set.
+
+00:09:17.048 --> 00:09:17.728 
+That's the idea.
+
+00:09:18.408 --> 00:09:18.688 
+OK.
+
+00:09:18.688 --> 00:09:21.608 
+We went through the direct map cache example as you've seen.
+
+00:09:22.048 --> 00:09:25.688 
+And basically we we basically demonstrate the problem.
+
+00:09:25.688 --> 00:09:30.971 
+If we to enable blocks with the same index to map to more than one cache location, you need more
+
+00:09:30.971 --> 00:09:33.448 
+than one location essentially in a given set.
+
+00:09:33.768 --> 00:09:36.368 
+Set is essentially all the blocks with the same index, right?
+
+00:09:37.488 --> 00:09:40.968 
+And of course you can repeat the same exercise, you have only two locations.
+
+00:09:40.968 --> 00:09:42.048 
+But what if you need 3?
+
+00:09:42.648 --> 00:09:49.478 
+Because you may be actually using blocks ABC around the same time and they happen to map to the same
+
+00:09:49.478 --> 00:09:49.888 
+index.
+
+00:09:50.208 --> 00:09:54.568 
+Well, make it three-way associative or four way associative, right?
+
+00:09:55.928 --> 00:09:56.688 
+That sounds good.
+
+00:09:57.808 --> 00:09:59.328 
+What if you need four more than four?
+
+00:09:59.848 --> 00:10:04.408 
+Well, make it even more associative, eight way associative in this case.
+
+00:10:05.088 --> 00:10:09.968 
+In this case, it happens to be, It happens that in our toy cache we had only 8 blocks.
+
+00:10:10.728 --> 00:10:17.830 
+And having eight way associative cache with eight blocks means that essentially you don't need an
+
+00:10:17.830 --> 00:10:19.368 
+index anymore, right?
+
+00:10:20.528 --> 00:10:23.448 
+Because any block can go anywhere in the cache.
+
+00:10:23.888 --> 00:10:25.488 
+So there is no indexing mechanism.
+
+00:10:25.848 --> 00:10:31.288 
+You just basically compare the tags of each block with the tag of the address.
+
+00:10:31.328 --> 00:10:31.848 
+That's the idea.
+
+00:10:31.848 --> 00:10:33.248 
+That's why it's called fully associated.
+
+00:10:33.608 --> 00:10:38.358 
+In other words, every block can, any block can map to any location in the cache, which means by
+
+00:10:38.358 --> 00:10:39.608 
+definition no index bits.
+
+00:10:40.168 --> 00:10:45.335 
+This is the most flexible form, but you can see that this is more expensive because you have more
+
+00:10:45.335 --> 00:10:50.502 
+tag comparisons that you need to do to figure out whether the block that you're looking for is in
+
+00:10:50.502 --> 00:10:51.408 
+the cache or not.
+
+00:10:52.328 --> 00:10:55.768 
+OK, OK, This was the slide where we left off at.
+
+00:10:55.768 --> 00:10:57.848 
+We were talking about associativity and trade-offs.
+
+00:10:58.368 --> 00:11:03.208 
+So degree of associativity is essentially how many blocks can map to the same index or the set.
+
+00:11:03.488 --> 00:11:04.888 
+I've already kind of said this, right?
+
+00:11:05.288 --> 00:11:11.865 
+If you get higher associativity, the hope is that you'll get higher hit rate because you reduce the
+
+00:11:11.865 --> 00:11:18.109 
+situations where you need more places for blocks because the blocks happen to compete with the
+
+00:11:18.109 --> 00:11:20.568 
+happen to have the same index, right?
+
+00:11:23.008 --> 00:11:27.745 
+The downside, of course, as you get slower access time because you have this, let's go back to this
+
+00:11:27.745 --> 00:11:28.128 
+picture.
+
+00:11:28.688 --> 00:11:34.008 
+You have these comparators and you have to do the matching across all of those comparators.
+
+00:11:34.008 --> 00:11:37.888 
+And then there's logic to determine which one matched or whether anyone matched, right?
+
+00:11:37.888 --> 00:11:39.168 
+There's a hit logic.
+
+00:11:39.528 --> 00:11:42.528 
+And then there's also the maxing multiplexing on the datastore side.
+
+00:11:42.968 --> 00:11:47.448 
+Whichever one matched should be multiplexed out correctly, right?
+
+00:11:47.448 --> 00:11:52.822 
+So there's a critical path over here, which is the comparator, the hit miss determination logic and
+
+00:11:52.822 --> 00:11:54.288 
+the maxing logic over here.
+
+00:11:54.448 --> 00:11:55.808 
+So it's a control path essentially.
+
+00:11:57.288 --> 00:12:02.615 
+OK, So you get slower cache access time with higher associativity and you also have more expensive
+
+00:12:02.615 --> 00:12:07.128 
+hardware because obviously we added more competitors, larger tags and larger maxes.
+
+00:12:07.208 --> 00:12:12.467 
+Right now the good news is you don't want all of your caches to be higher associativity because you
+
+00:12:12.467 --> 00:12:14.008 
+also get diminishing returns.
+
+00:12:14.008 --> 00:12:16.888 
+There's a lot of work that analysis performance of caches.
+
+00:12:17.488 --> 00:12:24.434 
+The curve kind of looks like this as you increase the associativity of the cache while you keep the
+
+00:12:24.434 --> 00:12:30.048 
+size constant size meaning one MB cache, you just keep increasing associativity.
+
+00:12:30.128 --> 00:12:32.728 
+Number of blocks is constant, but the associativity increases.
+
+00:12:33.168 --> 00:12:37.568 
+You get into diminishing returns, meaning your hit rate at some point doesn't increase.
+
+00:12:39.288 --> 00:12:44.847 
+And the biggest return is when you move from direct map cache to two, two way associative cache and
+
+00:12:44.847 --> 00:12:48.048 
+then two way to four way, and then four way to eight way.
+
+00:12:48.648 --> 00:12:52.048 
+But once you go from eight way to sixteen way, you get fewer benefits.
+
+00:12:52.048 --> 00:12:56.506 
+You still get some benefits on some workloads depending on what workload you have, but still the
+
+00:12:56.506 --> 00:12:57.528 
+curve looks like this.
+
+00:12:58.248 --> 00:13:01.368 
+OK, so ideally you need to determine the associativity of your cache.
+
+00:13:01.368 --> 00:13:02.968 
+And we're just talking about one cache, right?
+
+00:13:03.408 --> 00:13:07.573 
+Imagine that you're doing this optimization for five different levels of caches, and it's not just
+
+00:13:07.573 --> 00:13:08.168 
+associativity.
+
+00:13:08.168 --> 00:13:09.888 
+We'll talk about other things as well.
+
+00:13:11.128 --> 00:13:13.488 
+OK, So hopefully you know the basic concepts.
+
+00:13:13.488 --> 00:13:16.328 
+Let's talk about some issues and set associative caches.
+
+00:13:17.088 --> 00:13:22.533 
+And I will introduce the notion of each block having a priority to continue the discussion, because
+
+00:13:22.533 --> 00:13:25.888 
+this is the more general form of what we're going to discuss.
+
+00:13:26.408 --> 00:13:28.808 
+Basically, each block, we're talking about a single set, right?
+
+00:13:28.808 --> 00:13:33.168 
+Now, in a single set, think of each block having a priority, right?
+
+00:13:34.208 --> 00:13:37.328 
+This indicates how important it is to keep the block in the cache.
+
+00:13:38.448 --> 00:13:43.471 
+And there's a key issue that you immediately face as a cache designer, how do you determine or
+
+00:13:43.471 --> 00:13:45.288 
+adjust these priorities of blocks?
+
+00:13:45.768 --> 00:13:47.728 
+Which block is more important than the other?
+
+00:13:47.848 --> 00:13:49.248 
+And how do I determine that, right?
+
+00:13:50.048 --> 00:13:51.728 
+In a set of cache, this is necessary.
+
+00:13:51.728 --> 00:13:53.408 
+In a direct map cache, there is no choice, right?
+
+00:13:53.848 --> 00:13:57.728 
+You have one block and you replace that, right?
+
+00:13:58.208 --> 00:14:03.743 
+Actually, you do have a choice and the choice is that do you actually want to replace the block
+
+00:14:03.743 --> 00:14:09.453 
+that's already in there or or do or do you want to keep it there and the incoming block, you throw
+
+00:14:09.453 --> 00:14:10.328 
+it away, right?
+
+00:14:10.448 --> 00:14:12.968 
+There's, there's a choice even there, but ignore that for now.
+
+00:14:13.808 --> 00:14:18.859 
+In a set of associative cash, the choice increases and there are three key decisions that you need
+
+00:14:18.859 --> 00:14:21.128 
+to make in a set whenever something happens.
+
+00:14:22.568 --> 00:14:28.248 
+Into the cache, into the set, promotion inside the set, and eviction from the set.
+
+00:14:28.288 --> 00:14:29.328 
+Eviction is a replacement.
+
+00:14:29.848 --> 00:14:31.608 
+Let's take a look at what these are.
+
+00:14:31.968 --> 00:14:39.163 
+Insertion means what happens to the priorities of the blocks inside the set when you put in a new
+
+00:14:39.163 --> 00:14:40.128 
+block, right?
+
+00:14:40.728 --> 00:14:45.568 
+You just fetch the new block that you missed on and you're placing it inside the set.
+
+00:14:45.808 --> 00:14:47.088 
+What happens to the priorities?
+
+00:14:47.248 --> 00:14:49.168 
+Which one should be the highest priority, right?
+
+00:14:50.688 --> 00:14:52.328 
+So where to insert the incoming block?
+
+00:14:52.448 --> 00:14:55.168 
+And then there's whether or not to insert the block over here.
+
+00:14:55.528 --> 00:14:59.728 
+OK, we're going to talk about some policies for this later.
+
+00:14:59.808 --> 00:15:03.533 
+And you can imagine many, many policies, including machine learning based policies that people are
+
+00:15:03.533 --> 00:15:04.408 
+developing a lot today.
+
+00:15:04.928 --> 00:15:10.612 
+Promotion says what happens to priorities on a cache hit, Meaning you have an access, it's hitting
+
+00:15:10.612 --> 00:15:11.888 
+the cache in that set.
+
+00:15:12.728 --> 00:15:14.248 
+Now how do you change the priorities?
+
+00:15:14.568 --> 00:15:16.688 
+Do you increase the priority of the thing that hit?
+
+00:15:17.408 --> 00:15:21.840 
+And what do you do to the priorities of other things, other blocks that are that are mapped in the
+
+00:15:21.840 --> 00:15:22.248 
+same set?
+
+00:15:23.248 --> 00:15:25.648 
+Because you have some new information right now, right?
+
+00:15:26.088 --> 00:15:26.928 
+It's good to think about it.
+
+00:15:26.928 --> 00:15:32.238 
+Also, basically whether and how to change the block priority eviction or replacement means what
+
+00:15:32.238 --> 00:15:37.659 
+happens to priorities on a cache miss, meaning which block do you evict and how do you adjust the
+
+00:15:37.659 --> 00:15:39.728 
+priorities after you do the eviction?
+
+00:15:40.448 --> 00:15:45.754 
+And the hope is that you have encoded your priorities of the blocks and the sets in such a way that
+
+00:15:45.754 --> 00:15:48.328 
+you will evict the lowest priority block, right?
+
+00:15:48.648 --> 00:15:52.008 
+That's the goal because lowest priority should mean something.
+
+00:15:52.008 --> 00:15:57.168 
+This is the block that is basically that I care about the least because maybe the processor is never
+
+00:15:57.168 --> 00:15:58.768 
+going to touch it again, right?
+
+00:15:59.488 --> 00:16:01.528 
+That sounds like a good reason to evict that block, right?
+
+00:16:02.088 --> 00:16:07.261 
+If I have perfect information that the processor is never going to need that block again from the
+
+00:16:07.261 --> 00:16:11.208 
+cache, I should even not put that block in the cache to begin with, right?
+
+00:16:11.288 --> 00:16:12.448 
+That's the idea of a priority.
+
+00:16:13.248 --> 00:16:19.665 
+But if I have very good information that this is the block that the processor is going to touch very
+
+00:16:19.665 --> 00:16:24.928 
+soon again, need very soon again, then maybe I should keep it in the cache, right?
+
+00:16:25.048 --> 00:16:25.728 
+That's the idea.
+
+00:16:26.008 --> 00:16:28.288 
+The question is, how do you actually adjust these priorities?
+
+00:16:28.288 --> 00:16:34.008 
+And you may have guessed existing processors do a lot of prediction for this.
+
+00:16:34.488 --> 00:16:37.810 
+They actually use both predictors that are somewhat similar to branch predictors that we have
+
+00:16:37.810 --> 00:16:38.168 
+discussed.
+
+00:16:38.288 --> 00:16:43.768 
+We're not going to go into a lot of detail, but they also use different predictors here as well.
+
+00:16:44.288 --> 00:16:48.328 
+And the prediction is essentially A locality prediction mechanism.
+
+00:16:48.328 --> 00:16:51.888 
+How do you predict the locality of the block that you're accessing?
+
+00:16:52.968 --> 00:16:57.608 
+But there's other aspects to it also, like the cost of a block, because locality is 1 aspect.
+
+00:16:58.088 --> 00:17:00.128 
+Am I going to access this block soon again?
+
+00:17:00.768 --> 00:17:06.626 
+And the other aspect is if I'm going to access this block at some point, maybe not so soon, maybe
+
+00:17:06.626 --> 00:17:12.485 
+not so many times, how long is it going to take for me to get the block from wherever it resides,
+
+00:17:12.485 --> 00:17:12.848 
+right?
+
+00:17:13.008 --> 00:17:18.719 
+If it's, if it's going to take ages to get the block again because it's somewhere far away in remote
+
+00:17:18.719 --> 00:17:23.288 
+memory, maybe I should keep it in the cache so that I don't pay that cost again.
+
+00:17:23.688 --> 00:17:28.768 
+And maybe I evict something that I'm going to get more easily in the future, right?
+
+00:17:29.128 --> 00:17:34.845 
+So there's a lot of decisions, there's a lot of information that you can use to actually make a
+
+00:17:34.845 --> 00:17:35.688 
+decision here.
+
+00:17:36.648 --> 00:17:40.208 
+OK, but let's take a look at some of these things that people use, at least the initial ones.
+
+00:17:40.208 --> 00:17:45.564 
+We're not going to go into the very, very, let's say heavyweight researchy wants that are used in
+
+00:17:45.564 --> 00:17:46.448 
+real processors.
+
+00:17:46.928 --> 00:17:50.168 
+So the first question is which block in the set to replace on a cache miss.
+
+00:17:51.208 --> 00:17:53.688 
+If there's an in Valve block, that's a good one to replace right?
+
+00:17:53.688 --> 00:17:56.488 
+In Valve means that block is not occupied right now.
+
+00:17:57.408 --> 00:18:02.448 
+If all are valid, then we consult what is called the replacement policy and people have invented a
+
+00:18:02.448 --> 00:18:03.888 
+lot of replacement policies.
+
+00:18:04.688 --> 00:18:05.408 
+1 is random.
+
+00:18:05.728 --> 00:18:07.848 
+You choose randomly which block to replace, right?
+
+00:18:07.848 --> 00:18:08.568 
+You have 4.
+
+00:18:08.768 --> 00:18:13.568 
+Let's say you have four way associative cache and you need to choose one of them to evict.
+
+00:18:13.968 --> 00:18:19.288 
+You can basically flip a random number generator and the random number generator says wait 3.
+
+00:18:21.488 --> 00:18:27.561 
+That sounds kind of stupid because it's not using any information about the program or any
+
+00:18:27.561 --> 00:18:29.248 
+prediction from the past.
+
+00:18:30.008 --> 00:18:33.008 
+But in some cases this may not be a bad idea either, right?
+
+00:18:33.488 --> 00:18:34.848 
+Depends on your access patterns.
+
+00:18:35.128 --> 00:18:37.688 
+There is an access pattern, for example, that thrashes the set.
+
+00:18:39.128 --> 00:18:40.208 
+We're going to talk about that.
+
+00:18:40.208 --> 00:18:44.728 
+Thrashing the set means you have four way associativity, but you need 60 ways of associativity.
+
+00:18:45.408 --> 00:18:49.528 
+If you choose randomly, you're not going to do as bad basically, and you may get lucky.
+
+00:18:50.568 --> 00:18:52.048 
+OK, we're going to talk about that.
+
+00:18:52.288 --> 00:18:54.808 
+Another thing could be 5, four first and first out.
+
+00:18:54.968 --> 00:18:55.928 
+That's another policy.
+
+00:18:56.048 --> 00:19:01.040 
+If your access pattern like is like this, that may not be bad, but it turns out many programs access
+
+00:19:01.040 --> 00:19:02.888 
+patterns are not first and first out.
+
+00:19:03.648 --> 00:19:05.728 
+So that's actually usually a very bad policy.
+
+00:19:06.368 --> 00:19:13.823 
+Least recently used is a very commonly used policy because essentially programs are based on loops
+
+00:19:13.823 --> 00:19:20.822 
+and they keep repeating the same pattern access pattern in the in a broader structure you're
+
+00:19:20.822 --> 00:19:21.888 
+accessing for.
+
+00:19:22.008 --> 00:19:26.288 
+For example, blocks ABCDABCDABCDABCD repeatedly, right?
+
+00:19:26.688 --> 00:19:29.408 
+So if you this is called the cyclic reference pattern.
+
+00:19:29.848 --> 00:19:34.975 
+So if you actually evict the least recently used block, then the probability that you're going to
+
+00:19:34.975 --> 00:19:37.248 
+keep something useful in the cache is high.
+
+00:19:37.568 --> 00:19:41.048 
+That's the idea, assuming that access pattern holds, right?
+
+00:19:41.608 --> 00:19:46.424 
+That's not always the case, but people use the least recently used policy because it's better than
+
+00:19:46.424 --> 00:19:47.408 
+many other policies.
+
+00:19:47.848 --> 00:19:49.168 
+It turns out it's not.
+
+00:19:50.248 --> 00:19:52.768 
+Well, depends on the cache design, but random is not that bad either.
+
+00:19:52.928 --> 00:19:58.753 
+By the way, OK, least recently used, as we will see, is not easy to implement, especially when your
+
+00:19:58.753 --> 00:20:00.048 
+associativity is high.
+
+00:20:00.288 --> 00:20:01.248 
+Start thinking about this.
+
+00:20:01.248 --> 00:20:07.168 
+If you have a 32 way associative cache, how do you keep track of the least recently used block?
+
+00:20:07.568 --> 00:20:12.888 
+Right, I'll let you think about that because we're going to get get to that exercise soon.
+
+00:20:12.928 --> 00:20:15.888 
+That's why people actually use approximations.
+
+00:20:15.888 --> 00:20:18.288 
+The least recently used, for example, not most recently used.
+
+00:20:18.288 --> 00:20:23.168 
+One of them not most recently used means don't evict the most recently used block.
+
+00:20:23.408 --> 00:20:26.088 
+The block that the processor needed most recently.
+
+00:20:26.448 --> 00:20:31.590 
+Probably the processor is going to need again, protect it, but choose randomly among the other ones,
+
+00:20:31.590 --> 00:20:32.208 
+for example.
+
+00:20:33.608 --> 00:20:37.008 
+Frequency is another aspect that we haven't talked about in this particular slide yet.
+
+00:20:37.088 --> 00:20:38.448 
+What about frequency of access?
+
+00:20:38.808 --> 00:20:43.015 
+Maybe something is going to be the least recently used, but something else is going to be very
+
+00:20:43.015 --> 00:20:44.448 
+frequently used into the future.
+
+00:20:44.928 --> 00:20:46.128 
+How do you take that into account?
+
+00:20:47.568 --> 00:20:51.528 
+Well, you need to keep some counters that predict frequency of access, right?
+
+00:20:51.808 --> 00:20:56.357 
+So people actually have implemented frequency based policies also, as well as recency based policies
+
+00:20:56.357 --> 00:20:57.768 
+and combinations of those also.
+
+00:20:58.408 --> 00:21:02.048 
+So you can see that there are multiple aspects to replacement policy.
+
+00:21:02.688 --> 00:21:05.368 
+And all of these apply to anything other than direct map caches.
+
+00:21:06.288 --> 00:21:08.408 
+We discussed these costly to refresh earlier.
+
+00:21:08.408 --> 00:21:09.488 
+We're going to get back to that.
+
+00:21:11.408 --> 00:21:13.048 
+Why would memory access have different costs?
+
+00:21:13.048 --> 00:21:17.428 
+I've given you just one example, remote memory, local memory, but it could be also the fact that you
+
+00:21:17.428 --> 00:21:21.677 
+have many levels of cache hierarchies and your block that you're evicting resides far away in the
+
+00:21:21.677 --> 00:21:25.488 
+cache hierarchy and some other thing that you're considering to evict resides close by.
+
+00:21:27.208 --> 00:21:29.568 
+OK, there could be bank conflicts, etcetera inside the bank.
+
+00:21:29.648 --> 00:21:30.608 
+OK, we're not.
+
+00:21:30.648 --> 00:21:32.048 
+We're going to get back to this also.
+
+00:21:32.968 --> 00:21:38.034 
+And a lot of processors today use some sort of hybrid replacement policies, actually, meaning a
+
+00:21:38.034 --> 00:21:43.208 
+single algorithm, just like we did see in branch prediction doesn't work very well for all access
+
+00:21:43.208 --> 00:21:43.688 
+patterns.
+
+00:21:44.128 --> 00:21:49.590 
+So why don't you combine different types of algorithms or prediction mechanisms to decide what to
+
+00:21:49.590 --> 00:21:49.928 
+evict?
+
+00:21:50.568 --> 00:21:51.968 
+This is the hybrid replacement policy.
+
+00:21:51.968 --> 00:21:54.008 
+Then we're going to see some examples of that.
+
+00:21:55.368 --> 00:21:59.768 
+We're going to talk about optimal replacement policy also, but you can start thinking about that.
+
+00:21:59.888 --> 00:22:01.808 
+OK, LRU least recently used.
+
+00:22:01.808 --> 00:22:07.168 
+This is very by by far the most common policy that you will see in caching literature.
+
+00:22:08.768 --> 00:22:13.527 
+Pieces of this exist in many parts of the cache hierarchy in existing processors, including cutting
+
+00:22:13.527 --> 00:22:14.008 
+edge ones.
+
+00:22:14.488 --> 00:22:18.448 
+And the idea here is to evict the least recently accessed block, right?
+
+00:22:19.288 --> 00:22:23.048 
+The problem is immediately you need to keep track of access order of blocks.
+
+00:22:23.328 --> 00:22:29.990 
+If you want to know perfectly which ones the least recently accessed block, you need to really have
+
+00:22:29.990 --> 00:22:33.288 
+a idea of which ones are accessed in which order.
+
+00:22:34.328 --> 00:22:35.888 
+You can keep time stamps for that.
+
+00:22:35.888 --> 00:22:40.328 
+For example, it'll be extremely costly to have a time stamp for a cache block, right?
+
+00:22:41.088 --> 00:22:45.147 
+Then you run into whenever you keep time stamps, you run into how do I what happens when I overflow
+
+00:22:45.147 --> 00:22:46.008 
+the time stamp right?
+
+00:22:47.888 --> 00:22:48.968 
+So it's good to think about that.
+
+00:22:50.048 --> 00:22:51.488 
+So OK, let me ask you the question.
+
+00:22:51.488 --> 00:22:56.847 
+If you have a two way associative cache, meaning two blocks in one set, how many bits do you need to
+
+00:22:56.847 --> 00:22:59.688 
+identify the least reasonably used block in that set?
+
+00:23:00.648 --> 00:23:01.648 
+This is not a trick question.
+
+00:23:02.008 --> 00:23:07.688 
+What is the minimum number of bits anybody can venture out?
+
+00:23:10.568 --> 00:23:10.888 
+No.
+
+00:23:11.848 --> 00:23:13.888 
+Yes, one, exactly.
+
+00:23:14.328 --> 00:23:16.048 
+The minimum number of bits is 1 basically.
+
+00:23:16.408 --> 00:23:23.857 
+So you have two choices and you can encode 2 choices with one bit, right, Because 2 to the one is
+
+00:23:23.857 --> 00:23:27.928 
+well, yeah, one bit basically can encode zero or one.
+
+00:23:28.528 --> 00:23:30.968 
+And if it's zero way, zero is the least recently used.
+
+00:23:30.968 --> 00:23:34.888 
+If it's one way, one is the most least recently used.
+
+00:23:35.288 --> 00:23:39.248 
+And by definition, the other one is the most recently used, right?
+
+00:23:39.888 --> 00:23:40.888 
+So you need only one bit.
+
+00:23:41.808 --> 00:23:43.968 
+OK, let's make this slightly harder.
+
+00:23:44.008 --> 00:23:46.088 
+You have a four way associative cache, four blocks.
+
+00:23:48.408 --> 00:23:55.092 
+What do you what, what storage do you minimally need to keep the ordering of the blocks of those
+
+00:23:55.092 --> 00:23:55.928 
+four blocks?
+
+00:23:56.648 --> 00:23:57.408 
+Perfect ordering.
+
+00:23:59.448 --> 00:24:04.240 
+Now this is sounding more like a probability course actually in probability, of course, I think they
+
+00:24:04.240 --> 00:24:08.553 
+should have the this sort of applications because it's actually a very good application of
+
+00:24:08.553 --> 00:24:09.848 
+probability and statistics.
+
+00:24:10.888 --> 00:24:11.328 
+Five.
+
+00:24:11.408 --> 00:24:12.488 
+OK, how did you get to 5?
+
+00:24:16.428 --> 00:24:17.548 
+OK, that sounds good.
+
+00:24:17.748 --> 00:24:18.908 
+So you even chucked that from me.
+
+00:24:20.108 --> 00:24:23.228 
+You didn't do it for the Chuck that that's good, but you still win it basically.
+
+00:24:23.228 --> 00:24:24.068 
+That's the right answer.
+
+00:24:24.948 --> 00:24:27.548 
+So you have 4 possibilities, right?
+
+00:24:28.588 --> 00:24:38.468 
+Essentially, the first block location way 0, actually one of the ways, one of the four ways can be
+
+00:24:38.468 --> 00:24:40.788 
+the most recently used.
+
+00:24:41.188 --> 00:24:43.988 
+The remaining three ways could be the next recently used.
+
+00:24:44.228 --> 00:24:46.548 
+The remaining two ways could be the next next recently used.
+
+00:24:46.908 --> 00:24:48.628 
+And the last one has one choice.
+
+00:24:48.628 --> 00:24:52.860 
+So the first one has four choices, the second one has three choices, the third one has two choices,
+
+00:24:52.860 --> 00:24:54.228 
+and the last one has one choice.
+
+00:24:55.428 --> 00:24:58.068 
+And it's multiplicative, basically the number of choice you have.
+
+00:24:58.068 --> 00:25:05.225 
+So it's really 4 factorial different orderings that you can have in a four way cache, in a 32 way
+
+00:25:05.225 --> 00:25:05.668 
+cache.
+
+00:25:05.668 --> 00:25:07.508 
+That's 32 factorial basically.
+
+00:25:07.668 --> 00:25:09.828 
+And we know that 32 factorial is a huge number.
+
+00:25:10.708 --> 00:25:15.988 
+4 factorial is not that bad, but it's still a lot of bits, right?
+
+00:25:16.468 --> 00:25:25.958 
+You said 4 factorial is well, it's for 24 options, so it's really log 2 to the 24 bits, which is
+
+00:25:25.958 --> 00:25:28.628 
+really 5 bits saying quote.
+
+00:25:29.988 --> 00:25:31.348 
+But this is actually complex.
+
+00:25:31.348 --> 00:25:32.908 
+Also, it's not just the storage.
+
+00:25:33.388 --> 00:25:34.748 
+Well, I, I think we've already said this.
+
+00:25:34.748 --> 00:25:36.388 
+How many different access orders are possible?
+
+00:25:36.588 --> 00:25:37.708 
+How many bits needed to encode?
+
+00:25:37.708 --> 00:25:38.868 
+So 5 is the right answer.
+
+00:25:39.188 --> 00:25:41.428 
+But then there's also logic to determine this, right?
+
+00:25:42.108 --> 00:25:45.628 
+So we need to have some encoding logic and decoding logic to do this, right?
+
+00:25:46.468 --> 00:25:48.788 
+OK, you can do the number for a 32 factorial.
+
+00:25:48.828 --> 00:25:52.468 
+And that's exactly why people don't implement perfect LRU in real systems.
+
+00:25:52.468 --> 00:25:53.868 
+There are four way you can get away with it.
+
+00:25:55.028 --> 00:25:59.228 
+OK, as N increases, the complexity of this becomes insurmountable.
+
+00:25:59.228 --> 00:26:01.468 
+You don't want to keep track of this perfect.
+
+00:26:01.828 --> 00:26:07.754 
+So as a result of this, most modern processors do not implement true LRU or perfect LRU that keeps
+
+00:26:07.754 --> 00:26:11.988 
+perfect ordering of the blocks in highly associated cache essentially.
+
+00:26:12.348 --> 00:26:18.078 
+So there clearly we said this, but there's another reason which is LRU is an approximation right to
+
+00:26:18.078 --> 00:26:19.468 
+predict locality anyway.
+
+00:26:20.108 --> 00:26:27.191 
+Meaning this is if you perfectly determine what should be evicted, assuming least recently used,
+
+00:26:27.191 --> 00:26:31.028 
+you're not going to get a high hit rate necessarily.
+
+00:26:32.308 --> 00:26:37.930 
+In fact, your program may be behaving completely oppositely to LRU, and then you'll get 0% hit rate,
+
+00:26:37.930 --> 00:26:38.268 
+right?
+
+00:26:38.948 --> 00:26:39.948 
+So you should be careful.
+
+00:26:40.228 --> 00:26:44.278 
+And there's no reason to actually dedicate a whole lot of resources for something that you don't
+
+00:26:44.278 --> 00:26:45.628 
+know is going to work very well.
+
+00:26:46.708 --> 00:26:53.908 
+OK, so a lot of processors actually do not MRU, for example, not existing processors in the past.
+
+00:26:54.988 --> 00:26:58.940 
+Some of them you use I'm, I'm not going to go into the details of this, but some of them use
+
+00:26:58.940 --> 00:26:59.628 
+hierarchical RU.
+
+00:26:59.628 --> 00:27:05.944 
+Basically divide the N way set into some groups, track the MRU group and the MRU way in each group,
+
+00:27:05.944 --> 00:27:12.069 
+which is clearly not ordering information, but some notion of MRU in in each group most recently
+
+00:27:12.069 --> 00:27:12.388 
+used.
+
+00:27:12.988 --> 00:27:19.125 
+They do also some other things like victim, next victim MRU and next MRU maybe, but I will not go
+
+00:27:19.125 --> 00:27:19.948 
+into details.
+
+00:27:19.948 --> 00:27:27.288 
+Basically that's there's a lot of basically poor man's LRU approximation algorithms that people have
+
+00:27:27.288 --> 00:27:32.868 
+developed in the past for the reasons that that are basically outlined here.
+
+00:27:33.228 --> 00:27:35.708 
+True LRU is complex and maybe that's not really what you want.
+
+00:27:37.228 --> 00:27:40.948 
+OK, so let's talk about LRU versus random a little bit because this is interesting I think.
+
+00:27:41.428 --> 00:27:42.588 
+So you have a four way cache.
+
+00:27:42.588 --> 00:27:45.708 
+Let's say you have cyclic references to blocks ABCDE.
+
+00:27:46.628 --> 00:27:50.468 
+If you have LRU policy, you get 0 percentage rate, right?
+
+00:27:51.948 --> 00:27:56.559 
+Hopefully you convince yourself that way whenever you access, let's say you, you do this
+
+00:27:56.559 --> 00:27:57.188 
+referencing.
+
+00:27:57.188 --> 00:28:00.628 
+Whenever you access E, you're going to evict D, right?
+
+00:28:00.988 --> 00:28:05.388 
+Whenever you access A, you're going to evict EI guess.
+
+00:28:05.708 --> 00:28:06.548 
+And you keep doing that.
+
+00:28:06.548 --> 00:28:07.908 
+Basically you'll get 0 percentage rate.
+
+00:28:08.468 --> 00:28:11.988 
+Makes sense hopefully because you're thrashing the set.
+
+00:28:12.308 --> 00:28:16.228 
+This is exactly an example of thrashing the set and LRU is bad.
+
+00:28:17.508 --> 00:28:21.950 
+OK, when the program working set in a set is larger than the set associatively, that's called
+
+00:28:21.950 --> 00:28:22.428 
+thrashing.
+
+00:28:24.268 --> 00:28:27.268 
+Now if you use LRU policy, you get 0%.
+
+00:28:27.268 --> 00:28:30.188 
+If you use some other policy, you'll get better than 0% hopefully.
+
+00:28:30.268 --> 00:28:33.948 
+And random replacement is actually better when this sort of thrashing occurs.
+
+00:28:36.068 --> 00:28:40.103 
+For example, I'll let you do the calculations here because it requires a little bit more probability
+
+00:28:40.103 --> 00:28:40.628 
+in this case.
+
+00:28:41.068 --> 00:28:46.887 
+But if you have a random number generator and if you decide to evict one of those four things that
+
+00:28:46.887 --> 00:28:50.628 
+are in the cache, what is the hit rate that you will get right?
+
+00:28:52.028 --> 00:28:53.708 
+You can do that study on your own.
+
+00:28:54.228 --> 00:28:57.628 
+Could be a good exam question or maybe a good, good work homework question.
+
+00:28:58.188 --> 00:29:01.668 
+I actually think it's a good applied probability and statistics kind of question.
+
+00:29:03.068 --> 00:29:09.871 
+But basically you can see that the random replacement is not bad because it's likely that it's not
+
+00:29:09.871 --> 00:29:13.828 
+going to evict consistently the one that's going to give.
+
+00:29:13.988 --> 00:29:16.748 
+0% hit rate, you will keep some blocks in the cache.
+
+00:29:16.748 --> 00:29:20.508 
+For example, I'll give you another replacement policy, in this case, not random.
+
+00:29:21.108 --> 00:29:29.605 
+You always keep ABCD in the cache and forget about E You get an 80% hit rate with that policy,
+
+00:29:29.605 --> 00:29:30.148 
+right?
+
+00:29:30.428 --> 00:29:31.188 
+That sounds very good.
+
+00:29:31.428 --> 00:29:32.228 
+It's not random.
+
+00:29:33.268 --> 00:29:37.143 
+You may call it's not a good policy, but in this case, it's a very good policy compared to LRU,
+
+00:29:37.143 --> 00:29:37.388 
+right?
+
+00:29:37.788 --> 00:29:40.548 
+And random will be somewhere in between and I'll let you figure that out.
+
+00:29:41.308 --> 00:29:44.868 
+So in practice, basically the performance of the replacement policy depends on the workload.
+
+00:29:45.308 --> 00:29:47.348 
+And it turns out average hit rates.
+
+00:29:47.348 --> 00:29:48.948 
+These are studies that were done earlier.
+
+00:29:49.108 --> 00:29:53.634 
+This has to be repeated for workloads, of course, but average a trade off across many, many, many,
+
+00:29:53.634 --> 00:29:56.268 
+many workloads that people have examined in small caches.
+
+00:29:57.388 --> 00:30:01.986 
+Random and LRU are similar, which is surprising to me, which was very surprising when I learned
+
+00:30:01.986 --> 00:30:02.228 
+this.
+
+00:30:02.948 --> 00:30:05.108 
+But they do cater to different workloads.
+
+00:30:05.108 --> 00:30:10.452 
+So having a hybrid of LRU and random is not a bad idea, for example, because they cater to different
+
+00:30:10.452 --> 00:30:11.308 
+access patterns.
+
+00:30:11.308 --> 00:30:15.068 
+When you're thrashing, use random or something even more intelligent.
+
+00:30:15.428 --> 00:30:20.668 
+When you're not thrashing and LRU is somewhat working, predict that and use LRU type replacement.
+
+00:30:21.628 --> 00:30:24.348 
+OK, so that's one of the best of both worlds type of policies.
+
+00:30:24.348 --> 00:30:28.948 
+Then the question becomes, how do you actually decide what policy to use in branch predictors?
+
+00:30:28.948 --> 00:30:33.224 
+We had a meta predictor, if you remember right, that decides, oh, this predictor is doing well for
+
+00:30:33.224 --> 00:30:33.748 
+this branch.
+
+00:30:33.748 --> 00:30:35.548 
+This other predictor is doing well for this other branch.
+
+00:30:35.868 --> 00:30:43.573 
+So I'm going to predict that and use the predictor that the branch is being likely to be predicted
+
+00:30:43.573 --> 00:30:45.068 
+better with, right.
+
+00:30:45.188 --> 00:30:46.188 
+We can do the same thing.
+
+00:30:46.708 --> 00:30:52.086 
+It turns out we have introduced a way of doing that in cache as I'm going to talk about this paper
+
+00:30:52.086 --> 00:30:53.788 
+for some other reason later on.
+
+00:30:54.068 --> 00:31:01.439 
+And the idea is to sample which set needs what kind of policy and you can decide the policy on a per
+
+00:31:01.439 --> 00:31:04.388 
+set basis or on a per global cash basis.
+
+00:31:04.588 --> 00:31:05.868 
+We're going to get back to that later on.
+
+00:31:08.228 --> 00:31:08.908 
+Any questions?
+
+00:31:09.628 --> 00:31:10.268 
+It's fun, right?
+
+00:31:11.028 --> 00:31:17.174 
+OK, let's talk about the optimal replacement policy because people have been concerned about this a
+
+00:31:17.174 --> 00:31:23.321 
+lot, starting with Beldi who was at IBM and they introduced this OPT optimal policy and they, their
+
+00:31:23.321 --> 00:31:29.344 
+definition is an optimal cash replacement policy replaces the block that's going to be referenced
+
+00:31:29.344 --> 00:31:31.828 
+furthest into the future by the program.
+
+00:31:33.148 --> 00:31:35.188 
+OK, that sounds good, right?
+
+00:31:36.908 --> 00:31:42.588 
+And this is something that has been introduced and a lot of people think it's optimal.
+
+00:31:43.428 --> 00:31:46.108 
+Maybe it's optimal with some optimal.
+
+00:31:46.308 --> 00:31:48.268 
+Optimal is a very dangerous word to use.
+
+00:31:49.508 --> 00:31:54.308 
+Whenever I see optimal in a paper, I basically say optimal under what conditions, right?
+
+00:31:54.548 --> 00:31:59.268 
+Because you got to specify the conditions under a policy or something is optimal.
+
+00:32:00.188 --> 00:32:02.508 
+And clearly this can be optimal under some conditions.
+
+00:32:02.508 --> 00:32:06.628 
+But what is it optimal for?
+
+00:32:06.748 --> 00:32:08.548 
+This is actually optimal for minimising miss rate.
+
+00:32:09.228 --> 00:32:16.728 
+Again, under some conditions, maybe it's it doesn't assume, for example, you can bypass the cache,
+
+00:32:16.728 --> 00:32:17.188 
+right?
+
+00:32:18.228 --> 00:32:23.129 
+If you bypass the cache for some blocks, meaning you don't place the block inside the cache, then
+
+00:32:23.129 --> 00:32:25.908 
+you actually violate some of the optimality conditions.
+
+00:32:26.188 --> 00:32:27.668 
+But assume that you don't do that.
+
+00:32:27.668 --> 00:32:29.668 
+This is actually optimal for minimising the miss rate.
+
+00:32:31.788 --> 00:32:33.108 
+You can convince yourself of that.
+
+00:32:33.268 --> 00:32:34.268 
+It's not a bad definition.
+
+00:32:35.028 --> 00:32:39.441 
+Unfortunately it's not optimal for minimising execution time because what it doesn't consider is
+
+00:32:39.441 --> 00:32:42.108 
+what I just told you earlier, which is the cost of a mess.
+
+00:32:43.028 --> 00:32:45.628 
+How costly is it to re fetch a block?
+
+00:32:45.828 --> 00:32:46.068 
+Right?
+
+00:32:47.188 --> 00:32:52.465 
+Maybe the block is going to be the furthest to be referenced in the future by the program, but it's,
+
+00:32:52.465 --> 00:32:57.268 
+it's going to take me like 10 seconds to fetch it because it's going to come from far away.
+
+00:32:58.068 --> 00:33:02.028 
+Whereas all of the other blocks are going to take me 10 nanoseconds to fetch.
+
+00:33:03.228 --> 00:33:09.699 
+I'd rather keep that block that's going to be referenced furthest into the future if I take time or
+
+00:33:09.699 --> 00:33:11.988 
+cost of access into account, right?
+
+00:33:12.548 --> 00:33:17.880 
+So that's why this policy is very interesting for some purposes, but for some other purpose in
+
+00:33:17.880 --> 00:33:21.908 
+modern memory hierarchies, this policy breaks down very badly actually.
+
+00:33:22.108 --> 00:33:27.068 
+And I will show you even a simpler example than this very exaggerated numbers later on.
+
+00:33:27.508 --> 00:33:28.428 
+There's also another question.
+
+00:33:28.428 --> 00:33:29.468 
+How do you implement this policy?
+
+00:33:29.468 --> 00:33:32.028 
+Clearly this requires you to look into the future, right?
+
+00:33:32.628 --> 00:33:34.748 
+And I have not figured out how to look into the future yet.
+
+00:33:34.788 --> 00:33:40.948 
+If you have, please let me know or actually start a company and maybe you can fool some people.
+
+00:33:41.068 --> 00:33:41.548 
+That's good.
+
+00:33:43.348 --> 00:33:45.548 
+It's implementing it is impossible.
+
+00:33:46.188 --> 00:33:48.868 
+How Assimilating it is hard also, right?
+
+00:33:49.308 --> 00:33:54.384 
+So if you want to simulate this policy and basically you design A simulator and you want to compare
+
+00:33:54.384 --> 00:33:59.256 
+your own policy to the optimal policy, even that is difficult because that requires you to look
+
+00:33:59.256 --> 00:34:03.308 
+into the future and you need to actually have multiple passes over the program.
+
+00:34:04.308 --> 00:34:05.668 
+It's a very dynamic problem based.
+
+00:34:05.748 --> 00:34:06.908 
+I'll let you think about that also.
+
+00:34:06.948 --> 00:34:11.637 
+There are a lot of these interesting issues and simulation also and and when the system becomes more
+
+00:34:11.637 --> 00:34:13.748 
+complex, simulation becomes more complex, OK.
+
+00:34:13.908 --> 00:34:15.148 
+I've already said a lot of these.
+
+00:34:15.148 --> 00:34:22.003 
+We're going to talk about MIS overlapping later on, but the the cost of a cache miss varies from
+
+00:34:22.003 --> 00:34:28.645 
+block to block because it depends on where the where you would refresh the block from and how
+
+00:34:28.645 --> 00:34:30.788 
+costly is it to the processor?
+
+00:34:30.828 --> 00:34:32.628 
+Does it make the process stall, for example?
+
+00:34:33.268 --> 00:34:34.228 
+It's good to think about that.
+
+00:34:35.348 --> 00:34:36.508 
+OK, we're going to get back to that.
+
+00:34:36.828 --> 00:34:42.595 
+So this is some recommended reading, and in this work it shows that there are some misses that are
+
+00:34:42.595 --> 00:34:47.068 
+most more costly than others because their latency is exposed at stall time.
+
+00:34:47.868 --> 00:34:50.308 
+So reducing the miss rate is not always good for performance.
+
+00:34:50.308 --> 00:34:54.470 
+By reducing the miss rate, you can actually hurt performance, which sounds unintuitive, but if you
+
+00:34:54.470 --> 00:34:57.868 
+actually know what's going like what's going on underneath, it's very intuitive.
+
+00:34:59.188 --> 00:35:05.148 
+OK, let's talk about some other things before we go into more sophisticated policies.
+
+00:35:05.588 --> 00:35:09.828 
+So we've seen A tag store and we've seen what components there are inside it, right?
+
+00:35:09.908 --> 00:35:10.828 
+We need a valve bit.
+
+00:35:11.228 --> 00:35:17.188 
+That valve bit specifies whether that tag store houses a block from the main memory.
+
+00:35:18.588 --> 00:35:25.303 
+If the valve bit is set, then you need to have A tag that specifies part of the address that needs
+
+00:35:25.303 --> 00:35:27.428 
+to be matched to declare a hit.
+
+00:35:29.188 --> 00:35:33.108 
+And you need to have some replacement policy bits, assuming it's not a direct map cache, right?
+
+00:35:35.028 --> 00:35:37.788 
+And we've seen the replacement policy bits, let's talk about some other bits.
+
+00:35:37.908 --> 00:35:40.668 
+And this is going to cause some other issues.
+
+00:35:41.228 --> 00:35:43.788 
+Actually it's the other way around, but I like thinking about it this way.
+
+00:35:45.908 --> 00:35:50.588 
+For example, some caches, cache blocks have dirty bits or modified bits.
+
+00:35:50.868 --> 00:35:55.800 
+It's the same meaning when you modify something, you make it dirty and you need to deal with it
+
+00:35:55.800 --> 00:35:56.268 
+later on.
+
+00:35:56.268 --> 00:35:56.868 
+Later on.
+
+00:35:59.228 --> 00:36:03.028 
+Modify means store when you store a different value to a block.
+
+00:36:03.428 --> 00:36:06.268 
+You said a bit saying I stored a different value to this block.
+
+00:36:07.028 --> 00:36:13.417 
+So when it's being replaced from the cache, be careful because I modified this block in the cache
+
+00:36:13.417 --> 00:36:18.028 
+and it didn't get modified in the later caches and also a main memory.
+
+00:36:19.228 --> 00:36:25.228 
+So the replacement logic needs to take this into account and the when the block is evicted, it needs
+
+00:36:25.228 --> 00:36:31.168 
+to write the block back to the next level or to main memory basically somewhere it needs to work so
+
+00:36:31.168 --> 00:36:33.508 
+that you don't lose that update, right?
+
+00:36:33.828 --> 00:36:36.388 
+That's the idea of a modified or dirty bit.
+
+00:36:38.668 --> 00:36:43.828 
+OK, then the question also is a bigger question actually, do you really need this bit even?
+
+00:36:43.828 --> 00:36:44.748 
+That's a question, right?
+
+00:36:45.348 --> 00:36:50.348 
+So basically the bigger question is how do you handle writes or stores to a block in your cache?
+
+00:36:51.468 --> 00:36:54.148 
+When do you write the modified data in a cache to the next level?
+
+00:36:55.268 --> 00:37:01.236 
+So write through means at the time the write happens, maybe meaning whenever you're writing to the
+
+00:37:01.236 --> 00:37:06.108 
+cache, you write to the next level, and also the next level and also next level.
+
+00:37:06.148 --> 00:37:06.828 
+Eventually memory.
+
+00:37:07.788 --> 00:37:11.588 
+Basically your stores get propagated across the memory hierarchy.
+
+00:37:11.668 --> 00:37:17.114 
+So you don't need a bit saying that, oh, this block is modified so you need to write it later on
+
+00:37:17.114 --> 00:37:22.673 
+because you've already written that Write back means when the block is evicted, meaning modify the
+
+00:37:22.673 --> 00:37:28.290 
+block only in this cache and then wait until it's evicted to write it to the next level in the cash
+
+00:37:28.290 --> 00:37:32.148 
+hierarchy and clear, there are trade-offs associated with it, right?
+
+00:37:32.868 --> 00:37:33.668 
+Write back cash.
+
+00:37:34.428 --> 00:37:36.108 
+Actually, let's do everything over here.
+
+00:37:36.348 --> 00:37:37.508 
+Write through cash is simpler.
+
+00:37:37.908 --> 00:37:42.908 
+You don't need this additional bit saying I modified this block, right?
+
+00:37:44.988 --> 00:37:45.708 
+It sounds nice.
+
+00:37:46.588 --> 00:37:48.388 
+Also, there are other benefits to this.
+
+00:37:48.388 --> 00:37:50.548 
+All levels are up to date and consistent.
+
+00:37:50.948 --> 00:37:52.908 
+We're going to talk about something called cash coherence.
+
+00:37:52.908 --> 00:37:54.948 
+Have you Have you heard of cash coherence before?
+
+00:37:56.068 --> 00:38:02.712 
+Maybe somehow, basically this issue happens when you have multiple processors and when multiple
+
+00:38:02.712 --> 00:38:08.868 
+processors access the same cache block, they should get the most up to date data, right?
+
+00:38:09.428 --> 00:38:10.468 
+That's the idea over here.
+
+00:38:10.908 --> 00:38:18.430 
+And if you actually write the data to all of the caches, they will have access to that most up to
+
+00:38:18.430 --> 00:38:25.798 
+Now the downside is if you keep writing, sending your rights every time to the next level, next
+
+00:38:25.798 --> 00:38:32.468 
+level, next level main memory, then you're really consuming a lot of bandwidth, right?
+
+00:38:33.788 --> 00:38:34.868 
+So we don't want to be doing that.
+
+00:38:34.868 --> 00:38:37.428 
+You're losing some of the benefits of caching that block.
+
+00:38:37.428 --> 00:38:37.788 
+Basically.
+
+00:38:38.428 --> 00:38:39.108 
+That's the idea.
+
+00:38:40.148 --> 00:38:43.788 
+And the main reason is you're really not combining rights.
+
+00:38:43.988 --> 00:38:47.484 
+So when you write to a cache block, when the processor writes to a cache block is it turns out there
+
+00:38:47.484 --> 00:38:48.708 
+is something called right locality.
+
+00:38:48.708 --> 00:38:54.348 
+Also, you write to it again and again and again and again and again.
+
+00:38:55.588 --> 00:38:59.828 
+If that happens, for example, if you're writing to NRA, my favorite example is writing to NRA.
+
+00:38:59.868 --> 00:39:01.348 
+You have a 64 byte cache block.
+
+00:39:01.588 --> 00:39:06.468 
+You're doing 4 byte writes and the processor is really writing the data into NRA.
+
+00:39:06.828 --> 00:39:09.668 
+That's 16 writes going to the same cache block, right?
+
+00:39:10.268 --> 00:39:13.788 
+If you actually have a write back cache, you'll write.
+
+00:39:13.908 --> 00:39:16.308 
+Back to the next level only once.
+
+00:39:16.548 --> 00:39:23.355 
+Hopefully if you have a right through cache, you'll write to the next level and the levels after
+
+00:39:23.355 --> 00:39:24.348 
+that 16 times.
+
+00:39:25.468 --> 00:39:32.748 
+So you will not be able to take the opportunity to reduce bandwidth by 15 out of 16 with your cache.
+
+00:39:33.028 --> 00:39:35.068 
+So this is an argument against right through caches.
+
+00:39:35.068 --> 00:39:41.560 
+And this is exactly why right through caching is not used in many levels, except if you're somewhat
+
+00:39:41.560 --> 00:39:46.348 
+tightly coupled in between L1 and L2 close to the processor, for example.
+
+00:39:46.588 --> 00:39:51.308 
+Sometimes they to make coherence easier, they use write through caches at that level.
+
+00:39:51.868 --> 00:39:53.988 
+OK, so it's good to think about these trade-offs.
+
+00:39:54.828 --> 00:39:55.988 
+These are very good questions.
+
+00:39:55.988 --> 00:40:02.091 
+But these today imagining for example, having a write through L5 cache or L4 cache is unreasonable
+
+00:40:02.091 --> 00:40:05.268 
+because you don't want to write anything to memory.
+
+00:40:05.868 --> 00:40:07.508 
+OK, OK.
+
+00:40:08.108 --> 00:40:12.511 
+So the the benefit of write back cache is essentially you can combine multiple writes to the same
+
+00:40:12.511 --> 00:40:13.828 
+block before it gets evicted.
+
+00:40:14.828 --> 00:40:19.388 
+Keep that example of 16 writes that you're doing to every four byte of the block.
+
+00:40:20.828 --> 00:40:22.948 
+And this potentially saves bandwidth between cache levels.
+
+00:40:22.948 --> 00:40:24.708 
+It also saves energy today.
+
+00:40:25.348 --> 00:40:30.151 
+The downside is of course now you need to have a bit in the tag store indicating the block is dirty
+
+00:40:30.151 --> 00:40:30.588 
+modified.
+
+00:40:30.588 --> 00:40:34.388 
+OK, that's not that's the least of our concerns actually.
+
+00:40:34.388 --> 00:40:36.508 
+We'll add a lot more bits as you will see soon.
+
+00:40:37.548 --> 00:40:42.428 
+OK, there's another question with writes actually, which is which could be applied to anything.
+
+00:40:42.748 --> 00:40:48.508 
+Initially people applied this to blocks that you're writing to, but this is actually more general.
+
+00:40:48.628 --> 00:40:53.654 
+The question is basically, do we allocate a cache block on a write miss, meaning the processor is
+
+00:40:53.654 --> 00:40:55.468 
+doing a store, it misses the cache.
+
+00:40:56.228 --> 00:41:03.473 
+And should we bring the data, the entire cache block from memory and put it inside the cache or
+
+00:41:03.473 --> 00:41:05.228 
+should we not allocate?
+
+00:41:05.588 --> 00:41:07.828 
+This is different from write back and write through, right?
+
+00:41:08.188 --> 00:41:12.428 
+Because the block that you're writing to may be in the cache.
+
+00:41:13.268 --> 00:41:14.468 
+Then you have to make a decision.
+
+00:41:14.468 --> 00:41:16.628 
+Do I write to the next level as well?
+
+00:41:17.028 --> 00:41:18.308 
+That was the write back and write through.
+
+00:41:18.748 --> 00:41:22.508 
+Write allocate and not allocate is I have a cache miss.
+
+00:41:22.508 --> 00:41:25.668 
+It's requested by a store instruction, not a load instruction.
+
+00:41:26.148 --> 00:41:27.988 
+Do I bring the block into the cache?
+
+00:41:28.348 --> 00:41:28.508 
+Right?
+
+00:41:29.148 --> 00:41:34.089 
+So if you allocate on a write miss, OK, you can combine writes instead of writing each individually
+
+00:41:34.089 --> 00:41:34.988 
+to the next level.
+
+00:41:35.228 --> 00:41:35.788 
+That's good.
+
+00:41:36.348 --> 00:41:40.228 
+You can combine writes to the to essentially the same block.
+
+00:41:41.628 --> 00:41:44.988 
+This is also simpler because write misses can be treated the same way as read misses.
+
+00:41:45.588 --> 00:41:48.548 
+You don't need to do anything special for writes or stores.
+
+00:41:50.268 --> 00:41:52.948 
+Now this requires a transfer of the whole cache block, right?
+
+00:41:53.108 --> 00:41:56.028 
+That's the downside if you don't allocate.
+
+00:41:56.148 --> 00:42:01.083 
+This conserves cache space if locality of written blocks is low, so it gives you a potentially
+
+00:42:01.083 --> 00:42:02.028 
+better cache rate.
+
+00:42:02.948 --> 00:42:06.668 
+OK, so you may say why would the locality of written blocks would be low?
+
+00:42:08.108 --> 00:42:14.915 
+And then the question is, yeah, I don't know if there's a good reason for it, but I'll give you one
+
+00:42:14.915 --> 00:42:18.628 
+reason, which is what I show what I discussed earlier.
+
+00:42:18.628 --> 00:42:19.748 
+You're doing streaming writes.
+
+00:42:20.148 --> 00:42:25.564 
+You basically start from, you have a 64 byte block and you're going to write to the 1st 4 bytes and
+
+00:42:25.564 --> 00:42:28.628 
+then the next four and the next 4 and you have 16 bytes.
+
+00:42:28.628 --> 00:42:34.228 
+The processor is going to do 16 bytes, 16 writes to a 64 byte block.
+
+00:42:35.508 --> 00:42:41.205 
+If the processor is going to reconstruct the cache block anyway, why do you bring the cache block to
+
+00:42:41.205 --> 00:42:43.428 
+the cache from memory in the 1st place?
+
+00:42:44.468 --> 00:42:45.028 
+That's the idea.
+
+00:42:45.028 --> 00:42:50.678 
+Basically, you're going to overwrite everything in the cache block, so don't bring it in the first
+
+00:42:50.678 --> 00:42:51.428 
+place, right?
+
+00:42:51.548 --> 00:42:53.348 
+You would say 1 memory access that.
+
+00:42:54.148 --> 00:42:54.868 
+So that's the idea.
+
+00:42:54.868 --> 00:43:01.207 
+That's one good example of why it may not make sense to allocate a cache block, meaning bring it
+
+00:43:01.207 --> 00:43:03.188 
+from main memory to the cache.
+
+00:43:03.508 --> 00:43:03.868 
+OK.
+
+00:43:05.348 --> 00:43:09.108 
+But as I said, it's more it's, it's different.
+
+00:43:09.108 --> 00:43:11.388 
+And this, this question can be generally applied right?
+
+00:43:11.508 --> 00:43:16.508 
+Meaning do we allocate a cache block on any miss, forget about load and store?
+
+00:43:17.508 --> 00:43:22.148 
+Because some cache blocks may be reused later on, some cache blocks may not be reused later on.
+
+00:43:22.948 --> 00:43:28.026 
+And a lot of processors actually make that decision today as opposed to making a right specific
+
+00:43:28.026 --> 00:43:28.508 
+decision.
+
+00:43:29.068 --> 00:43:32.828 
+Is the block that I'm going to fetch going to be useful for me in the future?
+
+00:43:33.868 --> 00:43:38.544 
+And if you make that decision very nicely, very cleanly, you'll save a lot of bandwidth either by
+
+00:43:38.544 --> 00:43:43.318 
+not transferring the block that you're not going to use in the future and just transferring a piece
+
+00:43:43.318 --> 00:43:47.898 
+of it that you really need, or maybe no part of it because you're going to overwrite the entire
+
+00:43:47.898 --> 00:43:48.188 
+thing.
+
+00:43:49.068 --> 00:43:53.908 
+Or by transferring the block and actually making a lot of use of it inside your cache.
+
+00:43:54.228 --> 00:43:54.948 
+So that's the idea.
+
+00:43:56.588 --> 00:44:01.393 
+OK, so this is the scenario that we're going to discuss a little bit because this has enabled caches
+
+00:44:01.393 --> 00:44:03.028 
+to be sectored as I will describe.
+
+00:44:03.268 --> 00:44:06.348 
+What if the processor writes to an entire block over a small amount of time?
+
+00:44:07.468 --> 00:44:10.778 
+Is there any need to bring the cache, bring the block into the cache from the memory in the 1st
+
+00:44:10.778 --> 00:44:10.988 
+place?
+
+00:44:10.988 --> 00:44:11.788 
+I've already said no.
+
+00:44:12.988 --> 00:44:13.868 
+Then the question becomes.
+
+00:44:13.908 --> 00:44:15.428 
+How do you treat that cache block right?
+
+00:44:16.828 --> 00:44:20.148 
+Why do we not simply write the data to only a portion of the block?
+
+00:44:20.148 --> 00:44:23.988 
+We're going to introduce the sub block notion, which is used in many, many caches.
+
+00:44:24.228 --> 00:44:28.951 
+When caching was first employed by IBM, for example, they use a sub block cache in 1960s and they
+
+00:44:28.951 --> 00:44:33.188 
+still use sub block caches, which is a very good idea for the reasons that we will see.
+
+00:44:33.788 --> 00:44:39.908 
+So for example, you're going to write only four bytes out of the 40 into the 64 byte block.
+
+00:44:40.468 --> 00:44:44.988 
+Why don't you just write those 4 bytes and designate everything else around it as invalid?
+
+00:44:46.268 --> 00:44:46.948 
+That's the idea.
+
+00:44:48.108 --> 00:44:54.228 
+The problem is now you're violating kind of the block abstraction.
+
+00:44:54.308 --> 00:44:56.268 
+The abstraction of the block is at 64 bytes.
+
+00:44:56.348 --> 00:45:00.988 
+I keep a single tag, single valid bit, single dirty bit for all 64 bytes.
+
+00:45:01.348 --> 00:45:07.388 
+If I'm going to write only to 4 bytes of it without having the data for any of the rest, I need to
+
+00:45:07.388 --> 00:45:08.868 
+modify this abstraction.
+
+00:45:09.628 --> 00:45:15.888 
+I can still keep the tag on a block basis, but I need to do something with the valid and dirty bits
+
+00:45:15.888 --> 00:45:16.268 
+right?
+
+00:45:17.508 --> 00:45:18.348 
+And this is what I will do.
+
+00:45:18.348 --> 00:45:21.148 
+Basically the idea is to have a sub blocked or sector cache.
+
+00:45:21.148 --> 00:45:26.928 
+Divide a block into sub blocks or sectors and the idea is to have separate valid and dirty bits for
+
+00:45:26.928 --> 00:45:28.388 
+each sub block or sector.
+
+00:45:29.908 --> 00:45:35.776 
+You still have the same tag for the entire block and you allocate only a sub block or a subset of
+
+00:45:35.776 --> 00:45:37.228 
+sub blocks on a request.
+
+00:45:37.308 --> 00:45:42.155 
+Now this gives you a little bit more flexibility in your caching, and the big advantage is no need
+
+00:45:42.155 --> 00:45:44.628 
+to transfer the entire cache block into the cache.
+
+00:45:45.548 --> 00:45:49.628 
+If you're going to write to a sub block 2, make it valid, make it dirty.
+
+00:45:50.628 --> 00:45:57.228 
+Everything else stays invalid and not dirty, and you have a valid bit for the entire thing.
+
+00:45:57.228 --> 00:45:58.468 
+If you really need it, you don't.
+
+00:45:58.508 --> 00:46:02.388 
+You don't necessarily need it, but it may make some hit logic easier.
+
+00:46:03.588 --> 00:46:04.668 
+You you still have the tag.
+
+00:46:05.068 --> 00:46:05.868 
+Hopefully that makes sense.
+
+00:46:05.868 --> 00:46:06.108 
+Right?
+
+00:46:07.428 --> 00:46:09.668 
+So a write simply validates and updates a sub block.
+
+00:46:09.948 --> 00:46:11.068 
+You don't need to access memory.
+
+00:46:12.348 --> 00:46:16.260 
+Now this also gives you another thing which is more freedom in transferring sub blocks into the
+
+00:46:16.260 --> 00:46:16.508 
+cache.
+
+00:46:17.628 --> 00:46:20.508 
+A cache block does not need to be in the cache fully right?
+
+00:46:21.068 --> 00:46:24.148 
+And this enables a lot of potential optimisations that you may want to do.
+
+00:46:24.188 --> 00:46:30.768 
+For example, you can say, OK, this was originally developed for writes, but I can use this for
+
+00:46:30.768 --> 00:46:31.188 
+reads.
+
+00:46:31.188 --> 00:46:38.558 
+Also when I actually am reading from some location main memory, I basically have a predictor that
+
+00:46:38.558 --> 00:46:45.701 
+says oh, fetch sub blocks 05 and six, but not the other ones because I didn't think I, I don't
+
+00:46:45.701 --> 00:46:50.868 
+think I'm going to use it in the future based on my past experience.
+
+00:46:51.548 --> 00:46:56.394 
+So it can bring based on your prediction mechanisms, only the things that you need because now your
+
+00:46:56.394 --> 00:46:58.108 
+cache structure supports it, right?
+
+00:46:59.188 --> 00:47:04.549 
+OK, so the downside of these caches in general, they're more complex, more valid and dirty and
+
+00:47:04.549 --> 00:47:05.348 
+modified bits.
+
+00:47:05.348 --> 00:47:08.748 
+But a lot of caches actually use this sort of sector design today.
+
+00:47:09.708 --> 00:47:15.591 
+And of course, if you don't have a smart prediction mechanism like I described, you may not be able
+
+00:47:15.591 --> 00:47:18.028 
+to exploit spatial locality fully, right?
+
+00:47:18.108 --> 00:47:20.468 
+Because you only deal with sub blocks, right?
+
+00:47:21.668 --> 00:47:25.662 
+Of course, you can use the structure to always bring the cache block when you don't know, you don't
+
+00:47:25.662 --> 00:47:26.348 
+have information.
+
+00:47:26.628 --> 00:47:32.906 
+So you don't lose anything except for some space and some logic complexity for valid and dirty
+
+00:47:32.906 --> 00:47:33.908 
+identification.
+
+00:47:35.148 --> 00:47:37.028 
+OK, let me finish this and then we'll take a break.
+
+00:47:38.308 --> 00:47:43.041 
+So instruction versus data, we didn't talk about that also, but this is also a very important design
+
+00:47:43.041 --> 00:47:43.468 
+decision.
+
+00:47:44.188 --> 00:47:46.628 
+These have different access patterns and characteristics.
+
+00:47:46.668 --> 00:47:51.468 
+So do you keep instructions and data in the same cache or do you separate them?
+
+00:47:52.028 --> 00:47:54.268 
+This is very actually interesting system design decision.
+
+00:47:54.788 --> 00:47:59.552 
+If you actually unify things such that you keep both instructions and data in the same cache, you
+
+00:47:59.552 --> 00:48:02.548 
+can basically enable dynamic sharing of the same cache space.
+
+00:48:02.548 --> 00:48:09.588 
+So it's better overall utilisation and essentially you don't over provision cache space.
+
+00:48:09.628 --> 00:48:11.468 
+Hopefully if you had separate Ind cache.
+
+00:48:11.468 --> 00:48:18.403 
+For example, if you have a 64 KB instruction cache and a 64 KB data cache, and your instructions
+
+00:48:18.403 --> 00:48:25.410 
+need only four kilobytes because you have a very small programs running in general, but your data
+
+00:48:25.410 --> 00:48:32.345 
+needs 124 kilobytes, your instruction cache is heavily underutilised, whereas your data cache is
+
+00:48:32.345 --> 00:48:33.068 
+too small.
+
+00:48:33.468 --> 00:48:40.348 
+Because you dedicated the 128 kilobytes to two different caches, half of it cannot be used by data.
+
+00:48:40.828 --> 00:48:44.068 
+If you had a unified cache, that's 128 kilobytes.
+
+00:48:44.068 --> 00:48:47.188 
+You have 4 kilobytes of instructions and 124 kilobytes of data.
+
+00:48:47.188 --> 00:48:51.308 
+Hopefully they will live nicely together and you will never get a cache miss.
+
+00:48:51.588 --> 00:48:52.108 
+That's the hope.
+
+00:48:52.788 --> 00:48:54.788 
+So that's the beauty of unified caches in general.
+
+00:48:54.788 --> 00:48:59.929 
+If you have better dynamic utilisation, static partitioning, whenever you statically partition
+
+00:48:59.929 --> 00:49:03.868 
+things in general, you run into the problem of under utilisation, right?
+
+00:49:04.828 --> 00:49:10.518 
+OK, so the downside of course is instructions and data can evict or trash each other because there
+
+00:49:10.518 --> 00:49:13.828 
+is no guaranteed space for either if you unify the space.
+
+00:49:13.908 --> 00:49:14.028 
+OK.
+
+00:49:15.868 --> 00:49:21.103 
+So there's another downside, which is probably the biggest downside for unified instruction and
+
+00:49:21.103 --> 00:49:23.308 
+data, and that's the pipeline structure.
+
+00:49:24.028 --> 00:49:29.762 
+Remember the designs that we had for pipelines, you fetch instructions here and you execute
+
+00:49:29.762 --> 00:49:30.708 
+somewhere here.
+
+00:49:31.788 --> 00:49:34.268 
+This is actually pretty far away in terms of the layout.
+
+00:49:35.268 --> 00:49:37.748 
+So they're in different parts of the pipeline, right?
+
+00:49:38.548 --> 00:49:40.868 
+If you actually have a unified cache, where do you place this?
+
+00:49:42.708 --> 00:49:44.388 
+It becomes a placement problem.
+
+00:49:44.788 --> 00:49:50.298 
+If you actually separate the caches instruction here in the fetch engine and data caches in the
+
+00:49:50.298 --> 00:49:55.924 
+memory access engine, you have a much easier routing and interconnect problem that will also make
+
+00:49:55.924 --> 00:49:59.868 
+your cycle time and timing and verification all of those much nicer.
+
+00:50:01.188 --> 00:50:02.988 
+So this is that's why this is very important.
+
+00:50:02.988 --> 00:50:10.184 
+And as a result of this, first level caches are almost always partitioned, meaning split, not
+
+00:50:10.184 --> 00:50:12.428 
+unified pipeline constraints.
+
+00:50:13.748 --> 00:50:15.588 
+This is actually a bigger principle, right?
+
+00:50:15.628 --> 00:50:20.348 
+If for your first level caches are really tightly integrated into the pipeline, right?
+
+00:50:20.868 --> 00:50:26.310 
+Their goal is to serve the data as fast as possible, but you cannot make them too high capacity or
+
+00:50:26.310 --> 00:50:31.586 
+unify things that are supposed to be at different parts of the pipeline to get higher frequency
+
+00:50:31.586 --> 00:50:34.308 
+because they affect your frequency significantly.
+
+00:50:35.588 --> 00:50:40.588 
+OK, all three level caches, L2 cache, L3 cache, L4 cache, they're almost always unified.
+
+00:50:40.708 --> 00:50:41.508 
+They're exceptions.
+
+00:50:42.228 --> 00:50:46.308 
+Some processors, for example, has L had L2 caches, L2 data cache, and L2 instructing caches.
+
+00:50:46.788 --> 00:50:50.708 
+But most of the time the design decision is such that they're unified.
+
+00:50:51.148 --> 00:50:55.268 
+They have both instructions and data for dynamic sharing of cache space essentially.
+
+00:50:55.988 --> 00:50:58.148 
+And also they're not tightly integrated into the pipeline.
+
+00:50:58.308 --> 00:51:03.821 
+You can have some more flexible interconnects at higher latencies to access a bigger cache as
+
+00:51:03.821 --> 00:51:06.548 
+opposed to splitting them across the pipeline.
+
+00:51:09.708 --> 00:51:10.028 
+OK.
+
+00:51:11.588 --> 00:51:13.548 
+Maybe I should really stop here.
+
+00:51:13.948 --> 00:51:14.788 
+We're going to start here.
+
+00:51:14.788 --> 00:51:18.148 
+I was hoping to get to that that next stage, but we're not there yet.
+
+00:51:18.548 --> 00:51:24.988 
+So let's take a break until 1518 and then we'll continue with more cash design decisions.
+
+00:51:29.400 --> 00:51:29.560 
+Na.
+
+00:51:29.640 --> 00:51:35.714 
+OK, which was this slide we talked about instruction versus data and when to unify them and when to
+
+00:51:35.714 --> 00:51:35.960 
+not.
+
+00:51:38.040 --> 00:51:41.440 
+This generally ties into multi level cash management.
+
+00:51:41.680 --> 00:51:47.840 
+Essentially today we have many, many levels of caches and the level of the cache greatly effects how
+
+00:51:47.840 --> 00:51:50.920 
+you design it and what kind of decisions you make.
+
+00:51:51.360 --> 00:51:59.218 
+First level caches, instructions and data are actually very much constrained by their integration to
+
+00:51:59.218 --> 00:52:00.240 
+the pipeline.
+
+00:52:00.760 --> 00:52:08.320 
+The decisions you make in first of all caches are affected by cycle time and the pipeline structure.
+
+00:52:09.080 --> 00:52:10.840 
+As a result, they're very latency critical.
+
+00:52:11.240 --> 00:52:14.520 
+They need to be small, they're usually lower associativity.
+
+00:52:14.920 --> 00:52:20.601 
+And you want to get the hit or miss signal as soon as possible because you need to schedule
+
+00:52:20.601 --> 00:52:26.407 
+instructions, meaning a lot of processors today do out of order dynamic scheduling as we have
+
+00:52:26.407 --> 00:52:28.280 
+discussed in earlier lectures.
+
+00:52:28.960 --> 00:52:32.240 
+And you need to deal with how to schedule loads and stores, right.
+
+00:52:32.600 --> 00:52:38.569 
+And to be able to properly schedule dependent instructions on loads, you need to get the hit miss
+
+00:52:38.569 --> 00:52:40.600 
+signal from the cache accurately.
+
+00:52:41.720 --> 00:52:44.680 
+And if that signal takes a long time, then you have a problem basically.
+
+00:52:45.000 --> 00:52:46.120 
+So I will leave it at that.
+
+00:52:46.120 --> 00:52:52.873 
+But the complexity in that part of the processor is actually quite high in terms of how you actually
+
+00:52:52.873 --> 00:52:59.558 
+schedule loads and stores and also because of the importance of getting the data as well as the hit
+
+00:52:59.558 --> 00:53:01.720 
+miss signal as fast as possible.
+
+00:53:02.240 --> 00:53:04.640 
+Tax store and data store access are usually happen.
+
+00:53:04.960 --> 00:53:06.680 
+They, they're usually performed in parallel.
+
+00:53:07.520 --> 00:53:10.800 
+While you're doing the tax store access, you also start the data store access.
+
+00:53:11.480 --> 00:53:18.400 
+Clearly for the data that you get to be valid, your tax store needs to provide a hit, right?
+
+00:53:18.400 --> 00:53:19.680 
+But you do those concurrently.
+
+00:53:20.720 --> 00:53:25.640 
+OK, Second level caches are less integrated with the pipeline.
+
+00:53:25.640 --> 00:53:29.440 
+As a result, their decisions are much less affected by the pipeline.
+
+00:53:30.080 --> 00:53:36.567 
+But they the decisions that you make in how to manage them need to balance hit rate and access
+
+00:53:36.567 --> 00:53:37.120 
+latency.
+
+00:53:37.240 --> 00:53:40.600 
+If you make them too large, the latency would be very large.
+
+00:53:40.800 --> 00:53:44.120 
+If you make them too small, you go, you won't get a very good hit rate.
+
+00:53:44.920 --> 00:53:49.440 
+So usually they are large, well clearly larger than the first level caches and highly associative.
+
+00:53:49.520 --> 00:53:51.520 
+And latency are is not as important.
+
+00:53:52.160 --> 00:53:56.525 
+And as you go further and further away from the processor, the latency becomes less and less
+
+00:53:56.525 --> 00:53:57.000 
+important.
+
+00:53:57.000 --> 00:53:59.840 
+You really are optimising for hit rate in the end.
+
+00:54:00.800 --> 00:54:06.265 
+And also with larger caches, the tax store and data store or far away caches, tax store and data
+
+00:54:06.265 --> 00:54:08.600 
+store access can be, can happen serially.
+
+00:54:09.400 --> 00:54:15.146 
+And the reason is to save energy in this case, because if you actually are accessing the data store
+
+00:54:15.146 --> 00:54:20.718 
+for every access you make and you don't know whether you're going to hit in the data store, what
+
+00:54:20.718 --> 00:54:26.000 
+happens is you're firing up all the waste and the entire array structure in the data store.
+
+00:54:26.000 --> 00:54:28.280 
+And that's a lot of energy that you spent.
+
+00:54:29.200 --> 00:54:32.440 
+In the end, you're going to get only one piece of one block.
+
+00:54:33.200 --> 00:54:36.240 
+And it's not clear if you're going to get that block either, right?
+
+00:54:36.600 --> 00:54:41.636 
+So if you actually serialise, if you first do the tag store access and you know whether it's a hit
+
+00:54:41.636 --> 00:54:45.440 
+or miss, if it's a miss, you're not going to access the data store, right?
+
+00:54:45.520 --> 00:54:47.560 
+You saved a lot of accesses or misses.
+
+00:54:48.000 --> 00:54:55.270 
+If it's a hit in the tax store, now you know exactly which way the data is in the data store because
+
+00:54:55.270 --> 00:54:57.960 
+that's part of your tax store access.
+
+00:54:57.960 --> 00:55:03.360 
+You know which way matched in the set, so you only access that way in the data store as opposed to
+
+00:55:03.360 --> 00:55:05.400 
+accessing all of the ways in the set.
+
+00:55:06.000 --> 00:55:07.480 
+So you save energy in both ways.
+
+00:55:07.480 --> 00:55:13.549 
+You don't access data store for misses and you access only what you really need on a in a case of
+
+00:55:13.549 --> 00:55:13.800 
+hit.
+
+00:55:14.360 --> 00:55:18.520 
+So that's what serial access to tags and data store can provide.
+
+00:55:18.520 --> 00:55:22.739 
+But first of all, it's not a good idea to do this because it increases your latency because it
+
+00:55:22.739 --> 00:55:24.400 
+serialises tag and data store access.
+
+00:55:24.800 --> 00:55:29.810 
+So as you go further from the processor, access energy is a larger problem due to the size of the
+
+00:55:29.810 --> 00:55:30.120 
+cache.
+
+00:55:30.440 --> 00:55:35.447 
+And the reason you have very large cache is to get high hit rates so that you don't go to memory,
+
+00:55:35.447 --> 00:55:36.480 
+which is even worse.
+
+00:55:37.280 --> 00:55:41.640 
+So tags and data store access are usually usually performed serially.
+
+00:55:42.760 --> 00:55:42.960 
+OK.
+
+00:55:42.960 --> 00:55:47.080 
+There are more design decisions that you have when you actually do multi level caches.
+
+00:55:47.080 --> 00:55:52.093 
+One of the design decisions is first level, for example, it sees all of the accesses that are coming
+
+00:55:52.093 --> 00:55:54.400 
+out of the processor, all load store accesses.
+
+00:55:54.840 --> 00:55:56.080 
+So there's a lot of information.
+
+00:55:56.080 --> 00:55:57.360 
+It's throughput needs to be high.
+
+00:55:58.720 --> 00:56:03.800 
+So it's locality characteristics that it's exploiting is really all of the accesses.
+
+00:56:04.520 --> 00:56:09.120 
+But the next level, second level gets accesses that are filtered by the first level.
+
+00:56:09.760 --> 00:56:10.920 
+So it's good to consider this.
+
+00:56:11.520 --> 00:56:16.194 
+So the second level, the policies that you employ, the predictors that you employ in the second
+
+00:56:16.194 --> 00:56:20.917 
+level should not be the same as the policies that you employ in the first level because they see
+
+00:56:20.917 --> 00:56:22.640 
+complete different access patterns.
+
+00:56:23.280 --> 00:56:28.150 
+And as you go further and further away from the processor, the access patterns are even more
+
+00:56:28.150 --> 00:56:28.680 
+different.
+
+00:56:29.680 --> 00:56:34.334 
+Unless you do completely random access for example, then everybody sees the same access pattern
+
+00:56:34.334 --> 00:56:36.000 
+because caching is useless, right?
+
+00:56:36.320 --> 00:56:41.214 
+If you do completely random, truly random accesses, caching should not provide you any benefits,
+
+00:56:41.214 --> 00:56:41.520 
+right?
+
+00:56:42.400 --> 00:56:43.920 
+So you can get rid of all of your caches.
+
+00:56:44.920 --> 00:56:47.280 
+But we don't have completely random access in our programs.
+
+00:56:47.280 --> 00:56:52.905 
+Although some very large scale applications may look like a lot of the access patterns are quite
+
+00:56:52.905 --> 00:56:53.960 
+random over there.
+
+00:56:55.640 --> 00:56:57.880 
+OK, So it's good to consider this basically.
+
+00:56:57.880 --> 00:57:02.606 
+So existing processors have different policies to cater to different kind of access patterns at
+
+00:57:02.606 --> 00:57:04.000 
+different levels of caching.
+
+00:57:05.040 --> 00:57:10.041 
+OK, there's another thing that I wanted to talk about which is not done as much, but it's good to
+
+00:57:10.041 --> 00:57:13.600 
+consider some things because we're going to do a part of it later on.
+
+00:57:14.560 --> 00:57:17.560 
+So do you access the level serially or in parallel?
+
+00:57:18.600 --> 00:57:23.955 
+Meaning if you do it in parallel, next level cache is accessed in parallel with the previous level,
+
+00:57:23.955 --> 00:57:24.280 
+right?
+
+00:57:24.760 --> 00:57:26.240 
+There's a form of speculative access.
+
+00:57:26.240 --> 00:57:29.830 
+You're basically saying, I don't know if I'm going to hit in this level, so I'm going to start the
+
+00:57:29.830 --> 00:57:31.040 
+access earlier to the next level.
+
+00:57:31.040 --> 00:57:36.120 
+Also, if you do it serially, next level caches cache access only if previous level misses.
+
+00:57:37.000 --> 00:57:41.928 
+So clearly if you do a parallel, you get faster access to data if the previous level misses, but you
+
+00:57:41.928 --> 00:57:45.920 
+also have unnecessary access to the next level if the previous level hits, right?
+
+00:57:46.240 --> 00:57:51.920 
+So there's a trade off latency versus energy and bandwidth serially.
+
+00:57:51.920 --> 00:57:56.577 
+If you do it serially, you get slower access to data if the previous level misses and there's no
+
+00:57:56.577 --> 00:57:59.440 
+wasted access to the next level if the previous level hits.
+
+00:58:00.080 --> 00:58:02.840 
+Then the question is, do you ever want to do a parallel access, right?
+
+00:58:02.920 --> 00:58:07.320 
+And the answer is if you're careful, maybe right.
+
+00:58:10.560 --> 00:58:13.280 
+And also I guess next level does not see the same access as the previous.
+
+00:58:13.840 --> 00:58:15.120 
+We already said a lot of this.
+
+00:58:16.320 --> 00:58:22.512 
+So basically, you may for serial there, there are good reasons for serial, but if you have a good
+
+00:58:22.512 --> 00:58:28.577 
+idea, for example, that you're going to very likely miss this cache, you may want to start your
+
+00:58:28.577 --> 00:58:32.280 
+later accesses, accesses to the next level earlier, right?
+
+00:58:33.160 --> 00:58:34.760 
+So it really depends on what you predict.
+
+00:58:35.000 --> 00:58:41.090 
+An existing process are predictors to decide whether they should access the cache, whether they
+
+00:58:41.090 --> 00:58:44.040 
+should access the next level earlier or later.
+
+00:58:44.200 --> 00:58:44.400 
+Right.
+
+00:58:46.120 --> 00:58:50.445 
+OK, so we talked about a lot of different ideas and complexity without going into the exact design
+
+00:58:50.445 --> 00:58:51.240 
+of the predictors.
+
+00:58:51.240 --> 00:58:55.359 
+Because if you do that, then instead of being a computer architecture course, this will be a cache
+
+00:58:55.359 --> 00:58:56.200 
+architecture course.
+
+00:58:56.200 --> 00:59:02.200 
+That's probably not so let's say efficient in terms of where you are in your education level.
+
+00:59:02.280 --> 00:59:06.120 
+Unless you're designing caches, this is not.
+
+00:59:06.120 --> 00:59:11.382 
+This sounds like a funny joke, but caching is so important that the major conference in our field
+
+00:59:11.382 --> 00:59:16.753 
+ISCA International Symposium on Computer Architecture, there were jokes for many years that this is
+
+00:59:16.753 --> 00:59:19.520 
+the International Symposium for Cache Architecture.
+
+00:59:21.320 --> 00:59:26.240 
+I'm one of the jokers because I think there should be much broader topics as opposed to just caches
+
+00:59:26.240 --> 00:59:28.080 
+in a in a major conference like that.
+
+00:59:28.080 --> 00:59:32.200 
+But I think it's good to think about this.
+
+00:59:32.600 --> 00:59:37.757 
+Caching is extremely important and we should keep working on it, but there could be other solutions
+
+00:59:37.757 --> 00:59:38.800 
+to the same problem.
+
+00:59:39.240 --> 00:59:44.520 
+OK, so just to like re motivate you a little bit before we switch topics.
+
+00:59:44.840 --> 00:59:46.960 
+These caches exist in real processors.
+
+00:59:48.200 --> 00:59:51.840 
+For example, there's a 12 MB L2 in this version of Apple M1.
+
+00:59:52.200 --> 01:00:00.668 
+There's a system level cache where they actually can access different compute units like
+
+01:00:00.668 --> 01:00:01.920 
+CPUSGPUSNPUS.
+
+01:00:01.920 --> 01:00:04.160 
+Their AI accelerators actually can access that cache.
+
+01:00:04.160 --> 01:00:05.120 
+They can share data.
+
+01:00:06.040 --> 01:00:07.360 
+There could be other caches.
+
+01:00:08.160 --> 01:00:15.760 
+You can see that these caches occupy a lot of area, also even more area in some cases.
+
+01:00:15.760 --> 01:00:16.600 
+And that's not enough.
+
+01:00:16.880 --> 01:00:19.160 
+People keep adding caches at the 3D level.
+
+01:00:19.840 --> 01:00:23.640 
+Again, the joke is that at some point, people were.
+
+01:00:25.040 --> 01:00:29.760 
+So if you if you lived around 2000, how many people were born after 2000 here?
+
+01:00:30.560 --> 01:00:31.480 
+OK, probably most of you.
+
+01:00:31.480 --> 01:00:33.080 
+How many people were born before 2000?
+
+01:00:34.360 --> 01:00:38.200 
+OK, some people, including a lot of my graduate students over here, but not all of them, maybe.
+
+01:00:38.640 --> 01:00:39.000 
+Yeah.
+
+01:00:39.200 --> 01:00:45.541 
+So if you lived in during the switch between from multicore, single core to multicore, that's when I
+
+01:00:45.541 --> 01:00:51.564 
+was doing my PhD Basically, people were quite excited about multicore until they understood the
+
+01:00:51.564 --> 01:00:52.960 
+software implications.
+
+01:00:53.800 --> 01:00:56.360 
+And the idea was basically, oh, I'm a chip architect.
+
+01:00:56.360 --> 01:00:59.200 
+I don't want to make my process complex because that's too hard, right?
+
+01:00:59.720 --> 01:01:01.720 
+Let me just stamp out more cores, right?
+
+01:01:02.200 --> 01:01:05.640 
+So people were thinking about, oh, let's stamp out more cores, more cores, more cores.
+
+01:01:06.360 --> 01:01:10.352 
+And then they realised if you stamp out more cores and if you get to use them, something else
+
+01:01:10.352 --> 01:01:12.800 
+becomes a huge bottleneck, which is the memory hierarchy.
+
+01:01:13.640 --> 01:01:18.320 
+And they said, oh, OK, we should keep our jobs, so why don't we put more caches also?
+
+01:01:18.680 --> 01:01:20.160 
+So they kept putting more caches.
+
+01:01:20.560 --> 01:01:22.680 
+And this is where we are basically, we have a lot of caches.
+
+01:01:22.680 --> 01:01:27.357 
+This is actually this is a joke, but it's very good technology like AMD added on top of a processor
+
+01:01:27.357 --> 01:01:29.200 
+chip which already has a lot of caches.
+
+01:01:29.640 --> 01:01:34.981 
+They basically put another chip that has a huge cache, essentially SGAM cache, and that's their
+
+01:01:34.981 --> 01:01:35.600 
+technology.
+
+01:01:35.600 --> 01:01:36.480 
+You can read about that.
+
+01:01:36.880 --> 01:01:40.080 
+It's 64 megabytes of L3 cache in five years ago.
+
+01:01:40.600 --> 01:01:43.240 
+And this is the technology basically it's called hybrid bonding.
+
+01:01:43.640 --> 01:01:49.310 
+According to them, they're hybrid bonding, let's say, and they have two chips that are connected
+
+01:01:49.310 --> 01:01:52.560 
+using copper to copper connections that look like this.
+
+01:01:52.560 --> 01:01:56.560 
+That way they can get the data from that cache relatively quickly to the processor chip.
+
+01:01:57.120 --> 01:01:58.200 
+Very interesting technology.
+
+01:01:58.440 --> 01:02:01.240 
+We may get to that when we talk about processing in memory in the last lecture.
+
+01:02:01.920 --> 01:02:07.574 
+OK, so you can see these pictures at some point become boring because most of what we have is
+
+01:02:07.574 --> 01:02:08.000 
+caches.
+
+01:02:08.000 --> 01:02:10.080 
+So you can see some numbers also.
+
+01:02:10.080 --> 01:02:11.440 
+GPUs have a caches also.
+
+01:02:12.360 --> 01:02:15.240 
+In fact, I'll use some of the GPUs over here as examples.
+
+01:02:15.960 --> 01:02:18.520 
+This is an example from NVIDIA 100.
+
+01:02:19.280 --> 01:02:27.610 
+They have special instructions that enable direct copy from their L2 cache to a scratch pad shared
+
+01:02:27.610 --> 01:02:28.800 
+memory, right?
+
+01:02:29.240 --> 01:02:32.720 
+So there you can use special instructions to bypass some of the caches.
+
+01:02:33.520 --> 01:02:36.840 
+So there's there's some level of programmability exposed to the programmer.
+
+01:02:37.120 --> 01:02:42.012 
+So caches are not necessarily invisible to the software because they're so important for
+
+01:02:42.012 --> 01:02:42.680 
+performance.
+
+01:02:42.680 --> 01:02:47.736 
+You may want to expose to the compiler and the programmer such that the compiler programmer can move
+
+01:02:47.736 --> 01:02:50.720 
+the data when they need to to the appropriate place, right?
+
+01:02:52.080 --> 01:02:57.482 
+So there's bypassing that's employed in the cache hierarchy of both general purpose processors as
+
+01:02:57.482 --> 01:02:59.320 
+well as GPUs that look like this.
+
+01:02:59.880 --> 01:03:06.240 
+And you can see some examples of this there direct copy instructions from memory to on chip memory.
+
+01:03:07.040 --> 01:03:12.278 
+And there's also copy instructions between different streaming multiprocessors as you remember the
+
+01:03:12.278 --> 01:03:12.920 
+terminology.
+
+01:03:15.000 --> 01:03:20.807 
+Essentially there's a GPU over here and the GPU connected to each other, let's say, but within the
+
+01:03:20.807 --> 01:03:21.400 
+same chip.
+
+01:03:23.200 --> 01:03:25.160 
+And you can do communication like that.
+
+01:03:25.200 --> 01:03:28.400 
+And the the size of the caches are quite large actually.
+
+01:03:28.400 --> 01:03:30.840 
+You can see 60 megabytes, but they can be larger today.
+
+01:03:30.920 --> 01:03:33.320 
+This is one example from some number of years ago.
+
+01:03:35.360 --> 01:03:40.480 
+OK, so these are real and people need to deal with these decisions.
+
+01:03:40.480 --> 01:03:41.920 
+Let's talk about some more decisions.
+
+01:03:43.240 --> 01:03:46.920 
+Multi level cache design, essentially, which levels do you place a block into?
+
+01:03:47.200 --> 01:03:48.360 
+So I'll give you some examples.
+
+01:03:48.360 --> 01:03:52.800 
+In real processors, you can bypass some caches, but the problem is actually more general, right?
+
+01:03:53.600 --> 01:03:55.360 
+Which levels to evict a block to.
+
+01:03:55.480 --> 01:03:58.120 
+Whenever you're placing a block, you have a choice.
+
+01:03:58.120 --> 01:04:00.760 
+You have 4 levels of caches and maybe some scratch pads.
+
+01:04:01.160 --> 01:04:05.480 
+Scratch pads are essentially caches that are programmed by the programmer.
+
+01:04:05.480 --> 01:04:11.080 
+We talked about that in the previous lecture, Manual versus automatic Management of Cache space.
+
+01:04:12.320 --> 01:04:17.508 
+Essentially, you have a lot of choices to place a block into either automatically or manually,
+
+01:04:17.508 --> 01:04:17.840 
+right?
+
+01:04:18.600 --> 01:04:21.920 
+Manually, it's a very difficult optimization problem, right?
+
+01:04:23.680 --> 01:04:27.949 
+Automatically it's also a very difficult optimization problem that needs to be done by the hardware
+
+01:04:27.949 --> 01:04:28.640 
+designer, right?
+
+01:04:28.920 --> 01:04:31.960 
+Because the hardware designer decides the management of the cache hierarchy.
+
+01:04:32.920 --> 01:04:34.160 
+Similar thing exists over here.
+
+01:04:34.160 --> 01:04:36.120 
+Which level do you evict a block to, right?
+
+01:04:36.200 --> 01:04:40.790 
+Whenever you're evicting block from L1 cache, do you write it to the next level or do you basically
+
+01:04:40.790 --> 01:04:42.320 
+write it directly to main memory?
+
+01:04:43.160 --> 01:04:44.760 
+Do you write it to some other processors memory?
+
+01:04:46.440 --> 01:04:47.680 
+Do you write it to some other processors?
+
+01:04:47.680 --> 01:04:48.120 
+Cache?
+
+01:04:48.960 --> 01:04:52.314 
+It's good to consider these decisions because these are all options that you have basically whenever
+
+01:04:52.314 --> 01:04:53.120 
+you're evicting a block.
+
+01:04:53.840 --> 01:05:00.170 
+And it may make sense depending on the access patterns that you have, all of them at a given point
+
+01:05:00.170 --> 01:05:02.560 
+in time, each of them may make sense.
+
+01:05:02.720 --> 01:05:02.880 
+Right?
+
+01:05:04.000 --> 01:05:04.280 
+OK.
+
+01:05:04.480 --> 01:05:05.880 
+Do you bypass or don't?
+
+01:05:05.880 --> 01:05:07.320 
+Don't bypass some level.
+
+01:05:08.280 --> 01:05:10.240 
+I'll talk about inclusive, exclusive, non inclusive.
+
+01:05:11.600 --> 01:05:15.560 
+This is also somewhat important because it'll tie to coherence.
+
+01:05:16.560 --> 01:05:21.720 
+So inclusive cache means a block in an inner level is always included also in an altar level.
+
+01:05:22.880 --> 01:05:29.560 
+It turns out this simplifies cache coherence because you're guaranteed to have the block.
+
+01:05:30.280 --> 01:05:32.560 
+A block in an altar you're guaranteed to have.
+
+01:05:32.560 --> 01:05:37.000 
+Essentially, you don't need to check all of the caches basically for blocks, right?
+
+01:05:38.360 --> 01:05:43.888 
+If you just, you can just check the altar level, because altar level is a superset of all of the
+
+01:05:43.888 --> 01:05:45.040 
+inner levels, right?
+
+01:05:45.560 --> 01:05:49.280 
+And as you, as you go inside, that superset becomes smaller and smaller.
+
+01:05:49.640 --> 01:05:54.270 
+So it simplifies coherence because if you're looking for some block as another processor, you can
+
+01:05:54.270 --> 01:05:55.560 
+check only the outer level.
+
+01:05:56.120 --> 01:06:00.200 
+Now the downside of inclusive cache is you waste a lot of space, right?
+
+01:06:00.760 --> 01:06:05.760 
+You have a 64 KB L1, you have let's say 256 KB L2.
+
+01:06:06.080 --> 01:06:10.600 
+One fourth of that L2 is replicated in L1 or the other way around.
+
+01:06:10.600 --> 01:06:11.360 
+You can think of it that way.
+
+01:06:11.520 --> 01:06:12.480 
+You wasted a lot of space.
+
+01:06:12.480 --> 01:06:18.160 
+You have 256 KB L2 and you have let's say 16 megabyte L 3.
+
+01:06:19.480 --> 01:06:22.120 
+Some fraction of it is replicated in L2.
+
+01:06:22.600 --> 01:06:26.600 
+OK, exclusive is completely opposite.
+
+01:06:26.600 --> 01:06:29.480 
+A block in an inner level does not exist and should not exist.
+
+01:06:29.760 --> 01:06:35.877 
+In an ultra level this better utilise the space in the entire hierarchy because now you can have the
+
+01:06:35.877 --> 01:06:40.160 
+same size caches, except you never replicate a block in the hierarchy.
+
+01:06:40.920 --> 01:06:41.600 
+That sounds good.
+
+01:06:42.280 --> 01:06:46.613 
+The downside is coherence is more complex in this case because if you're trying to look for a block,
+
+01:06:46.613 --> 01:06:48.520 
+you need to search all of the caches, right?
+
+01:06:51.560 --> 01:06:55.400 
+So people have implemented, implemented exclusive and inclusive policies.
+
+01:06:55.400 --> 01:06:57.240 
+AMD has exclusive policies, for example.
+
+01:06:57.240 --> 01:06:59.440 
+I don't know if they still have, I don't check their latest processors.
+
+01:06:59.440 --> 01:07:04.600 
+But non inclusive is another option, which is basically not restricting yourself.
+
+01:07:05.240 --> 01:07:07.760 
+This is actually the best for the hardware designer in general.
+
+01:07:08.360 --> 01:07:11.280 
+A block in an inner level may or may not be included in an outer level.
+
+01:07:11.480 --> 01:07:13.000 
+This relaxes a lot of design decisions.
+
+01:07:13.000 --> 01:07:14.960 
+A lot of the Intel processors are non inclusive, right?
+
+01:07:15.600 --> 01:07:18.840 
+There's the one of there's another downside to exclusive.
+
+01:07:20.120 --> 01:07:27.640 
+Whenever you evict a block, you need to make sure there's only one copy in the hierarchy, right?
+
+01:07:28.040 --> 01:07:30.160 
+So you need to be careful with what you do.
+
+01:07:30.160 --> 01:07:32.080 
+You cannot just simply replicate a block.
+
+01:07:33.120 --> 01:07:36.600 
+OK, So you can see that there are a lot of design decisions.
+
+01:07:37.560 --> 01:07:42.449 
+I could give you more, but let's switch gears a little bit to talk about cash performance a little
+
+01:07:42.449 --> 01:07:46.640 
+bit more because there's a lot of optimization that you can do on cache performance.
+
+01:07:46.640 --> 01:07:50.400 
+Some of it is affected by a lot of these design decisions that we have.
+
+01:07:50.880 --> 01:07:55.979 
+So we're going to talk about a few of these and especially we're going to examine cache parameters
+
+01:07:55.979 --> 01:07:57.280 
+versus the hit miss rate.
+
+01:07:58.760 --> 01:08:01.720 
+So cache size, this is one of the first decisions that you need to make, right?
+
+01:08:01.720 --> 01:08:03.080 
+We're talking about a single level right now.
+
+01:08:03.280 --> 01:08:05.560 
+Multi level optimization becomes harder.
+
+01:08:06.360 --> 01:08:08.960 
+This is essentially the total data capacity of the cache.
+
+01:08:09.480 --> 01:08:14.069 
+When whenever someone says one MB cache, for example, that doesn't include a data store tag store,
+
+01:08:14.069 --> 01:08:15.240 
+that's just a data store.
+
+01:08:15.480 --> 01:08:21.480 
+OK, so bigger cache, clearly it can exploit temporal locality better.
+
+01:08:23.720 --> 01:08:25.720 
+I'll get to that slide a little bit.
+
+01:08:25.840 --> 01:08:27.960 
+Well, I'll get to this picture a little bit later.
+
+01:08:28.600 --> 01:08:32.560 
+Essentially, if you have too large of a cache, it adversely effects hit and miss latency.
+
+01:08:32.560 --> 01:08:34.240 
+So bigger is slower clearly.
+
+01:08:34.240 --> 01:08:38.916 
+And we knew that if you have too small of a cache, you don't exploit temporal locality well, because
+
+01:08:38.916 --> 01:08:40.320 
+useful data is replaced often.
+
+01:08:40.800 --> 01:08:41.840 
+So you don't want that either.
+
+01:08:42.800 --> 01:08:47.878 
+So working set is the entire set of data the app executing application references within a time
+
+01:08:47.878 --> 01:08:48.360 
+interval.
+
+01:08:48.840 --> 01:08:55.480 
+Ideally you want to match the size of your working set to the cache or vice versa, right?
+
+01:08:56.160 --> 01:09:01.310 
+I say vice versa because if you're a designer, hardware designer, then you would like to accommodate
+
+01:09:01.310 --> 01:09:03.680 
+the working, common, working sets of programs.
+
+01:09:04.520 --> 01:09:07.840 
+But if you're a software programmer, you're given a processor.
+
+01:09:08.000 --> 01:09:10.040 
+You cannot change the size of the cache, sorry.
+
+01:09:10.880 --> 01:09:15.360 
+In some processors, maybe you can if it's reconfigurable, etcetera, but you're given an L1 cache.
+
+01:09:16.040 --> 01:09:17.400 
+How do I optimise my program?
+
+01:09:17.840 --> 01:09:23.520 
+Well, I rewrite my program such that it always sits in the L1 cache as much as possible, right?
+
+01:09:23.520 --> 01:09:24.400 
+Maximise the rate.
+
+01:09:25.400 --> 01:09:28.600 
+So this is actually, it works both ways, right?
+
+01:09:28.600 --> 01:09:34.405 
+When you're designing hardware, you need to think about what are the easiest cache size the
+
+01:09:34.405 --> 01:09:36.000 
+programmer can deal with.
+
+01:09:36.040 --> 01:09:39.600 
+If it's too small, then they're not going to get good miss rates.
+
+01:09:39.800 --> 01:09:45.006 
+Ideally it's huge enough that nobody cares, but we're not going to be in that situation anytime
+
+01:09:45.006 --> 01:09:45.280 
+soon.
+
+01:09:46.000 --> 01:09:47.480 
+That's why we have this huge hierarchy, right?
+
+01:09:48.400 --> 01:09:49.440 
+So this is common.
+
+01:09:49.440 --> 01:09:50.760 
+This is a common picture over here.
+
+01:09:50.760 --> 01:09:53.640 
+As cache size increases, your hit rate increases.
+
+01:09:54.200 --> 01:09:59.514 
+After some point it doesn't increase, it saturates because for example, you have you, you house the
+
+01:09:59.514 --> 01:10:02.360 
+entire working set, for example, in the cache, right?
+
+01:10:03.360 --> 01:10:03.640 
+OK.
+
+01:10:04.120 --> 01:10:05.880 
+So hopefully that's clear.
+
+01:10:06.360 --> 01:10:09.120 
+So benefits of larger caches also widely varies.
+
+01:10:09.120 --> 01:10:10.480 
+It depends on the applications.
+
+01:10:10.680 --> 01:10:14.200 
+So this is 1 application from this paper.
+
+01:10:14.400 --> 01:10:15.320 
+It's a good paper.
+
+01:10:15.320 --> 01:10:17.320 
+It won the micro test of time award last year.
+
+01:10:17.320 --> 01:10:18.640 
+I'd recommend you take a look at it.
+
+01:10:19.600 --> 01:10:25.160 
+This is essentially the size of the cache number of ways from a 16 weight 1 MB L2.
+
+01:10:25.480 --> 01:10:27.480 
+If you have 0A, essentially you don't have a cache.
+
+01:10:27.480 --> 01:10:32.200 
+If you have two ways, this is the miss rate that you have misses per 1000 instructions.
+
+01:10:32.640 --> 01:10:35.320 
+You can see that this application has very low cache utility.
+
+01:10:35.880 --> 01:10:39.200 
+It has almost a flat miss rate curve regardless of the size of the cache.
+
+01:10:39.720 --> 01:10:40.000 
+Why?
+
+01:10:40.000 --> 01:10:46.259 
+The application is streaming through memory streaming, meaning it's basically going through a huge
+
+01:10:46.259 --> 01:10:48.240 
+array, a 1 billion entry array.
+
+01:10:48.240 --> 01:10:52.040 
+Let's say I just made it up and doing something to it, right?
+
+01:10:52.320 --> 01:10:58.120 
+So it doesn't have a lot of locality except for the spatial locality that you get for cache blocks
+
+01:10:58.120 --> 01:10:59.600 
+that you bring in, right?
+
+01:11:01.040 --> 01:11:01.280 
+OK.
+
+01:11:01.640 --> 01:11:03.760 
+Another application has high cache utility over here.
+
+01:11:03.760 --> 01:11:07.520 
+You can see that as cache size increases, your miss rate keeps increasing, reducing.
+
+01:11:08.520 --> 01:11:15.438 
+And another application here has saturating cache utility, meaning as cache size increases your miss
+
+01:11:15.438 --> 01:11:18.760 
+rate floors to 0 and then further caching cache.
+
+01:11:19.440 --> 01:11:22.641 
+If you increase the cache size further, it won't help because your working set fits in the cache,
+
+01:11:22.641 --> 01:11:22.840 
+right?
+
+01:11:23.520 --> 01:11:27.920 
+That sounds good and all kinds of applications exist which is interesting.
+
+01:11:28.680 --> 01:11:29.560 
+The question is how do you deal?
+
+01:11:29.640 --> 01:11:30.040 
+Deal with them.
+
+01:11:30.440 --> 01:11:33.776 
+I'm not going to talk about how do you deal with them, but here you can read that paper for some
+
+01:11:33.776 --> 01:11:34.680 
+ways of dealing with them.
+
+01:11:35.440 --> 01:11:36.840 
+OK, let's talk about block size.
+
+01:11:37.360 --> 01:11:40.520 
+Block size is the data that's associated with an address tag, right?
+
+01:11:40.520 --> 01:11:43.280 
+That's a 64 byte, for example, or 128 byte.
+
+01:11:43.840 --> 01:11:46.480 
+If you have two small blocks, you're in trouble.
+
+01:11:46.480 --> 01:11:48.040 
+If you have two large blocks, you're also in trouble.
+
+01:11:48.760 --> 01:11:51.520 
+This picture shows it for a fixed cache size.
+
+01:11:51.520 --> 01:11:56.527 
+For a given cache size, if you have two small blocks, that means you have a lot of blocks in the
+
+01:11:56.527 --> 01:11:56.840 
+cache.
+
+01:11:56.840 --> 01:12:01.964 
+If you have two large blocks, that means you have fewer blocks in the cache, and both of them are
+
+01:12:01.964 --> 01:12:02.440 
+not good.
+
+01:12:02.760 --> 01:12:06.099 
+I mean, of course there are some applications that would benefit from either of those, but in
+
+01:12:06.099 --> 01:12:07.320 
+general this is the curve you get.
+
+01:12:10.320 --> 01:12:13.760 
+I should also say that block size is not necessarily the unit of transfer between hierarchies.
+
+01:12:13.760 --> 01:12:14.960 
+Sub because of sub blocking.
+
+01:12:15.120 --> 01:12:18.680 
+We've discussed right where a block is divided into multiple pieces.
+
+01:12:19.200 --> 01:12:20.640 
+But let's ignore sub blocking for now.
+
+01:12:20.640 --> 01:12:26.477 
+If you have two small blocks, you don't exploit spatial locality well, because block is really what
+
+01:12:26.477 --> 01:12:28.600 
+exploit the spatial locality, right?
+
+01:12:30.760 --> 01:12:35.480 
+And you also have a larger tag overhead which is not depicted anywhere here.
+
+01:12:35.480 --> 01:12:37.360 
+But that's also a cost.
+
+01:12:37.880 --> 01:12:41.440 
+If you have two large blocks, now you have two few total blocks for a given cache size.
+
+01:12:42.160 --> 01:12:45.240 
+As a result, you do not exploit temporal locality well in this case.
+
+01:12:45.720 --> 01:12:50.160 
+And you need a lot of spatial locality to exploit spatial locality in that large block, right?
+
+01:12:50.160 --> 01:12:53.880 
+Imagine A1 MB cache with A1 MB block.
+
+01:12:54.600 --> 01:12:57.520 
+You have a single block and you really cache A1 MB region.
+
+01:12:57.960 --> 01:12:58.440 
+That's it.
+
+01:12:59.120 --> 01:13:01.840 
+If you're touching anything else beyond that region, it's a cache miss.
+
+01:13:03.040 --> 01:13:04.360 
+You don't want that in general.
+
+01:13:05.200 --> 01:13:09.240 
+OK, And that's also horrible to program for a programmer, right?
+
+01:13:09.840 --> 01:13:12.680 
+You give them a huge block, then you're really asking.
+
+01:13:13.160 --> 01:13:16.400 
+This is the only thing that you can have in your cache, right?
+
+01:13:17.000 --> 01:13:22.839 
+If they need another one MB or a piece of another one MB when they're in trouble, OK, so basically
+
+01:13:22.839 --> 01:13:28.560 
+two large blocks waste cache space and bandwidth and energy if the spatial locality is not high.
+
+01:13:28.680 --> 01:13:31.280 
+That's why block size has not increased that much.
+
+01:13:31.280 --> 01:13:36.120 
+Cache size have been increasing, but block size if you read papers from 1960s sixty 4 bytes.
+
+01:13:36.560 --> 01:13:43.074 
+If you read papers from 2 thousand 2664 bytes, IBM has longer blocks because they have more control
+
+01:13:43.074 --> 01:13:46.760 
+in their software stack, like hundred 28256 byte blocks.
+
+01:13:47.040 --> 01:13:48.960 
+But 64 byte blocks are pretty common.
+
+01:13:49.240 --> 01:13:50.520 
+128 is OK.
+
+01:13:51.040 --> 01:13:55.320 
+If you go beyond that, it becomes more difficult because of what we just discussed.
+
+01:13:56.720 --> 01:14:03.685 
+OK, OK, so large blocks, there's some optimizations that you can do with large blocks, like they can
+
+01:14:03.685 --> 01:14:09.884 
+take a long time to fill into the cache because your buses 64 bits, let's say, and you're
+
+01:14:09.884 --> 01:14:14.760 
+transferring let's say 256 bytes out of a 64 bit bus, main memory bus.
+
+01:14:14.760 --> 01:14:15.680 
+So it takes a long time.
+
+01:14:16.080 --> 01:14:18.520 
+So people do optimization even with a 64 byte block.
+
+01:14:18.520 --> 01:14:21.080 
+Actually existing processors do optimizations like this.
+
+01:14:22.080 --> 01:14:25.120 
+Critical word means fill the cache block, critical word first.
+
+01:14:25.120 --> 01:14:29.680 
+Critical word is the word that's requested by the load that incurred a cache miss.
+
+01:14:29.680 --> 01:14:30.880 
+So bring that first.
+
+01:14:32.320 --> 01:14:40.653 
+For example, a 64 byte block, you have 16-4 byte words and if the processor is accessing #14 bring
+
+01:14:40.653 --> 01:14:45.160 
+#14 first and then stream in the remaining 15, right?
+
+01:14:45.600 --> 01:14:46.600 
+That's the idea over here.
+
+01:14:47.320 --> 01:14:51.394 
+Supply the critical data to the processor immediately so that you can reduce the stall time of the
+
+01:14:51.394 --> 01:14:52.600 
+processor, which makes sense.
+
+01:14:52.600 --> 01:14:57.080 
+And a lot of processors employ this, even though it does add a little bit more complexity to the
+
+01:14:57.080 --> 01:15:01.280 
+system to communicate which one is the critical word all the way to the memory controller.
+
+01:15:02.320 --> 01:15:03.600 
+It's interesting to think about, right?
+
+01:15:03.680 --> 01:15:05.000 
+There's complexity in our systems.
+
+01:15:05.000 --> 01:15:09.943 
+We keep adding more complexity for this sort of optimization, but the reason is it takes you really
+
+01:15:09.943 --> 01:15:13.040 
+want that word so that the processor can keep executing right?
+
+01:15:13.920 --> 01:15:17.320 
+OK, large cache blocks can based plus bandwidth as we've discussed.
+
+01:15:17.320 --> 01:15:22.915 
+And we've discussed an idea to reduce that, divide a block into sub blocks by associating separate
+
+01:15:22.915 --> 01:15:25.200 
+valid and dirty bits for each sub block.
+
+01:15:25.200 --> 01:15:30.288 
+Basically this is the picture over here and we discussed when this usable, but if you do a good
+
+01:15:30.288 --> 01:15:34.680 
+prediction, you could actually make use of a sub block cache very nicely, I think.
+
+01:15:36.160 --> 01:15:41.123 
+OK, associativity, we've already seen this actually, how many blocks can be present in the same
+
+01:15:41.123 --> 01:15:41.960 
+index, same set.
+
+01:15:42.920 --> 01:15:47.877 
+Larger associativity usually leads to a lower miss rate, reduced conflicts because it reduces the
+
+01:15:47.877 --> 01:15:52.120 
+conflicts, conflict misses, but it also leads to higher hit latency and area costs.
+
+01:15:52.120 --> 01:15:54.120 
+We've discussed this at the beginning of this lecture.
+
+01:15:54.640 --> 01:15:58.240 
+Smaller associativity is lower cost, but it's also and also lower hit latency.
+
+01:15:58.360 --> 01:16:05.400 
+It's especially important for L1 caches as we discussed, but usually this is the curve that you get.
+
+01:16:05.680 --> 01:16:12.800 
+As a result, smaller caches are usually or L1 caches are usually less associative.
+
+01:16:12.800 --> 01:16:17.520 
+But as you go to larger caches, they become more and more associative.
+
+01:16:17.600 --> 01:16:23.740 
+Especially if you do serial tag and data access, then you can reduce the cost of the associative,
+
+01:16:23.740 --> 01:16:24.120 
+right?
+
+01:16:24.600 --> 01:16:29.365 
+So whatever we discussed earlier can change the trade-offs a little bit because if you do a serial
+
+01:16:29.365 --> 01:16:29.560 
+tag.
+
+01:16:29.640 --> 01:16:30.800 
+In data access, you don't need.
+
+01:16:31.040 --> 01:16:33.960 
+Let's assume that your cash is 1024 way associative.
+
+01:16:34.840 --> 01:16:42.720 
+You don't need 1024 comparators concurrently, you don't need 1024 entry Max in the data store.
+
+01:16:42.880 --> 01:16:51.280 
+At least in the data store, what you're doing is really accessing only one way right?
+
+01:16:51.480 --> 01:16:52.960 
+So you can reduce the cost significantly.
+
+01:16:53.640 --> 01:16:55.920 
+And there are other tricks you can play with the tag store.
+
+01:16:56.360 --> 01:17:01.415 
+If you can predict, for example, which way your data is going to come from, which a lot of
+
+01:17:01.415 --> 01:17:06.640 
+processors do at the L1 level, they can actually reduce the complexity in your cache as well.
+
+01:17:07.920 --> 01:17:10.720 
+OK, maybe I'll ask you a question here.
+
+01:17:11.160 --> 01:17:12.920 
+Is power of two associated required?
+
+01:17:15.480 --> 01:17:19.440 
+Not a trick question, but it could be construed as so, yes.
+
+01:17:24.680 --> 01:17:26.120 
+OK, exactly.
+
+01:17:26.120 --> 01:17:26.600 
+That's true.
+
+01:17:27.120 --> 01:17:29.520 
+So recall this is your four way associative cache.
+
+01:17:30.520 --> 01:17:37.520 
+We have four blocks per set and we have a four to one multiplexer over here, right?
+
+01:17:38.680 --> 01:17:44.546 
+Basically a power of two associative is not required because you don't need a reason for
+
+01:17:44.546 --> 01:17:46.880 
+associativity to be a power of two.
+
+01:17:47.320 --> 01:17:52.720 
+Like if you look at the structure, nothing basically encodes the way, right?
+
+01:17:53.120 --> 01:17:55.200 
+You have an index which encodes which set.
+
+01:17:55.800 --> 01:18:01.083 
+You have A tag, which is essentially for every block, but there's nothing that specifies the weight,
+
+01:18:01.083 --> 01:18:01.400 
+right?
+
+01:18:01.920 --> 01:18:03.160 
+So you don't address the weights.
+
+01:18:03.520 --> 01:18:06.880 
+You just bring all of the data from the ways and you select the one that you want.
+
+01:18:07.720 --> 01:18:12.942 
+If you have a three-way associative cache, what happens is you have fewer blocks like this, but
+
+01:18:12.942 --> 01:18:17.120 
+you're not using some of the inputs that you have in the multiplexer, right?
+
+01:18:17.440 --> 01:18:18.040 
+That's the idea.
+
+01:18:18.240 --> 01:18:19.880 
+So three-way associative cache exists.
+
+01:18:20.880 --> 01:18:22.600 
+This could be an exam question.
+
+01:18:23.680 --> 01:18:24.320 
+A simple 1.
+
+01:18:25.080 --> 01:18:27.280 
+So eight way fully associated cache looks like this.
+
+01:18:27.360 --> 01:18:29.240 
+Well, you could have easily made it seven way, right?
+
+01:18:30.000 --> 01:18:30.440 
+Why?
+
+01:18:30.680 --> 01:18:32.240 
+Because I didn't have chip area to have eight way.
+
+01:18:33.240 --> 01:18:33.680 
+Why not?
+
+01:18:35.480 --> 01:18:37.120 
+OK, these things exist.
+
+01:18:37.120 --> 01:18:38.280 
+Twelve way associated caches.
+
+01:18:38.280 --> 01:18:39.400 
+This is Intel Lion code.
+
+01:18:39.640 --> 01:18:42.000 
+They decided twelve way was better for them.
+
+01:18:42.880 --> 01:18:43.560 
+Ask them why.
+
+01:18:44.320 --> 01:18:51.590 
+But chip area design choices, how do you lay out the cache such that you get the maximal area in the
+
+01:18:51.590 --> 01:18:55.880 
+given space that is left or that is designed for the cache.
+
+01:18:55.920 --> 01:18:59.160 
+These are very good reasons to have non power off to associativity.
+
+01:19:00.240 --> 01:19:04.320 
+OK, I've also classified the cache misses before we continue.
+
+01:19:04.480 --> 01:19:08.837 
+There's actually a fourth category, which is coherence misses or communication misses more generally
+
+01:19:08.837 --> 01:19:09.840 
+that I'm going to skip.
+
+01:19:09.840 --> 01:19:10.080 
+Yes.
+
+01:19:10.080 --> 01:19:17.300 
+Is that the processors have a cache or other some processors which doesn't really have a cache, I
+
+01:19:17.300 --> 01:19:21.320 
+see have like maybe outside the cache and there, yeah.
+
+01:19:22.880 --> 01:19:27.600 
+Well, you mean processors like ACPU without a cache today?
+
+01:19:28.320 --> 01:19:29.360 
+Yeah, today they don't exist.
+
+01:19:29.360 --> 01:19:33.000 
+No, in the past they did exist, but that was like 40 years ago.
+
+01:19:34.160 --> 01:19:37.400 
+So everybody has a cache because locality is so strong, essentially.
+
+01:19:38.000 --> 01:19:43.988 
+But, and if you want to, but if you do want to experience how not having a cache looks like, you can
+
+01:19:43.988 --> 01:19:48.360 
+at least you used to be able to turn off caching in BIOS in some systems.
+
+01:19:48.920 --> 01:19:53.120 
+You can try to do that and see how long you're going to wait to do anything on your computer.
+
+01:19:53.120 --> 01:19:57.160 
+I don't know if you, has anyone tried that?
+
+01:19:57.280 --> 01:19:57.840 
+I tried that.
+
+01:19:57.840 --> 01:20:02.640 
+It was a bad idea, but I don't know if the if your BIOS exposed that.
+
+01:20:02.920 --> 01:20:07.088 
+You can also turn off some other things like prefetching, which we're going to talk about later on
+
+01:20:07.088 --> 01:20:08.960 
+or used to be able to depending on the BIOS.
+
+01:20:09.440 --> 01:20:11.000 
+OK, so I'm going to classify cache miss.
+
+01:20:11.000 --> 01:20:14.280 
+There are three, three types, four types actually of compulsory capacity conflict.
+
+01:20:14.600 --> 01:20:19.440 
+And this is good for targeting different cache misses and doing cache optimisations.
+
+01:20:19.440 --> 01:20:24.040 
+Understanding the causes of cache misses is important for doing better optimisations.
+
+01:20:24.760 --> 01:20:29.680 
+So compulsory miss is essentially something that you cannot eliminate with caching.
+
+01:20:30.200 --> 01:20:33.840 
+First, reference to an address always results in a miss, right?
+
+01:20:34.680 --> 01:20:39.092 
+Subsequent references to the block should hit in the cache unless the block is displayed from the
+
+01:20:39.092 --> 01:20:41.640 
+cache for the reasons below, so it has its own category.
+
+01:20:41.720 --> 01:20:44.520 
+This is something you cannot eliminate with cache capacity.
+
+01:20:44.520 --> 01:20:49.560 
+Miss cache is too small to hold all needed data with some assumptions.
+
+01:20:50.120 --> 01:20:54.570 
+It's essentially the assumption is that these are the misses that would occur even in a fully
+
+01:20:54.570 --> 01:20:57.920 
+associated cache with optimal replacement of the same capacity, right?
+
+01:20:59.600 --> 01:21:00.680 
+OK, sounds good.
+
+01:21:01.400 --> 01:21:06.457 
+And then there's conflict miss that's defined as any miss that is neither compulsory or capacity,
+
+01:21:06.457 --> 01:21:10.680 
+assuming there's not communication misses which we're not dealing with right now.
+
+01:21:10.880 --> 01:21:17.713 
+OK, So it's good to understand this miss categories because the action you take in fixing the
+
+01:21:17.713 --> 01:21:20.800 
+problem which is miss is always a problem.
+
+01:21:21.240 --> 01:21:25.880 
+Essentially when you heard hear the word miss, it's problem and you want to fix it.
+
+01:21:25.880 --> 01:21:29.560 
+If you want to improve performance and also energy, the question is how do you fix?
+
+01:21:29.640 --> 01:21:31.880 
+It depends on what kind of miss you're dealing with.
+
+01:21:32.440 --> 01:21:37.000 
+So coherence is something that I didn't talk about, but essentially you missed in the cache because
+
+01:21:37.000 --> 01:21:40.640 
+some other processor got the data from your cache and invalidated what you had.
+
+01:21:41.520 --> 01:21:44.200 
+So that's the fourth category which we may talk about.
+
+01:21:44.200 --> 01:21:47.360 
+And that's a complete different problem actually among than these.
+
+01:21:48.040 --> 01:21:50.480 
+OK, so how to reduce each mistype compulsory?
+
+01:21:50.560 --> 01:21:52.320 
+Unfortunately, you cannot reduce it with caching.
+
+01:21:53.640 --> 01:21:59.339 
+Larger blocks can help because if you have a larger block, you may eliminate the cache miss that you
+
+01:21:59.339 --> 01:22:00.080 
+could reduce.
+
+01:22:00.080 --> 01:22:04.230 
+So there's actually something that you can do in caching, but we're going to see something else
+
+01:22:04.230 --> 01:22:05.760 
+which is being much more proactive.
+
+01:22:06.320 --> 01:22:12.002 
+Caching is a reactive approach in the sense that you touch the data, you store it, but what if you
+
+01:22:12.002 --> 01:22:13.800 
+didn't even touch the data yet?
+
+01:22:14.720 --> 01:22:16.040 
+Can can you be more proactive?
+
+01:22:16.360 --> 01:22:16.560 
+Right.
+
+01:22:16.880 --> 01:22:18.120 
+And that's the idea of pre fetching.
+
+01:22:18.760 --> 01:22:20.840 
+And essentially all processors do this.
+
+01:22:21.120 --> 01:22:26.917 
+You know, they anticipate which blocks will be needed soon and they bring the block earlier into the
+
+01:22:26.917 --> 01:22:29.120 
+cache to reduce the compulsory misses.
+
+01:22:29.720 --> 01:22:31.600 
+OK, conflict misses.
+
+01:22:31.760 --> 01:22:33.800 
+Basically more associativity can help.
+
+01:22:34.240 --> 01:22:37.960 
+That's that's the reason why we introduced associativity in the 1st place, right?
+
+01:22:38.480 --> 01:22:42.360 
+We want more associativity is possible.
+
+01:22:43.160 --> 01:22:46.360 
+We want other ways to get more associative without making the cache more associative.
+
+01:22:46.600 --> 01:22:51.610 
+So it's good to think about these and people have introduced a lot of ideas over here that I'm not
+
+01:22:51.610 --> 01:22:52.480 
+going to go into.
+
+01:22:52.720 --> 01:22:53.880 
+A lot of them made their way.
+
+01:22:53.880 --> 01:23:01.449 
+For example, you want to index into your cache not just with bare address fits, but you want them to
+
+01:23:01.449 --> 01:23:07.960 
+go through a function, and that function randomises which address maps to which block.
+
+01:23:08.440 --> 01:23:09.040 
+This is good.
+
+01:23:09.040 --> 01:23:13.622 
+That way you can balance the access across different sets in your cache, as opposed to having one
+
+01:23:13.622 --> 01:23:15.040 
+set that's heavily overloaded.
+
+01:23:16.120 --> 01:23:17.800 
+Basically, you want to reduce set trashing, right?
+
+01:23:18.600 --> 01:23:22.080 
+You can have software hints, you can have victim caches that I'm not going to talk about right now.
+
+01:23:22.720 --> 01:23:25.920 
+Capacity, the way to fix capacity misses.
+
+01:23:25.920 --> 01:23:27.560 
+Utilise cache space better, right?
+
+01:23:28.200 --> 01:23:33.080 
+Keep blocks that will be referenced right or do a better software management.
+
+01:23:33.440 --> 01:23:39.795 
+Divide working set and computations such that each computation set fits into the cache and you, you
+
+01:23:39.795 --> 01:23:41.400 
+don't overload the cache.
+
+01:23:41.400 --> 01:23:42.600 
+Basically that's the idea.
+
+01:23:42.920 --> 01:23:44.400 
+I'm going to show you some examples of this.
+
+01:23:45.240 --> 01:23:48.360 
+So people have developed a lot of techniques to improve cache performance.
+
+01:23:49.320 --> 01:23:50.320 
+We're going to see some of them.
+
+01:23:50.640 --> 01:23:52.000 
+Three fundamental goals exist.
+
+01:23:52.000 --> 01:23:58.734 
+Reduce miss rate, reduce miss latency or miss cost and reduce hit latency or hit cost if that's on
+
+01:23:58.734 --> 01:24:00.040 
+your critical path.
+
+01:24:01.200 --> 01:24:04.440 
+So if you reduce the miss rates, you can reduce performance.
+
+01:24:04.440 --> 01:24:06.280 
+If more costly to refetch blocks are evicted.
+
+01:24:06.280 --> 01:24:07.240 
+We're going to talk about that.
+
+01:24:08.920 --> 01:24:11.920 
+In the end, the above 3 together affect performance, right?
+
+01:24:11.920 --> 01:24:13.320 
+Because reducing mistake is easy.
+
+01:24:14.280 --> 01:24:17.040 
+But then the problem is your hit latency increases, right?
+
+01:24:17.440 --> 01:24:18.480 
+So you got to be very careful.
+
+01:24:19.800 --> 01:24:21.560 
+So people have developed a lot of approaches.
+
+01:24:21.640 --> 01:24:22.760 
+I will go through some of them.
+
+01:24:22.800 --> 01:24:28.895 
+Let me let's let's talk about some software approaches first, because caching is the part where most
+
+01:24:28.895 --> 01:24:34.320 
+programmers try to optimise early on because they know that this makes a huge difference.
+
+01:24:36.200 --> 01:24:41.140 
+So for example, restructuring data access patterns can get you a better cache, iterates,
+
+01:24:41.140 --> 01:24:42.600 
+restructuring data layout.
+
+01:24:43.080 --> 01:24:48.000 
+And compilers do a lot of these optimisations like loop interchange, tiling, blocking, etcetera.
+
+01:24:48.000 --> 01:24:51.000 
+Some of them they do automatically to take advantage of the cache.
+
+01:24:51.840 --> 01:24:52.960 
+Let's take a look at some of them.
+
+01:24:53.600 --> 01:24:57.480 
+So the the first idea is to restructure data layout or data access patterns.
+
+01:24:58.720 --> 01:24:59.840 
+This is a very simple example.
+
+01:24:59.840 --> 01:25:02.720 
+We've seen this before when we talked about vector processing, right?
+
+01:25:02.960 --> 01:25:05.120 
+We talked about erase vectors.
+
+01:25:06.400 --> 01:25:14.746 
+And if you have a vector or array, in this particular case a matrix that's column major XI plus one
+
+01:25:14.746 --> 01:25:17.360 
+J follows XIJ in memory, right?
+
+01:25:18.320 --> 01:25:21.160 
+So you want to access them together to exploit spatial look out.
+
+01:25:22.080 --> 01:25:31.240 
+Whereas XIJ plus one is far away from XIJ because they're essentially in different columns, right?
+
+01:25:31.360 --> 01:25:32.160 
+And we're column major.
+
+01:25:32.160 --> 01:25:34.360 
+So you don't want to access them together.
+
+01:25:35.520 --> 01:25:36.120 
+That's the idea.
+
+01:25:36.120 --> 01:25:42.753 
+Basically, understanding how your data is laid out will enable you to write poor code or change poor
+
+01:25:42.753 --> 01:25:44.080 
+code to better code.
+
+01:25:44.680 --> 01:25:45.360 
+It's very simple.
+
+01:25:45.360 --> 01:25:47.880 
+Basically what we did over here is.
+
+01:25:48.200 --> 01:25:53.558 
+As opposed to accessing things that are far away from each other in main memory, which means that
+
+01:25:53.558 --> 01:25:57.480 
+they're not in the same cache block, they're in different cache blocks.
+
+01:25:59.680 --> 01:26:05.991 
+We basically access things that are close together in main memory, and we did that by basically
+
+01:26:05.991 --> 01:26:07.520 
+doing loop interchange.
+
+01:26:07.560 --> 01:26:14.583 
+What we did is as opposed to going through the inner loop column by column, which are far away from
+
+01:26:14.583 --> 01:26:18.840 
+each other, we go through the inner group row by row, right?
+
+01:26:18.880 --> 01:26:19.480 
+That's the idea.
+
+01:26:20.720 --> 01:26:23.800 
+And you can do this, compilers can do this, and you should.
+
+01:26:24.000 --> 01:26:27.040 
+Now that you've seen the slide, you should never write poor code like that, right?
+
+01:26:28.320 --> 01:26:28.600 
+OK.
+
+01:26:30.120 --> 01:26:34.547 
+There's also another optimization called blocking or tiling, and the idea here is actually more
+
+01:26:34.547 --> 01:26:34.920 
+general.
+
+01:26:35.120 --> 01:26:41.667 
+You divide loops operating on arrays or vectors or matrices into computation chunks so that each
+
+01:26:41.667 --> 01:26:44.600 
+chunk can hold its data in the cache right.
+
+01:26:46.280 --> 01:26:49.080 
+This avoids cache conflicts between different chunks of computation.
+
+01:26:49.440 --> 01:26:54.464 
+So essentially you divide the working set so that each piece of the working set, smaller working set
+
+01:26:54.464 --> 01:26:55.720 
+fits in the cache, right?
+
+01:26:55.720 --> 01:26:56.520 
+I'll give you an example.
+
+01:26:56.520 --> 01:26:57.520 
+It's also called tiling.
+
+01:26:58.920 --> 01:27:00.560 
+And let's take a look at an example.
+
+01:27:00.560 --> 01:27:06.448 
+You can actually see more in our GPU programming lecture, but essentially same, same memory location
+
+01:27:06.448 --> 01:27:09.040 
+I accessed by neighboring threads over here.
+
+01:27:09.520 --> 01:27:14.280 
+And the idea is to have a program that applies a filter on every pixel of an image, right?
+
+01:27:14.880 --> 01:27:21.420 
+So it's a very regular program if you want to take advantage of data reuse, as opposed to operating
+
+01:27:21.420 --> 01:27:27.960 
+on the entire image, you divide the image into sub images basically because the entire image may be
+
+01:27:27.960 --> 01:27:29.480 
+too big for your cache.
+
+01:27:30.080 --> 01:27:32.920 
+Or if you want to fit this in your register file, the entire image may be too big.
+
+01:27:33.600 --> 01:27:38.655 
+Divide the image into smaller sub images into tiles such that they can be loaded into whatever
+
+01:27:38.655 --> 01:27:40.000 
+hierarchy you don't want.
+
+01:27:40.000 --> 01:27:40.800 
+Misses it, right?
+
+01:27:41.080 --> 01:27:44.280 
+In this particular case, shared memory, scratch pad memory, right?
+
+01:27:45.600 --> 01:27:47.600 
+So this is the code essentially to do that.
+
+01:27:48.000 --> 01:27:49.440 
+So that's tiling basically.
+
+01:27:50.240 --> 01:27:54.360 
+Don't operate on the entire grey part, operate on the green part first.
+
+01:27:55.360 --> 01:27:56.000 
+That's the idea.
+
+01:27:56.360 --> 01:27:58.320 
+So I could apply this to matrix multiplication.
+
+01:27:58.440 --> 01:28:01.040 
+Again, I'll go through this relatively quickly because it's the same idea.
+
+01:28:01.600 --> 01:28:04.560 
+You have two input matrices that are in some layout row major.
+
+01:28:04.560 --> 01:28:05.840 
+It doesn't matter in the end.
+
+01:28:06.320 --> 01:28:13.450 
+But if you operate on two big matrices, you'll get a lot of cache misses because they don't fit in
+
+01:28:13.450 --> 01:28:14.760 
+your cache, right?
+
+01:28:16.120 --> 01:28:17.600 
+So this is what we want to do in the end.
+
+01:28:17.720 --> 01:28:19.680 
+We want to multiply them and get C right?
+
+01:28:21.280 --> 01:28:24.800 
+So if you have naive implementation, you get poor cache locality.
+
+01:28:25.480 --> 01:28:29.678 
+But if you actually and the reason is you have consecutive accesses to B that are far from each
+
+01:28:29.678 --> 01:28:33.480 
+other in different cache lines, and every access to B is likely to cause a cache miss.
+
+01:28:34.360 --> 01:28:40.686 
+Now if you reduce your dimensions, meaning operate on a small piece of each matrix or smaller tiles
+
+01:28:40.686 --> 01:28:46.630 
+that fit in the cache, you can keep them in your cache or in the scratch pad memory or in the
+
+01:28:46.630 --> 01:28:50.720 
+register file basically depending on what you're optimising for.
+
+01:28:51.160 --> 01:28:56.590 
+And the idea is you carve out tiles like this that are smaller than the entire matrices and you do
+
+01:28:56.590 --> 01:28:57.920 
+the operations on tiles.
+
+01:28:58.400 --> 01:29:00.800 
+Once you're done with that tile, you move to the next tile.
+
+01:29:01.600 --> 01:29:02.200 
+So that's the idea.
+
+01:29:02.200 --> 01:29:07.120 
+If you need communication inter tiles, then you need to deal with that somehow.
+
+01:29:08.160 --> 01:29:10.320 
+But this gives you a lot of cache locality in the end.
+
+01:29:11.320 --> 01:29:16.775 
+OK, so basically you're multiplying small sub matrices as opposed to the huge matrix that is going
+
+01:29:16.775 --> 01:29:18.000 
+to destroy your cache.
+
+01:29:18.640 --> 01:29:20.040 
+So that's a very effective optimization.
+
+01:29:20.040 --> 01:29:23.400 
+And if you're interested, we have more lectures that talk about this.
+
+01:29:24.000 --> 01:29:24.920 
+Let me give you another one.
+
+01:29:25.920 --> 01:29:30.972 
+OK, this is the only one I'll give and then we'll we'll, we'll stop, we'll continue tomorrow
+
+01:29:30.972 --> 01:29:32.400 
+restructuring data layout.
+
+01:29:32.400 --> 01:29:35.640 
+I'll go through it relatively quickly because hopefully it'll be obvious by now.
+
+01:29:35.640 --> 01:29:40.120 
+We're what we're doing over here is a pointer based traversal of a linked list.
+
+01:29:40.920 --> 01:29:44.480 
+You have a assume that you have a huge linked list and you're searching for a key over there.
+
+01:29:45.880 --> 01:29:47.400 
+1 billion nodes, unique keys.
+
+01:29:48.360 --> 01:29:53.040 
+So we have this code over here and it doesn't have a good cache iterate.
+
+01:29:54.800 --> 01:29:55.280 
+Why?
+
+01:29:56.160 --> 01:29:56.440 
+What?
+
+01:29:56.440 --> 01:29:59.800 
+Because you have some frequently accessed fields.
+
+01:30:00.200 --> 01:30:04.271 
+This while you're going through the linked list, you're accessing every single node and you're
+
+01:30:04.271 --> 01:30:07.000 
+comparing the key that's stored in the node with the input key.
+
+01:30:08.680 --> 01:30:12.969 
+The likelihood that you'll get a match is very low because that's why you're that's what you're
+
+01:30:12.969 --> 01:30:13.240 
+doing.
+
+01:30:13.240 --> 01:30:17.360 
+You're searching a unique key among 1 billion unique keys.
+
+01:30:18.000 --> 01:30:19.160 
+You're not going to get that match.
+
+01:30:19.160 --> 01:30:23.640 
+So likelihood that you're going to access the next node is very high, right?
+
+01:30:24.000 --> 01:30:29.331 
+So there's a frequently accessed field of the data structure, and there's an extremely infrequently
+
+01:30:29.331 --> 01:30:32.240 
+accessed field of the data structure, rarely accessed.
+
+01:30:32.960 --> 01:30:36.040 
+The problem is those rarely accessed fields.
+
+01:30:36.520 --> 01:30:41.507 
+In this particular case, I guess you're searching for a student with a student ID, let's say, or
+
+01:30:41.507 --> 01:30:45.560 
+name a hash of the name, and you want to get their full name and their school.
+
+01:30:47.200 --> 01:30:48.400 
+I guess it's not a hash of the name.
+
+01:30:48.400 --> 01:30:49.080 
+That doesn't make sense.
+
+01:30:49.080 --> 01:30:49.680 
+So it's ID.
+
+01:30:49.680 --> 01:30:52.840 
+Maybe you want to get their name and school.
+
+01:30:53.280 --> 01:30:57.120 
+The data structure stores all of them in sequence next to each other, right?
+
+01:30:57.520 --> 01:30:58.800 
+That's the node data structure.
+
+01:30:59.720 --> 01:31:02.400 
+And unfortunately, some of them are very frequently accessed.
+
+01:31:02.400 --> 01:31:04.360 
+Some of them are not frequently accessed at all.
+
+01:31:05.000 --> 01:31:10.632 
+So this was not good because other fields, meaning name and school, occupy most of the cache block,
+
+01:31:10.632 --> 01:31:12.680 
+even though they're rarely accessed.
+
+01:31:13.800 --> 01:31:14.840 
+So you want to separate them.
+
+01:31:15.080 --> 01:31:15.760 
+That's the idea.
+
+01:31:16.240 --> 01:31:18.120 
+So this this separated.
+
+01:31:18.400 --> 01:31:22.912 
+The idea is if you separate the rarely accessed field of a data structure and pack them into a
+
+01:31:22.912 --> 01:31:26.560 
+separate data structure, you'll get much better cache locality in this code.
+
+01:31:27.800 --> 01:31:28.960 
+So now you have.
+
+01:31:29.640 --> 01:31:36.517 
+Node structure next and key are frequently accessed and you have a pointer, a small pointer to the
+
+01:31:36.517 --> 01:31:37.360 
+actual data.
+
+01:31:37.360 --> 01:31:40.520 
+That's huge and you're not wasting a lot of cache space.
+
+01:31:40.560 --> 01:31:43.920 
+And you can probably optimise this even more, but this buys you already a lot.
+
+01:31:45.120 --> 01:31:51.610 
+OK, so the general idea is separate hot data from cold data such that they are not in the same cache
+
+01:31:51.610 --> 01:31:52.000 
+block.
+
+01:31:52.440 --> 01:31:53.440 
+That's the general idea.
+
+01:31:54.120 --> 01:31:56.720 
+Identify your hot data, identify your cold data.
+
+01:31:56.720 --> 01:31:58.000 
+Don't put them together, right?
+
+01:31:58.920 --> 01:32:00.880 
+Who should do this becomes a question, right?
+
+01:32:01.680 --> 01:32:04.720 
+Programmer, compiler, hardware.
+
+01:32:05.680 --> 01:32:06.600 
+It's good to think about that.
+
+01:32:06.600 --> 01:32:07.800 
+This is the core of this course.
+
+01:32:07.800 --> 01:32:08.160 
+Basically.
+
+01:32:08.160 --> 01:32:09.000 
+Who should do what?
+
+01:32:10.280 --> 01:32:12.800 
+Everyone can do it at some different cost.
+
+01:32:14.000 --> 01:32:17.120 
+If the programmer does it, that's great, because they've avoided a lot of headache.
+
+01:32:17.600 --> 01:32:21.912 
+If the hardware does it, it's more complex, because now the hardware needs to determine what's hot
+
+01:32:21.912 --> 01:32:22.880 
+and what's not, right?
+
+01:32:23.200 --> 01:32:23.880 
+That's a problem.
+
+01:32:24.080 --> 01:32:24.800 
+Not so easy.
+
+01:32:26.280 --> 01:32:29.120 
+This is semantic information that the programmer can easily figure out.
+
+01:32:29.280 --> 01:32:30.400 
+I think AI can do this.
+
+01:32:30.400 --> 01:32:32.200 
+If it cannot do it, we should kick out that AI.
+
+01:32:33.440 --> 01:32:35.080 
+OK, so this is a good place to stop.
+
+01:32:35.320 --> 01:32:40.622 
+We're going to continue tomorrow with some other ideas and then we'll transition to pre fetching
+
+01:32:40.622 --> 01:32:41.120 
+tomorrow.
+
+01:32:42.040 --> 01:32:42.560 
+See you tomorrow.
+

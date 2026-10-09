@@ -1,0 +1,4679 @@
+WEBVTT
+
+00:00:01.905 --> 00:00:03.825 
+Ich what's get started.
+
+00:00:04.945 --> 00:00:12.922 
+Looks like it's a Friday, so you can predict whether it's a Friday or not based on the attendance
+
+00:00:12.922 --> 00:00:13.745 
+over here.
+
+00:00:18.065 --> 00:00:20.425 
+We're going to cover a lot of exciting things today.
+
+00:00:20.425 --> 00:00:24.065 
+I mean, yesterday was exciting also, but we covered a lot of the basics of caching.
+
+00:00:24.145 --> 00:00:28.812 
+We're going to talk a little bit more about caching since it's such an important topic, and we're
+
+00:00:28.812 --> 00:00:30.545 
+going to talk about advanced caches.
+
+00:00:31.425 --> 00:00:34.905 
+And then we're going to switch to prefetching in the later part of this lecture.
+
+00:00:35.065 --> 00:00:36.385 
+Does that sound good?
+
+00:00:37.105 --> 00:00:40.625 
+And these are all techniques that are employed very commonly in existing processors.
+
+00:00:41.945 --> 00:00:45.105 
+Essentially everything you see in classes employed very commonly.
+
+00:00:45.545 --> 00:00:49.065 
+And some of the things that may not be yet employed commonly will be employed commonly.
+
+00:00:49.265 --> 00:00:50.265 
+So don't worry about that.
+
+00:00:51.145 --> 00:00:56.945 
+For example, the Seri bus processor that I keep kept showing the wafer scale chip.
+
+00:00:57.905 --> 00:01:02.385 
+I've been showing that for a long time, since they started and recently they IPO.
+
+00:01:02.385 --> 00:01:04.905 
+Then I think a lot of people at Cerebus are quite happy.
+
+00:01:05.385 --> 00:01:12.815 
+But this also shows that people are actually building these really, really different kind of chips
+
+00:01:12.815 --> 00:01:19.185 
+today that nobody ever really imagined would be commercial even 10 years ago, right?
+
+00:01:19.825 --> 00:01:25.243 
+I know that when Cerebus started, they had a lot of criticism, etcetera, but now a lot of them are
+
+00:01:25.243 --> 00:01:30.606 
+actually pretty happy and hopefully they will see different in the world that can enable us to do
+
+00:01:30.606 --> 00:01:32.265 
+different things in the world.
+
+00:01:32.825 --> 00:01:36.465 
+So it's good to actually think about how you can make the trade-offs.
+
+00:01:36.465 --> 00:01:41.202 
+Maybe you can be starting a company 10 years down the road that's actually changing the world,
+
+00:01:41.202 --> 00:01:41.505 
+right?
+
+00:01:42.185 --> 00:01:43.985 
+Or you could be doing research that's changing the world.
+
+00:01:45.225 --> 00:01:45.505 
+OK.
+
+00:01:45.505 --> 00:01:46.785 
+There are different ways of changing the world.
+
+00:01:47.745 --> 00:01:49.505 
+OK, We're going to talk about advanced caches.
+
+00:01:49.505 --> 00:01:52.265 
+This is an updated version of their readings slide.
+
+00:01:52.465 --> 00:01:55.065 
+We're going to see some more of this today.
+
+00:01:55.065 --> 00:01:56.465 
+We're going to start prefetching next week.
+
+00:01:56.465 --> 00:01:59.745 
+We're going to cover virtual memory and some more advanced topics.
+
+00:02:00.945 --> 00:02:02.425 
+We were talking about cache performance.
+
+00:02:02.425 --> 00:02:04.065 
+We did talk about cache performance.
+
+00:02:04.225 --> 00:02:06.265 
+We talked about improving cache performance.
+
+00:02:06.305 --> 00:02:08.545 
+We did talk about a bunch of techniques to do that.
+
+00:02:08.945 --> 00:02:10.505 
+There are many, many more techniques.
+
+00:02:10.505 --> 00:02:12.945 
+We're going to talk about some more techniques today.
+
+00:02:13.745 --> 00:02:15.105 
+We talked about software approaches.
+
+00:02:15.105 --> 00:02:19.985 
+Software is actually has a lot of say on how you can exploit the cache.
+
+00:02:19.985 --> 00:02:24.785 
+You can write code that's really terrible in terms of caching, or you can write the same code.
+
+00:02:24.985 --> 00:02:30.985 
+Well, not same code, but you can you can do the same computation with much better cache performance.
+
+00:02:31.025 --> 00:02:35.785 
+So it's good to understand how your machine is if you want to get the high performance right.
+
+00:02:36.705 --> 00:02:42.139 
+But today I'm going to talk a little bit more about missed latency and cost, which we discussed, and
+
+00:02:42.139 --> 00:02:47.465 
+how you can actually change your cache design parameters and algorithms to take this into account.
+
+00:02:48.625 --> 00:02:50.665 
+So we've already discussed some of this actually.
+
+00:02:50.665 --> 00:02:53.025 
+What is the missed latency or missed cost affected by?
+
+00:02:53.025 --> 00:02:58.528 
+Basically, how long does it take to fetch the data When you get a cache miss, it's affected by
+
+00:02:58.528 --> 00:02:59.465 
+multiple things.
+
+00:02:59.625 --> 00:03:02.025 
+One of the things is where does the miss get serviced from?
+
+00:03:02.225 --> 00:03:03.505 
+Where is the cache block?
+
+00:03:03.985 --> 00:03:07.545 
+And the second thing is, how much does the miss stall the processor, right?
+
+00:03:07.745 --> 00:03:11.865 
+If the latency of the miss is hidden, maybe you don't care about that miss as much.
+
+00:03:11.865 --> 00:03:15.705 
+And we talked about a lot of latency tolerance techniques like out of order execution, right?
+
+00:03:15.705 --> 00:03:19.265 
+Out of order execution was invented to tolerate long latency operations.
+
+00:03:20.065 --> 00:03:25.225 
+Now, if the cache miss latency to the next level is 10 cycles, you can tolerate it.
+
+00:03:25.225 --> 00:03:30.225 
+Maybe it becomes much harder if it's 607 hundred 1000 cycles.
+
+00:03:30.545 --> 00:03:35.330 
+So it's good to think about that some, some cache misses are less costly, some cache misses are more
+
+00:03:35.330 --> 00:03:35.665 
+costly.
+
+00:03:36.025 --> 00:03:37.745 
+But there's another another aspect to this.
+
+00:03:37.865 --> 00:03:39.505 
+How much does the miss stall the processor?
+
+00:03:40.345 --> 00:03:42.905 
+So I'll just go through these relatively quickly.
+
+00:03:42.905 --> 00:03:46.065 
+What level of the cache in the hierarchy can a miss get service from?
+
+00:03:46.585 --> 00:03:48.825 
+Whether it's a row hit versus row conflict.
+
+00:03:48.945 --> 00:03:54.255 
+Remember the DM hierarchy, whether it's a bank, rank or channel conflict, you can actually have
+
+00:03:54.255 --> 00:03:58.225 
+conflicts that actually lengthen the time it takes to service the miss.
+
+00:03:58.545 --> 00:04:02.945 
+So if you're unlucky, you could actually get delayed significantly in the memory system, right?
+
+00:04:03.825 --> 00:04:08.434 
+Queuing delays in the memory controller and the interconnect, whether you actually whether the cache
+
+00:04:08.434 --> 00:04:11.385 
+block that you're accessing is in local memory or remote memory.
+
+00:04:11.385 --> 00:04:12.465 
+We discussed that, right?
+
+00:04:13.345 --> 00:04:15.065 
+It could be in a remote server, for example.
+
+00:04:15.065 --> 00:04:17.145 
+It could be in the same rack, it could be in some other rack.
+
+00:04:17.945 --> 00:04:19.145 
+So it's good to consider these.
+
+00:04:19.585 --> 00:04:24.025 
+And there are many, many other things that affect the latency of the miss.
+
+00:04:24.025 --> 00:04:25.425 
+Where does the miss get service from?
+
+00:04:25.945 --> 00:04:27.025 
+There's also this aspect.
+
+00:04:27.025 --> 00:04:28.785 
+How much does the miss stall the processor?
+
+00:04:28.985 --> 00:04:29.545 
+Is it is it?
+
+00:04:29.705 --> 00:04:36.745 
+Is it's latency overlapped with other latencies like computation latency or other miss latencies?
+
+00:04:37.145 --> 00:04:39.785 
+Is the data immediately needed by the processor right.
+
+00:04:40.145 --> 00:04:42.625 
+This makes the difference between load miss and store miss.
+
+00:04:42.985 --> 00:04:50.947 
+Maybe you get a cache miss on a block that is needed only by stores, but then no load references it,
+
+00:04:50.947 --> 00:04:51.425 
+right?
+
+00:04:51.745 --> 00:04:56.898 
+That means that that is probably less important, but at some point a load may come and reference it
+
+00:04:56.898 --> 00:04:58.825 
+and then it becomes important, right?
+
+00:04:59.265 --> 00:05:01.705 
+So this is called the criticality or importance of the block.
+
+00:05:01.705 --> 00:05:03.585 
+It's good to consider that as well, right?
+
+00:05:03.585 --> 00:05:04.625 
+Remember we talked about critical.
+
+00:05:04.785 --> 00:05:09.505 
+Word first in yesterday's lecture, some words are more critical because you need that immediately.
+
+00:05:10.065 --> 00:05:17.617 
+So it's good to have an understanding of what accesses that you're making, what that the misses that
+
+00:05:17.617 --> 00:05:19.505 
+you're trying to service.
+
+00:05:19.545 --> 00:05:22.145 
+What is the different levels of criticality among them?
+
+00:05:23.545 --> 00:05:26.305 
+Is the incoming block going to evict a longer to refetch block?
+
+00:05:26.425 --> 00:05:27.745 
+That's also good to think about, right?
+
+00:05:28.305 --> 00:05:30.905 
+OK, so these are some things that affect miss latency and cost.
+
+00:05:31.585 --> 00:05:34.745 
+One thing that affects miss latency and cost is memory level parallelism.
+
+00:05:34.825 --> 00:05:40.721 
+This is a broad concept of the notion or concept of generating and servicing multiple memory axis in
+
+00:05:40.721 --> 00:05:41.665 
+parallel, right?
+
+00:05:42.265 --> 00:05:47.938 
+So if you look at this picture over here, the processor generates a cache miss because it gets to a
+
+00:05:47.938 --> 00:05:48.225 
+load.
+
+00:05:48.745 --> 00:05:54.158 
+And if it's an isolated miss, right, it waits for that miss because it's window gets stalled because
+
+00:05:54.158 --> 00:05:57.785 
+it it doesn't have a very large out of order reorder buffer, right?
+
+00:05:59.145 --> 00:06:04.865 
+OK, so it waits for that miss, but the processor may also generate 2 cache misses concurrently.
+
+00:06:05.505 --> 00:06:12.147 
+And if you think about these, even though there are two cache misses over here, the processor waits
+
+00:06:12.147 --> 00:06:13.825 
+for the length of 1 miss.
+
+00:06:13.825 --> 00:06:16.305 
+Assuming this, they're the same length, right?
+
+00:06:16.585 --> 00:06:19.945 
+Meaning that most of the latency of B&C are overlapped over here.
+
+00:06:20.945 --> 00:06:25.185 
+And if you think about this, these are a little bit less costly misses.
+
+00:06:26.345 --> 00:06:33.205 
+Another way of thinking about this is if I were to eliminate, if I were to cache one of these three
+
+00:06:33.205 --> 00:06:36.185 
+blocks, only ABC, which one should I cache?
+
+00:06:37.705 --> 00:06:38.465 
+What do you guys think?
+
+00:06:39.545 --> 00:06:40.945 
+Which which miss would you eliminate?
+
+00:06:40.945 --> 00:06:43.545 
+Which of these three oranges would you eliminate?
+
+00:06:43.745 --> 00:06:44.105 
+Yes, A.
+
+00:06:44.825 --> 00:06:45.625 
+There you go.
+
+00:06:47.985 --> 00:06:48.505 
+Exactly.
+
+00:06:48.505 --> 00:06:48.705 
+Yeah.
+
+00:06:48.705 --> 00:06:54.385 
+If you eliminate A, you basically reduce that timeline because you don't need to wait for that.
+
+00:06:54.385 --> 00:06:58.394 
+If you eliminate B, unfortunately you're going to wait for C, and if you eliminate C, you're going
+
+00:06:58.394 --> 00:06:59.745 
+to wait for B, vice versa, right?
+
+00:07:00.625 --> 00:07:02.145 
+So this is the cost of a miss.
+
+00:07:02.145 --> 00:07:04.305 
+Basically, A is an isolated miss.
+
+00:07:04.305 --> 00:07:12.985 
+B&C are parallel misses, and there are many techniques that are proposed to improve MLP.
+
+00:07:12.985 --> 00:07:14.345 
+Out of order execution was one of them.
+
+00:07:14.465 --> 00:07:17.385 
+Actually, one of the biggest benefits of out of order execution is memory level parallelism.
+
+00:07:17.385 --> 00:07:23.025 
+It generates, it gets to the next cache miss earlier than you would otherwise, Right?
+
+00:07:24.225 --> 00:07:24.465 
+OK.
+
+00:07:24.465 --> 00:07:25.625 
+And MLP actually varies.
+
+00:07:25.625 --> 00:07:29.474 
+We're going to see another technique called run ahead execution in the prefetching lecture that I
+
+00:07:29.474 --> 00:07:30.665 
+worked a lot on during my PhD.
+
+00:07:30.665 --> 00:07:31.785 
+So it's very close to my heart.
+
+00:07:32.945 --> 00:07:35.425 
+But basically, MLP in the system varies.
+
+00:07:35.425 --> 00:07:37.785 
+Some misses are isolated and some misses are parallel.
+
+00:07:39.225 --> 00:07:40.465 
+How does this affect cache replace?
+
+00:07:40.865 --> 00:07:43.345 
+I did something over here, but it came back.
+
+00:07:44.345 --> 00:07:45.065 
+It's not that.
+
+00:07:46.305 --> 00:07:46.665 
+OK.
+
+00:07:48.825 --> 00:07:53.632 
+OK, So if you look at traditional cache replacement policies, they don't take into account their
+
+00:07:53.632 --> 00:07:54.985 
+miscount or cost of a miss.
+
+00:07:55.585 --> 00:08:01.864 
+Implicit assumption is that reducing miscount reduces memory related stall time, but if you actually
+
+00:08:01.864 --> 00:08:07.705 
+have misses with varying cost or varying memory level parallelism, it breaks this assumption.
+
+00:08:09.145 --> 00:08:14.838 
+Eliminating an isolated miss, as you have observed helps performance more than eliminating a
+
+00:08:14.838 --> 00:08:15.705 
+parallel miss.
+
+00:08:16.225 --> 00:08:21.198 
+Similarly, eliminating a higher latency miss could help performance more than eliminating a lower
+
+00:08:21.198 --> 00:08:21.865 
+latency miss.
+
+00:08:22.105 --> 00:08:26.665 
+Then the idea is basically, let's take this into account in the caching mechanisms.
+
+00:08:26.665 --> 00:08:29.025 
+I'm not going to give you the exact ways of doing that.
+
+00:08:29.145 --> 00:08:31.825 
+You're, you're, you should read the papers for doing that.
+
+00:08:32.145 --> 00:08:38.709 
+But I'm going to give you something that we did like 20 years ago, more than 20 years ago actually,
+
+00:08:38.709 --> 00:08:44.545 
+that demonstrates that this is true in real workloads as well as in this simple example.
+
+00:08:44.945 --> 00:08:52.117 
+So if you look at the simple example, let's assume that you have a loop and you keep executing this
+
+00:08:52.117 --> 00:08:56.465 
+loop and you're accessing blocks P4P3P2P1 and then P1P2P3P4.
+
+00:08:56.665 --> 00:09:00.225 
+And the accesses to these are parallel because of the way you structured the code, etcetera.
+
+00:09:00.745 --> 00:09:03.705 
+And then you access maybe S1S2S3.
+
+00:09:03.705 --> 00:09:06.065 
+These blocks and the the access to those are serial.
+
+00:09:06.865 --> 00:09:09.785 
+And let's assume that or isolated.
+
+00:09:10.185 --> 00:09:12.345 
+Let's assume that you have only four cache blocks.
+
+00:09:13.025 --> 00:09:14.625 
+You can cache in the same set.
+
+00:09:14.625 --> 00:09:15.705 
+They all have to the same set.
+
+00:09:16.465 --> 00:09:19.305 
+We're going to look at how 2 replacement algorithms perform.
+
+00:09:19.305 --> 00:09:24.504 
+One is minimising the miscount that's Beledy's optimal that people considered for a very long time
+
+00:09:24.504 --> 00:09:26.945 
+to be optimal under some conditions of course.
+
+00:09:27.385 --> 00:09:33.625 
+And then another policy that is more MLP aware as we called or basically reduces isolated misses.
+
+00:09:35.265 --> 00:09:37.505 
+So let's take a look at how this works.
+
+00:09:37.505 --> 00:09:44.823 
+So if you actually have Beledy's optimal, you in the steady state, you will get all hits over here
+
+00:09:44.823 --> 00:09:49.305 
+you can convince yourself and what bellies optimal would do.
+
+00:09:49.305 --> 00:09:51.585 
+This is the state of the cache at this point in time.
+
+00:09:53.345 --> 00:10:00.131 
+When you get to S1, Bellies optimal will policy would replace the cache block that's going to be
+
+00:10:00.131 --> 00:10:04.585 
+referenced furthest into the future, which is really P1, right?
+
+00:10:06.505 --> 00:10:07.585 
+And I that's what I did.
+
+00:10:07.705 --> 00:10:10.665 
+I got a miss over here, but I replaced P1 with S1.
+
+00:10:11.625 --> 00:10:16.369 
+Beldi's optimal When you get, when you get the miss S2, it will replace the cache block that would
+
+00:10:16.369 --> 00:10:21.065 
+be referenced furthest into the future, which is really S1 in this case if you look at that loop.
+
+00:10:22.105 --> 00:10:26.785 
+So S1 would be replaced with S2, and similarly S2 would be replaced with S3.
+
+00:10:27.825 --> 00:10:34.302 
+And when you get back to the original loop, you'll get three hits over here and one miss, and you
+
+00:10:34.302 --> 00:10:35.905 
+will replace S3 with P1.
+
+00:10:36.785 --> 00:10:38.785 
+OK, that's the steady state.
+
+00:10:39.425 --> 00:10:40.545 
+So that's where all these optimal.
+
+00:10:40.545 --> 00:10:44.825 
+I kind of simulated it relatively quickly, but if you look over here, you get 4 misses, right?
+
+00:10:45.025 --> 00:10:45.985 
+Four cache misses.
+
+00:10:46.705 --> 00:10:48.785 
+The processor has four stalls.
+
+00:10:48.785 --> 00:10:51.865 
+It stalls for this miss once.
+
+00:10:52.905 --> 00:10:54.265 
+It doesn't stall for this.
+
+00:10:54.265 --> 00:10:55.865 
+Unfortunately, this is not very well aligned.
+
+00:10:56.065 --> 00:10:57.425 
+This miss corresponds this stall.
+
+00:10:57.425 --> 00:10:58.465 
+This miss corresponds this stall.
+
+00:10:58.465 --> 00:11:00.625 
+This miss correspond this stall, and this miss corresponds this stall.
+
+00:11:01.145 --> 00:11:08.505 
+So it stalls for four misses, three of these S1S2S3 and also ones for P1, right?
+
+00:11:09.265 --> 00:11:10.025 
+So this sounds good.
+
+00:11:10.145 --> 00:11:17.016 
+And if you optimise your cache replacement policy, regardless of the cost of a miss, this is the
+
+00:11:17.016 --> 00:11:22.385 
+best you can do actually, assuming against under some conditions right now.
+
+00:11:22.385 --> 00:11:27.201 
+Let's take a look at how you could do better in terms of execution time, not necessarily number of
+
+00:11:27.201 --> 00:11:27.545 
+misses.
+
+00:11:27.665 --> 00:11:30.265 
+Maybe number of misses is not what we care about in the end.
+
+00:11:30.825 --> 00:11:32.105 
+And this is actually surprising.
+
+00:11:32.225 --> 00:11:36.812 
+I think it's good to demonstrate that if you increase the misses, you can improve performance,
+
+00:11:36.812 --> 00:11:37.105 
+right?
+
+00:11:38.785 --> 00:11:42.545 
+And we actually did that with simulation and also real system, but I'm not going to talk about that.
+
+00:11:42.865 --> 00:11:48.940 
+So basically if you do performance of a replacement or MLP of a replacement, you would design a
+
+00:11:48.940 --> 00:11:52.585 
+replacement policy that keeps S1S2S3 in the cache, right?
+
+00:11:53.105 --> 00:11:55.465 
+You have four blocks available in the cache.
+
+00:11:55.465 --> 00:11:59.545 
+Keep three of them in the cache and I don't really care what else I keep.
+
+00:11:59.545 --> 00:12:01.185 
+Actually you could do random and the rest 1.
+
+00:12:01.545 --> 00:12:08.265 
+So you would get basically hits on S1S2 S 3 and here you would keep replacing P4.
+
+00:12:09.025 --> 00:12:13.025 
+You'd get essentially a bunch of misses.
+
+00:12:13.025 --> 00:12:14.745 
+Something is wrong with the animation over here.
+
+00:12:14.745 --> 00:12:23.886 
+But anyway, basically the key idea is you would get misses on P3P2P1 over here and hits on P4 and
+
+00:12:23.886 --> 00:12:25.865 
+you would get misses.
+
+00:12:26.265 --> 00:12:35.182 
+Well, A1 miss on P1 over here and no, you would get misses on P2P3P4 over here and you would hit P1
+
+00:12:35.182 --> 00:12:37.705 
+because that's in the cache.
+
+00:12:39.105 --> 00:12:47.004 
+So if you look over here, we got 6 misses, 123456, but we have only two stalls because the misses
+
+00:12:47.004 --> 00:12:50.425 
+are really clustered in clusters of three.
+
+00:12:51.945 --> 00:12:56.265 
+And we saved a lot of cycles because we got rid of these isolated misses.
+
+00:12:57.185 --> 00:13:01.099 
+So I think this is the sort of creativity that I really like in computing design, computer
+
+00:13:01.099 --> 00:13:01.665 
+architecture.
+
+00:13:02.145 --> 00:13:07.185 
+You come out with an insight, say OK, I'm going to question this 60 year old assumption.
+
+00:13:08.185 --> 00:13:12.867 
+And the assumption was minimising misses actually improves performance all the time, or at least
+
+00:13:12.867 --> 00:13:14.185 
+doesn't reduce performance.
+
+00:13:14.705 --> 00:13:20.025 
+And you show based on what you know of how the system works that that is not true, right?
+
+00:13:20.465 --> 00:13:22.025 
+And that's the demonstration that that's not true.
+
+00:13:22.025 --> 00:13:26.225 
+Then the question becomes, OK, this is very interesting, how do I take advantage of it?
+
+00:13:26.705 --> 00:13:31.505 
+How do I build a mechanism that keeps S1S2 and S3 in the cache?
+
+00:13:31.505 --> 00:13:40.785 
+And the idea in this work is really to figure out, so there's some stability in whether misses are
+
+00:13:40.785 --> 00:13:42.585 
+serial or parallel.
+
+00:13:42.825 --> 00:13:47.385 
+And if you actually keep track of what happened in the past, you can relatively easily identify
+
+00:13:47.385 --> 00:13:51.465 
+which miss is going to be serial, which miss is going to be parallel into the future.
+
+00:13:51.825 --> 00:13:57.963 
+And based on that information, you can actually skew your replacement policy such that it keeps the
+
+00:13:57.963 --> 00:13:59.265 
+serial misses, right?
+
+00:13:59.385 --> 00:14:00.345 
+That's the idea over here.
+
+00:14:00.825 --> 00:14:06.385 
+But you cannot do that very easily, it turns out, because LRU is very strong.
+
+00:14:06.385 --> 00:14:08.625 
+Also there's some sort of LRU behaviour that happens.
+
+00:14:08.625 --> 00:14:10.425 
+So there are different access patterns.
+
+00:14:11.025 --> 00:14:13.145 
+So you need to take into account some other access patterns.
+
+00:14:13.145 --> 00:14:15.505 
+So in the end, you need to design A hybrid replacement policy.
+
+00:14:15.785 --> 00:14:18.225 
+One is MLP aware 1 is more LRU friendly.
+
+00:14:18.545 --> 00:14:24.337 
+And you put them together and you decide which set uses which policy because the access patterns to
+
+00:14:24.337 --> 00:14:25.625 
+different sets differ.
+
+00:14:26.585 --> 00:14:28.545 
+And that's the design aspect as you can see, right?
+
+00:14:28.745 --> 00:14:31.945 
+You come out with a new principle and then you implement the design.
+
+00:14:32.865 --> 00:14:38.145 
+And I like talking about this so because hopefully this is the way to design cache replacement
+
+00:14:38.145 --> 00:14:43.425 
+policies going into the future and people actually have incorporated some of these in designs.
+
+00:14:44.105 --> 00:14:47.225 
+OK, let me give you another example of parallelism in memory access.
+
+00:14:47.625 --> 00:14:51.825 
+So if you look at a memory hierarchy, it looks like this today.
+
+00:14:51.825 --> 00:14:57.105 
+Basically MC is the memory controller, LLC is last level cache in the baseline.
+
+00:14:57.105 --> 00:15:03.761 
+What you do is you serially access L1L2 last level cache and eventually figure out that the block
+
+00:15:03.761 --> 00:15:04.585 
+that you're.
+
+00:15:04.705 --> 00:15:06.545 
+Looking for is not on chip, right?
+
+00:15:07.705 --> 00:15:09.545 
+So the processor is stalled for a long time.
+
+00:15:09.625 --> 00:15:13.865 
+Let's say this is an example latency tolerance limit of reorder buffer over here.
+
+00:15:14.065 --> 00:15:16.545 
+If you're lucky, in many cases you're not that lucky.
+
+00:15:16.545 --> 00:15:18.665 
+But let's assume that that's the case over here.
+
+00:15:20.025 --> 00:15:26.521 
+So the idea is if you can, basically you wasted a lot of time querying on chip caches only to figure
+
+00:15:26.521 --> 00:15:28.665 
+out that you have to go off chip.
+
+00:15:29.385 --> 00:15:35.321 
+The question is, can you have a predictor that predicts whether you should go off chip with very
+
+00:15:35.321 --> 00:15:41.380 
+high accuracy and you start the main memory access earlier and overlap it with the querying of the
+
+00:15:41.380 --> 00:15:42.865 
+on chip cache hierarchy?
+
+00:15:43.065 --> 00:15:44.105 
+That's the idea over here.
+
+00:15:44.865 --> 00:15:51.865 
+Basically you design A predictor and predict whether a cache miss, whether a cache block that you're
+
+00:15:51.865 --> 00:15:53.825 
+accessing is on chip or not.
+
+00:15:54.345 --> 00:15:59.385 
+If it says off chip, you start accessing the memory hierarchy.
+
+00:15:59.585 --> 00:16:05.355 
+Well, the cache hierarchy at the same time you send a request to the memory controller saying, oh, I
+
+00:16:05.355 --> 00:16:11.067 
+think what I'm trying to access is going to go off chips, so start the main memory access for it so
+
+00:16:11.067 --> 00:16:16.145 
+that you can overlap the latency of that main memory access with cache hierarchy access.
+
+00:16:16.345 --> 00:16:22.145 
+And if I am actually right, then I've saved a lot of cycles, right?
+
+00:16:22.265 --> 00:16:22.785 
+That's the idea.
+
+00:16:22.825 --> 00:16:26.825 
+If I'm wrong, I did some main memory access for no reason.
+
+00:16:27.265 --> 00:16:30.145 
+I wasted an energy, so hopefully I'm not that wrong.
+
+00:16:30.505 --> 00:16:31.105 
+That's the idea.
+
+00:16:31.105 --> 00:16:36.726 
+Basically the key is really to design that predictor that can predict whether you should go off chip
+
+00:16:36.726 --> 00:16:37.345 
+or on chip.
+
+00:16:38.345 --> 00:16:40.505 
+So if you're right, you save a lot of cycles.
+
+00:16:40.585 --> 00:16:41.945 
+That's the idea over here, right?
+
+00:16:41.985 --> 00:16:44.105 
+Again, this is another insight that you come up with.
+
+00:16:44.545 --> 00:16:46.065 
+The insight is on chip cache.
+
+00:16:46.065 --> 00:16:52.385 
+Latency is on the critical path of blocks that miss in the on chip cache hierarchy.
+
+00:16:52.385 --> 00:16:56.505 
+So how can I get rid of that access latency to be on the critical path, right.
+
+00:16:56.505 --> 00:16:56.625 
+Yes.
+
+00:16:56.625 --> 00:17:11.685 
+We only care about speed and didn't we care about the energy consumption of our processor?
+
+00:17:11.685 --> 00:17:13.005 
+Yeah, we also just issued every single word.
+
+00:17:13.005 --> 00:17:17.402 
+Yeah, Yeah, not, not necessarily because issuing main memory requests also consumes bandwidth that
+
+00:17:17.402 --> 00:17:21.664 
+could be useful for other main memory requests that you are really issuing, right, That are not
+
+00:17:21.664 --> 00:17:23.325 
+that are really going to miss, right.
+
+00:17:23.725 --> 00:17:26.845 
+So if you cared only about speed, you wouldn't still do this.
+
+00:17:28.585 --> 00:17:32.065 
+And also there could be other cores that are accessing the off chip main memory.
+
+00:17:32.065 --> 00:17:33.305 
+They may need the bandwidth, right?
+
+00:17:34.345 --> 00:17:36.665 
+OK, so basically how do you design this predictor?
+
+00:17:36.665 --> 00:17:41.545 
+I will not talk about that, but this is a paper that's one of my recent PhD graduates.
+
+00:17:41.545 --> 00:17:44.305 
+I think he was my 25th PhD graduate, Rahul Behra.
+
+00:17:44.945 --> 00:17:49.745 
+He wrote as part of his thesis and it was the best paper award at Micro.
+
+00:17:50.665 --> 00:17:55.540 
+Similar things are implementing existing processes actually to predict this, because it's really
+
+00:17:55.540 --> 00:17:56.505 
+important to do so.
+
+00:17:56.945 --> 00:17:59.385 
+And he designed a perceptron based predictor.
+
+00:17:59.385 --> 00:18:03.347 
+So it's really a machine learning, very simple machine learning based predictor to predict this
+
+00:18:03.347 --> 00:18:04.265 
+relatively accurately.
+
+00:18:04.305 --> 00:18:06.385 
+You can read the paper if you're interested.
+
+00:18:06.825 --> 00:18:12.972 
+You can also work with the simulator if you're interested because all of this is open source and you
+
+00:18:12.972 --> 00:18:15.185 
+can actually download and do things.
+
+00:18:15.545 --> 00:18:16.985 
+So there's more room for improvement.
+
+00:18:16.985 --> 00:18:22.172 
+Actually there was so much room that we wrote another paper on that topic, which is actually making
+
+00:18:22.172 --> 00:18:26.993 
+things even better because things are actually even more complex when you go to, when you do
+
+00:18:26.993 --> 00:18:28.985 
+prefetching, which we will talk about.
+
+00:18:29.105 --> 00:18:33.283 
+And also when you at the same time you're trying to predict whether something is going to be off,
+
+00:18:33.283 --> 00:18:34.145 
+off chip or on chip.
+
+00:18:34.585 --> 00:18:37.905 
+So things are actually much more complicated when you consider the broader system.
+
+00:18:38.985 --> 00:18:39.265 
+OK.
+
+00:18:39.265 --> 00:18:44.589 
+So these are some examples of things that actually you can do that almost immediately impacts
+
+00:18:44.589 --> 00:18:45.105 
+hardware.
+
+00:18:45.945 --> 00:18:47.665 
+Impacting hardware is in general very difficult.
+
+00:18:47.825 --> 00:18:52.565 
+You know, impacting software is easy because anyone can easily adopt, but impacting hardware is
+
+00:18:52.565 --> 00:18:53.065 
+difficult.
+
+00:18:53.065 --> 00:18:56.425 
+But if you have good ideas, people can adopt these ideas relatively easily.
+
+00:18:56.425 --> 00:19:01.183 
+Also, well, relatively easily, meaning people who appreciate these ideas and they want performance
+
+00:19:01.183 --> 00:19:03.465 
+and energy efficiency adopt these ideas, right?
+
+00:19:04.665 --> 00:19:08.665 
+OK, so OK, I can talk a lot more about improving cash performance.
+
+00:19:09.545 --> 00:19:11.425 
+Unfortunately, we don't have a whole lot of time.
+
+00:19:11.665 --> 00:19:16.265 
+I'll refer you to some other lectures that take much longer.
+
+00:19:16.665 --> 00:19:21.810 
+For example, victim cache is an idea that's developed in this 1990 paper, which we're going to talk
+
+00:19:21.810 --> 00:19:23.785 
+about later on, actually by Norm Dupi.
+
+00:19:24.265 --> 00:19:30.430 
+And the idea is if you have a direct map cache, you cannot essentially put two things in the in the
+
+00:19:30.430 --> 00:19:33.545 
+same set because you have only one thing in a set.
+
+00:19:34.785 --> 00:19:38.065 
+The idea is to have a separate caching structure called victim cache.
+
+00:19:38.065 --> 00:19:42.732 
+Whatever is evicted because you get a conflict miss, you put it over there and you can more quickly
+
+00:19:42.732 --> 00:19:45.985 
+access that victim cache as opposed to going to the next level cache.
+
+00:19:45.985 --> 00:19:49.305 
+There's an idea that was implemented in many older processors.
+
+00:19:49.945 --> 00:19:53.825 
+It's still actually is implemented in some way in existing processors.
+
+00:19:53.825 --> 00:19:54.865 
+So it's so effective.
+
+00:19:54.865 --> 00:19:56.545 
+So it's, it's good to think about that, right?
+
+00:19:57.145 --> 00:20:02.225 
+Another way of thinking about this is this is a poor man's associativity method, right?
+
+00:20:02.825 --> 00:20:04.625 
+You're getting kind of an associativity with.
+
+00:20:04.705 --> 00:20:09.025 
+Help of another victim cache as opposed to making your cache set associated.
+
+00:20:10.345 --> 00:20:15.938 
+OK, So there are also more optimizations, which we're not going to talk about, but I will talk about
+
+00:20:15.938 --> 00:20:17.225 
+some issues in caching.
+
+00:20:17.225 --> 00:20:18.985 
+Multicore because it's really important.
+
+00:20:19.225 --> 00:20:21.185 
+Caching becomes even more important than multicore.
+
+00:20:21.185 --> 00:20:22.465 
+Memory becomes even more important.
+
+00:20:22.465 --> 00:20:27.665 
+Multicore because you have more things essentially trying to access caches and memory, right?
+
+00:20:27.985 --> 00:20:29.665 
+So I'll draw some pictures.
+
+00:20:29.665 --> 00:20:30.545 
+Again, the same things.
+
+00:20:30.545 --> 00:20:33.505 
+So a lot of these systems that we have are multicore systems.
+
+00:20:33.505 --> 00:20:37.145 
+You've seen these and you've seen this 3D cache, which is also interesting.
+
+00:20:38.345 --> 00:20:39.425 
+More things to come over there.
+
+00:20:39.425 --> 00:20:44.525 
+But basically cache efficiency and cache performance becomes even more important in multi core,
+
+00:20:44.525 --> 00:20:49.786 
+multi threaded system because memory bandwidth is at premium and cache space is a limited resource
+
+00:20:49.786 --> 00:20:53.545 
+across cores and threads, so you need to manage the cache even better.
+
+00:20:54.505 --> 00:20:58.185 
+Then the question becomes, what are the things that are different in a multi core system?
+
+00:20:58.185 --> 00:21:00.665 
+How do we design caches in a multi core system?
+
+00:21:00.985 --> 00:21:05.025 
+A lot of the efficiency methods that you apply in single core also apply in multi core.
+
+00:21:05.665 --> 00:21:10.225 
+But now you need to take into account something else that could be executing next to you, right?
+
+00:21:12.145 --> 00:21:16.359 
+So there are many decisions and questions over here, like should the caches be shared across cores,
+
+00:21:16.359 --> 00:21:18.105 
+across threads or should they be private?
+
+00:21:18.225 --> 00:21:19.105 
+We're going to talk about that.
+
+00:21:19.105 --> 00:21:22.785 
+We talked about that a little bit when we talked about instruction versus data partitioning.
+
+00:21:23.225 --> 00:21:25.625 
+Similar trade-offs will come into play.
+
+00:21:25.625 --> 00:21:31.199 
+Basically, whenever you do dynamic partitioning, it's better for utilisation, not good for quality
+
+00:21:31.199 --> 00:21:31.825 
+of service.
+
+00:21:32.385 --> 00:21:36.705 
+Whenever you do static partitioning, it's bad for utilisation but good for quality of service.
+
+00:21:36.825 --> 00:21:41.626 
+Essentially, as we will see, how do you maximise the performance of the entire system as opposed to
+
+00:21:41.626 --> 00:21:42.305 
+a single core?
+
+00:21:43.345 --> 00:21:47.598 
+How do you provide quality of service and predictable performance to different threads when you're
+
+00:21:47.598 --> 00:21:49.465 
+sharing the cache across different threads?
+
+00:21:50.865 --> 00:21:53.705 
+Well, the answer is yes, it's already aware actually.
+
+00:21:54.705 --> 00:21:57.785 
+How should space be allocated to threads in a shared cache if you're sharing?
+
+00:21:59.105 --> 00:22:01.905 
+Should we store data in compressed format in some caches?
+
+00:22:01.905 --> 00:22:04.145 
+I'm going to start with that actually, because that's so important.
+
+00:22:04.785 --> 00:22:05.665 
+And how do we do better?
+
+00:22:05.665 --> 00:22:06.865 
+You use prediction and management.
+
+00:22:06.865 --> 00:22:10.505 
+There's a lot of work that does that tries to do you reuse prediction, for example.
+
+00:22:11.545 --> 00:22:12.505 
+I will not talk about that.
+
+00:22:12.505 --> 00:22:17.700 
+We don't have time, but I will talk a little bit about compressed caches because there's an area
+
+00:22:17.700 --> 00:22:20.785 
+that we worked on and that other people have implemented.
+
+00:22:22.265 --> 00:22:23.545 
+I like this area a lot.
+
+00:22:23.825 --> 00:22:29.017 
+The difficulty is like you cannot design extremely complex compression algorithms in hardware
+
+00:22:29.017 --> 00:22:31.865 
+because you, your latency is very important, right?
+
+00:22:31.865 --> 00:22:34.065 
+Especially if you're closer to the core, right?
+
+00:22:34.625 --> 00:22:39.545 
+L2 cache, for example, L3 cache, L4, maybe you have a little bit more flexibility.
+
+00:22:39.545 --> 00:22:45.919 
+But as you will see, some folks at IBM implemented a lot of compression algorithms, including
+
+00:22:45.919 --> 00:22:52.706 
+versions of this, and they found out that even in large caches, the latency matters in terms of how
+
+00:22:52.706 --> 00:22:55.585 
+fast you can decompress a cache block, OK.
+
+00:22:55.585 --> 00:22:58.665 
+The idea is basically how do you store data in a compressed way?
+
+00:22:58.705 --> 00:23:01.345 
+And what are the compression algorithms that are hardware friendly, right?
+
+00:23:01.705 --> 00:23:07.065 
+You may have seen compression algorithms that are very good for compression ratios.
+
+00:23:07.145 --> 00:23:12.217 
+They don't necessarily work well like LZW compression, for example, Lampol zip compression, they
+
+00:23:12.217 --> 00:23:15.705 
+don't work well in hardware because they're extremely complex, OK.
+
+00:23:15.785 --> 00:23:21.947 
+So one of the observations that we have made along with other people is there are some interesting
+
+00:23:21.947 --> 00:23:28.110 
+data patterns in real applications that are very amenable to very easy compression algorithms that
+
+00:23:28.110 --> 00:23:29.745 
+you can build in hardware.
+
+00:23:30.585 --> 00:23:35.520 
+So zero values, for example, there are some works that show that 30% of what you store in memory is
+
+00:23:35.520 --> 00:23:37.465 
+all zeros, which is interesting, right?
+
+00:23:37.745 --> 00:23:41.145 
+If you initialise, I don't know, these studies need to be repeated again.
+
+00:23:41.145 --> 00:23:46.206 
+Actually these days I believe in machine learning workloads, a lot of things are zeros actually,
+
+00:23:46.206 --> 00:23:49.265 
+especially with sparse workloads, sparse graphs, etcetera.
+
+00:23:49.265 --> 00:23:51.865 
+So we have a lot of zeros in our systems.
+
+00:23:52.065 --> 00:23:56.905 
+So a lot of these memory, you have terabytes and terabytes, 30% is zeros.
+
+00:23:57.385 --> 00:23:58.145 
+Think about it that way.
+
+00:23:59.025 --> 00:24:03.749 
+OK, Some of them are repeated values because common initial values, adjacent pixels, etcetera, they
+
+00:24:03.749 --> 00:24:04.465 
+look like this.
+
+00:24:05.625 --> 00:24:11.004 
+Some of them are narrow values because the programmer has a large data type, but narrow values are
+
+00:24:11.004 --> 00:24:15.505 
+stored in it and the programmer has no idea about the dynamic range of the values.
+
+00:24:15.705 --> 00:24:21.767 
+They allocate a 32 bit integer, but you only use the last 8 bits, let's say, and some of them are
+
+00:24:21.767 --> 00:24:25.705 
+other patterns, pointers to the same memory region for example.
+
+00:24:25.705 --> 00:24:30.305 
+If you have a pointer list data structure, they may look like this for example.
+
+00:24:30.705 --> 00:24:36.236 
+So the realisation over here is that these data patterns exist and we did a lot of analysis on real
+
+00:24:36.236 --> 00:24:41.545 
+workloads at the time and we showed that more than 40% of cache lines belong to these patterns.
+
+00:24:41.665 --> 00:24:44.505 
+For example, you can repeat these studies with existing workloads.
+
+00:24:44.505 --> 00:24:46.345 
+This is we're talking about 2010 over here.
+
+00:24:47.505 --> 00:24:53.012 
+Now the realisation is that all of these example values have low dynamic range differences between
+
+00:24:53.012 --> 00:24:56.385 
+values are significantly smaller than the values themselves.
+
+00:24:57.345 --> 00:25:01.425 
+So I can design compression algorithms that are called base delta encoding.
+
+00:25:01.425 --> 00:25:04.465 
+Base plus delta you basically determine some.
+
+00:25:04.705 --> 00:25:05.185 
+Value.
+
+00:25:05.625 --> 00:25:08.345 
+Let's assume that that's the first value over there in the cache block.
+
+00:25:09.425 --> 00:25:17.625 
+Store it somewhere and encode everything else as deltas from that base value, right?
+
+00:25:17.945 --> 00:25:23.345 
+And if I do that, my compressed cache line is only 12 bytes as opposed to 32 bytes, right?
+
+00:25:23.425 --> 00:25:25.665 
+So I save 20 bytes from right away.
+
+00:25:26.105 --> 00:25:30.305 
+I don't even need to actually encode the first one, assuming it is the first one, right?
+
+00:25:31.905 --> 00:25:32.585 
+So I could do better.
+
+00:25:33.865 --> 00:25:36.985 
+OK, the good news is this is actually a very fast decompression.
+
+00:25:36.985 --> 00:25:43.905 
+So if I want to decompress this thing, I need to add the base to all of the deltas in parallel.
+
+00:25:44.305 --> 00:25:46.025 
+And this is actually something that we have seen.
+
+00:25:46.025 --> 00:25:47.065 
+It's a vector addition, right?
+
+00:25:49.145 --> 00:25:51.505 
+So you just need a vector unit that adds those things.
+
+00:25:51.585 --> 00:25:54.065 
+And that's not a multiplication, it's a vector addition.
+
+00:25:54.505 --> 00:25:55.345 
+So that sounds good.
+
+00:25:55.745 --> 00:25:57.545 
+It's simple hardware decompression.
+
+00:25:57.585 --> 00:26:03.739 
+Compression is also simple, but compression is usually not on the critical path unless it takes too
+
+00:26:03.739 --> 00:26:07.345 
+long and it's actually gets you a good compression ratios.
+
+00:26:07.345 --> 00:26:08.545 
+The analysis are in the paper.
+
+00:26:08.545 --> 00:26:11.145 
+So you get a lot of compression ratios over here.
+
+00:26:11.625 --> 00:26:13.025 
+The question is of course, can you do better?
+
+00:26:13.025 --> 00:26:14.145 
+This is base plus delta.
+
+00:26:14.425 --> 00:26:20.052 
+So one of the important realisation in this paper, it looks like this this if you have a single
+
+00:26:20.052 --> 00:26:22.185 
+base, this is uncompressible, right?
+
+00:26:23.225 --> 00:26:30.415 
+But if you realise that if you can use more bases, this is compressible assuming this green and red
+
+00:26:30.415 --> 00:26:31.505 
+repeats, right?
+
+00:26:32.425 --> 00:26:35.425 
+So more cache lines can be compressed this way.
+
+00:26:35.825 --> 00:26:40.913 
+Unclear how you actually find the two bases because you need something that scans the cache block
+
+00:26:40.913 --> 00:26:42.225 
+which may be OK to build.
+
+00:26:43.265 --> 00:26:44.385 
+So it could be higher overhead.
+
+00:26:44.665 --> 00:26:49.681 
+So basically what we developed in this work is the first base is the first element in the cache
+
+00:26:49.681 --> 00:26:49.945 
+line.
+
+00:26:50.545 --> 00:26:51.545 
+That's the base plus delta.
+
+00:26:51.545 --> 00:26:53.065 
+Second base is an impulse base of 0.
+
+00:26:53.065 --> 00:27:00.298 
+And if you actually do that, you cover, you get almost as close to as you would get if you find 2
+
+00:27:00.298 --> 00:27:01.865 
+best arbitrary bases.
+
+00:27:02.585 --> 00:27:03.625 
+That's the idea over here.
+
+00:27:05.025 --> 00:27:06.985 
+So this is called base delta immediate compression.
+
+00:27:07.025 --> 00:27:09.585 
+And this is the decompressor design that I was talking about.
+
+00:27:09.665 --> 00:27:15.065 
+If the base is the first one, you basically base delta edition vector edition over here, right?
+
+00:27:15.305 --> 00:27:18.145 
+If the base is 0, that's even easier, right?
+
+00:27:19.265 --> 00:27:24.880 
+OK, so I, I can go into more detail about this, but you can see that the performance essentially
+
+00:27:24.880 --> 00:27:29.385 
+this simple algorithm achieves the performance of the 2X the size of a cache.
+
+00:27:29.385 --> 00:27:35.759 
+So instead of adding, multiplying the size of your cache by cache by 2X, you could actually have a
+
+00:27:35.759 --> 00:27:36.865 
+compressed cache.
+
+00:27:37.065 --> 00:27:39.865 
+You need to change the cache a little bit, of course, to make sure this works.
+
+00:27:39.865 --> 00:27:44.530 
+So there's some complexity that you add and performance improves because you're reducing the MPKI,
+
+00:27:44.530 --> 00:27:46.625 
+which is misses per kilo instruction, right?
+
+00:27:46.705 --> 00:27:48.745 
+You're really reducing the MPKI significantly.
+
+00:27:49.745 --> 00:27:54.133 
+OK, If you're interested, the sort of ideas actually you can develop and research, and I'm proud
+
+00:27:54.133 --> 00:27:57.745 
+that we have actually developed a lot of these ideas that went into processors.
+
+00:27:57.745 --> 00:28:03.495 
+One of the processors that implement partly this idea, but they also implement some other
+
+00:28:03.495 --> 00:28:06.145 
+compression mechanisms is IBM processors.
+
+00:28:06.265 --> 00:28:11.058 
+IBM designs these big iron systems and they've recently written papers about this enterprise class
+
+00:28:11.058 --> 00:28:15.899 
+cache compression design that describes some of the compression algorithms that they use, including
+
+00:28:15.899 --> 00:28:17.465 
+Bayes delta impeded compression.
+
+00:28:17.985 --> 00:28:23.945 
+And they have huge caches and these are actually, these are very expensive machines.
+
+00:28:24.825 --> 00:28:30.449 
+I cannot quote for IBM, but more than $1,000,000 machines that are sold to banks so that you can do
+
+00:28:30.449 --> 00:28:33.745 
+basically transactional and database type of computations.
+
+00:28:34.145 --> 00:28:36.345 
+They actually designed these really, really carefully.
+
+00:28:36.985 --> 00:28:43.983 
+So IBM still designed these systems for a long time and they have huge caches, as I will show you
+
+00:28:43.983 --> 00:28:44.705 
+over here.
+
+00:28:44.865 --> 00:28:46.665 
+This is one of the more recent systems.
+
+00:28:47.145 --> 00:28:52.975 
+You can see that the L2 cache slices 32 megabytes and there are eight, eight of them at 256
+
+00:28:52.975 --> 00:28:54.065 
+megabytes, right?
+
+00:28:54.665 --> 00:28:59.065 
+There's a dual chip module and there are 12345678 of them.
+
+00:28:59.505 --> 00:29:05.625 
+So 8 * 256 is something that's like 2 terabytes, No2 gigabytes.
+
+00:29:06.065 --> 00:29:06.665 
+Is that correct?
+
+00:29:06.745 --> 00:29:07.825 
+OK, not terabytes yet.
+
+00:29:08.145 --> 00:29:13.745 
+That's a 2 gigabyte cache on this, I guess 16 chip system, right?
+
+00:29:14.385 --> 00:29:16.625 
+Or I don't know if it's 16 chip, it's something.
+
+00:29:17.185 --> 00:29:18.225 
+No, no, it's not 16 chip.
+
+00:29:18.225 --> 00:29:22.385 
+It's this is a dual chip module.
+
+00:29:23.225 --> 00:29:24.385 
+So it's an 8 chip system.
+
+00:29:24.465 --> 00:29:26.225 
+OK, OK.
+
+00:29:26.225 --> 00:29:27.905 
+And they have some connectivity over here.
+
+00:29:28.065 --> 00:29:31.025 
+They can actually form a virtual cache out of these cache slices.
+
+00:29:31.025 --> 00:29:34.105 
+So they have actually very interesting algorithms they can use.
+
+00:29:35.225 --> 00:29:41.105 
+It's it's physical cache slices, but they can actually make part of that L3L4 cache, etcetera.
+
+00:29:41.345 --> 00:29:42.345 
+And they use compression.
+
+00:29:42.345 --> 00:29:47.878 
+You can see that there's a compression unit over here to compress these caches because even then
+
+00:29:47.878 --> 00:29:49.665 
+they need more compressibility.
+
+00:29:49.785 --> 00:29:53.316 
+These are some of the biggest caches that you see in industry today, but you need to pay a lot for
+
+00:29:53.316 --> 00:29:53.425 
+it.
+
+00:29:54.585 --> 00:29:59.369 
+And you can see they have done this is from directly from IBM's papers and they've done some
+
+00:29:59.369 --> 00:29:59.785 
+studies.
+
+00:30:00.345 --> 00:30:04.625 
+So compared to an L2 cache megabytes, these are all mega.
+
+00:30:04.985 --> 00:30:13.585 
+32 MB L2 cache, a system with 30 MB L2 cache, 256 megabyte virtual L 3 and 2 gigabytes virtual L4.
+
+00:30:13.905 --> 00:30:16.305 
+That's the baseline performance is 1.
+
+00:30:17.145 --> 00:30:24.153 
+If you actually double the cache sizes, you'll get about 10% performance improvement, only 10% for a
+
+00:30:24.153 --> 00:30:25.625 
+lot of hardware area.
+
+00:30:25.825 --> 00:30:29.065 
+And they show in this paper that if you compress, you get a lot better.
+
+00:30:29.625 --> 00:30:30.785 
+Very similar to what we have shown.
+
+00:30:30.785 --> 00:30:36.940 
+Basically you get a lot better in the sense that you get to about 10% improvement but at much less
+
+00:30:36.940 --> 00:30:37.945 
+cost in the end.
+
+00:30:38.545 --> 00:30:39.145 
+So that's the idea.
+
+00:30:39.145 --> 00:30:43.945 
+Compression can buy you a better trade off compared to having larger caches.
+
+00:30:43.945 --> 00:30:49.545 
+And if you're interested, you can read these papers from IBM, OK.
+
+00:30:49.545 --> 00:30:53.419 
+There are other companies that do compression like Qualcomm, but we don't get into that because they
+
+00:30:53.419 --> 00:30:54.465 
+don't write papers as much.
+
+00:30:54.465 --> 00:30:59.340 
+Let's say, OK, it's, it's good to have industry writing papers because they actually take a lot of
+
+00:30:59.340 --> 00:31:02.425 
+ideas from academia and they don't necessarily write about it.
+
+00:31:02.665 --> 00:31:06.505 
+Sometimes they don't have time to write about it, but it's good when they write about things.
+
+00:31:07.345 --> 00:31:11.745 
+OK, let's talk about another trade off, which is private versus shared caches.
+
+00:31:12.385 --> 00:31:16.665 
+Should the cache belong to 1 core or should the cache be shared by multiple cores?
+
+00:31:16.665 --> 00:31:22.185 
+So if it's a private cache, a shared block across different cores can be in multiple caches, right?
+
+00:31:22.185 --> 00:31:25.105 
+This is going going to lead to the cache coherence problem that we will talk about.
+
+00:31:25.425 --> 00:31:27.185 
+So this is what private cache looks like.
+
+00:31:27.385 --> 00:31:30.145 
+This a shared cache looks like we're looking at L2 over here.
+
+00:31:31.145 --> 00:31:36.193 
+So this is actually a bigger concept as we have discussed, instead of dedicating a shared resource
+
+00:31:36.193 --> 00:31:41.189 
+instead, instead of dedicating a hardware resource to a hardware context, allow multiple contexts
+
+00:31:41.189 --> 00:31:41.705 
+to use it.
+
+00:31:41.825 --> 00:31:42.905 
+This is called resource sharing.
+
+00:31:43.105 --> 00:31:46.265 
+Basically, should we share the resources or should we make them private?
+
+00:31:46.545 --> 00:31:48.585 
+And there could be many, many resources over here.
+
+00:31:48.905 --> 00:31:50.185 
+Functional units for example.
+
+00:31:50.785 --> 00:31:54.905 
+If you do multi threading, fine grained multi threading, then functional units are shared.
+
+00:31:54.905 --> 00:31:57.865 
+If you don't do fine grained multi threading, then functional units are not shared, right?
+
+00:31:58.105 --> 00:31:58.865 
+That's one example.
+
+00:31:59.305 --> 00:32:02.585 
+Pipeline caches, buses, all of the things you can share or not share.
+
+00:32:03.425 --> 00:32:07.865 
+So the big benefit of shared resources is it improves utilisation and efficiency.
+
+00:32:07.985 --> 00:32:11.465 
+Meaning in the end it improves throughput for a given area, right?
+
+00:32:11.865 --> 00:32:15.305 
+When a resource is left idle by one thread, another thread can use it.
+
+00:32:16.185 --> 00:32:18.745 
+And there's also no need to replicate shared data, right?
+
+00:32:18.745 --> 00:32:19.665 
+So there are benefits to it.
+
+00:32:20.385 --> 00:32:22.265 
+It also reduces communication latency.
+
+00:32:22.745 --> 00:32:27.153 
+Data shared between multiple threads can be kept in the same cache, so they don't need to move
+
+00:32:27.153 --> 00:32:28.185 
+between caches, right?
+
+00:32:28.425 --> 00:32:29.705 
+So it's also good to think about.
+
+00:32:30.145 --> 00:32:34.406 
+We didn't talk about communication misses, but that becomes a big problem when you talk about
+
+00:32:34.406 --> 00:32:34.865 
+workloads.
+
+00:32:34.985 --> 00:32:40.909 
+Actually, if I go back over here, workloads like these guys evaluated, for example, there's a 28 way
+
+00:32:40.909 --> 00:32:44.345 
+SMP symmetric multiprocessor relational database workload.
+
+00:32:44.945 --> 00:32:49.665 
+So there's a lot of communication misses that they get as well in these real workloads.
+
+00:32:50.705 --> 00:32:51.065 
+OK.
+
+00:32:51.265 --> 00:32:53.985 
+And also this is compatible with the shared memory programming model.
+
+00:32:53.985 --> 00:32:55.665 
+You guys have done parallel programming, right?
+
+00:32:55.825 --> 00:32:59.385 
+Probably have used shared memory programming like loads and stores.
+
+00:33:00.665 --> 00:33:07.430 
+This is different from message passing programming model where different threads don't share memory
+
+00:33:07.430 --> 00:33:08.865 
+address space, right?
+
+00:33:09.505 --> 00:33:10.665 
+So this is very compatible.
+
+00:33:11.385 --> 00:33:15.627 
+Now this of course leads to disadvantages also when you share resources, this leads to contention
+
+00:33:15.627 --> 00:33:16.065 
+resources.
+
+00:33:16.065 --> 00:33:17.105 
+This is very fundamental.
+
+00:33:17.265 --> 00:33:20.025 
+That's true everywhere in human life.
+
+00:33:20.025 --> 00:33:23.225 
+Also, when the resource is not idle, another thread cannot use it, basically.
+
+00:33:23.825 --> 00:33:27.625 
+Or if space is occupied by one thread, another thread needs to reoccupy it, right?
+
+00:33:28.585 --> 00:33:32.994 
+So sometimes this reduces each thread's or some thread's performance, or the entire system's
+
+00:33:32.994 --> 00:33:33.905 
+performance, right?
+
+00:33:33.985 --> 00:33:37.265 
+You can get into very bad conflicting situations in the row buffer.
+
+00:33:37.265 --> 00:33:42.585 
+For example, if you're executing alone your row buffer, the row buffer in the DRAM is for you.
+
+00:33:42.985 --> 00:33:47.305 
+If you're executing together with some other threads, you could keep switching the roll buffer.
+
+00:33:47.305 --> 00:33:51.545 
+As a result, everybody's performance tanks and the entire system's performance tanks, right?
+
+00:33:53.385 --> 00:33:55.745 
+OK, thread performance can be much worse than when it's run a lot.
+
+00:33:56.745 --> 00:34:02.284 
+Sharing resources elimates performance isolation because now your performance is dependent on what
+
+00:34:02.284 --> 00:34:07.711 
+else is happening in the system, which means you don't really get consistent performance runs in
+
+00:34:07.711 --> 00:34:08.785 
+your system, right?
+
+00:34:09.585 --> 00:34:14.518 
+When you're running your application, you get performance X once because it's running with a nice
+
+00:34:14.518 --> 00:34:19.198 
+thread, let's say when you're running the same application with the same optimizations, your
+
+00:34:19.198 --> 00:34:23.979 
+performance reduces significantly because it's running with an aggressive thread that actually
+
+00:34:23.979 --> 00:34:26.065 
+needs a lot of cache, for example, right.
+
+00:34:26.665 --> 00:34:29.225 
+So basically thread performance depends on quite executing threads.
+
+00:34:29.665 --> 00:34:32.145 
+And this actually makes performance optimization very difficult.
+
+00:34:32.145 --> 00:34:38.154 
+Like as a as a software programmer or a compiler, you optimise your performance a lot, but your
+
+00:34:38.154 --> 00:34:43.785 
+performance is not being optimised because somebody else is hogging the resources, right?
+
+00:34:43.985 --> 00:34:46.305 
+You don't know how much cache space you're getting basically.
+
+00:34:46.985 --> 00:34:51.000 
+So basically on control, sharing the great quality of service, in the end, it's, it can cause
+
+00:34:51.000 --> 00:34:52.425 
+unfairness and starvation, right?
+
+00:34:52.665 --> 00:34:56.877 
+Basically, if you are sharing resources, you need to efficiently and fairly utilize shared
+
+00:34:56.877 --> 00:34:57.345 
+resources.
+
+00:34:57.865 --> 00:34:59.465 
+So we worked on this problem a lot.
+
+00:35:00.465 --> 00:35:04.585 
+And if you have shared caches, you have high effective capacity.
+
+00:35:04.705 --> 00:35:07.985 
+Dynamic, you know, dynamic partitioning of available cache space.
+
+00:35:08.145 --> 00:35:11.065 
+No fragmentation due to static parting that we discussed yesterday.
+
+00:35:11.705 --> 00:35:12.905 
+I think I already talked about that.
+
+00:35:12.905 --> 00:35:15.865 
+Easier to maintain coherence as cache block is in a single location.
+
+00:35:16.625 --> 00:35:22.426 
+But if you have shared caches, you have slower access because cache is not tightly coupled with one
+
+00:35:22.426 --> 00:35:23.305 
+core right now.
+
+00:35:23.305 --> 00:35:27.545 
+You have to actually have some interconnect between the cores and the shared cache.
+
+00:35:28.305 --> 00:35:32.369 
+If you have a private cache, you can tightly couple that cache to the core because that's the only
+
+00:35:32.369 --> 00:35:33.945 
+core that's going to access it, right?
+
+00:35:35.545 --> 00:35:39.145 
+And cores incurred conflict misses due to other cores accesses, right?
+
+00:35:40.185 --> 00:35:42.465 
+I think we would discuss that, but I'm going to give you an example of this.
+
+00:35:42.825 --> 00:35:48.911 
+And guaranteeing a minimum level of service or fairness to each core becomes harder because you need
+
+00:35:48.911 --> 00:35:54.145 
+to somehow guarantee some space, how much space and also bandwidth to the core, right?
+
+00:35:54.425 --> 00:35:57.025 
+So these are actually issues that you run into when you share resources.
+
+00:35:57.865 --> 00:36:03.887 
+So this is one example like this was actually this sort of issues were discussed a lot when multi
+
+00:36:03.887 --> 00:36:06.185 
+core processors were coming in 2000s.
+
+00:36:06.185 --> 00:36:10.785 
+We did a lot of work in main memory and some caches, but there were also other works in caches.
+
+00:36:10.785 --> 00:36:13.705 
+It's one of the nice papers that talks about how to do caching.
+
+00:36:14.145 --> 00:36:15.705 
+But you can see one example over here.
+
+00:36:15.785 --> 00:36:21.145 
+This is in let's say thread that likes a lot more cache space, blue thread.
+
+00:36:21.705 --> 00:36:23.865 
+And this is another thread, orange thread.
+
+00:36:24.625 --> 00:36:31.366 
+And when you actually run them together, the orange thread's performance gets significantly reduced
+
+00:36:31.366 --> 00:36:36.065 
+because blue thread gets most of the cache resources you can imagine.
+
+00:36:36.225 --> 00:36:41.782 
+For example, orange thread has a small working set that fits in L2 normally, and the blue thread is
+
+00:36:41.782 --> 00:36:47.228 
+a streaming thread that streams through memory like brings gigabytes of data and caching is maybe
+
+00:36:47.228 --> 00:36:49.025 
+not very useful for that thread.
+
+00:36:49.865 --> 00:36:55.545 
+And when they are run together, you destroy the cache space for the orange one, right?
+
+00:36:56.865 --> 00:36:59.705 
+OK, so the question is basically, how do you actually fix this problem?
+
+00:36:59.945 --> 00:37:04.231 
+I will not give you a lot of mechanisms today because this is actually something interesting to do,
+
+00:37:04.231 --> 00:37:07.305 
+but one of the mechanisms is partitioning the cache across the threads.
+
+00:37:07.945 --> 00:37:09.705 
+Then the question becomes, how do you partition the cache?
+
+00:37:10.105 --> 00:37:11.225 
+Is it hard partitioning?
+
+00:37:11.625 --> 00:37:13.985 
+Is it soft partitioning, Hard partitioning?
+
+00:37:13.985 --> 00:37:21.232 
+Maybe you decide how many ways should go to which threads and then say, OK ways 058 belongs to this
+
+00:37:21.232 --> 00:37:21.745 
+thread.
+
+00:37:21.745 --> 00:37:23.625 
+The remaining ways belong to this other thread.
+
+00:37:24.065 --> 00:37:28.065 
+How do you decide how many ways go to how many threads, which threads, etcetera?
+
+00:37:28.305 --> 00:37:30.105 
+So there are a lot of questions over here clearly.
+
+00:37:30.705 --> 00:37:32.585 
+So sharing improves resource utilisation.
+
+00:37:32.745 --> 00:37:35.345 
+Can we get the benefits of both is the key over here.
+
+00:37:35.945 --> 00:37:40.185 
+And the idea is to design shared resources such that they're efficiently utilised, controllable and
+
+00:37:40.185 --> 00:37:40.785 
+partitionable.
+
+00:37:41.385 --> 00:37:45.305 
+So I said you have no wasted resource and some quality of service mechanisms for threads.
+
+00:37:46.185 --> 00:37:47.185 
+And this is a teaser.
+
+00:37:47.425 --> 00:37:51.225 
+You can watch more or attend our Computer Architecture classes to learn more.
+
+00:37:52.945 --> 00:37:57.332 
+And we don't talk a lot about reuse prediction in computer architecture classes, so that's really
+
+00:37:57.332 --> 00:37:57.785 
+important.
+
+00:37:59.025 --> 00:38:00.865 
+OK, any questions?
+
+00:38:02.985 --> 00:38:03.785 
+This is more of a teaser.
+
+00:38:03.785 --> 00:38:08.545 
+I want to cover cash clearance in the remaining 7 minutes so that we can go into prefetching again.
+
+00:38:08.545 --> 00:38:12.603 
+I will not go into a lot of mechanisms, but you can see there could be a wealth of mechanisms that
+
+00:38:12.603 --> 00:38:13.225 
+people develop.
+
+00:38:13.785 --> 00:38:20.998 
+Like when we were doing this research again 20 plus years ago, multi core processors were coming to
+
+00:38:20.998 --> 00:38:23.185 
+Earth, let's say at that time.
+
+00:38:23.585 --> 00:38:28.345 
+And initially there was little, there was a lot of resource sharing, little resource partitioning.
+
+00:38:28.905 --> 00:38:33.465 
+And we showed with a lot of work that you need to partition the resources carefully.
+
+00:38:33.745 --> 00:38:38.690 
+And now a lot of multi core processors have partitioning mechanisms, cache partitioning mechanisms,
+
+00:38:38.690 --> 00:38:43.585 
+memory bandwidth partitioning mechanisms such that one thread doesn't hog the performance of other
+
+00:38:43.585 --> 00:38:43.985 
+threads.
+
+00:38:43.985 --> 00:38:48.145 
+In fact, one of the first papers that we wrote on this topic was Memory performance attacks.
+
+00:38:48.505 --> 00:38:53.684 
+It was published at USENIX Security, where we demonstrate on real systems that one thread can
+
+00:38:53.684 --> 00:38:59.086 
+destroy the performance of another, and if someone is not nice, they could use it as an attack to
+
+00:38:59.086 --> 00:39:00.145 
+some other threads.
+
+00:39:00.145 --> 00:39:04.305 
+Yeah, OK, let's talk about cache coherence, because it's also fundamental.
+
+00:39:04.825 --> 00:39:05.985 
+And this is again shared.
+
+00:39:06.145 --> 00:39:10.305 
+Based on the shared memory model, threads and parallel programs communicate through shared memory.
+
+00:39:10.425 --> 00:39:15.305 
+For example, thread 0 writes to an address, followed by thread one reads from that address.
+
+00:39:15.465 --> 00:39:17.825 
+This implies that there's some communication between the two, right?
+
+00:39:18.305 --> 00:39:19.385 
+There's one example, right?
+
+00:39:20.785 --> 00:39:26.548 
+And hopefully, well, each read should receive the last value, the value last written by any
+
+00:39:26.548 --> 00:39:27.625 
+processor, right?
+
+00:39:28.825 --> 00:39:31.945 
+Now, this requires some synchronisation between threads that we're not going to talk about.
+
+00:39:32.465 --> 00:39:37.585 
+But the problem is, what if the value is cached in either processor, right?
+
+00:39:37.585 --> 00:39:44.625 
+How do you ensure that everybody gets the right value when they need it right?
+
+00:39:44.985 --> 00:39:46.345 
+So that's the problem of cache coherence.
+
+00:39:46.345 --> 00:39:50.911 
+Basically, if multiple processors cache the same block, how do they ensure they all see a consistent
+
+00:39:50.911 --> 00:39:51.185 
+state?
+
+00:39:51.185 --> 00:39:56.105 
+So this is one example, P1P2 here is our cache block, shared cache block X.
+
+00:39:56.185 --> 00:39:57.465 
+The value is 1000.
+
+00:39:58.385 --> 00:40:01.425 
+Processor 2 loads it into its cache, it's 1000.
+
+00:40:01.705 --> 00:40:03.145 
+Processor one also loads it.
+
+00:40:03.225 --> 00:40:04.665 
+They're executing different.
+
+00:40:05.545 --> 00:40:08.185 
+Programs so they can do that while different threads.
+
+00:40:08.745 --> 00:40:15.494 
+Processor 1 updates the value to 2000 OK and the value is now stale in processor 2's cache as well
+
+00:40:15.494 --> 00:40:16.665 
+as memory, right?
+
+00:40:17.905 --> 00:40:21.985 
+And when the processor to reads it, it should not read 1000.
+
+00:40:22.585 --> 00:40:25.265 
+It should get the most up to date value which is 2000.
+
+00:40:25.785 --> 00:40:27.145 
+It exists somewhere in the system.
+
+00:40:27.665 --> 00:40:30.265 
+The question is how do you actually get that value right?
+
+00:40:30.665 --> 00:40:31.945 
+That's the problem of cache coherence.
+
+00:40:31.945 --> 00:40:40.147 
+Basically a single main memory location should be always kept coherent across different threads that
+
+00:40:40.147 --> 00:40:43.265 
+read or write to that memory location.
+
+00:40:44.105 --> 00:40:45.665 
+So hardware cache coherence.
+
+00:40:45.665 --> 00:40:49.312 
+So you could try to do this purely in software without any hardware support, then you would go
+
+00:40:49.312 --> 00:40:49.545 
+crazy.
+
+00:40:51.545 --> 00:40:56.945 
+Either you go crazy or you basically destroy your performance, which is either.
+
+00:40:56.985 --> 00:40:58.665 
+I think both of them are crazy in the end, right?
+
+00:40:58.665 --> 00:41:00.225 
+You have this very capable processor.
+
+00:41:00.545 --> 00:41:05.345 
+You try to solve this problem purely in software without any hardware support, then your performance
+
+00:41:05.345 --> 00:41:06.065 
+gets destroyed.
+
+00:41:06.505 --> 00:41:08.825 
+OK, so hardware cache coherence is a necessity.
+
+00:41:08.825 --> 00:41:13.665 
+Basically that's why shared memory processors have hardware cache coherence.
+
+00:41:15.145 --> 00:41:19.265 
+Or they need a different programming model, which is also fine, like message passing.
+
+00:41:20.145 --> 00:41:22.705 
+But the basic idea over here is a processor or cache.
+
+00:41:23.065 --> 00:41:26.025 
+This is a particular form of cache coherence called broadcast based coherence.
+
+00:41:26.465 --> 00:41:31.208 
+A processor, a cache, broadcasts its rights, or update to a cache block to all other processors,
+
+00:41:31.208 --> 00:41:31.505 
+right?
+
+00:41:32.305 --> 00:41:38.274 
+And another processor, a cache that has the block either invalidates what it has because it's stale
+
+00:41:38.274 --> 00:41:43.943 
+now, or updates its local copy of the block, assuming the other processor broadcasts the data,
+
+00:41:43.943 --> 00:41:44.305 
+right?
+
+00:41:45.185 --> 00:41:45.865 
+That's the idea.
+
+00:41:46.625 --> 00:41:50.665 
+So this works nicely if the processors and caches are connected with a bus.
+
+00:41:50.665 --> 00:41:56.004 
+For example, whenever 1 processor writes to a cache block, it broadcasts the address saying I'm
+
+00:41:56.004 --> 00:41:59.265 
+writing invalidate all of the copies in the system, right?
+
+00:41:59.705 --> 00:42:19.225 
+Because I have the most up to All caches Snoop, observe each other's write and read operations.
+
+00:42:19.505 --> 00:42:21.985 
+If a processor writes to a block, all others invalidate the block.
+
+00:42:22.225 --> 00:42:27.538 
+So from a cache blocks perspective, assuming some things like write through, no write, allocate
+
+00:42:27.538 --> 00:42:33.075 
+local processor performs, processor read, processor write actions and actions that are broadcast on
+
+00:42:33.075 --> 00:42:34.865 
+the bus are bus read, bus write.
+
+00:42:35.465 --> 00:42:37.105 
+This is what your state machine would look like.
+
+00:42:37.905 --> 00:42:46.016 
+For example, if the processor has the block valid and it does a processor read, it doesn't send
+
+00:42:46.016 --> 00:42:46.785 
+anything.
+
+00:42:48.665 --> 00:42:55.566 
+But if it does a processor right, it sends a bus ride signal saying that, oh, I'm updating the block
+
+00:42:55.566 --> 00:42:58.465 
+and it basically stays in the valid state.
+
+00:42:59.065 --> 00:43:01.345 
+This is this is probably the more interesting part over here.
+
+00:43:01.345 --> 00:43:06.460 
+If you have if, if you have the block in valid state in the cache and if you receive a bus ride
+
+00:43:06.460 --> 00:43:11.145 
+signal, meaning somebody is writing to this block, you go to the in valid state, right?
+
+00:43:11.465 --> 00:43:12.145 
+That's the idea.
+
+00:43:13.265 --> 00:43:18.461 
+OK, So people have also developed other cache coherence methods as opposed to having like these
+
+00:43:18.461 --> 00:43:23.877 
+snoopy buses, you can have directories, and the idea here is to have a central directory that keeps
+
+00:43:23.877 --> 00:43:27.105 
+track of which caches contained every possible cache block.
+
+00:43:27.305 --> 00:43:30.105 
+So I can immediately say this is a bit more costly and it is a bit more costly.
+
+00:43:30.625 --> 00:43:34.505 
+Every cache consults this directory to ensure data is kept kept coherent.
+
+00:43:35.345 --> 00:43:42.021 
+For example, there's a directory near main memory, the memory controller that keeps track of which
+
+00:43:42.021 --> 00:43:44.065 
+cache has this block X, right?
+
+00:43:44.505 --> 00:43:46.665 
+It's essentially a bit vector.
+
+00:43:48.545 --> 00:43:53.745 
+And you have, you have the number of bits you have is equal the number of processors.
+
+00:43:54.305 --> 00:43:59.939 
+And if a cache has the block, the bit vectors, the the bit location for that processor is set to
+
+00:43:59.939 --> 00:44:00.585 
+one, right?
+
+00:44:01.705 --> 00:44:05.945 
+So now you can keep track of which processor has has which block cached.
+
+00:44:06.425 --> 00:44:13.201 
+And if someone wants to write to that block, this is per block, this memory controller needs to
+
+00:44:13.201 --> 00:44:19.265 
+sends invalidate requests to all of the processors whose bits are set for that block.
+
+00:44:19.505 --> 00:44:20.105 
+That's the idea.
+
+00:44:20.145 --> 00:44:22.105 
+I just gave you the basic idea of this.
+
+00:44:22.105 --> 00:44:24.545 
+Of course, there are many corner cases that you need to be careful about.
+
+00:44:25.785 --> 00:44:27.705 
+You know, basically this is the mechanism.
+
+00:44:27.705 --> 00:44:31.575 
+I'll go through this relatively quickly, But for each cache block, you have P + 1 bits in the
+
+00:44:31.575 --> 00:44:34.905 
+directory, one bit for each cache, indicating whether the block is in the cache.
+
+00:44:35.425 --> 00:44:37.905 
+And there's also optimization that you can do, like exclusive.
+
+00:44:37.905 --> 00:44:42.615 
+It meaning indicates that a cache has the only copy of the block and can update it without notifying
+
+00:44:42.615 --> 00:44:42.945 
+others.
+
+00:44:42.945 --> 00:44:48.504 
+Because it's really important, you know, if you cache the block and every time you have to go to
+
+00:44:48.504 --> 00:44:52.905 
+this directory to get permission to update the block, that's very expensive.
+
+00:44:53.585 --> 00:44:57.803 
+But if you actually, if the directory knows and if it has given you permission to update the block
+
+00:44:57.803 --> 00:45:00.945 
+without notifying anyone, then you can improve performance significantly.
+
+00:45:00.945 --> 00:45:04.625 
+That's why there's AP plus one bit over here and.
+
+00:45:04.705 --> 00:45:08.833 
+I read you need to set the caches bit in the directory entry for the block and arrange the supply of
+
+00:45:08.833 --> 00:45:09.865 
+the block into the cache.
+
+00:45:10.225 --> 00:45:11.025 
+That's important.
+
+00:45:11.345 --> 00:45:12.865 
+That depends on the interconnect also.
+
+00:45:13.265 --> 00:45:18.088 
+So essentially, if you think about this, the directory is really orchestrating the data movement
+
+00:45:18.088 --> 00:45:19.345 
+across the caches, right?
+
+00:45:20.225 --> 00:45:25.039 
+And on the right, the directory needs to invalidate the block in all caches that have the block and
+
+00:45:25.039 --> 00:45:26.985 
+reset their bits in the directory entry.
+
+00:45:27.025 --> 00:45:29.745 
+OK, OK, I think we've already talked about this.
+
+00:45:29.745 --> 00:45:34.977 
+So we have lectures on cache coherence and more advanced topics, but I'm not going to cover them
+
+00:45:34.977 --> 00:45:35.305 
+today.
+
+00:45:37.465 --> 00:45:38.185 
+Sounds interesting.
+
+00:45:40.305 --> 00:45:42.825 
+The more interesting thing is how do these all fit together, right?
+
+00:45:42.825 --> 00:45:46.265 
+We talked about a lot of concepts and we're going to talk even more.
+
+00:45:46.705 --> 00:45:49.785 
+And when you design a memory system, you need to take into account essentially all of them.
+
+00:45:49.865 --> 00:45:53.185 
+A real memory system, you need to take into account cache coherence requests.
+
+00:45:53.425 --> 00:45:57.745 
+You need to take into account all of the requests coming from different processors, accelerators.
+
+00:45:58.305 --> 00:46:00.465 
+You need to think about resource sharing, partitioning.
+
+00:46:00.465 --> 00:46:01.985 
+You need to think about prioritisation.
+
+00:46:03.025 --> 00:46:04.305 
+So there's a lot to think about.
+
+00:46:04.305 --> 00:46:06.225 
+You think about prefetching as we will see.
+
+00:46:06.465 --> 00:46:08.665 
+You need to think about how do you efficiently utilize things.
+
+00:46:09.225 --> 00:46:12.665 
+So it's not just performance, it's energy also, it's also quality of service.
+
+00:46:12.665 --> 00:46:14.425 
+I've introduced some of that over here.
+
+00:46:14.425 --> 00:46:17.345 
+Predictability, You need to satisfy the guarantees.
+
+00:46:17.465 --> 00:46:22.050 
+There are some, there are some threads that require guarantees, for example, when you're refreshing
+
+00:46:22.050 --> 00:46:26.311 
+the screen over here, when you're updating the screen, graphics units require some bandwidth
+
+00:46:26.311 --> 00:46:27.145 
+guarantees, right?
+
+00:46:27.545 --> 00:46:32.321 
+You need to ensure that those guarantees are satisfied so that users don't go crazy and don't don't
+
+00:46:32.321 --> 00:46:35.265 
+go buy some competitors product that does that better, right?
+
+00:46:35.985 --> 00:46:41.353 
+So a lot of action happens in the memory system in the end that doesn't get really discussed here,
+
+00:46:41.353 --> 00:46:43.545 
+but you should really think about these.
+
+00:46:43.545 --> 00:46:47.625 
+And it's really a place where a wealth of optimisations need to be done.
+
+00:46:48.385 --> 00:46:51.105 
+And in the end, I will argue next week that we need to rethink the whole thing.
+
+00:46:53.745 --> 00:46:55.465 
+OK, there are no burning questions.
+
+00:46:56.065 --> 00:46:56.945 
+Let's take a break.
+
+00:46:57.145 --> 00:46:59.145 
+Then we're going to switch to prefetching.
+
+00:47:02.905 --> 00:47:04.145 
+Let's be back when the bell ring.
+
+00:47:05.805 --> 00:47:08.485 
+OK, let's continue where we left off.
+
+00:47:09.725 --> 00:47:15.229 
+Now we're going to start prefetching a new, I shouldn't say even more exciting topic, but it's an
+
+00:47:15.229 --> 00:47:17.045 
+even more exciting topic for me.
+
+00:47:17.565 --> 00:47:23.565 
+And there's an area where we need a whole lot more improvement and there's more to do in this area.
+
+00:47:24.045 --> 00:47:29.794 
+Prefetching is essentially predicting what addresses are needed by the processor and bringing them
+
+00:47:29.794 --> 00:47:31.965 
+closer to the processor early, right?
+
+00:47:32.685 --> 00:47:33.805 
+And these are the readings.
+
+00:47:35.605 --> 00:47:36.445 
+Let's get started.
+
+00:47:36.565 --> 00:47:40.885 
+This is an area that I've been working on for almost 2526 years now.
+
+00:47:41.445 --> 00:47:42.725 
+And it's a fascinating area.
+
+00:47:42.725 --> 00:47:45.525 
+And there's still a whole lot more to do in this area.
+
+00:47:46.045 --> 00:47:48.925 
+And we have a lot more that we understand here.
+
+00:47:49.045 --> 00:47:53.838 
+And a lot of the ideas that we have developed went into real processors that billions of people are
+
+00:47:53.838 --> 00:47:54.565 
+using actually.
+
+00:47:55.045 --> 00:47:57.365 
+So in that sense, it's a very interesting area.
+
+00:47:58.285 --> 00:48:03.932 
+The downside is there's a lot more to do because memory is such a big bottleneck and we want to
+
+00:48:03.932 --> 00:48:06.965 
+prefetch the data early, more accurately, etcetera.
+
+00:48:07.645 --> 00:48:12.709 
+Next week if we talk about processing in memory, you will see that this will still be important, but
+
+00:48:12.709 --> 00:48:17.672 
+it will be it should be done in a more memory centric way as opposed to processor centric way that
+
+00:48:17.672 --> 00:48:18.685 
+we talk about today.
+
+00:48:19.205 --> 00:48:24.504 
+So the basic idea and prefetching is fetch the data before it's needed or prefetch the data before
+
+00:48:24.504 --> 00:48:25.965 
+it's needed by the program.
+
+00:48:26.845 --> 00:48:27.245 
+Why?
+
+00:48:27.245 --> 00:48:27.885 
+It's obvious.
+
+00:48:27.885 --> 00:48:29.325 
+Again, memory latency is high.
+
+00:48:29.445 --> 00:48:34.805 
+If you prefetch accurately and oily enough, we can reduce or eliminate that latency, right?
+
+00:48:35.285 --> 00:48:35.805 
+Sounds good.
+
+00:48:36.925 --> 00:48:41.685 
+And the big benefit of prefetching is it can eliminate compulsory cache misses, right?
+
+00:48:42.125 --> 00:48:46.045 
+Caching, as we discussed yesterday, was a reactive technique.
+
+00:48:46.805 --> 00:48:49.565 
+You can basically cache something only after you access it.
+
+00:48:49.845 --> 00:48:54.978 
+Whereas prefetching says I'm going to predict whatever I need, whatever the processor is going to
+
+00:48:54.978 --> 00:48:56.725 
+need or program is going to need.
+
+00:48:57.125 --> 00:48:59.165 
+So it's a very proactive technique.
+
+00:48:59.325 --> 00:49:04.725 
+As a result, you can get rid of cache misses that are classified as compulsory in the last lecture.
+
+00:49:06.165 --> 00:49:09.805 
+Of course, the question then becomes can it eliminate all cache misses, capacity, conflict,
+
+00:49:09.805 --> 00:49:11.565 
+coherence, And in the end the answer is yes.
+
+00:49:12.445 --> 00:49:15.885 
+If you do the prefetching well, it can eliminate all kinds of cache misses.
+
+00:49:16.005 --> 00:49:22.331 
+And in an ideal world, if you do prefetching really well, you would never stall for any memory
+
+00:49:22.331 --> 00:49:28.926 
+access because there would be some mechanism that would prefetch the data and bring it just before
+
+00:49:28.926 --> 00:49:30.205 
+you need it, right?
+
+00:49:30.485 --> 00:49:31.805 
+That sounds like a good ideal world.
+
+00:49:31.805 --> 00:49:37.471 
+It's very hard to approximate in real life, and clearly this involves predicting which address will
+
+00:49:37.471 --> 00:49:38.845 
+be needed in the future.
+
+00:49:39.325 --> 00:49:41.805 
+And this also works for instruction and data.
+
+00:49:42.125 --> 00:49:47.218 
+Instructions are a little bit easier because they're usually sequential and also in the front end of
+
+00:49:47.218 --> 00:49:52.260 
+the machine you have a lot of information with the branch prediction, for example, you can run your
+
+00:49:52.260 --> 00:49:56.945 
+front end much faster than your back end because in the back end of the machine where you're
+
+00:49:56.945 --> 00:50:01.987 
+executing, you're limited by memory access and the front end, you can keep running it such that you
+
+00:50:01.987 --> 00:50:06.571 
+keep generating predictions and you can guide the instruction fetch engine with the branch
+
+00:50:06.571 --> 00:50:08.405 
+prediction mechanisms that you have.
+
+00:50:09.325 --> 00:50:15.001 
+OK, so of course pre fetching works if programs have predictable mis address patterns or if you
+
+00:50:15.001 --> 00:50:19.005 
+design algorithms that can predict what your programs is accessing.
+
+00:50:19.245 --> 00:50:21.925 
+This is like two sides of the same coin, right?
+
+00:50:22.165 --> 00:50:23.845 
+What is the predictable MIS access pattern?
+
+00:50:23.845 --> 00:50:29.485 
+It depends on what is how you, how good your algorithms are in predicting something, right?
+
+00:50:30.965 --> 00:50:33.285 
+OK, in general, we're not very good at predicting randomness.
+
+00:50:33.565 --> 00:50:38.592 
+So if you have, if you're truly randomly accessing memory, then you're in big trouble basically
+
+00:50:38.592 --> 00:50:42.085 
+because there is no technique that works really well in that case.
+
+00:50:42.085 --> 00:50:47.740 
+Caching doesn't work, pre fetching doesn't work, or maybe I should say some different type of
+
+00:50:47.740 --> 00:50:51.085 
+prefetching will work and we're going to get into that.
+
+00:50:51.325 --> 00:50:53.285 
+That's going to be execution based prefetching.
+
+00:50:53.645 --> 00:50:58.796 
+You execute a piece of the program to prefetch for another part of the program that you're going to
+
+00:50:58.796 --> 00:50:59.005 
+run.
+
+00:51:00.485 --> 00:51:04.605 
+OK, so prefetching and correctness, a misprediction in prefetching doesn't affect correctness.
+
+00:51:04.605 --> 00:51:06.365 
+I'll give answers to these relatively quickly.
+
+00:51:06.365 --> 00:51:09.645 
+Because prefetched data, the mispredicted address is simply not used.
+
+00:51:11.805 --> 00:51:12.205 
+That's good.
+
+00:51:12.205 --> 00:51:13.565 
+There is no need for state recovery.
+
+00:51:13.725 --> 00:51:16.885 
+So in that sense, it's more relaxed than branch prediction, right?
+
+00:51:17.285 --> 00:51:20.485 
+If you mispredict the branch, you've executed some instructions you need to flush the pipeline.
+
+00:51:20.885 --> 00:51:26.045 
+Whereas in prefetching you don't have that problem or similar to value also.
+
+00:51:26.525 --> 00:51:28.765 
+And if you mispredict the value, you need to flush the pipeline right?
+
+00:51:29.525 --> 00:51:35.187 
+Now, of course, people have figured out more recently that prefetching can lead to side channels,
+
+00:51:35.187 --> 00:51:38.165 
+can lead to other security issues, covert channels.
+
+00:51:38.245 --> 00:51:38.885 
+ETC.
+
+00:51:39.125 --> 00:51:40.645 
+Those we're not going to talk about, right?
+
+00:51:41.125 --> 00:51:47.110 
+I think any kind of speculation mechanism is vulnerable to side channels, covert channels, and those
+
+00:51:47.110 --> 00:51:49.565 
+we're not going to handle in this course.
+
+00:51:51.125 --> 00:51:55.579 
+OK, So the basics of prefetching in modern systems, prefetching is usually done at the cache block
+
+00:51:55.579 --> 00:51:56.125 
+granularity.
+
+00:51:56.405 --> 00:52:02.012 
+It's a technique that can reduce both miss rate as well as miss latency, and it can be done by
+
+00:52:02.012 --> 00:52:06.725 
+essentially any part of the stack, hardware compiler, programmer or the system.
+
+00:52:07.365 --> 00:52:10.685 
+And I'm going to give you some especially hardware based prefetching algorithms.
+
+00:52:10.685 --> 00:52:14.845 
+But software has a lot to say in terms of prefetching also.
+
+00:52:15.165 --> 00:52:21.878 
+For example, at the system level, At the operating system level, people have developed algorithms to
+
+00:52:21.878 --> 00:52:28.389 
+predict when a user will start a particular application and prefetch the data of that application
+
+00:52:28.389 --> 00:52:32.485 
+from the disk to main memory based on that prediction, right?
+
+00:52:33.165 --> 00:52:38.844 
+Windows, for example, had these learning based algorithms that were developed in 2000s, etcetera to
+
+00:52:38.844 --> 00:52:40.565 
+do this reasonably accurately.
+
+00:52:41.005 --> 00:52:43.045 
+So it's possible to do it at the system level, right?
+
+00:52:43.045 --> 00:52:45.965 
+You're predicting what the user will do in that case, right?
+
+00:52:46.085 --> 00:52:51.125 
+And prefetch the data because loading an application is important from a user perspective.
+
+00:52:51.125 --> 00:52:54.485 
+If you prefetch that already in main memory, you can load the application much faster, right?
+
+00:52:55.565 --> 00:53:00.565 
+So this is a picture that I drew when I was a graduate student in 2004 or so.
+
+00:53:00.565 --> 00:53:02.365 
+We published in one of the articles.
+
+00:53:02.365 --> 00:53:07.877 
+But this is an example hardware prefetcher as it sits in the system at next to L2 cache you can have
+
+00:53:07.877 --> 00:53:13.059 
+today we have hardware prefetchers, like 10s of hardware prefetchers at different parts of the
+
+00:53:13.059 --> 00:53:13.445 
+system.
+
+00:53:14.605 --> 00:53:19.399 
+This also kind of shows you how dated things are because memory controller is on the other side of
+
+00:53:19.399 --> 00:53:20.525 
+the bus, it's off chip.
+
+00:53:20.525 --> 00:53:21.365 
+But that's not true.
+
+00:53:21.445 --> 00:53:26.615 
+Memory controller got eaten today by the CPU chip because we can put a lot of transistors on a
+
+00:53:26.615 --> 00:53:27.605 
+single chip right?
+
+00:53:27.885 --> 00:53:29.325 
+But this is one example over here.
+
+00:53:29.565 --> 00:53:33.245 
+A hardware prefetcher can monitor accesses that are coming to it.
+
+00:53:33.525 --> 00:53:42.759 
+It could be filtered by the 1st double caches and then based on what it monitors it can issue
+
+00:53:42.759 --> 00:53:44.845 
+requests to prefetch.
+
+00:53:45.485 --> 00:53:50.339 
+So it it sees a some access pattern and based on the access pattern is decides to issue a new
+
+00:53:50.339 --> 00:53:54.725 
+request thinking that the processor will touch those new addresses that it predicts.
+
+00:53:55.885 --> 00:53:59.912 
+So there are four, at least four questions in prefetching what, when, where and how, and some of
+
+00:53:59.912 --> 00:54:01.045 
+these are multiple aspects.
+
+00:54:01.885 --> 00:54:03.525 
+What is what addresses to prefetch?
+
+00:54:03.645 --> 00:54:05.805 
+Essentially these are address prediction algorithms.
+
+00:54:06.245 --> 00:54:08.205 
+When is when do you initiate A prefetch request?
+
+00:54:08.205 --> 00:54:13.658 
+This is really important because you could be too early, in which case your prefetch may need to
+
+00:54:13.658 --> 00:54:17.805 
+wait for a long time and it may even be evicted by someone else you need.
+
+00:54:17.805 --> 00:54:19.085 
+You may be too late.
+
+00:54:19.605 --> 00:54:25.621 
+Then the process is already has already needed the data, so you don't really cover the latency that
+
+00:54:25.621 --> 00:54:25.925 
+much.
+
+00:54:26.085 --> 00:54:27.485 
+Ideally we would like to be on time.
+
+00:54:28.565 --> 00:54:30.165 
+Where has multiple aspects.
+
+00:54:30.165 --> 00:54:31.485 
+Where do you place the prefetch data?
+
+00:54:31.485 --> 00:54:32.485 
+Do you put it in caches?
+
+00:54:32.485 --> 00:54:33.805 
+Do you put it in a separate buffer?
+
+00:54:34.245 --> 00:54:35.885 
+Where do you place the prefetcher itself?
+
+00:54:36.085 --> 00:54:39.285 
+Which love in the memory hierarchy and how is?
+
+00:54:39.285 --> 00:54:41.285 
+How does the prefetcher operate and who operates it?
+
+00:54:41.685 --> 00:54:42.645 
+Is it software?
+
+00:54:42.645 --> 00:54:43.565 
+Is it hardware?
+
+00:54:44.125 --> 00:54:45.005 
+Is it Co operative?
+
+00:54:45.205 --> 00:54:46.365 
+Is it some sort of hybrid?
+
+00:54:46.805 --> 00:54:47.805 
+Hybrid is the right answer.
+
+00:54:47.805 --> 00:54:50.485 
+Again, is it execution or thread based?
+
+00:54:50.765 --> 00:54:54.605 
+Like do you really execute code to prefetch data or instructions?
+
+00:54:54.605 --> 00:54:56.405 
+We're going to see different kinds.
+
+00:54:57.205 --> 00:54:59.205 
+Let's start with what what addresses to prefetch.
+
+00:55:00.605 --> 00:55:05.325 
+So you don't want to prefetch useless addresses that you're not going to touch later on, right?
+
+00:55:05.325 --> 00:55:09.285 
+Because prefetching useless data wastes resources, especially main memory bandwidth.
+
+00:55:09.285 --> 00:55:10.565 
+You don't want to waste it.
+
+00:55:10.565 --> 00:55:16.964 
+Also, as we have discussed earlier, generates requests that may use up resources that are needed by
+
+00:55:16.964 --> 00:55:18.645 
+some other threads, right?
+
+00:55:19.165 --> 00:55:23.897 
+If you're especially in a multi core environment, so memory bandwidth, cache or prefetch buffer
+
+00:55:23.897 --> 00:55:28.728 
+space, energy consumption, basically these could all be utilised by demand requests from the same
+
+00:55:28.728 --> 00:55:32.365 
+application or some other application or more accurate prefetch requests.
+
+00:55:32.365 --> 00:55:33.845 
+It's always good to think about that, right?
+
+00:55:34.205 --> 00:55:37.205 
+You're wasting resources if you're doing something useless.
+
+00:55:38.045 --> 00:55:41.405 
+So accurate prediction of addresses to prefetch is really important.
+
+00:55:41.805 --> 00:55:44.245 
+And prefetch accuracy is one of the metrics that we care about.
+
+00:55:44.245 --> 00:55:45.365 
+It's not the only metric.
+
+00:55:46.485 --> 00:55:53.018 
+And prefetch accuracy means what is the fraction of the prefetches that are used or needed by the
+
+00:55:53.018 --> 00:55:58.205 
+program divided by all the prefetches that are sent by the prefetcher, right?
+
+00:55:59.365 --> 00:56:00.045 
+So it's very simple.
+
+00:56:00.045 --> 00:56:06.758 
+Ideally you you would like to be at 100%, but we'll see that it's not going to be easy to get 100%
+
+00:56:06.758 --> 00:56:11.485 
+by giving up something else, some other metric that's also important.
+
+00:56:12.165 --> 00:56:14.285 
+So basically, how do we know what to prefetch?
+
+00:56:14.605 --> 00:56:16.445 
+And there are multiple ways of doing that.
+
+00:56:16.445 --> 00:56:20.786 
+You can predict based on past access patterns, which is going to be a lot of the hardware prefetches
+
+00:56:20.786 --> 00:56:21.525 
+that we will see.
+
+00:56:22.125 --> 00:56:26.917 
+Or you could use the compilers or programmers knowledge of data structures, or you could do some
+
+00:56:26.917 --> 00:56:28.365 
+execution of a thread, right?
+
+00:56:29.325 --> 00:56:34.405 
+So in the end, you design some sort of prefetching algorithm and that determines what to prefetch.
+
+00:56:35.565 --> 00:56:38.005 
+Let's have some fun with cache block addresses.
+
+00:56:38.245 --> 00:56:40.645 
+So we're going to do prefetching at cache block level, right?
+
+00:56:41.205 --> 00:56:46.431 
+And if the processor, if this is the access stream that's seen by the prefetcher, hopefully the next
+
+00:56:46.431 --> 00:56:48.365 
+addresses are easy to predict, right?
+
+00:56:48.845 --> 00:56:53.018 
+This is a streaming access pattern you have streaming is essentially you have a stride of one,
+
+00:56:53.018 --> 00:56:53.285 
+right?
+
+00:56:54.365 --> 00:56:58.005 
+And you can keep prefetching farther ahead this way.
+
+00:56:58.565 --> 00:57:03.245 
+You will be wrong only when the processor stops accessing the stream, right?
+
+00:57:04.325 --> 00:57:04.925 
+That's the idea.
+
+00:57:05.845 --> 00:57:08.205 
+OK, this is also easily predictable.
+
+00:57:08.565 --> 00:57:11.125 
+This is a stride of 42, as you can see.
+
+00:57:11.525 --> 00:57:12.445 
+Sounds good, right?
+
+00:57:14.525 --> 00:57:16.765 
+This looks a bit more complicated, but not that bad.
+
+00:57:17.525 --> 00:57:18.605 
+Is this easy to prefetch?
+
+00:57:22.925 --> 00:57:23.525 
+What do you think?
+
+00:57:23.765 --> 00:57:27.245 
+Yes, you get plus 2 + 3 + 4 + 2 + 3 + 4.
+
+00:57:27.245 --> 00:57:28.645 
+Repeating right here.
+
+00:57:28.645 --> 00:57:32.285 
+The deltas, multiple deltas are predictable.
+
+00:57:32.285 --> 00:57:34.085 
+It's 234234234.
+
+00:57:34.085 --> 00:57:35.365 
+So we need to look a little bit further.
+
+00:57:36.285 --> 00:57:42.402 
+And prefetchers like this that that can prefetch like these deltas are designed and they're actually
+
+00:57:42.402 --> 00:57:44.605 
+in the processors that you're using.
+
+00:57:45.085 --> 00:57:46.845 
+So this is called delta correlation prefetcher.
+
+00:57:46.845 --> 00:57:48.285 
+You're correlating deltas.
+
+00:57:48.285 --> 00:57:52.165 
+Whenever you see 234, you're predicting you'll get 234 again, right?
+
+00:57:54.045 --> 00:57:59.005 
+OK, now at least we don't have predictable deltas.
+
+00:58:00.005 --> 00:58:03.685 
+This looks a bit harder, but there are some things you can predict over here.
+
+00:58:03.685 --> 00:58:04.325 
+Maybe right?
+
+00:58:04.565 --> 00:58:07.445 
+XYTXYTXYT.
+
+00:58:07.925 --> 00:58:10.365 
+So whenever you see X, you can prefetch Y&T.
+
+00:58:11.405 --> 00:58:12.045 
+That sounds good.
+
+00:58:12.045 --> 00:58:13.965 
+Maybe there's something else, but I don't think there is.
+
+00:58:15.565 --> 00:58:18.725 
+OK, and there's another one over here.
+
+00:58:20.885 --> 00:58:21.925 
+Does this look predictable?
+
+00:58:25.765 --> 00:58:26.165 
+Yes.
+
+00:58:26.725 --> 00:58:27.485 
+How do you predict it?
+
+00:58:27.485 --> 00:58:31.325 
+Just for a set of options.
+
+00:58:31.965 --> 00:58:32.485 
+Exactly.
+
+00:58:32.485 --> 00:58:33.525 
+Yeah, exactly.
+
+00:58:33.525 --> 00:58:42.445 
+So base address is changing AZP and the offsets are always plus one 6 + 67 + 18 + 7 + 9 nine, right?
+
+00:58:42.485 --> 00:58:43.405 
+This is also predictable.
+
+00:58:44.485 --> 00:58:48.165 
+You just need to have enough bookkeeping to predict this, right?
+
+00:58:49.645 --> 00:58:52.965 
+And this could this sort of access pairing can happen to the data structures, right?
+
+00:58:53.245 --> 00:58:58.088 
+You have some data structure and then you have you're accessing some fields consistently in that
+
+00:58:58.088 --> 00:58:58.845 
+data structure.
+
+00:58:59.965 --> 00:59:04.722 
+OK, So you can see that there are a lot of predictable access patterns, and we're going to look at
+
+00:59:04.722 --> 00:59:06.325 
+some simple things to begin with.
+
+00:59:08.125 --> 00:59:13.664 
+Actually, a lot of prefetchers have been proposed for all of these access patterns in the end, and
+
+00:59:13.664 --> 00:59:18.525 
+different sorts of prefetchers are implemented in existing processors, hybrid of them.
+
+00:59:18.765 --> 00:59:18.925 
+Yeah.
+
+00:59:19.325 --> 00:59:20.925 
+So OK, when is another one?
+
+00:59:20.965 --> 00:59:27.202 
+When is a difficult one because prefetching too early leads to prefetch data that may not be used
+
+00:59:27.202 --> 00:59:29.325 
+before it's evicted from storage.
+
+00:59:30.565 --> 00:59:32.885 
+Too late might not hide the whole memory latency.
+
+00:59:33.245 --> 00:59:35.205 
+And ideally you want to be just in time, right?
+
+00:59:36.285 --> 00:59:38.525 
+This is really the timeliness metric.
+
+00:59:38.565 --> 00:59:43.882 
+This affects the timeliness of the prefetcher, and prefetcher can be made more timely by making it
+
+00:59:43.882 --> 00:59:48.765 
+more aggressive, meaning you try to stay far ahead of the processors demand access stream.
+
+00:59:49.165 --> 00:59:53.312 
+By looking further into the future, if you have a hardware prefetcher or if you have a software
+
+00:59:53.312 --> 00:59:56.325 
+prefetcher, you may move the prefetch instructions early in the code.
+
+00:59:57.045 --> 01:00:01.485 
+But whenever you try to make a prefetcher more timely by doing this, you lose accuracy, right?
+
+01:00:02.205 --> 01:00:07.480 
+That's the downside because if you actually are more aggressive and the processor stops accessing
+
+01:00:07.480 --> 01:00:12.485 
+that stream, you prefetch a lot more than you would have if you were less aggressive, right?
+
+01:00:12.885 --> 01:00:14.205 
+So that reduced your accuracy.
+
+01:00:14.725 --> 01:00:19.796 
+If you move the prefetch instructions earlier in the code, the likelihood that you will like the
+
+01:00:19.796 --> 01:00:24.921 
+processor will actually get to the code that you are prefetching for reducers because you need to
+
+01:00:24.921 --> 01:00:30.099 
+move it across branches and one of those branches may be taken and may take you through some other
+
+01:00:30.099 --> 01:00:33.005 
+path that which will make your prefetch useless, right?
+
+01:00:33.925 --> 01:00:35.485 
+OK, so that's the idea basically.
+
+01:00:35.645 --> 01:00:40.165 
+There's a clearly a tension between timeless and accuracy.
+
+01:00:41.405 --> 01:00:46.445 
+OK, let's talk about where Where has a lot of aspects which level of cache to prefetch into.
+
+01:00:47.045 --> 01:00:49.805 
+Do you prefetch from memory to L4L 3L2?
+
+01:00:50.005 --> 01:00:51.845 
+Do you prefetch directly from memory to L1?
+
+01:00:52.765 --> 01:00:53.725 
+Basically, where do you do it?
+
+01:00:53.845 --> 01:00:55.885 
+This is essentially insertion policy.
+
+01:00:55.885 --> 01:01:03.925 
+Where do you insert in terms of which level of cache do you prefetch from L3 to L2L2 to L1?
+
+01:01:03.925 --> 01:01:05.805 
+Do you have separate prefetchers for all of these?
+
+01:01:05.805 --> 01:01:07.205 
+There are many questions over here basically.
+
+01:01:07.205 --> 01:01:10.205 
+Or do you have a single prefetcher that prefetches into all of the caches?
+
+01:01:10.845 --> 01:01:15.125 
+You need to be careful in prefetching L into L1 because as we discussed, L1 is very special.
+
+01:01:15.205 --> 01:01:16.765 
+It's tightly integrated into the pipeline.
+
+01:01:16.765 --> 01:01:17.645 
+Size is small.
+
+01:01:17.885 --> 01:01:22.765 
+If you pollute it with a lot of prefetches, you may actually lose a lot of pipeline performance.
+
+01:01:22.845 --> 01:01:29.250 
+So in general, prefetchers to L1 are different from prefetches to other prefetchers to other parts
+
+01:01:29.250 --> 01:01:30.165 
+of the memory.
+
+01:01:30.165 --> 01:01:31.645 
+Do you put it in the memory controller?
+
+01:01:32.445 --> 01:01:34.245 
+Essentially, today prefetchers are everywhere.
+
+01:01:35.685 --> 01:01:37.045 
+Where do you place the prefetch data?
+
+01:01:37.045 --> 01:01:38.085 
+In the cache itself.
+
+01:01:38.285 --> 01:01:42.907 
+Do we treat prefetch blocks the same as demandfetch blocks even though they were not requested by
+
+01:01:42.907 --> 01:01:43.765 
+the load or store?
+
+01:01:44.365 --> 01:01:46.805 
+How do you decide how to treat them?
+
+01:01:47.605 --> 01:01:49.365 
+This is actually another interesting question.
+
+01:01:50.445 --> 01:01:55.934 
+Like in general, if you have some idea about the accuracy of the prefetcher, you may treat highly
+
+01:01:55.934 --> 01:02:01.085 
+accurate prefetches or predicted highly accurate prefetches similar to demand fetch blocks.
+
+01:02:01.605 --> 01:02:07.297 
+If your prefetcher is not very accurate based on the past, then you may treat them less like demand
+
+01:02:07.297 --> 01:02:08.045 
+fetch blocks.
+
+01:02:09.005 --> 01:02:13.325 
+You may, for example, insert the prefetch into a more least recently used position.
+
+01:02:13.405 --> 01:02:14.925 
+Right, OK.
+
+01:02:15.925 --> 01:02:21.165 
+Basically, prefetch blocks are not known to be needed with LRU policy that we discussed yesterday.
+
+01:02:21.165 --> 01:02:24.805 
+Least recently used, a demand block is normally placed into the MRU position.
+
+01:02:25.365 --> 01:02:29.245 
+The question is, do we skew the replacement policy such that it favours the demand fetch blocks?
+
+01:02:30.445 --> 01:02:33.805 
+Place all prefetches, for example, into the LRU position In a way that's a bad idea.
+
+01:02:34.125 --> 01:02:38.656 
+Turns out, because some prefetches are really accurate and you don't want to put them into the LRU
+
+01:02:38.656 --> 01:02:40.645 
+position such that they're evicted quickly.
+
+01:02:41.285 --> 01:02:46.485 
+You want to really bias them to be at a position where they will be less likely to be evicted.
+
+01:02:46.685 --> 01:02:52.592 
+So in general, using information about the accuracy of prefetches is very useful to decide where to
+
+01:02:52.592 --> 01:02:53.845 
+place the prefetches.
+
+01:02:54.645 --> 01:02:58.365 
+This is actually a smaller form of the reuse prediction that we discussed, right?
+
+01:02:58.365 --> 01:03:05.593 
+The idea is to predict whether a cache line is going to be used, and for that I think you need to
+
+01:03:05.593 --> 01:03:07.605 
+develop various mechanisms.
+
+01:03:08.125 --> 01:03:15.945 
+Prefetching accuracy is 1 one metric that could correlate with whether or not a cache line is going
+
+01:03:15.945 --> 01:03:17.525 
+to be reused, right?
+
+01:03:17.605 --> 01:03:21.445 
+A prefetch cache line OK Ware also has more here.
+
+01:03:21.525 --> 01:03:25.365 
+Where to place the hardware prefetcher in the memory hierarchy becomes important.
+
+01:03:25.525 --> 01:03:27.845 
+In other words, what access patterns does the prefetcher see?
+
+01:03:28.325 --> 01:03:30.165 
+Does it see L one hits and misses?
+
+01:03:30.165 --> 01:03:32.765 
+Which is right at the right before the L1.
+
+01:03:32.765 --> 01:03:34.605 
+Basically you put the prefetcher.
+
+01:03:34.605 --> 01:03:37.765 
+Does it see see L1 misses only or L2 misses, L3 misses.
+
+01:03:38.165 --> 01:03:42.877 
+So as you go farther away from the processor, the access stream that the prefetcher sees becomes
+
+01:03:42.877 --> 01:03:43.565 
+less complete.
+
+01:03:44.085 --> 01:03:48.085 
+In other words, filtered by whatever hits and the upper level caches.
+
+01:03:49.805 --> 01:03:55.168 
+This means that the prefetcher can act more slowly because it's not being bombarded by so many
+
+01:03:55.168 --> 01:03:57.165 
+requests coming from the processor.
+
+01:03:58.205 --> 01:04:02.885 
+But it may also be it may be harder to find patterns in those access patterns.
+
+01:04:02.885 --> 01:04:07.605 
+So seeing a more complete access pattern can lead to potentially better accuracy and coverage.
+
+01:04:07.605 --> 01:04:09.605 
+Not necessarily, but can.
+
+01:04:10.485 --> 01:04:14.880 
+But the downside is prefetcher needs to examine much many more requests because it's more bandwidth
+
+01:04:14.880 --> 01:04:15.325 
+intensive.
+
+01:04:15.325 --> 01:04:18.485 
+You may need to design A prefetcher with more ports into the prefetcher.
+
+01:04:18.685 --> 01:04:23.327 
+If the processor is able to issue 10 loads per cycle, for example, the prefetcher needs to keep up
+
+01:04:23.327 --> 01:04:24.085 
+with that right?
+
+01:04:24.165 --> 01:04:30.360 
+Ideally, again, OK, so recall there's a modern memory hierarchy and you could have prefetching
+
+01:04:30.360 --> 01:04:34.645 
+everywhere here, including into the register file from L1 caches.
+
+01:04:36.245 --> 01:04:37.125 
+Good to think about that.
+
+01:04:38.525 --> 01:04:38.845 
+OK.
+
+01:04:38.845 --> 01:04:43.005 
+And the main memory actually become is becoming bigger.
+
+01:04:43.005 --> 01:04:45.325 
+Things are becoming more hybrid in main memory.
+
+01:04:45.325 --> 01:04:48.085 
+There are different types of DM, for example, different types of memories.
+
+01:04:48.725 --> 01:04:51.165 
+And as we discussed, there's remote memory also.
+
+01:04:51.165 --> 01:04:57.743 
+So it's good to essentially prefetching is a really necessary technique to over overcome or overlap
+
+01:04:57.743 --> 01:05:03.125 
+the latencies or reduce the observed access latency to these very large memories.
+
+01:05:05.405 --> 01:05:09.605 
+OK, let's talk about how we talked about where how is and we talked about what earlier.
+
+01:05:09.925 --> 01:05:11.245 
+How is essentially?
+
+01:05:11.565 --> 01:05:13.805 
+What type of prefetching do you do?
+
+01:05:14.765 --> 01:05:18.988 
+And these are very broad methods, software prefetching, hardware prefetching, and execution based
+
+01:05:18.988 --> 01:05:21.645 
+prefetching, and all of them are employed in today's systems.
+
+01:05:22.125 --> 01:05:25.125 
+Software prefetching can be done by the programmer.
+
+01:05:25.565 --> 01:05:27.645 
+You don't necessarily need ISA instructions.
+
+01:05:27.645 --> 01:05:31.439 
+You can actually write your software such that a piece of your software prefetches for another piece
+
+01:05:31.439 --> 01:05:32.085 
+of your software.
+
+01:05:32.445 --> 01:05:33.565 
+That's very commonly employed.
+
+01:05:33.645 --> 01:05:35.645 
+Prefetching is a much more general technique, right?
+
+01:05:36.165 --> 01:05:41.853 
+But if you actually want the compiler to do some prefetching, your ISA may need some prefetch
+
+01:05:41.853 --> 01:05:46.685 
+instructions and programmer or compiler inserts these instructions to the code.
+
+01:05:47.045 --> 01:05:49.845 
+This usually works well for only regular access patterns.
+
+01:05:50.645 --> 01:05:53.485 
+It's very difficult to make this work for very irregular patterns.
+
+01:05:54.125 --> 01:05:58.316 
+If this was a longer lecture I would give you more examples, but we don't have time hardware
+
+01:05:58.316 --> 01:05:59.045 
+prefetching now.
+
+01:05:59.045 --> 01:06:05.402 
+We have specialised hardware that monitors memory accesses and basically uses some pattern
+
+01:06:05.402 --> 01:06:11.125 
+recognition methods, either memorisation or learning different types of learning.
+
+01:06:11.125 --> 01:06:13.485 
+I'm going to talk about reinforcement learning based prefetches later.
+
+01:06:13.485 --> 01:06:18.685 
+For example, finds these predictable patterns in the addresses.
+
+01:06:18.765 --> 01:06:23.785 
+It could be strides, it could be correlations, it could be these delta values for example and
+
+01:06:23.785 --> 01:06:26.485 
+generates prefetch addresses automatically, right?
+
+01:06:27.125 --> 01:06:30.325 
+This is nice because the programmer or the compiler doesn't need to do anything.
+
+01:06:31.325 --> 01:06:36.647 
+Of course, this may be this may work more easily if the memory allocation is nice and the access
+
+01:06:36.647 --> 01:06:37.645 
+patterns are nice.
+
+01:06:38.285 --> 01:06:40.245 
+If things are random, this doesn't work very well.
+
+01:06:40.365 --> 01:06:41.525 
+Basically doesn't work at all.
+
+01:06:41.525 --> 01:06:46.397 
+Essentially execution based prefetching is interesting because it could be hardware and software
+
+01:06:46.397 --> 01:06:47.565 
+either or Co operative.
+
+01:06:47.565 --> 01:06:52.885 
+Again, here you execute a thread to prefetch data for the main programme.
+
+01:06:53.325 --> 01:06:54.805 
+We call the speculative threads.
+
+01:06:55.365 --> 01:07:01.902 
+They're really not a thread to produce result, they're really a thread to aid the main programme
+
+01:07:01.902 --> 01:07:03.605 
+that produces the result.
+
+01:07:03.645 --> 01:07:05.925 
+They're also called helper threads or assist threads.
+
+01:07:06.325 --> 01:07:08.405 
+They really assist the main execution.
+
+01:07:09.085 --> 01:07:14.530 
+And you could as a programmer write this, you could actually think about doing that, or the compiler
+
+01:07:14.530 --> 01:07:17.525 
+can generate it or the hardware can generate it, right?
+
+01:07:18.285 --> 01:07:21.085 
+So essentially, there are many potential possibilities over here.
+
+01:07:21.165 --> 01:07:25.625 
+You can of course, have nice ISA support instructions that architecture support such that these
+
+01:07:25.625 --> 01:07:26.565 
+threads work nicely.
+
+01:07:27.725 --> 01:07:28.885 
+We're going to talk about that also.
+
+01:07:29.565 --> 01:07:36.918 
+So this is an example of prefetch instruction that exists in many IS as this is a version of X86 and
+
+01:07:36.918 --> 01:07:44.125 
+you can see that it says prefetch data into the caches and it's a mess and you will see why it's a
+
+01:07:44.125 --> 01:07:46.405 
+mess when I show you over here.
+
+01:07:46.925 --> 01:07:50.673 
+So basically you can look at the description fetches the line of data from memory that contains the
+
+01:07:50.673 --> 01:07:54.194 
+bytes specified within the source operand to a location in the cache hierarchy specified by a
+
+01:07:54.194 --> 01:07:54.725 
+locality hint.
+
+01:07:55.525 --> 01:07:56.965 
+Locality hint is a mess.
+
+01:07:57.405 --> 01:08:01.485 
+T0 if you supply T0 temporal data, prefetched data into all levels of the cache.
+
+01:08:01.485 --> 01:08:08.495 
+ARC Pentium 3 processor first or second level cache, Pentium 4, Intel's EON processor second level
+
+01:08:08.495 --> 01:08:08.925 
+cache.
+
+01:08:09.125 --> 01:08:13.805 
+Clearly all doesn't include the first level, which is interesting right?
+
+01:08:13.805 --> 01:08:19.055 
+Basically they don't want to pre fetch into LL1 cache because they don't trust the compiler or the
+
+01:08:19.055 --> 01:08:19.645 
+programmer.
+
+01:08:20.485 --> 01:08:23.205 
+You will see this a lot in speculative optimizations.
+
+01:08:23.205 --> 01:08:28.963 
+Whenever you enable the interface to provide some speculative mechanism, in this case a pre fetch
+
+01:08:28.963 --> 01:08:32.645 
+instruction, the micro architect decides how that is executed.
+
+01:08:33.245 --> 01:08:39.476 
+OK, and you can see that there is a bunch of hints over here, but they're essentially all the same
+
+01:08:39.476 --> 01:08:40.685 
+or mostly the same.
+
+01:08:42.805 --> 01:08:46.783 
+So the idea is non temporal data with respect to all cache levels, prefetched data into non temporal
+
+01:08:46.783 --> 01:08:50.245 
+cache structure and into a location close to the processor, minimising cache pollution.
+
+01:08:51.245 --> 01:08:56.446 
+So basically this is interesting because you prefetch into the first level cache but not into other
+
+01:08:56.446 --> 01:08:57.445 
+cache levels right?
+
+01:08:58.085 --> 01:09:02.205 
+This works if you have a non inclusive or exclusive cache hierarchy, right?
+
+01:09:03.045 --> 01:09:09.045 
+OK, anyways, there's more to be talked about over here, but software prefetching using these
+
+01:09:09.045 --> 01:09:13.285 
+instructions is done, but maybe the interface is not good enough.
+
+01:09:14.485 --> 01:09:18.725 
+This turns out it's not very easy to get very high performance with software prefetching.
+
+01:09:19.045 --> 01:09:22.666 
+There are also many, many other reasons like if you want to insert these instructions, you want to
+
+01:09:22.666 --> 01:09:26.287 
+figure out what's going to miss and you want to only insert these instructions for things that are
+
+01:09:26.287 --> 01:09:26.805 
+going to miss.
+
+01:09:27.205 --> 01:09:30.725 
+But the compiler doesn't have a very good idea of what's going to miss necessarily, right?
+
+01:09:31.165 --> 01:09:33.485 
+So it needs to do profiling, etcetera.
+
+01:09:33.485 --> 01:09:35.325 
+So this is a difficult task.
+
+01:09:35.925 --> 01:09:41.120 
+That's why a lot of processors use hardware prefetchers and hardware prefetchers are very common
+
+01:09:41.120 --> 01:09:41.445 
+today.
+
+01:09:41.445 --> 01:09:42.325 
+And this is one example.
+
+01:09:42.325 --> 01:09:43.405 
+It's a streaming prefetcher.
+
+01:09:44.205 --> 01:09:51.039 
+Basically, whenever you're fetching cache block N, you also you prefetch for n + 1 M plus 2M plus
+
+01:09:51.039 --> 01:09:51.885 
+three m + 4.
+
+01:09:52.125 --> 01:09:57.873 
+So you may have a distance, you may decide whenever the processor access address N, you bring three
+
+01:09:57.873 --> 01:09:59.325 
+more cache blocks, right?
+
+01:10:00.125 --> 01:10:01.085 
+And you keep the distance.
+
+01:10:01.085 --> 01:10:05.045 
+Basically, you could have a streaming prefetcher between L1 and L2.
+
+01:10:05.485 --> 01:10:12.099 
+You can see that you can have a streaming prefetcher between L2 and L3, and you can have a streaming
+
+01:10:12.099 --> 01:10:15.605 
+prefetcher between memory L3 and memory, for example.
+
+01:10:15.605 --> 01:10:21.697 
+If you're actually confident that you're streaming a lot, you may actually bring these next 4 lines,
+
+01:10:21.697 --> 01:10:23.525 
+4 cache blocks into L3, right?
+
+01:10:24.765 --> 01:10:26.405 
+So hopefully this idea is very simple, right?
+
+01:10:26.445 --> 01:10:30.925 
+Where basically increment the address cache block address and prefetch that from the next level.
+
+01:10:31.605 --> 01:10:34.925 
+And IBM Power systems employ versions of this prefetcher.
+
+01:10:35.365 --> 01:10:37.685 
+And this is their nice picture that I borrow from them.
+
+01:10:38.325 --> 01:10:39.965 
+This idea is relatively old.
+
+01:10:40.045 --> 01:10:44.285 
+It was actually proposed in this paper by Norm Dupi.
+
+01:10:45.405 --> 01:10:48.805 
+And this paper won the Test of Time award at ISCA a long time ago.
+
+01:10:48.805 --> 01:10:50.525 
+It was, it's from 1990.
+
+01:10:51.645 --> 01:10:56.085 
+They also introduced the victim caches over here that I briefly mentioned in the previous month.
+
+01:10:56.525 --> 01:11:00.470 
+Essentially the streaming prefetcher and a version of streaming prefetcher is really employed in
+
+01:11:00.470 --> 01:11:02.485 
+essentially all general purpose processors today.
+
+01:11:03.085 --> 01:11:08.590 
+But I like this paper for another reason because they talk about the increasing cost of cache
+
+01:11:08.590 --> 01:11:09.005 
+misses.
+
+01:11:09.005 --> 01:11:15.694 
+It's a paper that was written in 1990 and you can see the miss cost is 6 cycles in VAX, which is one
+
+01:11:15.694 --> 01:11:20.645 
+of the fastest processors in the 1980s from Digital Equipment Corporation.
+
+01:11:22.085 --> 01:11:25.645 
+And miss costs in terms of instructions is .6 instructions.
+
+01:11:26.365 --> 01:11:34.616 
+So this wax as 10 cycles per instruction as you can see which is quite high and WRL Western research
+
+01:11:34.616 --> 01:11:38.165 
+lab Titan prototype cycles per instruction.
+
+01:11:38.245 --> 01:11:41.205 
+Is 1.4 miss cost is essentially 12 cycles.
+
+01:11:41.205 --> 01:11:44.565 
+So miss cost is in terms of instructions, 8.6 instructions, right.
+
+01:11:45.445 --> 01:11:51.125 
+And this paper projects that miss cost will be 70 cycles and in terms of instructions it'll be 140.
+
+01:11:51.685 --> 01:11:56.725 
+Well, we're today well beyond 7500 is easily there.
+
+01:11:57.285 --> 01:12:03.205 
+And if you're finishing eight instructions per cycle 500 times it's 84000 instructions.
+
+01:12:03.405 --> 01:12:05.525 
+So costs have increased a lot as you can see.
+
+01:12:06.925 --> 01:12:09.245 
+OK, so let's talk about performance metrics.
+
+01:12:09.245 --> 01:12:11.205 
+We talked about accuracy, we talked about timeless.
+
+01:12:11.205 --> 01:12:13.405 
+But there is a very important metric which is coverage.
+
+01:12:14.925 --> 01:12:20.905 
+Accuracy is the number of used prefetches divided by the number of sent prefetches sent by the
+
+01:12:20.905 --> 01:12:21.605 
+prefetcher.
+
+01:12:22.045 --> 01:12:23.925 
+Ideally you would like to be 100% accurate.
+
+01:12:24.925 --> 01:12:29.463 
+Timeless is the number of on time prefetches divided by the number of prefetches that are sent by
+
+01:12:29.463 --> 01:12:32.365 
+the prefetches that are used for the prefetches that are used.
+
+01:12:32.365 --> 01:12:33.685 
+How timely were you?
+
+01:12:33.805 --> 01:12:34.085 
+Right.
+
+01:12:34.525 --> 01:12:40.365 
+This is of course timeless is not a binary metric necessarily.
+
+01:12:40.445 --> 01:12:47.526 
+Meaning whether used or not, you can think of timeless as a spectrum of the number of cycles you
+
+01:12:47.526 --> 01:12:48.485 
+saved, right?
+
+01:12:49.005 --> 01:12:54.463 
+So timeless can be also defined in terms of the fraction of the miss cycles that you have saved,
+
+01:12:54.463 --> 01:12:54.805 
+right?
+
+01:12:55.605 --> 01:12:58.285 
+So it's not just on time, it's like what fraction have you saved?
+
+01:12:58.725 --> 01:13:00.685 
+Coverage is number of prefetched misses.
+
+01:13:00.805 --> 01:13:03.285 
+Divide by all misses that you have in the programme, right?
+
+01:13:03.885 --> 01:13:09.528 
+So if your coverage is 0, your accuracy may be 100, but your prefetcher is useless because it's not
+
+01:13:09.528 --> 01:13:11.125 
+prefetching anything, right?
+
+01:13:12.285 --> 01:13:18.524 
+And if your accuracy, if your cover, your coverage may be 100, but your accuracy may be 0 and you
+
+01:13:18.524 --> 01:13:24.055 
+still degrade performance because you prefetch a lot of useless stuff, not close to 0,
+
+01:13:24.055 --> 01:13:25.085 
+approximately 0.
+
+01:13:25.725 --> 01:13:29.005 
+So you can see that these metrics can go against each other easily, right?
+
+01:13:29.725 --> 01:13:30.925 
+There's also other metrics.
+
+01:13:31.365 --> 01:13:32.965 
+Usually you can.
+
+01:13:33.085 --> 01:13:35.005 
+You can get two of these three metrics high.
+
+01:13:35.565 --> 01:13:38.325 
+It's very difficult to get all three metrics very high.
+
+01:13:38.325 --> 01:13:41.125 
+It's good to think about that.
+
+01:13:42.925 --> 01:13:46.885 
+But if you have multiple prefetchers, then one of them may be very good at accuracy, another may be
+
+01:13:46.885 --> 01:13:47.765 
+very good at coverage.
+
+01:13:47.805 --> 01:13:49.525 
+And also there are different access patterns.
+
+01:13:50.005 --> 01:13:53.829 
+Clearly a single prefetcher covering all possible access patterns is very difficult as we have
+
+01:13:53.829 --> 01:13:54.765 
+discussed with caching.
+
+01:13:55.365 --> 01:13:58.885 
+Also, there are also other metrics that we care about bandwidth consumption.
+
+01:13:59.245 --> 01:14:04.386 
+There's memory bandwidth consumed with the prefetcher divided by without the prefetcher, so this is
+
+01:14:04.386 --> 01:14:05.165 
+also important.
+
+01:14:05.165 --> 01:14:09.485 
+If you increase that significantly then you're probably wasting memory bandwidth, which is
+
+01:14:09.485 --> 01:14:11.645 
+important, but also you're increasing energy.
+
+01:14:12.685 --> 01:14:17.029 
+The good news is you can potentially ties idle bus bandwidth if it's available, so you can schedule
+
+01:14:17.029 --> 01:14:18.565 
+your prefetches in the idle cycles.
+
+01:14:19.485 --> 01:14:21.005 
+Cache pollution is another metric.
+
+01:14:21.605 --> 01:14:24.885 
+It's a bit more difficult to quantify, but it does affect performance.
+
+01:14:24.885 --> 01:14:29.365 
+This is the number of extra demand misses that you get due to prefetch placement in the cache.
+
+01:14:30.565 --> 01:14:36.569 
+We didn't talk about exactly where to place prefetches, but essentially all processors place
+
+01:14:36.569 --> 01:14:42.508 
+prefetch into the caches today because designing a separate buffer to place the prefetching
+
+01:14:42.508 --> 01:14:44.205 
+prefetches is a nightmare.
+
+01:14:44.725 --> 01:14:46.765 
+Memory system is already way too complex.
+
+01:14:47.365 --> 01:14:52.964 
+If you add another buffer just for prefetches, then you need to maintain coherence across that
+
+01:14:52.964 --> 01:14:55.645 
+prefetch buffer and your data buffers, right?
+
+01:14:56.285 --> 01:15:01.165 
+So essentially all prefetch, all prefetchers today prefetch data into the caches for that reason.
+
+01:15:02.645 --> 01:15:07.835 
+As a result, these prefetches may displace some of the demand requests, right and that causes cash
+
+01:15:07.835 --> 01:15:08.365 
+pollution.
+
+01:15:08.765 --> 01:15:13.189 
+So you can see that there are a lot of interesting things to optimise and in the end prefetcher
+
+01:15:13.189 --> 01:15:15.285 
+design is really optimising for all of these.
+
+01:15:15.285 --> 01:15:19.445 
+In a good trade off space, this is something that we're going to cover.
+
+01:15:19.445 --> 01:15:24.715 
+So in the end, prefetching can be actually very good for resource usage very similarly to what we
+
+01:15:24.715 --> 01:15:25.965 
+have discussed earlier.
+
+01:15:26.605 --> 01:15:30.805 
+This is data from Sun which was bought by Oracle later on.
+
+01:15:32.285 --> 01:15:37.301 
+And the idea over here is if you are effective in prefetching, you can improve performance and also
+
+01:15:37.301 --> 01:15:38.365 
+reduce hardware cost.
+
+01:15:39.005 --> 01:15:40.845 
+This is the run ahead prefetching.
+
+01:15:41.205 --> 01:15:45.880 
+I did my dissertation on run net execution and these guys were the first ones to really adopt the
+
+01:15:45.880 --> 01:15:47.085 
+idea in their processors.
+
+01:15:47.085 --> 01:15:51.205 
+This is on a commercial workload and the idea is no scout.
+
+01:15:51.205 --> 01:15:52.165 
+They called it Scout.
+
+01:15:52.165 --> 01:15:53.365 
+Their version overhead is Scout.
+
+01:15:53.365 --> 01:15:55.125 
+No scout is no prefetching.
+
+01:15:55.365 --> 01:15:56.605 
+Scout is with prefetching.
+
+01:15:56.645 --> 01:15:59.445 
+So you can see that regardless of the cache size you buy a lot of performance.
+
+01:16:00.245 --> 01:16:06.525 
+But if you look at a 512 KB L2 cache size, you get 40% better performance which is good.
+
+01:16:07.565 --> 01:16:13.186 
+If you look over here, you can have a one MB cache with scout prefetching which by which essentially
+
+01:16:13.186 --> 01:16:18.245 
+has the same performance of no prefetching, no scout prefetching with an 8 megabyte cache.
+
+01:16:19.285 --> 01:16:25.885 
+So you can see that prefetching can be better than increasing your cache size by 8X.
+
+01:16:25.885 --> 01:16:26.245 
+Let's see.
+
+01:16:27.205 --> 01:16:27.925 
+Which makes sense.
+
+01:16:27.925 --> 01:16:29.565 
+I mean, we've seen it with compression also, right?
+
+01:16:30.245 --> 01:16:33.045 
+Compression is a bit harder, but prefetching actually buys you a whole lot.
+
+01:16:33.805 --> 01:16:38.125 
+And the reason is a lot of the cache space that you have is.
+
+01:16:38.245 --> 01:16:39.365 
+Reactive, that's first.
+
+01:16:40.085 --> 01:16:41.845 
+And also you don't have a lot of reuse, right?
+
+01:16:41.845 --> 01:16:46.677 
+There have been a lot of studies that have shown that more than 80% of the data that you have in
+
+01:16:46.677 --> 01:16:47.885 
+your caches are useless.
+
+01:16:48.605 --> 01:16:53.364 
+If you look at the cache at this point in time, more than 80% of the data is not going to be used
+
+01:16:53.364 --> 01:16:54.885 
+anytime into the future, right?
+
+01:16:55.445 --> 01:16:56.205 
+It's good to know that.
+
+01:16:56.205 --> 01:17:00.405 
+So our caches are extremely inefficient, but they do improve performance.
+
+01:17:00.405 --> 01:17:04.805 
+If you keep adding caches, this doesn't mean that they're efficient in improving performance, right?
+
+01:17:05.045 --> 01:17:09.621 
+So there are other techniques like prefetching or compression that can improve performance with much
+
+01:17:09.621 --> 01:17:10.765 
+better efficiency, right?
+
+01:17:11.765 --> 01:17:15.085 
+OK, So there are many prefetching issues, some of which we're going to cover.
+
+01:17:15.645 --> 01:17:17.245 
+We've covered some of these over here.
+
+01:17:18.205 --> 01:17:23.281 
+There are also other issues like throttling of the prefetchers because if you have multiple
+
+01:17:23.281 --> 01:17:26.685 
+prefetchers, how do you manage the prefetchers and swaddling?
+
+01:17:26.685 --> 01:17:31.703 
+Essentially all thrusters do some sort of throttling today based on feedback that they get in terms
+
+01:17:31.703 --> 01:17:33.325 
+of how good the prefetchers are.
+
+01:17:33.645 --> 01:17:37.976 
+You want to throttle inaccurate prefetchers, you want to throttle down inaccurate prefetchers and
+
+01:17:37.976 --> 01:17:39.405 
+throttle up accurate prefetches.
+
+01:17:39.805 --> 01:17:44.325 
+They also cause more issues in multi core multipressers, the multipresser multi threaded systems.
+
+01:17:44.765 --> 01:17:49.485 
+This is 1 paper that we wrote I guess a lot of time ago these days.
+
+01:17:49.765 --> 01:17:55.224 
+This actually has a nice description of the prefetcher that is employed in Intel Pentium 4 at the
+
+01:17:55.224 --> 01:17:57.645 
+time, which is a locality based prefetcher.
+
+01:17:57.645 --> 01:18:04.561 
+It's streaming, but it's more locality patterns if it's kind of guesses which side of the where the
+
+01:18:04.561 --> 01:18:11.199 
+processor is going and it has a window of what to prefetch and it keeps moving that window in a
+
+01:18:11.199 --> 01:18:18.115 
+sliding manner as it gets hints as to whether the processor is actually using the prefetches in the
+
+01:18:18.115 --> 01:18:18.605 
+window.
+
+01:18:18.605 --> 01:18:22.405 
+So it's actually a very interesting prefetcher design, which is more complicated than streaming
+
+01:18:22.405 --> 01:18:25.325 
+prefetchers and also striding prefetchers that we're going to talk about.
+
+01:18:25.765 --> 01:18:28.485 
+But this is an example of throttling the prefetchers.
+
+01:18:30.045 --> 01:18:34.003 
+So stream prefetcher, have you already seen, I already talked about this, I'm not going to talk
+
+01:18:34.003 --> 01:18:36.045 
+about it, but let's talk about strike prefetcher.
+
+01:18:37.325 --> 01:18:38.245 
+You may have guessed the idea.
+
+01:18:38.245 --> 01:18:42.125 
+Stride is basically, you've seen the strides in vector processing, right?
+
+01:18:42.205 --> 01:18:46.165 
+Stride is the distance between the elements that you're accessing in memory.
+
+01:18:46.245 --> 01:18:49.445 
+Here we're talking about cache blocks, not necessarily word distance.
+
+01:18:50.445 --> 01:18:53.645 
+And here you can see a pattern with stride N, and it's very easy to detect.
+
+01:18:54.125 --> 01:18:57.285 
+The idea is to record the stride between consecutive memory accesses.
+
+01:18:57.845 --> 01:19:02.885 
+If the stride is stable, use it to predict next M memory accesses, right?
+
+01:19:03.005 --> 01:19:04.685 
+What does it mean for the stride to be stable?
+
+01:19:04.685 --> 01:19:10.580 
+You see the same stride multiple times, so you add a confidence counter saying I've seen the same
+
+01:19:10.580 --> 01:19:14.045 
+strides more than three times without it changing, right?
+
+01:19:14.125 --> 01:19:14.765 
+That's the idea.
+
+01:19:16.085 --> 01:19:18.285 
+So there are two types of these stride prefetchers.
+
+01:19:18.285 --> 01:19:22.205 
+You can determine the stride on a per instruction basis, meaning per program counter basis.
+
+01:19:22.645 --> 01:19:24.925 
+This captures a stride for that program counter.
+
+01:19:25.285 --> 01:19:27.725 
+Or you can determine it on a per memory region basis.
+
+01:19:27.965 --> 01:19:32.887 
+This captures stride that may happen due to multiple program counters, multiple instructions, and
+
+01:19:32.887 --> 01:19:34.765 
+both of them happen in real programs.
+
+01:19:35.325 --> 01:19:39.245 
+So this is 1 hardware designed for an instruction based stride prefetcher.
+
+01:19:39.445 --> 01:19:41.165 
+You have a program counter.
+
+01:19:41.165 --> 01:19:43.045 
+You index a table.
+
+01:19:44.165 --> 01:19:48.969 
+The table is tagged with the program counter as bits, and it's also stores the last address
+
+01:19:48.969 --> 01:19:50.765 
+referenced by the program counter.
+
+01:19:50.765 --> 01:19:54.685 
+These are cache block addresses and the last stride seen and the confidence in the stride.
+
+01:19:54.725 --> 01:19:57.565 
+How many times the last stride was seen as a saturating counter?
+
+01:19:57.565 --> 01:20:02.198 
+Right now, each load store instruction can lead to a memory access pattern with the different
+
+01:20:02.198 --> 01:20:05.885 
+strides, and this structure can detect strides caused by each instruction.
+
+01:20:06.285 --> 01:20:07.325 
+It could be a very small table.
+
+01:20:07.325 --> 01:20:07.685 
+Actually.
+
+01:20:09.365 --> 01:20:15.137 
+Timeless of prefetches can be an issue over here because when you fetch the load and you index into
+
+01:20:15.137 --> 01:20:20.560 
+the pit table, when you actually get the program counter of the load, initiating the prefetch
+
+01:20:20.560 --> 01:20:25.925 
+during that time may be too late because the load is going to miss from memory, for example.
+
+01:20:26.285 --> 01:20:31.491 
+And you basically initiate the prefetch when the load is fetched, the load is going to execute 10
+
+01:20:31.491 --> 01:20:32.565 
+cycles later, right?
+
+01:20:32.565 --> 01:20:34.885 
+So you're going to say 10 cycles out of 500 cycles.
+
+01:20:35.405 --> 01:20:36.005 
+Not so good.
+
+01:20:37.045 --> 01:20:40.525 
+So a lot of the designs take into account the timeless.
+
+01:20:40.525 --> 01:20:44.365 
+So they try to do this much earlier than when the load is fetched.
+
+01:20:44.365 --> 01:20:46.685 
+So a potential solution is look ahead in the instruction stream.
+
+01:20:47.325 --> 01:20:51.875 
+So if you're running again your fetch engine faster than your back end, so you keep generating
+
+01:20:51.875 --> 01:20:56.474 
+branch predictions, you keep fetching instructions, putting them in a queue and the back end is
+
+01:20:56.474 --> 01:20:58.605 
+consuming them whenever it can consume them.
+
+01:20:58.885 --> 01:21:03.275 
+The front end of the processor can run faster and as a result you can do this pre fetching also
+
+01:21:03.275 --> 01:21:03.645 
+earlier.
+
+01:21:04.405 --> 01:21:09.085 
+Basically the front end is looking ahead much further than the back end is, right?
+
+01:21:09.245 --> 01:21:09.885 
+That's the idea.
+
+01:21:09.885 --> 01:21:12.445 
+So that's one way of looking ahead.
+
+01:21:13.405 --> 01:21:20.630 
+Another way of looking ahead is of course prefetching essentially 10 next accesses, right as opposed
+
+01:21:20.630 --> 01:21:22.365 
+to just one next access.
+
+01:21:23.085 --> 01:21:29.325 
+And that's possible also to do OK memory region based strike prefetching is based based.
+
+01:21:29.405 --> 01:21:35.746 
+I need to fix that and memory region based strike prefetching is actually simpler in terms of the
+
+01:21:35.746 --> 01:21:38.165 
+tables that you need to do you index.
+
+01:21:38.285 --> 01:21:40.685 
+With a cache block address and you chop it.
+
+01:21:40.685 --> 01:21:46.370 
+Basically this gives you the region and you there's A tag and there's a stride associated with that
+
+01:21:46.370 --> 01:21:50.965 
+region and you need to basically generate the next address based on that stride.
+
+01:21:51.805 --> 01:21:55.845 
+So this can detect strided memory access patterns that appear due to multiple instructions.
+
+01:21:56.165 --> 01:21:58.925 
+Each access over here could be due to a different instruction, for example.
+
+01:21:58.925 --> 01:22:01.125 
+That could happen in real programs and they do happen.
+
+01:22:01.965 --> 01:22:06.596 
+And stream prefetching stream buffers is a special case of memory region based stride prefetching
+
+01:22:06.596 --> 01:22:08.125 
+where N is 1 essentially, right?
+
+01:22:10.845 --> 01:22:12.445 
+OK, so that's very interesting.
+
+01:22:12.765 --> 01:22:16.125 
+So instruction based stride prefetching, this is 1 paper that is interesting.
+
+01:22:16.125 --> 01:22:22.260 
+A lot of these concepts were developed in 1980s actually IBM 36091 from 1960s had an instruction
+
+01:22:22.260 --> 01:22:27.245 
+based, instruction based prefetcher, stream prefetcher, not strike prefetcher.
+
+01:22:27.565 --> 01:22:32.379 
+So these have been around for a while and they've been employed in real processors if you're
+
+01:22:32.379 --> 01:22:33.845 
+interested in looking at it.
+
+01:22:33.845 --> 01:22:36.765 
+And memory region based stream prefetching was from this paper that we discussed.
+
+01:22:37.445 --> 01:22:38.885 
+OK, those are simple access patterns.
+
+01:22:38.885 --> 01:22:40.605 
+What about more complex access patterns?
+
+01:22:41.165 --> 01:22:43.565 
+So if it's simple regular strike, prefetchers do well.
+
+01:22:44.005 --> 01:22:48.247 
+If you have complex regular patterns, multiple regular strides, you just need to detect them, and
+
+01:22:48.247 --> 01:22:50.085 
+existing processors are very good at that.
+
+01:22:50.085 --> 01:22:55.365 
+I'm going to give you one example of this delta correlation prefetchers.
+
+01:22:55.885 --> 01:23:00.285 
+Then there are irregular patterns where you cannot have this sort of delta correlations.
+
+01:23:00.285 --> 01:23:01.085 
+How do you prefetch them?
+
+01:23:02.125 --> 01:23:06.125 
+Linked data structures, indirect array accesses, random accesses.
+
+01:23:07.045 --> 01:23:11.655 
+They're actually very difficult to prefetch access patterns, but people have developed mechanisms to
+
+01:23:11.655 --> 01:23:12.485 
+prefetch for them.
+
+01:23:14.245 --> 01:23:16.445 
+OK, let's take a look at one of these.
+
+01:23:16.565 --> 01:23:20.205 
+This is workload, and this is the delta pattern that you have.
+
+01:23:21.205 --> 01:23:21.885 
+Miss pattern.
+
+01:23:23.205 --> 01:23:25.565 
+What is the delta between different miss accesses, right?
+
+01:23:26.045 --> 01:23:28.165 
+You can see that something is repeating over here, right?
+
+01:23:28.165 --> 01:23:32.005 
+And if you can record that nicely, you can do that.
+
+01:23:32.005 --> 01:23:37.812 
+So this is one example that was written by folks at Texas A&M and Intel that is employed, well, a
+
+01:23:37.812 --> 01:23:41.045 
+version of this is employed in a lot of systems today.
+
+01:23:41.045 --> 01:23:46.089 
+The key idea is given a history or pattern or signature of stride, record and predict what stride
+
+01:23:46.089 --> 01:23:47.285 
+might come next, right?
+
+01:23:47.485 --> 01:23:48.565 
+There's one way of implementing it.
+
+01:23:48.565 --> 01:23:50.245 
+There are multiple ways of implementation, of course.
+
+01:23:50.925 --> 01:23:55.805 
+So for example, if you see 7 -, 612 in sequence, that may predict 6.
+
+01:23:56.285 --> 01:24:00.685 
+If you see -612 six in sequence, that predicts -5 right.
+
+01:24:02.045 --> 01:24:06.125 
+I'm not going to the detail, but you need, you may need to actually have a confidence threshold.
+
+01:24:06.125 --> 01:24:07.645 
+Basically, you're keeping track of a path.
+
+01:24:08.125 --> 01:24:11.285 
+And if that path confidence perhaps below a threshold, you don't predict.
+
+01:24:11.845 --> 01:24:17.931 
+So you do history of strides, you do a prediction and keep track of a confidence for that prediction
+
+01:24:17.931 --> 01:24:20.245 
+as well as the path that you followed.
+
+01:24:22.205 --> 01:24:24.125 
+And that confidence over time drops.
+
+01:24:24.445 --> 01:24:27.685 
+And at some point you're really not confident and you stop prefetching.
+
+01:24:28.045 --> 01:24:33.781 
+So this is one example, again, without going into a lot of implementation conceptual example, many
+
+01:24:33.781 --> 01:24:39.283 
+questions, we're going to go into more sophisticated topics and I have time to cover a machine
+
+01:24:39.283 --> 01:24:40.805 
+learning based prefetcher.
+
+01:24:43.285 --> 01:24:43.805 
+OK, cool.
+
+01:24:43.925 --> 01:24:49.829 
+There are many, many prefetchers that I can talk about and there are many, many cool ideas actually
+
+01:24:49.829 --> 01:24:50.605 
+in this area.
+
+01:24:50.725 --> 01:24:52.765 
+I think creativity is our limiter over here.
+
+01:24:53.205 --> 01:24:56.045 
+One example idea that I really like is content directed prefetching.
+
+01:24:56.045 --> 01:24:57.125 
+We worked on this idea.
+
+01:24:57.285 --> 01:25:02.885 
+It was originally allowed by Intel, Bob Cooksey, Stefan Jordan, etcetera in 1998.
+
+01:25:03.125 --> 01:25:09.198 
+And the idea is whenever the processor acts as a cache block, scan that cache block and if anything
+
+01:25:09.198 --> 01:25:12.205 
+looks like a pointer, generate a prefetch for it.
+
+01:25:13.085 --> 01:25:14.805 
+Then the question is, what does look like a pointer?
+
+01:25:16.205 --> 01:25:21.245 
+Of course, if you do this wildly, meaning without confidence, you prefetch a lot.
+
+01:25:21.605 --> 01:25:27.556 
+So we develop mechanisms to make this, make this more confident, meaning don't prefetch for all the
+
+01:25:27.556 --> 01:25:31.645 
+pointers, prefetch for pointers that you think are going to be used.
+
+01:25:32.045 --> 01:25:36.027 
+So if you think about this prefetchers, it's called content directed prefetcher and Apple actually
+
+01:25:36.027 --> 01:25:37.165 
+has an implementation of it.
+
+01:25:37.165 --> 01:25:39.605 
+This is very public and people have actually attacked that.
+
+01:25:40.325 --> 01:25:40.845 
+Good ideas.
+
+01:25:40.845 --> 01:25:41.645 
+I could implement it.
+
+01:25:42.365 --> 01:25:45.045 
+The basic thing is this is a stateless prefetcher.
+
+01:25:46.205 --> 01:25:50.485 
+You have the cache block, you just need to scan it to find addresses, right?
+
+01:25:50.885 --> 01:25:54.285 
+And you just need to predict which addresses may be actually useful for you in the future.
+
+01:25:54.725 --> 01:25:55.925 
+You don't need to keep any state.
+
+01:25:55.925 --> 01:25:56.965 
+The state is in your cache.
+
+01:25:56.965 --> 01:26:00.325 
+So this sort of idea is very nice, I think, in terms of creativity.
+
+01:26:01.045 --> 01:26:02.485 
+OK, I'm going to give you another idea.
+
+01:26:02.485 --> 01:26:05.365 
+And also it gets implemented, as you can see, with some optimizations.
+
+01:26:05.365 --> 01:26:11.191 
+In the end, this is a paper that we wrote again with Rahul, and the idea is here is to design A
+
+01:26:11.191 --> 01:26:14.565 
+prefetcher that uses reinforcement learning principles.
+
+01:26:15.245 --> 01:26:17.765 
+I'll give you the idea relatively quickly.
+
+01:26:17.765 --> 01:26:21.885 
+Reinforcement learning is essentially a method of machine learning.
+
+01:26:21.965 --> 01:26:27.094 
+It's an algorithmic approach to take an action in a given situation to maximise a numerical reward,
+
+01:26:27.094 --> 01:26:27.405 
+right?
+
+01:26:27.925 --> 01:26:33.920 
+You have an agent, you have an environment, and agent observes a state and takes an action and
+
+01:26:33.920 --> 01:26:37.365 
+eventually gets a reward and it's learns to associate.
+
+01:26:38.245 --> 01:26:42.405 
+States with actions that would maximise the long term reward.
+
+01:26:42.765 --> 01:26:44.725 
+We are all reinforcement learning agents.
+
+01:26:44.925 --> 01:26:46.605 
+Humans are reinforcement learning agents, right?
+
+01:26:46.605 --> 01:26:51.645 
+We interact with our environment, we take actions and we get rewards or punishments.
+
+01:26:51.645 --> 01:26:58.834 
+And based on that we essentially determine our next action given the same state or same type of
+
+01:26:58.834 --> 01:27:00.045 
+state let's say.
+
+01:27:00.925 --> 01:27:04.205 
+So agent stores Q values for every state.
+
+01:27:04.205 --> 01:27:10.537 
+Action pair quality values and this actually denotes the expected return for taking an action in a
+
+01:27:10.537 --> 01:27:10.925 
+state.
+
+01:27:12.045 --> 01:27:17.145 
+And the idea is to give an estate select an action that provides the highest Q value and Q values
+
+01:27:17.145 --> 01:27:19.565 
+are determined based on some future look like.
+
+01:27:19.885 --> 01:27:22.925 
+You don't want to actually maximise the reward for just one action.
+
+01:27:22.925 --> 01:27:26.925 
+You want to maximise overall reward that you're going to get during the time of execution.
+
+01:27:26.965 --> 01:27:28.245 
+And there are methods for doing that.
+
+01:27:29.565 --> 01:27:33.965 
+So essentially here we formulate prefetching as a reinforcement learning problem.
+
+01:27:34.205 --> 01:27:39.945 
+Agents as a prefetcher environment is the processor and the system prefetcher observes a feature of
+
+01:27:39.945 --> 01:27:42.845 
+a memory request to address a the program counter.
+
+01:27:42.845 --> 01:27:45.445 
+For example, it could be deltas that you observed recently.
+
+01:27:45.445 --> 01:27:46.045 
+It could be anything.
+
+01:27:46.045 --> 01:27:53.189 
+Basically, you could do a feature selection in the end and it decides to prefetch from address A+
+
+01:27:53.189 --> 01:27:55.325 
+offset, It predicts offset O.
+
+01:27:55.525 --> 01:27:57.365 
+This is a particular type of prefetching mechanism.
+
+01:27:57.365 --> 01:28:01.567 
+You can actually generalise it to more, and I hope people generalise it because there's more to do
+
+01:28:01.567 --> 01:28:02.125 
+in this area.
+
+01:28:02.525 --> 01:28:07.161 
+And then it gets a reward whether the prefetch is used or not, for example, or when it's used,
+
+01:28:07.161 --> 01:28:07.605 
+etcetera.
+
+01:28:08.085 --> 01:28:14.165 
+And then it basically updates the Q values for the given state and the action pair.
+
+01:28:15.325 --> 01:28:19.485 
+OK, So state is essentially in this case AK dimensional vector of features.
+
+01:28:19.725 --> 01:28:21.685 
+It could be control flow and data flow features.
+
+01:28:21.965 --> 01:28:27.082 
+For example, the program counter of the load branch, program counter, last three program counters,
+
+01:28:27.082 --> 01:28:29.485 
+control flow path that you've taken, etcetera.
+
+01:28:29.485 --> 01:28:33.560 
+There could be many things here, data flow example, it could be the cache line address you're
+
+01:28:33.560 --> 01:28:37.285 
+touching, physical page number, delta between the last few cache addresses, etcetera.
+
+01:28:38.405 --> 01:28:42.144 
+So in the end, you need to do some feature selection to reduce the state space because if you
+
+01:28:42.144 --> 01:28:46.005 
+actually include all of them and you need to do a table look up, that's pretty expensive, right?
+
+01:28:46.045 --> 01:28:50.034 
+You want to actually reduce it as much as possible so that it's implementable within a frequency
+
+01:28:50.034 --> 01:28:50.325 
+target.
+
+01:28:51.165 --> 01:28:55.052 
+Action is essentially in this case, it depends on the algorithm, type of algorithm that you want to
+
+01:28:55.052 --> 01:28:55.445 
+implement.
+
+01:28:55.445 --> 01:29:00.914 
+And we basically have selecting A prefetch offset O as the action given an access to address a
+
+01:29:00.914 --> 01:29:06.674 
+action space is limited in this case, assuming you're operating within a page boundary that we will
+
+01:29:06.674 --> 01:29:08.245 
+talk a lot about next week.
+
+01:29:08.885 --> 01:29:11.445 
+And 0 offset means no prefetch is generated.
+
+01:29:11.725 --> 01:29:15.205 
+And you can also prune the action space by doing some design space exploration.
+
+01:29:16.365 --> 01:29:18.045 
+Rewards is important to define.
+
+01:29:18.045 --> 01:29:21.445 
+This defines the objective of this sort of prefetcher.
+
+01:29:22.045 --> 01:29:25.955 
+And you can encapsulate a lot of things over here, the prefetch usefulness, for example, system
+
+01:29:25.955 --> 01:29:30.030 
+level feedback, whether the memory bandwidth is being used, whether you're getting cache pollution,
+
+01:29:30.030 --> 01:29:31.965 
+whether you're consuming more energy, etcetera.
+
+01:29:32.365 --> 01:29:35.405 
+And in this paper, we look at memory bandwidth use, just feedback, for example.
+
+01:29:35.605 --> 01:29:40.405 
+So reward functions are also really important and this is the configuration that we examine.
+
+01:29:40.845 --> 01:29:43.765 
+You can derive a lot of these using automatic design space exploration.
+
+01:29:44.205 --> 01:29:46.805 
+So it's a very simple version of the concept.
+
+01:29:47.285 --> 01:29:51.525 
+Only two features, 16 prefetch offsets and these are the rewards that you get.
+
+01:29:52.685 --> 01:29:56.405 
+If the prefetch is accurate and timely, you get a positive, high positive reward.
+
+01:29:57.045 --> 01:30:02.522 
+If the prefetch is inaccurate and you have high memory bandwidth usage, at that point in time,
+
+01:30:02.522 --> 01:30:04.445 
+you've done something really bad.
+
+01:30:04.445 --> 01:30:06.605 
+You get a high negative reward.
+
+01:30:07.525 --> 01:30:11.045 
+If the prefetch is not used, for example, you get a zero reward or something.
+
+01:30:11.245 --> 01:30:15.544 
+And the good news is you can configure the prefetcher for different targets by changing their reward
+
+01:30:15.544 --> 01:30:15.845 
+values.
+
+01:30:15.845 --> 01:30:19.765 
+So this actually, as we have shown in this work, it's dynamically customisable.
+
+01:30:20.325 --> 01:30:25.473 
+You don't need to change your hardware, but you can dynamically program your prefetcher to become
+
+01:30:25.473 --> 01:30:25.845 
+better.
+
+01:30:26.085 --> 01:30:28.405 
+And I think there's more opportunity for that also.
+
+01:30:29.085 --> 01:30:33.165 
+So there's more detailed things that are overviewed in the paper that I'm not going to talk about.
+
+01:30:33.685 --> 01:30:37.885 
+This is a table look up based reinforcement learning mechanism.
+
+01:30:38.565 --> 01:30:44.925 
+So whenever you get a demand request, you extract the state and you basically hash the state and you
+
+01:30:44.925 --> 01:30:50.968 
+index into a table that essentially gives you the Q values for each action that you may want to
+
+01:30:50.968 --> 01:30:51.605 
+implement.
+
+01:30:51.605 --> 01:30:57.949 
+And for the actions with the highest Q values, like let's say offset 5 has the highest Q value,
+
+01:30:57.949 --> 01:30:59.285 
+generate a prefetch.
+
+01:30:59.525 --> 01:31:02.005 
+You can of course generate multiple actions also, right?
+
+01:31:02.005 --> 01:31:03.885 
+Highest Q values for three actions, for example.
+
+01:31:04.245 --> 01:31:10.908 
+And then you have an evaluation queue that keeps track of whether your actions were useful and
+
+01:31:10.908 --> 01:31:11.405 
+timely.
+
+01:31:11.805 --> 01:31:16.849 
+And based on that, you update the quality values for the actions you've taken for a given state,
+
+01:31:16.849 --> 01:31:17.165 
+right?
+
+01:31:17.245 --> 01:31:19.045 
+That's how it works, basically reinforcement learning.
+
+01:31:19.045 --> 01:31:20.125 
+It's implementable in hardware.
+
+01:31:20.125 --> 01:31:22.285 
+As you can see, it's actually very hardware friendly.
+
+01:31:22.885 --> 01:31:26.085 
+You could also do deep reinforcement learning, which we didn't do in this case.
+
+01:31:26.485 --> 01:31:31.165 
+In deep reinforcement learning, that table is kind of replaced with a neural network.
+
+01:31:32.005 --> 01:31:33.245 
+You can do both hybrid also.
+
+01:31:33.245 --> 01:31:37.205 
+Actually, you may have a deep neural network over there, but we don't want to have really expensive
+
+01:31:37.205 --> 01:31:37.845 
+multiplications.
+
+01:31:38.365 --> 01:31:41.925 
+Because they actually are energy consuming plus long latency.
+
+01:31:42.925 --> 01:31:45.845 
+But in other works we have deep reinforcement learning mechanisms.
+
+01:31:46.485 --> 01:31:49.725 
+OK, in the end, if you do this, you get good performance.
+
+01:31:50.205 --> 01:31:50.965 
+That's the take away.
+
+01:31:51.365 --> 01:31:52.965 
+And you can do this in simulation, basically.
+
+01:31:53.005 --> 01:31:57.610 
+Of course, we do this in simulation because it's very hard to design these things in real hardware,
+
+01:31:57.610 --> 01:31:59.285 
+but possible these days more easily.
+
+01:32:00.125 --> 01:32:02.405 
+So your performance increases with core counts.
+
+01:32:02.805 --> 01:32:08.244 
+It's actually very good at low DM bandwidth because you're very selective of the accuracy is very
+
+01:32:08.244 --> 01:32:08.525 
+high.
+
+01:32:09.245 --> 01:32:10.285 
+And it's all open source.
+
+01:32:10.285 --> 01:32:11.405 
+So you can also improve it.
+
+01:32:11.725 --> 01:32:17.144 
+By the way, we organised, Rahul and I organised a championship data prefetching championship this
+
+01:32:17.144 --> 01:32:18.485 
+year at HPCA conference.
+
+01:32:19.525 --> 01:32:22.085 
+Essentially all prefetchers use this as a baseline.
+
+01:32:22.805 --> 01:32:25.525 
+So this, this took off really nicely.
+
+01:32:25.525 --> 01:32:30.066 
+And it's, it's really a common baseline for all prefetchers that people develop going into the
+
+01:32:30.066 --> 01:32:30.405 
+future.
+
+01:32:30.725 --> 01:32:34.005 
+So I can learn more about Pithia and the PDF paper is this.
+
+01:32:34.765 --> 01:32:39.502 
+If you want to learn more about reinforcement learning, this is a beautiful book by Rich Sutton and
+
+01:32:39.502 --> 01:32:40.125 
+Andrew Barto.
+
+01:32:40.165 --> 01:32:44.765 
+They finally won the Turing Award and I believe they deserved it much earlier.
+
+01:32:45.045 --> 01:32:50.079 
+But for some reason, reinforcement learning was not hot for many years, even though it's been around
+
+01:32:50.079 --> 01:32:50.885 
+for a long time.
+
+01:32:51.365 --> 01:32:52.645 
+But this is a really great book.
+
+01:32:53.485 --> 01:32:55.605 
+And they have also applications and case studies.
+
+01:32:56.645 --> 01:33:01.129 
+We've been working on reinforcement learning for a while and these folks found our memory controller
+
+01:33:01.129 --> 01:33:05.345 
+based mechanisms, reinforcement learning based memory controllers worthy of including in their
+
+01:33:05.345 --> 01:33:07.005 
+paper also so in their in their book.
+
+01:33:07.125 --> 01:33:09.845 
+So there are a bunch of things over here that are quite interesting.
+
+01:33:10.725 --> 01:33:12.765 
+OK, I think this is a good place to stop.
+
+01:33:14.085 --> 01:33:19.457 
+Next week we're going to pick up with more hardware prefetchers and we're going to talk about the
+
+01:33:19.457 --> 01:33:23.445 
+one of the most hairiest part of system design, which is virtual memory.
+
+01:33:24.365 --> 01:33:25.405 
+And then we're going to conclude.
+
+01:33:26.645 --> 01:33:27.205 
+Sounds good.
+
+01:33:28.325 --> 01:33:29.965 
+OK, have a nice weekend.
+
+01:33:30.285 --> 01:33:32.165 
+Hopefully I'll see you next week also.
+
