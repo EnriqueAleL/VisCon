@@ -1,6 +1,6 @@
 # Anschluss an das Website-Interface
 
-Das Modul ist unabhängig in `video-pull-up/` umgesetzt. Der Interface-Agent kann das Fragenformular, die Erklärung und den Player an diese Schnittstelle anschliessen. Die Startseite des Interfaces zeigt ein mittiges, leeres Fragefeld; Videotreffer erscheinen erst nach einer Frage. Die Backend-Anbindung ist im Interface noch nicht vorgenommen.
+Das Modul ist unabhängig in `video-pull-up/` umgesetzt. Der Interface-Agent kann das Fragenformular, die Erklärung und den Player an diese Schnittstelle anschliessen. Die Startseite des Interfaces zeigt ein mittiges, leeres Fragefeld. Kalenderjahr, Semester, Studienjahr (BSc/MSc) und Fach werden über das Kurs-Icon gewählt; erst dann ist der Chat freigeschaltet. Videotreffer erscheinen erst nach einer Frage und gehören ausschliesslich zum gewählten Fach, Zeitraum und Studienkontext. Die Backend-Anbindung ist im Interface noch nicht vorgenommen.
 
 ## Entwicklung
 
@@ -32,6 +32,8 @@ Content-Type: application/json
 ```
 
 `courseId` und `lectureId` sind optional. `courseId: null` oder `"all"` sucht in allen Fächern; `lectureId: null` in allen verfügbaren Vorlesungen des gewählten Fachs. IDs kommen aus `GET /api/courses` und `GET /api/lectures?courseId=linear-algebra`. Fachfremde Vorlesungs-IDs werden abgelehnt. `limit` ist 1–5, Standard 3.
+
+Das aktuelle Interface verwendet die Auswahl Kalenderjahr → Semester → Studienjahr (BSc 1–3/MSc 1–2) → Fach. Beim Anschluss die gewählte `courseId` übergeben und den Backend-Katalog um Kalenderjahr, Semester, Abschluss und Studienjahr sowie entsprechende Filter ergänzen, damit Fragen im gewählten Studienkontext bleiben. Eine `lectureId` wird nur noch für eine ausdrücklich auf eine Aufnahme begrenzte Frage benötigt. Die Frontend-Beispiele und der Backend-Demo-Katalog enthalten unterschiedliche Vorlesungen und Zeitmarken; sie dürfen beim Anschluss nicht vermischt werden.
 
 Auszug einer Antwort:
 

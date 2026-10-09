@@ -7,6 +7,9 @@ Die Liste wird bei Aenderungen aktualisiert, damit Aufgaben und Entscheidungen n
 - [x] Eigenen Projektordner und dokumentierte Struktur anlegen.
 - [x] React-/TypeScript-App mit Vite aufsetzen.
 - [x] Fragenformular mit lokaler Stichwortsuche umsetzen.
+- [x] Schmale Icon-Navigation mit schrittweisem Auswahlfenster für Kalenderjahr, Semester, Studienjahr (BSc 1–3/MSc 1–2) und Fach umsetzen.
+- [x] Fragen vor der Fachauswahl sperren und Treffer auf das Fach im gewählten Zeitraum begrenzen.
+- [x] Fachkontext mit Kalenderjahr, Semester, Abschluss und Studienjahr im lokalen Frageverlauf speichern, bestehende Einträge migrieren und beim Wiederöffnen herstellen.
 - [x] Passende Vorlesungen und Abschnitte mit Zeitmarken anzeigen.
 - [x] Kursfilter, Sortierung sowie Raster-/Listenansicht bereitstellen.
 - [x] Bibliotheksansicht bereitstellen.

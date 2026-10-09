@@ -8,46 +8,90 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
-  CircleHelp,
   GraduationCap,
   Grid2X2,
-  History,
   Layers3,
   LayoutList,
-  Menu,
   MessageCircle,
-  Plus,
   Search,
-  Trash2,
   X,
 } from 'lucide-react';
 import { LectureCard } from './components/LectureCard';
 import { LectureViewer } from './components/LectureViewer';
+import { IconSidebar } from './components/IconSidebar';
+import { courses, lectures, searchLectureMatches, searchLectures } from './data/lectures';
 import {
-  courses,
-  initialQuestion,
-  lectures,
-  searchLectureMatches,
-  searchLectures,
-} from './data/lectures';
+  isCourseSelection,
+  lectureMatchesSelection,
+  sameCourseSelection,
+  selectionForLecture,
+  degreeNames,
+  semesterNames,
+} from './data/courseSelection';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import type { CourseId, Lecture, Segment } from './types';
+import type { CourseId, CourseSelection, Lecture, QuestionHistoryEntry, Segment } from './types';
 
 type View = 'questions' | 'library' | 'saved';
 type Sort = 'relevance' | 'newest' | 'shortest';
 const viewNames: Record<View, string> = {
-  questions: 'Fragen & Videos',
+  questions: 'Chat',
   library: 'Meine Vorlesungen',
   saved: 'Gespeicherte Stellen',
 };
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string');
+const isQuestionHistory = (value: unknown): value is QuestionHistoryEntry[] =>
+  Array.isArray(value) &&
+  value.every(
+    (item) =>
+      isCourseSelection(item) &&
+      'question' in item &&
+      typeof item.question === 'string' &&
+      Boolean(item.question.trim()),
+  );
+
+function readLegacyQuestionHistory(): QuestionHistoryEntry[] {
+  try {
+    const courseHistory = localStorage.getItem('viscon.question-history.v3');
+    const entries: unknown = JSON.parse(
+      courseHistory ?? localStorage.getItem('viscon.question-history.v2') ?? '[]',
+    );
+    if (!Array.isArray(entries)) return [];
+    const migrated = entries.flatMap((entry) => {
+      if (!entry || typeof entry.question !== 'string' || !entry.question.trim()) return [];
+      if (courseHistory !== null) {
+        const course = courses.find((item) => item.id === entry.courseId);
+        if (!course) return [];
+        const selection = {
+          courseId: course.id,
+          year: entry.year,
+          semester: entry.semester,
+          degree: course.degree,
+          studyYear: course.studyYear,
+        };
+        return isCourseSelection(selection) ? [{ question: entry.question, ...selection }] : [];
+      }
+      const lecture = lectures.find((item) => item.id === entry.lectureId);
+      return lecture ? [{ question: entry.question, ...selectionForLecture(lecture) }] : [];
+    });
+    return migrated.filter(
+      (entry, index) =>
+        migrated.findIndex(
+          (other) => other.question === entry.question && sameCourseSelection(other, entry),
+        ) === index,
+    );
+  } catch {
+    return [];
+  }
+}
 
 export function App() {
   const [view, setView] = useState<View>('questions');
   const [question, setQuestion] = useState('');
   const [submittedQuestion, setSubmittedQuestion] = useState('');
   const [courseId, setCourseId] = useState<CourseId>('all');
+  const [selectedCourse, setSelectedCourse] = useState<CourseSelection | null>(null);
+  const [pickerRequest, setPickerRequest] = useState(0);
   const [layout, setLayout] = useState<'grid' | 'list'>('grid');
   const [sort, setSort] = useState<Sort>('relevance');
   const [savedIds, setSavedIds] = useLocalStorage<string[]>(
@@ -55,21 +99,22 @@ export function App() {
     [],
     isStringArray,
   );
-  const [history, setHistory] = useLocalStorage<string[]>(
-    'viscon.question-history.v1',
-    [initialQuestion],
-    isStringArray,
+  const legacyHistory = useMemo(readLegacyQuestionHistory, []);
+  const [history, setHistory] = useLocalStorage<QuestionHistoryEntry[]>(
+    'viscon.question-history.v4',
+    legacyHistory,
+    isQuestionHistory,
   );
   const [activeLecture, setActiveLecture] = useState<{ lecture: Lecture; segment: Segment } | null>(
     null,
   );
-  const [mobileMenu, setMobileMenu] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [librarySearch, setLibrarySearch] = useState('');
   const [toast, setToast] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const helpRef = useRef<HTMLDialogElement>(null);
   const isQuestionLanding = view === 'questions' && !submittedQuestion;
+  const selectedCourseDetails = courses.find((course) => course.id === selectedCourse?.courseId);
 
   useEffect(() => {
     if (!toast) return;
@@ -85,8 +130,10 @@ export function App() {
   const results = useMemo(() => {
     let items =
       view === 'questions'
-        ? submittedQuestion
-          ? searchLectureMatches(submittedQuestion, courseId)
+        ? submittedQuestion && selectedCourse
+          ? searchLectureMatches(submittedQuestion, selectedCourse.courseId).filter((lecture) =>
+              lectureMatchesSelection(lecture, selectedCourse),
+            )
           : []
         : searchLectures(librarySearch, courseId);
     if (view === 'saved')
@@ -96,7 +143,7 @@ export function App() {
     if (sort === 'newest') items = [...items].sort((a, b) => b.date.localeCompare(a.date));
     if (sort === 'shortest') items = [...items].sort((a, b) => a.duration - b.duration);
     return items;
-  }, [view, submittedQuestion, courseId, librarySearch, sort, savedIds]);
+  }, [view, submittedQuestion, selectedCourse, courseId, librarySearch, sort, savedIds]);
 
   const segmentCount = results.reduce(
     (total, lecture) =>
@@ -110,10 +157,13 @@ export function App() {
     setView(nextView);
     setCourseId(nextCourse);
     setLibrarySearch('');
-    setMobileMenu(false);
   };
 
   const submitQuestion = (nextQuestion: string = question) => {
+    if (!selectedCourse) {
+      setPickerRequest((current) => current + 1);
+      return;
+    }
     const trimmed = nextQuestion.trim();
     if (!trimmed) {
       textareaRef.current?.focus();
@@ -123,7 +173,14 @@ export function App() {
     setSubmittedQuestion(trimmed);
     setView('questions');
     setSort('relevance');
-    setHistory((current) => [trimmed, ...current.filter((item) => item !== trimmed)].slice(0, 8));
+    setHistory((current) =>
+      [
+        { question: trimmed, ...selectedCourse },
+        ...current.filter(
+          (item) => item.question !== trimmed || !sameCourseSelection(item, selectedCourse),
+        ),
+      ].slice(0, 8),
+    );
   };
 
   const toggleSaved = (id: string) => {
@@ -138,7 +195,39 @@ export function App() {
     navigate('questions');
     setQuestion('');
     setSubmittedQuestion('');
+    setActiveLecture(null);
     window.setTimeout(() => textareaRef.current?.focus(), 0);
+  };
+
+  const clearCourse = () => {
+    setSelectedCourse(null);
+    setQuestion('');
+    setSubmittedQuestion('');
+    setActiveLecture(null);
+  };
+
+  const selectCourse = (selection: CourseSelection) => {
+    setSelectedCourse(selection);
+    setQuestion('');
+    setSubmittedQuestion('');
+    setActiveLecture(null);
+    setView('questions');
+    window.setTimeout(() => textareaRef.current?.focus(), 0);
+  };
+
+  const restoreQuestion = (entry: QuestionHistoryEntry) => {
+    setSelectedCourse({
+      year: entry.year,
+      semester: entry.semester,
+      degree: entry.degree,
+      studyYear: entry.studyYear,
+      courseId: entry.courseId,
+    });
+    setQuestion(entry.question);
+    setSubmittedQuestion(entry.question);
+    setView('questions');
+    setSort('relevance');
+    setActiveLecture(null);
   };
 
   return (
@@ -146,165 +235,28 @@ export function App() {
       <a className="skip-link" href="#main">
         Zum Inhalt
       </a>
-      {mobileMenu && (
-        <button
-          className="sidebar-backdrop"
-          aria-label="Navigation schliessen"
-          onClick={() => setMobileMenu(false)}
-        />
-      )}
-      <aside
-        className={`sidebar ${mobileMenu ? 'sidebar-open' : ''}`}
-        aria-label="Hauptnavigation"
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') setMobileMenu(false);
-        }}
-      >
-        <a
-          className="brand"
-          href="#"
-          onClick={(event) => {
-            event.preventDefault();
-            navigate('questions');
-          }}
-          aria-label="VisCon Startseite"
-        >
-          <span className="brand-symbol">
-            <BookOpen size={23} strokeWidth={2.3} />
-          </span>
-          <span>
-            VisCon<span className="brand-period">.</span>
-          </span>
-        </a>
-        <button className="new-question" onClick={newQuestion}>
-          <Plus size={17} />
-          Neue Frage{' '}
-          <span>
-            <ArrowUpRight size={15} />
-          </span>
-        </button>
-        <p className="nav-label">LERNRAUM</p>
-        <nav className="primary-nav">
-          <button
-            className={view === 'questions' ? 'nav-item active' : 'nav-item'}
-            onClick={() => navigate('questions')}
-            aria-current={view === 'questions' ? 'page' : undefined}
-          >
-            <MessageCircle size={18} />
-            Fragen & Videos
-          </button>
-          <button
-            className={view === 'library' ? 'nav-item active' : 'nav-item'}
-            onClick={() => navigate('library')}
-            aria-current={view === 'library' ? 'page' : undefined}
-          >
-            <Layers3 size={18} />
-            Meine Vorlesungen<span className="nav-count">{lectures.length}</span>
-          </button>
-          <button
-            className={view === 'saved' ? 'nav-item active' : 'nav-item'}
-            onClick={() => navigate('saved')}
-            aria-current={view === 'saved' ? 'page' : undefined}
-          >
-            <Bookmark size={18} />
-            Gespeicherte Stellen
-            {savedIds.length > 0 && <span className="nav-count">{savedIds.length}</span>}
-          </button>
-        </nav>
-        <div className="sidebar-divider" />
-        <p className="nav-label">
-          MEINE KURSE <span>{courses.length}</span>
-        </p>
-        <nav className="course-nav" aria-label="Kurse">
-          {courses.map((course) => (
-            <button
-              className={`nav-item course-nav-item ${courseId === course.id && view === 'library' ? 'course-active' : ''}`}
-              key={course.id}
-              onClick={() => navigate('library', course.id)}
-            >
-              <span className="course-dot" style={{ background: course.color }} />
-              {course.name}
-              <ChevronRight size={14} />
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-divider" />
-        <div className="history-header">
-          <p className="nav-label">ZULETZT GEFRAGT</p>
-          {history.length > 0 && (
-            <button
-              className="icon-button"
-              title="Frageverlauf löschen"
-              aria-label="Frageverlauf löschen"
-              onClick={() => setHistory([])}
-            >
-              <Trash2 size={13} />
-            </button>
-          )}
-        </div>
-        <div className="sidebar-history">
-          {history.length === 0 ? (
-            <p className="history-empty">Noch keine Fragen</p>
-          ) : (
-            history.slice(0, 3).map((item) => (
-              <button
-                key={item}
-                onClick={() => {
-                  navigate('questions');
-                  submitQuestion(item);
-                }}
-                title={item}
-              >
-                <History size={14} />
-                <span>{item}</span>
-              </button>
-            ))
-          )}
-        </div>
-        <div className="sidebar-bottom">
-          <div className="semester">
-            <GraduationCap size={18} />
-            <div>
-              <strong>Herbstsemester 2026</strong>
-              <span>ETH Zürich</span>
-            </div>
-            <span className="semester-dot" />
-          </div>
-          <button className="sidebar-help" onClick={() => setHelpOpen(true)}>
-            <CircleHelp size={17} />
-            Über diesen Lernraum
-            <ArrowUpRight size={14} />
-          </button>
-          <div className="sidebar-footer">
-            <span>VisCon für Studierende</span>
-            <span className="version">v0.1</span>
-          </div>
-        </div>
-      </aside>
+      <IconSidebar
+        view={view}
+        selectedCourse={selectedCourse}
+        pickerRequest={pickerRequest}
+        history={history}
+        onNavigate={navigate}
+        onNewChat={newQuestion}
+        onSelectCourse={selectCourse}
+        onClearCourse={clearCourse}
+        onRestoreQuestion={restoreQuestion}
+        onClearHistory={() => setHistory([])}
+        onHelp={() => setHelpOpen(true)}
+      />
 
       <div className="main-shell">
         <header className="topbar">
           <div className="breadcrumbs">
-            <button
-              className="icon-button mobile-menu-button"
-              aria-label="Navigation öffnen"
-              onClick={() => setMobileMenu(true)}
-            >
-              <Menu size={21} />
-            </button>
             <span>Lernraum</span>
             <ChevronRight size={14} />
             <strong>{viewNames[view]}</strong>
           </div>
           <div className="topbar-right">
-            <button
-              className="icon-button"
-              title="Über VisCon"
-              aria-label="Über VisCon"
-              onClick={() => setHelpOpen(true)}
-            >
-              <CircleHelp size={19} />
-            </button>
             <div className="avatar" title="Studentisches Demo-Profil">
               DU
             </div>
@@ -314,6 +266,9 @@ export function App() {
         <main id="main" className={`main-content ${isQuestionLanding ? 'chat-landing' : ''}`}>
           {view === 'questions' ? (
             <div className="question-workspace">
+              {selectedCourseDetails && (
+                <h1 className="chat-prompt">Stell eine Frage zu {selectedCourseDetails.name}</h1>
+              )}
               <form
                 className="question-box"
                 onSubmit={(event) => {
@@ -328,7 +283,10 @@ export function App() {
                     aria-label="Nachricht eingeben"
                     ref={textareaRef}
                     value={question}
-                    placeholder="Nachricht an VisCon …"
+                    placeholder={
+                      selectedCourse ? 'Nachricht an VisCon …' : 'Wähle zuerst ein Fach …'
+                    }
+                    disabled={!selectedCourse}
                     maxLength={500}
                     onChange={(event) => setQuestion(event.target.value)}
                     onKeyDown={(event) => {
@@ -340,8 +298,27 @@ export function App() {
                   />
                 </div>
                 <div className="question-box-footer">
+                  <button
+                    className={`lecture-context ${selectedCourse ? 'selected' : ''}`}
+                    type="button"
+                    aria-label={selectedCourse ? 'Fach wechseln' : 'Fach auswählen'}
+                    title={
+                      selectedCourse
+                        ? `${selectedCourseDetails?.name} · ${semesterNames[selectedCourse.semester]} ${selectedCourse.year} · ${degreeNames[selectedCourse.degree]}, ${selectedCourse.studyYear}. Studienjahr`
+                        : undefined
+                    }
+                    onClick={() => setPickerRequest((current) => current + 1)}
+                  >
+                    <GraduationCap size={16} />
+                    <span>{selectedCourseDetails?.name ?? 'Fach auswählen'}</span>
+                    <ChevronDown size={13} />
+                  </button>
                   <span className="question-limit">{question.length}/500</span>
-                  <button className="primary-button" type="submit" disabled={!question.trim()}>
+                  <button
+                    className="primary-button"
+                    type="submit"
+                    disabled={!selectedCourse || !question.trim()}
+                  >
                     Frage stellen
                     <ArrowRight size={17} />
                   </button>
@@ -511,19 +488,25 @@ export function App() {
                       ? 'Deine gespeicherten Zeitstellen erscheinen hier.'
                       : view === 'questions' && !submittedQuestion
                         ? 'Lineare Algebra, Analysis oder Informatik.'
-                        : 'Versuche einen anderen Begriff oder wähle alle Kurse.'}
+                        : view === 'questions'
+                          ? 'Versuche einen anderen Begriff oder wähle eine andere Vorlesung.'
+                          : 'Versuche einen anderen Begriff oder wähle alle Kurse.'}
                   </p>
                   <button
                     className="secondary-button"
                     onClick={() =>
                       view === 'saved'
                         ? navigate('library')
-                        : (setCourseId('all'),
-                          setLibrarySearch(''),
-                          submitQuestion(initialQuestion))
+                        : view === 'questions'
+                          ? setPickerRequest((current) => current + 1)
+                          : (setCourseId('all'), setLibrarySearch(''))
                     }
                   >
-                    {view === 'saved' ? 'Vorlesungen ansehen' : 'Beispielfrage öffnen'}
+                    {view === 'saved'
+                      ? 'Vorlesungen ansehen'
+                      : view === 'questions'
+                        ? 'Vorlesung wechseln'
+                        : 'Suche zurücksetzen'}
                     <ArrowRight size={16} />
                   </button>
                 </div>

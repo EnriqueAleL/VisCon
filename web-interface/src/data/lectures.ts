@@ -8,6 +8,8 @@ export const courses: Course[] = [
     shortName: 'Lineare Algebra',
     color: '#526cb7',
     videoCount: 3,
+    degree: 'bsc',
+    studyYear: 1,
   },
   {
     id: 'analysis',
@@ -15,6 +17,8 @@ export const courses: Course[] = [
     shortName: 'Analysis',
     color: '#bd754b',
     videoCount: 3,
+    degree: 'bsc',
+    studyYear: 1,
   },
   {
     id: 'informatics',
@@ -22,6 +26,8 @@ export const courses: Course[] = [
     shortName: 'Informatik',
     color: '#5f8c78',
     videoCount: 2,
+    degree: 'bsc',
+    studyYear: 1,
   },
 ];
 

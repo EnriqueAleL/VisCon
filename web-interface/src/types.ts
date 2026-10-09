@@ -1,11 +1,29 @@
 export type CourseId = 'all' | 'linear-algebra' | 'analysis' | 'informatics';
 
+export type Semester = 'autumn' | 'spring';
+export type Degree = 'bsc' | 'msc';
+export type StudyYear = 1 | 2 | 3;
+
+export interface CourseSelection {
+  year: string;
+  semester: Semester;
+  degree: Degree;
+  studyYear: StudyYear;
+  courseId: Exclude<CourseId, 'all'>;
+}
+
+export interface QuestionHistoryEntry extends CourseSelection {
+  question: string;
+}
+
 export interface Course {
   id: Exclude<CourseId, 'all'>;
   name: string;
   shortName: string;
   color: string;
   videoCount: number;
+  degree: Degree;
+  studyYear: StudyYear;
 }
 
 export interface Segment {
