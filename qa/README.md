@@ -8,12 +8,14 @@ Ask a question about the lectures and get the lecture, the timestamp and a short
 1. **Index (once):** every transcript (`../lectures/lecN.vtt`) is merged into ~25 s numbered lines.
    The LLM reads each lecture and writes a chapter list (title, summary, key terms, start line).
    Saved to `data/index.json`, which costs one LLM call per lecture.
-2. **Ask:** the LLM reads the whole chapter index (a few thousand tokens) and picks up to 3
+2. **Ask:** the LLM reads the whole chapter index (~75k tokens for 24 lectures) and picks up to 3
    candidate chapters. It then reads those chapters' raw transcript lines and returns the label
    of the line where the answer starts. That's two LLM calls per question.
 
 The model only returns chapter IDs and line labels. Every timestamp comes from the transcript,
 and labels that weren't in the prompt are rejected, so the tool can't make up a time.
+
+Full explanation, data formats, design decisions and costs: [docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md).
 
 ## Setup
 
