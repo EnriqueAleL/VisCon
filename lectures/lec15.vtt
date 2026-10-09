@@ -1,0 +1,4739 @@
+WEBVTT
+
+00:00:02.037 --> 00:00:02.677 
+Is this better?
+
+00:00:03.157 --> 00:00:04.397 
+People can hear me in the back.
+
+00:00:05.717 --> 00:00:07.077 
+OK, let's get started.
+
+00:00:11.597 --> 00:00:18.766 
+Last week I was at a conference, so hopefully you had fun with Rahul, who is my 25th PhD graduate,
+
+00:00:18.766 --> 00:00:22.717 
+and he's doing outstanding work on micro architecture.
+
+00:00:24.877 --> 00:00:25.597 
+Did it all go well?
+
+00:00:26.797 --> 00:00:27.477 
+OK, great.
+
+00:00:27.637 --> 00:00:27.957 
+Yeah.
+
+00:00:29.917 --> 00:00:35.557 
+Today we're going to continue what he started and we're going to cover perhaps one of the most
+
+00:00:35.557 --> 00:00:40.597 
+fascinating topics that make pipeline processors work, which is predicting branches.
+
+00:00:40.637 --> 00:00:46.011 
+We covered some of this when we talked about pipelining, but we're going to go into methods that are
+
+00:00:46.011 --> 00:00:51.224 
+much more sophisticated, and existing processors employ even more sophisticated methods than what
+
+00:00:51.224 --> 00:00:56.437 
+we're going to describe toward the end, hybrids of multiple different types of branch predictors.
+
+00:00:57.117 --> 00:01:02.797 
+And this is one thing that makes the processor successful because you need to keep the pipeline full
+
+00:01:02.797 --> 00:01:03.877 
+and flowing, right?
+
+00:01:04.437 --> 00:01:08.641 
+If you have branches control flow instructions, this disrupts the control, disrupts the flow of
+
+00:01:08.641 --> 00:01:09.837 
+instructions, the pipeline.
+
+00:01:10.237 --> 00:01:15.776 
+And as a result, you may not actually get useful instructions to the pipeline if you predict the
+
+00:01:15.776 --> 00:01:17.277 
+branch wrong, for example.
+
+00:01:17.637 --> 00:01:18.557 
+So I will cover that.
+
+00:01:18.677 --> 00:01:24.478 
+You've seen this concept before, so I'm going to skip one of the early parts because these are
+
+00:01:24.478 --> 00:01:25.157 
+background.
+
+00:01:25.637 --> 00:01:25.997 
+OK.
+
+00:01:26.077 --> 00:01:30.117 
+So we have discussed essentially a lot of micro architecture recently.
+
+00:01:30.917 --> 00:01:33.757 
+We're going to end this tomorrow, hopefully.
+
+00:01:33.757 --> 00:01:35.837 
+Let's see how Long Branch prediction will go today.
+
+00:01:36.637 --> 00:01:42.053 
+We'll still cover some micro architecture, but we're also going to look into execution models like
+
+00:01:42.053 --> 00:01:43.877 
+VLIW and Systolic Erase tomorrow.
+
+00:01:44.597 --> 00:01:49.308 
+So branch prediction is the last topic in classical micro architecture, but then we'll also talk
+
+00:01:49.308 --> 00:01:50.437 
+about memory hierarchy.
+
+00:01:50.437 --> 00:01:53.957 
+So at this part of the course, these are some readings.
+
+00:01:53.957 --> 00:01:56.277 
+Hopefully you guys are doing some readings.
+
+00:01:57.317 --> 00:02:00.157 
+These are very good readings in my view to think about.
+
+00:02:00.157 --> 00:02:00.397 
+Today.
+
+00:02:00.397 --> 00:02:05.000 
+We're going to cover combining branch predictors in part, and I'm going to talk about the branch
+
+00:02:05.000 --> 00:02:09.077 
+predictor that's employed in some high performance processes like the Alpha 21 to 64.
+
+00:02:09.637 --> 00:02:16.415 
+We've also released some optional lectures, partly because we cover the data flow graph construction
+
+00:02:16.415 --> 00:02:22.787 
+on this older one and also you will cover this in your homeworks, optional homeworks, but this
+
+00:02:22.787 --> 00:02:24.957 
+there's a dynamic version of it.
+
+00:02:25.477 --> 00:02:31.035 
+If you're given the state of an out of order execution machine, the register alias table and the
+
+00:02:31.035 --> 00:02:33.757 
+reservation stations, you can reverse engineer.
+
+00:02:34.157 --> 00:02:39.469 
+The instructions that are currently in the machine or at least the data flow graph you can reverse
+
+00:02:39.469 --> 00:02:39.957 
+engineer.
+
+00:02:39.957 --> 00:02:43.797 
+You should be able to reverse engineer because it's a restricted data flow machine, right?
+
+00:02:43.837 --> 00:02:46.557 
+That's that that proves that this a restricted data flow.
+
+00:02:46.757 --> 00:02:51.683 
+And you may be able to reverse engineer the exact ordering of the instructions potentially you, but
+
+00:02:51.683 --> 00:02:53.077 
+you may not be able to also.
+
+00:02:53.437 --> 00:02:57.587 
+So these are some exercise that we have in homeworks and these are really great exam questions, if
+
+00:02:57.587 --> 00:02:58.477 
+you know what I mean.
+
+00:02:59.237 --> 00:03:04.870 
+I like reverse engineering questions because if you are presented with something and if you can
+
+00:03:04.870 --> 00:03:10.445 
+reverse engineer what's going on, that's likely tells you that you have understood the subject
+
+00:03:10.445 --> 00:03:11.157 
+really well.
+
+00:03:12.597 --> 00:03:14.157 
+It's not a forward engineering question.
+
+00:03:14.157 --> 00:03:19.003 
+A forward engineering question tends to be easier, but reverse engineering really truly requires you
+
+00:03:19.003 --> 00:03:21.717 
+to understand what's going on in the system potentially.
+
+00:03:22.197 --> 00:03:26.837 
+OK, so that's the and also this lecture is a bit easier to follow online because I use the mouse.
+
+00:03:27.317 --> 00:03:33.324 
+I think Rahul being being a young teacher, maybe they didn't use the mouse as much, but I learned
+
+00:03:33.324 --> 00:03:34.997 
+this also similarly he did.
+
+00:03:35.917 --> 00:03:37.877 
+OK, so we have another optional lecture.
+
+00:03:38.117 --> 00:03:39.317 
+This is load store handling.
+
+00:03:39.317 --> 00:03:42.437 
+This is probably the most complicated part of an out of order processor today.
+
+00:03:43.037 --> 00:03:47.792 
+It's a very short lecture, but hopefully it will give you the complexity of the processors that we
+
+00:03:47.792 --> 00:03:49.637 
+have today, but I'll let you study it.
+
+00:03:51.157 --> 00:03:54.357 
+OK, So these are different ways of handling control dependences.
+
+00:03:54.357 --> 00:03:59.341 
+We've covered some of them and today's focus is going to be on branch prediction, which we start
+
+00:03:59.341 --> 00:04:02.717 
+last time and we motivated the problem last time with an example.
+
+00:04:02.837 --> 00:04:09.341 
+In this example, we have a 20 stage pipeline processor, 5 white superscalar processor, 5 white
+
+00:04:09.341 --> 00:04:09.757 
+pitch.
+
+00:04:10.277 --> 00:04:11.237 
+And we discussed this.
+
+00:04:11.237 --> 00:04:14.917 
+Essentially, how long does it take to fetch 500 instructions with some assumptions, right?
+
+00:04:14.957 --> 00:04:15.757 
+Do you remember this?
+
+00:04:16.037 --> 00:04:20.725 
+We're assuming one out of five instructions a branch, and each five instruction block ends with a
+
+00:04:20.725 --> 00:04:21.837 
+branch, Pretty regular.
+
+00:04:22.877 --> 00:04:27.975 
+Now, if you have 100% accuracy, of course, it takes only 100 cycles and I your IPC would be 5
+
+00:04:27.975 --> 00:04:29.237 
+instructions per cycle.
+
+00:04:29.797 --> 00:04:37.603 
+But if you have 90% accuracy, you're quickly down to an IPC of five over three 1.6 bar and two 100%
+
+00:04:37.603 --> 00:04:40.837 
+extra instructions that you fetch, right?
+
+00:04:41.397 --> 00:04:46.317 
+If your accuracy is 60%, you're fetching 800% extra instructions than you really need.
+
+00:04:47.397 --> 00:04:49.077 
+So this shows you the importance of the problem.
+
+00:04:49.077 --> 00:04:56.070 
+And this problem becomes worse as N becomes larger and as W becomes larger, because you're wasting a
+
+00:04:56.070 --> 00:05:00.477 
+lot more slots with a given mispredicted branch, both with N&W.
+
+00:05:00.597 --> 00:05:07.168 
+You can think of this as a box with dimensions N&W and you waste n * W instruction slots if you
+
+00:05:07.168 --> 00:05:09.797 
+actually mispredict the branch, right?
+
+00:05:10.477 --> 00:05:15.672 
+OK, so you want to reduce the frequency of mispredictions basically, and that's what we're going to
+
+00:05:15.672 --> 00:05:16.197 
+try to do.
+
+00:05:16.597 --> 00:05:20.037 
+So branch prediction this is, I'll go through this relatively quickly because you've seen this.
+
+00:05:20.397 --> 00:05:23.557 
+Essentially you predict the next instruction to fetch instead of stalling.
+
+00:05:24.157 --> 00:05:27.077 
+Stalling is a bad idea even with a very short pipeline.
+
+00:05:27.077 --> 00:05:32.375 
+As you, as you, as you see over here, 5 stage pipeline, if you predict the next instruction to
+
+00:05:32.375 --> 00:05:34.517 
+fetch, you can keep the pipeline full.
+
+00:05:35.637 --> 00:05:37.357 
+OK, we can improve performance.
+
+00:05:37.357 --> 00:05:41.960 
+Of course, if you mispredict, then you need to redirect the fetch to the correct engine after
+
+00:05:41.960 --> 00:05:46.662 
+flashing the correct program counter after flashing the incorrect instructions, then we've seen
+
+00:05:46.662 --> 00:05:47.157 
+that also.
+
+00:05:47.157 --> 00:05:48.157 
+So I'll not go through that.
+
+00:05:48.637 --> 00:05:55.477 
+And we said that the easiest method is predicting next program counter to be PC Plus an increment.
+
+00:05:55.557 --> 00:05:57.197 
+Increment is the size of the instruction.
+
+00:05:57.677 --> 00:05:59.357 
+And in MIPS, it's nice, it's four.
+
+00:05:59.677 --> 00:06:02.797 
+In some other ISA, size of the instruction depends on the instruction.
+
+00:06:03.637 --> 00:06:06.597 
+As a result, you cannot know the size before you decode the instruction.
+
+00:06:06.717 --> 00:06:08.597 
+So immediately you have a problem, right?
+
+00:06:09.197 --> 00:06:12.757 
+You need to figure out the next PC even when you want to.
+
+00:06:12.757 --> 00:06:15.397 
+The next PC equals PC Plus instruction size.
+
+00:06:16.237 --> 00:06:19.157 
+Your ISA determines how well you can do it.
+
+00:06:19.477 --> 00:06:23.397 
+If your instructions are regular, all of them are 4 bytes, then it's easy.
+
+00:06:24.157 --> 00:06:25.997 
+OK, so X86 for example.
+
+00:06:25.997 --> 00:06:30.077 
+A instruction can be anywhere between 1 to 16, maybe even 17 these days.
+
+00:06:30.397 --> 00:06:30.877 
+Bytes.
+
+00:06:32.037 --> 00:06:37.597 
+And in order to predict the next instruction, you need to predict the size of the instruction also.
+
+00:06:38.117 --> 00:06:43.437 
+OK, so it's a harder problem if your ISA doesn't have same size instructions.
+
+00:06:44.717 --> 00:06:45.237 
+Makes sense.
+
+00:06:46.237 --> 00:06:46.837 
+It's interesting.
+
+00:06:47.157 --> 00:06:51.849 
+So this part of the processor is actually pretty complicated because of this sort of issues,
+
+00:06:51.849 --> 00:06:53.277 
+especially an X86 processor.
+
+00:06:53.677 --> 00:06:56.397 
+So we also talked about how can you make this more effective.
+
+00:06:57.037 --> 00:07:01.160 
+You can do this by maximising the chances that the next sequential instruction is the next
+
+00:07:01.160 --> 00:07:02.397 
+instruction to be executed.
+
+00:07:04.037 --> 00:07:05.197 
+You can do this in software.
+
+00:07:06.197 --> 00:07:09.877 
+There's a beautiful paper in PLDI that a lot of compilers today use.
+
+00:07:10.237 --> 00:07:14.656 
+If you actually do this sort of prediction, they basically profile the code and they try to lay out
+
+00:07:14.656 --> 00:07:18.317 
+the code such that the next sequential instruction is the next likely instruction.
+
+00:07:18.637 --> 00:07:19.357 
+That's the idea.
+
+00:07:19.877 --> 00:07:21.317 
+You can also do this in hardware.
+
+00:07:21.557 --> 00:07:26.896 
+Maybe we will talk about it, maybe not, but their hardware structures that try to do essentially the
+
+00:07:26.896 --> 00:07:31.969 
+same thing in hardware, What I just described is called the trace cache and that exists in some
+
+00:07:31.969 --> 00:07:32.557 
+processors.
+
+00:07:33.677 --> 00:07:35.157 
+OK, I'll not go through this.
+
+00:07:35.157 --> 00:07:36.277 
+We discussed this last time.
+
+00:07:36.717 --> 00:07:38.837 
+Now let's go into a more enhanced branch prediction.
+
+00:07:38.837 --> 00:07:41.397 
+We're going to look at some algorithms to predict branches.
+
+00:07:42.277 --> 00:07:46.477 
+So the general idea is really we want to predict the next fetch address that the.
+
+00:07:46.677 --> 00:07:51.458 
+Cluster is going to fetch from in the next cycle immediately next cycle so that we don't have any
+
+00:07:51.458 --> 00:07:53.677 
+wasted cycles on a correct prediction, right?
+
+00:07:54.157 --> 00:07:56.397 
+And ideally we want to get 100% correct predictions.
+
+00:07:57.197 --> 00:08:00.597 
+This requires actually three things to be predicted at the fetch stage.
+
+00:08:01.197 --> 00:08:04.637 
+1 is whether the fetched instructions are branch.
+
+00:08:06.197 --> 00:08:07.357 
+That's also a problem, right?
+
+00:08:08.277 --> 00:08:11.597 
+And the direction of the branch, assuming it's a conditional branch.
+
+00:08:11.597 --> 00:08:13.157 
+We're going to focus on conditional branches.
+
+00:08:13.157 --> 00:08:16.477 
+Indirect branches are more complicated, but we're not going to talk about them right now.
+
+00:08:16.477 --> 00:08:17.557 
+There are some backup slides.
+
+00:08:19.117 --> 00:08:23.837 
+If it's a conditional branch, what is the direction taken or not taken, essentially, And the target
+
+00:08:23.837 --> 00:08:26.317 
+address of the branch, assuming the branch is taken.
+
+00:08:26.397 --> 00:08:28.597 
+So you need to predict all three of these things, right?
+
+00:08:29.997 --> 00:08:34.754 
+And if the branch is not taken, you need to predict the next instruction, next sequential
+
+00:08:34.754 --> 00:08:35.877 
+instructions address.
+
+00:08:35.877 --> 00:08:42.515 
+And in that case, it may be easy if your ISA has fixed instruction sizes, it's harder if your ISA
+
+00:08:42.515 --> 00:08:44.637 
+has variable instruction sizes.
+
+00:08:44.637 --> 00:08:48.117 
+So I'm going to, I'm not going to talk about that part as much from now on.
+
+00:08:49.197 --> 00:08:51.077 
+But let's let's talk about branch target address.
+
+00:08:51.077 --> 00:08:51.957 
+How do you predict it?
+
+00:08:54.357 --> 00:08:59.701 
+And the same structure that is used to predict the branch target address actually can be used to
+
+00:08:59.701 --> 00:09:02.597 
+predict whether the fetched instructions are branch.
+
+00:09:04.077 --> 00:09:04.637 
+And the idea.
+
+00:09:04.637 --> 00:09:09.277 
+The observation that enables this is that target address of a branch of a conditional branch.
+
+00:09:09.677 --> 00:09:14.117 
+Direct branch remains the same across dynamic instances.
+
+00:09:14.317 --> 00:09:18.037 
+So you for example calculate the target address using PC Plus some offset.
+
+00:09:18.157 --> 00:09:20.557 
+The program counter of the branch remains the same.
+
+00:09:20.757 --> 00:09:23.477 
+Offset remains the same, so your target address is always the same.
+
+00:09:24.277 --> 00:09:25.157 
+This is a direct branch.
+
+00:09:25.237 --> 00:09:31.877 
+Indirect branches can obtain the target program counter as a register plus some offset.
+
+00:09:32.077 --> 00:09:35.797 
+In that case, that's an indirect branch, and we're not going to deal with that right now, right?
+
+00:09:36.517 --> 00:09:42.937 
+But for a direct branch where target is PC Plus some offset, what you can do is the first time you
+
+00:09:42.937 --> 00:09:47.917 
+execute the branch, you store the target address in a buffer in a structure.
+
+00:09:48.717 --> 00:09:55.301 
+We're going to call this the branch target address cache or branch target buffer, and you can access
+
+00:09:55.301 --> 00:09:57.277 
+this with the program counter.
+
+00:09:57.277 --> 00:09:59.557 
+For each program counter, you have a target address.
+
+00:09:59.557 --> 00:10:06.445 
+Think about a table like that, and when you actually see the program counter again, you index that
+
+00:10:06.445 --> 00:10:11.437 
+table and get the target address without waiting to execute the branch.
+
+00:10:11.597 --> 00:10:13.037 
+That's the idea we have.
+
+00:10:13.037 --> 00:10:16.837 
+We'll have the structure and the fetch stage take that table called branch target buffer.
+
+00:10:17.077 --> 00:10:22.853 
+IBM called this branch target address cache, but it's essentially BTBI guess has taken off as a
+
+00:10:22.853 --> 00:10:23.157 
+word.
+
+00:10:23.837 --> 00:10:26.357 
+OK, so this is how our fetch stage going to be.
+
+00:10:26.677 --> 00:10:31.357 
+Essentially we will need a bTB cache or buffer of target addresses.
+
+00:10:31.357 --> 00:10:33.197 
+Don't worry about the cache terminology right now.
+
+00:10:33.277 --> 00:10:37.357 
+You'll see caches a lot when we talk about processor.
+
+00:10:37.357 --> 00:10:38.717 
+Let me talk about memory systems.
+
+00:10:38.717 --> 00:10:42.183 
+And the structure is going to be essentially the same, but you don't need to know exactly how this
+
+00:10:42.183 --> 00:10:42.997 
+is organised right now.
+
+00:10:43.237 --> 00:10:49.110 
+All you need to know is you index it using program counter and assuming you have stored an associate
+
+00:10:49.110 --> 00:10:54.397 
+target address with that program counter, you will get the target address that you stored.
+
+00:10:55.037 --> 00:10:56.717 
+Otherwise you will get nothing out of it.
+
+00:10:57.917 --> 00:11:02.971 
+OK and then there's a direction projector that says whether the branch should be predicted as taken
+
+00:11:02.971 --> 00:11:07.464 
+or not taken using the program counter, meaning address of the current branch or current
+
+00:11:07.464 --> 00:11:08.077 
+instruction.
+
+00:11:08.757 --> 00:11:12.477 
+We're going to index into the cache of target addresses.
+
+00:11:12.997 --> 00:11:15.077 
+It'll give us 2 signals.
+
+00:11:15.077 --> 00:11:19.197 
+1 is whether we hit, whether we have something for that program counter.
+
+00:11:19.597 --> 00:11:25.242 
+And if we have, if we do have something, then the target address is the target address that's branch
+
+00:11:25.242 --> 00:11:27.557 
+calculated the previous time it executed.
+
+00:11:27.797 --> 00:11:28.157 
+OK.
+
+00:11:29.597 --> 00:11:32.397 
+And then we also index using the program counter.
+
+00:11:32.397 --> 00:11:34.157 
+We're going to make this more complicated later on.
+
+00:11:34.677 --> 00:11:38.820 
+A direction predictor and the direction predictor will predict whether the branch is taken or not
+
+00:11:38.820 --> 00:11:39.077 
+taken.
+
+00:11:39.237 --> 00:11:51.173 
+Right now if the branch is taken and if the bTB provides us a hit, then the next next fetch address
+
+00:11:51.173 --> 00:11:56.237 
+is taken from the bTB as a target address.
+
+00:11:56.957 --> 00:11:59.557 
+If the branch is taken, predicted taken.
+
+00:11:59.557 --> 00:12:04.220 
+I should say, if the direction predictor predicts the branch has taken and if the bTB doesn't have a
+
+00:12:04.220 --> 00:12:08.790 
+target address, meaning this is a 0, you will see that PC Plus instruction size is selected as the
+
+00:12:08.790 --> 00:12:09.677 
+next fetch address.
+
+00:12:09.677 --> 00:12:15.063 
+PC Plus 4IN MIPS, if the branch is predicted not taken, then it doesn't matter whether you hit or
+
+00:12:15.063 --> 00:12:20.339 
+miss over here because of this and gate, then PC Plus instruction size again select as the next
+
+00:12:20.339 --> 00:12:21.117 
+fetch address.
+
+00:12:21.517 --> 00:12:23.637 
+So this is the logic that we have in the front end.
+
+00:12:23.637 --> 00:12:27.917 
+This will become more complicated as you will see soon, but that's the idea.
+
+00:12:27.917 --> 00:12:28.877 
+Hopefully it makes sense, right?
+
+00:12:28.877 --> 00:12:31.277 
+You've seen all components before.
+
+00:12:32.397 --> 00:12:35.837 
+Now the question is, of course, how do we build this direction predictor?
+
+00:12:36.077 --> 00:12:39.837 
+And people have invested a lot of effort to make this as accurate as possible.
+
+00:12:40.317 --> 00:12:44.090 
+Now if you if you make this direction predictor more complicated, it's going to affect your cycle
+
+00:12:44.090 --> 00:12:44.557 
+time, right?
+
+00:12:44.557 --> 00:12:46.237 
+Remember, we want to get this prediction.
+
+00:12:46.677 --> 00:12:51.381 
+In one cycle, so I said while we're accessing also a concurrently, which is not shown here, you're
+
+00:12:51.381 --> 00:12:54.837 
+also concurrently accessing the instruction memory or instruction cache.
+
+00:12:54.837 --> 00:12:59.232 
+As we will see it, you're fetching the instruction, you're also predicting what is the next
+
+00:12:59.232 --> 00:13:02.517 
+instruction to fetch, and you want to do this within the same cycle.
+
+00:13:03.157 --> 00:13:08.645 
+If it takes too long to determine the direction predictor, like whether you want to predict taken or
+
+00:13:08.645 --> 00:13:14.023 
+not taken, then you can actually extend the clock cycle time and fetch stage can easily extend the
+
+00:13:14.023 --> 00:13:14.957 
+clock cycle time.
+
+00:13:15.197 --> 00:13:20.521 
+Modern branch predictors take multiple cycles to provide predictions, as we will hopefully see
+
+00:13:20.521 --> 00:13:22.277 
+toward the end of this lecture.
+
+00:13:22.557 --> 00:13:24.477 
+So it's not an easy part of the machine to design.
+
+00:13:25.957 --> 00:13:31.192 
+OK, remember the next fetch address actually goes back into and gets written into the program
+
+00:13:31.192 --> 00:13:32.037 
+counter, right?
+
+00:13:32.037 --> 00:13:32.957 
+There's a loop over here.
+
+00:13:34.277 --> 00:13:39.397 
+OK, so a more sophisticated dredge prediction, which will come, does something like this.
+
+00:13:39.717 --> 00:13:42.597 
+We're actually going to use global branches too.
+
+00:13:42.597 --> 00:13:44.837 
+For example, we're going to put more context.
+
+00:13:45.397 --> 00:13:51.228 
+Right now, this may look like magic, but we're going to use more context of the program to decide
+
+00:13:51.228 --> 00:13:55.317 
+whether the branch will be taken, predicted, taken or not taken not.
+
+00:13:55.317 --> 00:13:59.477 
+Instead of using just the program counter, we're going to use which direction earlier branches went.
+
+00:13:59.557 --> 00:14:04.797 
+This called the global history of branches, because that actually has good correlation.
+
+00:14:04.797 --> 00:14:09.558 
+People have found out with the prediction that you're going to make for the current branch and we
+
+00:14:09.558 --> 00:14:11.277 
+will motivate why this is the case.
+
+00:14:11.637 --> 00:14:13.357 
+This is because of how programs behave.
+
+00:14:13.837 --> 00:14:15.477 
+Branches are not independent of each other.
+
+00:14:15.477 --> 00:14:20.477 
+They have, they are correlated because of data dependencies, because of code dependencies, etcetera.
+
+00:14:20.877 --> 00:14:24.197 
+And this, this is a global history predictor basically.
+
+00:14:24.557 --> 00:14:30.568 
+So the structure is essential the same except how you decide whether the branch is predicted is
+
+00:14:30.568 --> 00:14:33.037 
+taken or not taken is different, right?
+
+00:14:33.077 --> 00:14:34.437 
+Direction prediction is different, basically.
+
+00:14:35.277 --> 00:14:36.837 
+OK, we're going to make it more sophisticated.
+
+00:14:36.837 --> 00:14:38.917 
+So let's go back to these three things to be predicted.
+
+00:14:39.357 --> 00:14:40.957 
+We wanted to predict these three things.
+
+00:14:41.437 --> 00:14:45.757 
+The third one, meaning branch target address, can be accomplished using a bTB.
+
+00:14:46.037 --> 00:14:49.037 
+Remember the target address computed last time the branch was executed.
+
+00:14:49.517 --> 00:14:51.277 
+OK, so that's easy.
+
+00:14:51.877 --> 00:14:53.397 
+We solved it with some hardware.
+
+00:14:53.637 --> 00:14:54.677 
+This is a hardware structure.
+
+00:14:55.437 --> 00:14:57.677 
+The first one can also be accomplished using a bTB.
+
+00:14:57.677 --> 00:15:01.997 
+If the bTB provides a target address for the program counter, then it must be a branch, right?
+
+00:15:03.677 --> 00:15:07.317 
+It's a one to one mapping basically program counter to target address, OK.
+
+00:15:09.117 --> 00:15:13.437 
+There are other ways of doing this actually, which were employed in some processors in the past.
+
+00:15:13.637 --> 00:15:18.527 
+You have some partial decode information associated with a program counter that says basically a
+
+00:15:18.527 --> 00:15:23.317 
+single bit associated with each program counter that says whether or not it's a branch, right?
+
+00:15:23.477 --> 00:15:25.437 
+You could also do that partially decode instruction.
+
+00:15:26.437 --> 00:15:28.797 
+OK, Second one is what we're going to be concerned about.
+
+00:15:28.797 --> 00:15:29.397 
+How do we do?
+
+00:15:29.397 --> 00:15:30.437 
+How do you predict the direction?
+
+00:15:30.757 --> 00:15:30.957 
+Right?
+
+00:15:32.157 --> 00:15:34.997 
+So there are many branch prediction schemes that people have developed.
+
+00:15:35.197 --> 00:15:38.637 
+This is actually a fascinating area that requires even more creativity right now.
+
+00:15:39.717 --> 00:15:41.757 
+Some of them are compile time, which we will start with.
+
+00:15:41.757 --> 00:15:43.197 
+These are static mechanisms.
+
+00:15:43.197 --> 00:15:49.071 
+Some of them are at least the more sophisticated and more successful ones are the runtime
+
+00:15:49.071 --> 00:15:49.797 
+mechanisms.
+
+00:15:50.477 --> 00:15:51.957 
+You've already seen some of these, right?
+
+00:15:51.957 --> 00:15:55.517 
+Always not taken, for example, and we're going to see more sophisticated ones.
+
+00:15:55.637 --> 00:16:00.649 
+Hopefully we'll get some time to cover advanced algorithms like machine learning, the simple machine
+
+00:16:00.649 --> 00:16:05.361 
+learning algorithm like perceptrons, and also a geometric history length predictors, which are
+
+00:16:05.361 --> 00:16:07.317 
+actually used in real processors today.
+
+00:16:07.637 --> 00:16:14.576 
+Usually a lot of processors today use some of these things combined with advanced algorithms because
+
+00:16:14.576 --> 00:16:16.797 
+advanced algorithms take longer.
+
+00:16:17.237 --> 00:16:21.931 
+If you can actually predict a branch with a simple algorithm, it's much better to do so because
+
+00:16:21.931 --> 00:16:25.637 
+you're not wasting space in the advanced algorithms hardware budget, right?
+
+00:16:25.677 --> 00:16:26.717 
+That's the idea over here.
+
+00:16:26.837 --> 00:16:31.575 
+So existing processors have sophisticated branch predictors that have multiple different types of
+
+00:16:31.575 --> 00:16:33.237 
+prediction algorithms inside them.
+
+00:16:34.637 --> 00:16:35.877 
+OK, sounds good.
+
+00:16:36.637 --> 00:16:39.117 
+So let's start with compile time static branch prediction.
+
+00:16:40.357 --> 00:16:41.757 
+I'm going to cover these relatively quickly.
+
+00:16:41.757 --> 00:16:42.917 
+We've seen always not taken.
+
+00:16:42.917 --> 00:16:46.877 
+This is the simplest thing you can do because you don't need to predict the target address, right?
+
+00:16:47.717 --> 00:16:49.037 
+You always predict not taken.
+
+00:16:49.037 --> 00:16:52.397 
+So next, fetch address is always PC Plus instruction size.
+
+00:16:52.957 --> 00:16:55.477 
+Then your instruction size is constant, it's even easier.
+
+00:16:55.957 --> 00:16:56.997 
+This is simple to implement.
+
+00:16:56.997 --> 00:17:00.677 
+There is no need for a bTB, no direction prediction, no need to identify a branch.
+
+00:17:00.677 --> 00:17:05.948 
+You're basically doing business as usual, which is a control flow instruction is no different from a
+
+00:17:05.948 --> 00:17:09.797 
+non control flow instruction in the way you treat it in the fetch engine.
+
+00:17:10.197 --> 00:17:12.157 
+OK, now the downsides.
+
+00:17:12.157 --> 00:17:17.920 
+Of course this is pretty low accuracy, 30 to 40% accuracy and I don't have even have that picture
+
+00:17:17.920 --> 00:17:18.277 
+right.
+
+00:17:18.397 --> 00:17:23.637 
+We, we went down to 60% and with 60% we're still fetching 800% more instructions.
+
+00:17:23.957 --> 00:17:26.837 
+If you go down to 30% accuracy, not so good.
+
+00:17:27.237 --> 00:17:31.958 
+Of course you can optimise this compiler can layout code such that the likely path is the not taken
+
+00:17:31.958 --> 00:17:32.197 
+path.
+
+00:17:32.717 --> 00:17:38.391 
+It gives you a more effective prediction accuracy, but if you remember that discussion, that's also
+
+00:17:38.391 --> 00:17:42.117 
+unfortunately dependent on the information that the compiler has.
+
+00:17:42.317 --> 00:17:45.717 
+What if the compiler's information is not representative?
+
+00:17:46.677 --> 00:17:51.640 
+When the program is running, the compiler may say, oh, this is the likely path, but in real
+
+00:17:51.640 --> 00:17:55.677 
+execution with the real input sets, the other path may be the likely path.
+
+00:17:55.677 --> 00:17:58.397 
+So the compiler actually optimises the code in the wrong way, right?
+
+00:17:58.677 --> 00:18:00.797 
+So your accuracy becomes worse in that case.
+
+00:18:01.037 --> 00:18:04.157 
+So it's called the profile input set representativeness problem.
+
+00:18:04.157 --> 00:18:10.503 
+It's always an issue whenever you enable the compiler to make some decisions, static decisions,
+
+00:18:10.503 --> 00:18:16.917 
+because your dynamic program behaviour is very different from what the compiler sees statically.
+
+00:18:17.437 --> 00:18:17.757 
+Yes.
+
+00:18:17.757 --> 00:18:21.037 
+Is miss predicting a branch worse than installment?
+
+00:18:21.517 --> 00:18:25.317 
+Should we resolve the address or are they the same?
+
+00:18:25.757 --> 00:18:27.117 
+They're essentially the same, yeah.
+
+00:18:27.117 --> 00:18:33.086 
+Basically, you miss predicting a branch, you flush all of the pipeline stages and then you reload
+
+00:18:33.086 --> 00:18:33.517 
+the PC.
+
+00:18:35.877 --> 00:18:38.677 
+They may potentially be worse, but people don't do that design.
+
+00:18:38.917 --> 00:18:42.837 
+They try design to make sure that mispredicting is the same as stalling.
+
+00:18:44.757 --> 00:18:48.237 
+That's a good question, though there may be some no answers and some different architectures.
+
+00:18:49.157 --> 00:18:51.797 
+OK so people have developed always taken predictors.
+
+00:18:51.797 --> 00:18:58.077 
+Again, this is compile time static, meaning you don't change your direction.
+
+00:18:58.077 --> 00:18:59.197 
+Prediction is static right?
+
+00:18:59.837 --> 00:19:02.037 
+There is no direction predictor that's needed for this.
+
+00:19:02.037 --> 00:19:03.317 
+You're always predicting as taken.
+
+00:19:03.437 --> 00:19:05.997 
+You get better accuracy because most branches are taken.
+
+00:19:05.997 --> 00:19:12.288 
+Actually it turns out the reason is most branches are loop branches and loops tend to be executed
+
+00:19:12.288 --> 00:19:13.197 
+more than not.
+
+00:19:14.117 --> 00:19:16.397 
+You don't execute a loop only once and then get after it.
+
+00:19:16.517 --> 00:19:18.637 
+Usually you execute a loop 3 times.
+
+00:19:18.637 --> 00:19:22.197 
+Let's say in many application you want to execute the loop 1,000,000 times.
+
+00:19:22.197 --> 00:19:23.597 
+We're going to talk about that actually soon.
+
+00:19:24.397 --> 00:19:30.783 
+OK, so backward branches, loop branches are usually taken and backward branch is a branch that has
+
+00:19:30.783 --> 00:19:36.779 
+target address lower than the branch PC It's actually a loop branch that that loops into the
+
+00:19:36.779 --> 00:19:37.757 
+program, right?
+
+00:19:37.757 --> 00:19:40.877 
+You iterate over loop, for example, you're adding two arrays.
+
+00:19:41.597 --> 00:19:46.093 
+You keep doing it for every index and there's a branch that says go do it for the next one, go do it
+
+00:19:46.093 --> 00:19:47.757 
+for the next one, go to the next one.
+
+00:19:47.757 --> 00:19:49.797 
+So we're going to see these like backward benches too.
+
+00:19:50.597 --> 00:19:56.183 
+So people have looked at this and said, OK, if this is the case, why don't we actually design
+
+00:19:56.183 --> 00:20:02.011 
+another static prediction mechanism where if the branch is backward, we predicted as taken and if
+
+00:20:02.011 --> 00:20:06.637 
+the branch is forward, meaning not a loop branch, we predict it as not taken.
+
+00:20:07.437 --> 00:20:12.311 
+And it turns out this is better than these always taken and always not taken mechanism because it
+
+00:20:12.311 --> 00:20:16.985 
+takes into account the behaviour of loop branches better and it's gets better accuracy in the
+
+00:20:16.985 --> 00:20:19.197 
+forward branches that are not loop branches.
+
+00:20:19.477 --> 00:20:22.357 
+That's the heuristic that we have, OK?
+
+00:20:22.597 --> 00:20:23.877 
+That's the idea basically, right?
+
+00:20:23.997 --> 00:20:29.062 
+This is still static because it's really whether a branch is backward or forward, whether it goes
+
+00:20:29.062 --> 00:20:33.970 
+back in the code or forward in the code is a characteristic of the branch itself of the static
+
+00:20:33.970 --> 00:20:34.597 
+code, right?
+
+00:20:34.637 --> 00:20:35.397 
+It's not a static.
+
+00:20:35.637 --> 00:20:38.197 
+It doesn't change based on the dynamic instance of the branch, right?
+
+00:20:39.517 --> 00:20:40.677 
+OK, but it's more complicated.
+
+00:20:40.677 --> 00:20:45.573 
+Of course you need to decide which branch is backward and forward, and you need to have a bTB for
+
+00:20:45.573 --> 00:20:49.157 
+these two always taken and backward taken forward not taken mechanisms.
+
+00:20:49.637 --> 00:20:55.751 
+OK, so these are simple static prediction mechanisms, but they're also more sophisticated static
+
+00:20:55.751 --> 00:21:02.057 
+branch prediction mechanisms that could be profile based, meaning the compiler can profile the code
+
+00:21:02.057 --> 00:21:07.917 
+and decide for each branch how it should predict, how it should, how it should be predicted.
+
+00:21:08.397 --> 00:21:10.637 
+Now we're going to go to per branch mechanisms.
+
+00:21:11.637 --> 00:21:15.980 
+You would compile the terms of likely direction for each branch using a profile round and encodes
+
+00:21:15.980 --> 00:21:18.757 
+that direction as a hint bit in the branch instruction format.
+
+00:21:18.757 --> 00:21:23.942 
+For each branch instruction format, there's a bit that says, which is the likely direction of the
+
+00:21:23.942 --> 00:21:24.317 
+branch.
+
+00:21:24.797 --> 00:21:30.700 
+And the compiler sets this bit by running the program using some input sets for however many times,
+
+00:21:30.700 --> 00:21:36.544 
+right, there's somebody who decides that and the compiler says, oh, this branch is likely taken in
+
+00:21:36.544 --> 00:21:41.077 
+all of the data sets that I've seen, so I'm going to encode as likely taken.
+
+00:21:41.077 --> 00:21:44.277 
+This branch is likely not taken, So for every branch you can have a separate prediction.
+
+00:21:45.037 --> 00:21:49.235 
+So that's the upside over here, per branch prediction, it's more accurate than the schemes in the
+
+00:21:49.235 --> 00:21:53.434 
+previous slide because they're not per branch, they're global, based on categories of branches or
+
+00:21:53.434 --> 00:21:53.997 
+all branches.
+
+00:21:54.517 --> 00:21:59.435 
+So this is accurate if profiles representative of course, right, If what the compiler sees is
+
+00:21:59.435 --> 00:22:02.397 
+similar to what the runtime behaviour of the program is.
+
+00:22:03.077 --> 00:22:06.477 
+The downside of course is this requires hint bits in the instruction format.
+
+00:22:07.157 --> 00:22:08.277 
+The good news is it's only one bit.
+
+00:22:08.277 --> 00:22:09.757 
+Hopefully not too bad.
+
+00:22:09.957 --> 00:22:14.397 
+Basically, now the accuracy depends on the dynamic branch behaviour.
+
+00:22:14.837 --> 00:22:21.508 
+For example, if your dynamic behaviour branch behaviour looks like this 50% taken, 50% not taken
+
+00:22:21.508 --> 00:22:28.111 
+either with this pattern or with this pattern, you get 50% accuracy because the compiler cannot
+
+00:22:28.111 --> 00:22:32.837 
+encode the fact that you're changing behaviour at some point, right?
+
+00:22:33.037 --> 00:22:33.397 
+It can.
+
+00:22:33.397 --> 00:22:35.797 
+It can encode only One Direction as a likely direction.
+
+00:22:35.797 --> 00:22:40.985 
+So 50% is very bad because both directions are likely or both directions are equally unlikely,
+
+00:22:40.985 --> 00:22:41.317 
+right?
+
+00:22:42.357 --> 00:22:43.957 
+OK, so these branches are tough.
+
+00:22:44.797 --> 00:22:46.597 
+So accuracy also depends on the representative.
+
+00:22:46.717 --> 00:22:54.050 
+Because of profile inputs that as we discussed for example here, the branch is likely taken 90% of
+
+00:22:54.050 --> 00:23:00.037 
+the time the compiler, if it has good information, it'll get 90% accuracy right?
+
+00:23:00.037 --> 00:23:03.037 
+It'll encode things the hint bit as one meaning taken.
+
+00:23:03.717 --> 00:23:09.157 
+If the compiler has bad information or not representative information of the dynamic behaviour the
+
+00:23:09.157 --> 00:23:14.542 
+compiler may get, the compiler may encode this branch as not likely or not taken, like not taken,
+
+00:23:14.542 --> 00:23:16.597 
+and as a result you get 10% accuracy.
+
+00:23:17.757 --> 00:23:20.637 
+That's the danger of compiler based mechanisms.
+
+00:23:21.717 --> 00:23:25.477 
+But if you had a dynamic mechanism, you can probably predict this very easily as we will see, right?
+
+00:23:26.357 --> 00:23:29.117 
+OK, so that's profile based.
+
+00:23:29.317 --> 00:23:31.477 
+People have also developed program based mechanisms.
+
+00:23:31.477 --> 00:23:37.357 
+This is a beautiful paper by Thomas Bolan and Jim Lehr's Branch Prediction for Free.
+
+00:23:37.877 --> 00:23:39.757 
+The idea in this paper is very nice.
+
+00:23:40.197 --> 00:23:45.477 
+It's very hard to make it work in practice I think, especially today, but I'll give you the idea.
+
+00:23:45.517 --> 00:23:52.401 
+The idea is to not use profile, but use heuristics by ident, by analysing the program to decide what
+
+00:23:52.401 --> 00:23:55.637 
+is the likely direction each branch would take.
+
+00:23:56.997 --> 00:23:57.917 
+So what are these things?
+
+00:23:57.917 --> 00:23:58.797 
+What are these heuristics?
+
+00:23:58.797 --> 00:24:04.452 
+So you can analyse the program, That's called program analysis basically and look at for some op
+
+00:24:04.452 --> 00:24:10.167 
+codes for example, and if the branch op code is branch less than or equal to 0, you predict it as
+
+00:24:10.167 --> 00:24:10.757 
+not taken.
+
+00:24:11.357 --> 00:24:11.717 
+Why?
+
+00:24:11.717 --> 00:24:16.637 
+Because based on some analysis they did these faults figured out.
+
+00:24:16.637 --> 00:24:22.495 
+Negative integers are used as error values in many programs and BLEZ branch less than or equal to 0
+
+00:24:22.495 --> 00:24:23.797 
+checks an error value.
+
+00:24:24.077 --> 00:24:25.397 
+And usually you don't get errors.
+
+00:24:25.917 --> 00:24:30.403 
+And I guess usually in the program, if you get errors, you'll do something else anyway, so you
+
+00:24:30.403 --> 00:24:31.597 
+predict that's not taken.
+
+00:24:31.877 --> 00:24:32.997 
+So that's the idea basically.
+
+00:24:33.237 --> 00:24:34.197 
+It's more intuitive.
+
+00:24:34.237 --> 00:24:42.430 
+It can be based on data also, but not necessarily on a particular run of a program That's directly
+
+00:24:42.430 --> 00:24:45.357 
+impacting the direction prediction.
+
+00:24:45.957 --> 00:24:50.877 
+Another loop heuristic, for example, these folks decide that you predict a branch guarding a loop.
+
+00:24:50.957 --> 00:24:52.917 
+Execution is taken, meaning execute the loop.
+
+00:24:52.917 --> 00:24:53.557 
+There's a branch.
+
+00:24:53.877 --> 00:25:02.067 
+If some condition then execute a big loop, usually that branch is taken, meaning usually execute the
+
+00:25:02.067 --> 00:25:02.477 
+loop.
+
+00:25:02.677 --> 00:25:05.357 
+Because programs usually execute based on loops.
+
+00:25:05.557 --> 00:25:06.717 
+That's the idea again, right?
+
+00:25:07.317 --> 00:25:08.797 
+You can do the statistical of course, right?
+
+00:25:09.477 --> 00:25:13.845 
+For example, comparing 2 pointers, you predict the pointers as not equal, because that's the
+
+00:25:13.845 --> 00:25:15.317 
+likelihood of that is very low.
+
+00:25:15.917 --> 00:25:19.397 
+Comparing 2 floating point numbers, again you predict that as not equal.
+
+00:25:19.517 --> 00:25:23.717 
+You should never do this by the way in your program, but there may be some cases.
+
+00:25:23.717 --> 00:25:29.779 
+I guess you predict not equal, so hopefully you get the idea right and you can come up with hundreds
+
+00:25:29.779 --> 00:25:33.357 
+of heuristics like this and this paper does maybe 20 or so.
+
+00:25:33.677 --> 00:25:38.077 
+The upside is this doesn't require profile, it's really program analysis based.
+
+00:25:39.477 --> 00:25:42.317 
+The downside is heuristics might not be representative or very good.
+
+00:25:44.237 --> 00:25:46.357 
+It requires compiler analysis and ISA support.
+
+00:25:46.357 --> 00:25:50.117 
+That's true for other static methods also that are not the simplest static methods.
+
+00:25:50.917 --> 00:25:56.178 
+And this paper shows that you can actually get 20% misprediction rate at the time in 1993 using
+
+00:25:56.178 --> 00:25:59.557 
+these methods, which actually pretty impressive, I would say.
+
+00:26:01.117 --> 00:26:06.523 
+OK, but that's an idea, tough to make it work in modern processors because of the complexity of the
+
+00:26:06.523 --> 00:26:06.797 
+code.
+
+00:26:07.957 --> 00:26:08.197 
+OK.
+
+00:26:08.197 --> 00:26:13.120 
+There's also another step, branch prediction mechanism that relies on the programmer that makes life
+
+00:26:13.120 --> 00:26:17.895 
+harder for the programmer, but that also takes advantage of the programmer's understanding of the
+
+00:26:17.895 --> 00:26:19.077 
+code potentially, right?
+
+00:26:19.837 --> 00:26:25.984 
+So the idea is to have the programmer decide, provide the statically predicted direction for each
+
+00:26:25.984 --> 00:26:29.597 
+branch or for branches where they know information about.
+
+00:26:30.677 --> 00:26:35.488 
+And you do this via pragmas in the programming language that qualify the branches likely taken
+
+00:26:35.488 --> 00:26:36.717 
+versus likely not taken.
+
+00:26:36.717 --> 00:26:40.837 
+Pragma is essentially an indication of something in the program.
+
+00:26:40.837 --> 00:26:41.677 
+I'm going to talk about that.
+
+00:26:42.517 --> 00:26:47.437 
+So each branch, the programmer basically the programmer sets that hint bit inside the branch.
+
+00:26:48.437 --> 00:26:51.477 
+So the upside is this doesn't require profiling or program analysis.
+
+00:26:52.237 --> 00:26:58.642 
+And programmer may know that some branches behave in will behave in some way and they may know their
+
+00:26:58.642 --> 00:27:02.037 
+program better than other analysis techniques, right?
+
+00:27:02.157 --> 00:27:06.797 
+They know because they have semantic information about what they're doing in the program.
+
+00:27:07.597 --> 00:27:13.311 
+They may be checking for an error that they know is not going to happen anytime, but they have to
+
+00:27:13.311 --> 00:27:17.317 
+check for that error to guarantee correctness of the program, right?
+
+00:27:17.477 --> 00:27:21.037 
+And this may not be easy to figure out for via program analysis.
+
+00:27:21.037 --> 00:27:27.362 
+Yes, you can use heuristics like what we discussed, but programmer may know for sure the semantic
+
+00:27:27.362 --> 00:27:28.797 
+context of the branch.
+
+00:27:29.277 --> 00:27:29.597 
+OK.
+
+00:27:30.797 --> 00:27:35.321 
+Of course the downside is this now requires programming language compiler and ISA support all of
+
+00:27:35.321 --> 00:27:35.557 
+them.
+
+00:27:36.157 --> 00:27:41.343 
+But this sort of techniques are actually good to think about going into the future, especially if
+
+00:27:41.343 --> 00:27:46.477 
+you have a good AI programmer, for example, maybe they can do these things nicely over time, OK.
+
+00:27:46.677 --> 00:27:48.717 
+Outside, of course, this burdens the programmer, right?
+
+00:27:49.357 --> 00:27:53.477 
+If you burden the programmer, this is not easy to adopt in general.
+
+00:27:54.757 --> 00:27:55.917 
+OK, so what's pragmas?
+
+00:27:55.917 --> 00:28:01.493 
+Pragmas we've discussed, These are essentially keywords in the programming language that enable a
+
+00:28:01.493 --> 00:28:05.517 
+programmer to convey information to the lower levels of the hierarchy.
+
+00:28:05.517 --> 00:28:12.837 
+Transformation hierarchy, meaning to the ISA, to the compiler, to the hardware, essentially.
+
+00:28:14.277 --> 00:28:16.517 
+Have you ever used pragmas and code?
+
+00:28:16.917 --> 00:28:17.397 
+OK.
+
+00:28:17.597 --> 00:28:18.597 
+What kind of pragmas?
+
+00:28:20.077 --> 00:28:20.997 
+Parallelization maybe?
+
+00:28:25.437 --> 00:28:28.637 
+OK, OK.
+
+00:28:29.237 --> 00:28:29.637 
+OK.
+
+00:28:29.637 --> 00:28:29.877 
+I see.
+
+00:28:29.877 --> 00:28:31.037 
+Yeah, Yeah, I see.
+
+00:28:31.037 --> 00:28:31.397 
+OK.
+
+00:28:32.237 --> 00:28:35.357 
+I'm talking about more maybe finer grain pragmas.
+
+00:28:35.917 --> 00:28:37.637 
+But for example, these are some pragmas.
+
+00:28:38.117 --> 00:28:45.237 
+If likely X, this is a branch if X, instead of saying if X, you say if likely X.
+
+00:28:45.237 --> 00:28:48.437 
+Likely in this case indicates that that branch is likely taken, right?
+
+00:28:48.717 --> 00:28:52.677 
+If unlikely error, and that that unlikely indicates that unlikely.
+
+00:28:52.797 --> 00:28:56.437 
+That branch is like unlikely to be taken, likely to be not taken.
+
+00:28:56.437 --> 00:29:00.557 
+Basically meaning you don't execute the error code right in general.
+
+00:29:01.037 --> 00:29:05.204 
+So many other hints and optimisations can be enabled with pragmas, For example, whether a loop can
+
+00:29:05.204 --> 00:29:05.757 
+be paralysed.
+
+00:29:05.757 --> 00:29:08.317 
+A lot of people use this one today, actually.
+
+00:29:08.797 --> 00:29:13.677 
+For example, if you're doing open MP type of programming, you can have an open open MP parallel.
+
+00:29:13.917 --> 00:29:18.982 
+And this description from some version of the Open MP manual, it says the OEMP parallel directive
+
+00:29:18.982 --> 00:29:23.317 
+explicitly instructs the compiler to parallelise the chosen segment of code, right?
+
+00:29:23.677 --> 00:29:27.637 
+It's an explicit, explicit pragma that the compiler uses.
+
+00:29:28.237 --> 00:29:29.917 
+That's true for the likely and unlikely.
+
+00:29:30.197 --> 00:29:36.105 
+The compiler uses these to communicate to the branch instruction to set the bid in the branch
+
+00:29:36.105 --> 00:29:37.757 
+instruction appropriately.
+
+00:29:38.957 --> 00:29:44.557 
+OK, OK, so essentially we're getting to the end of static branch prediction.
+
+00:29:44.837 --> 00:29:47.077 
+We can also combine all of these previous techniques.
+
+00:29:47.677 --> 00:29:53.573 
+We can do profile based, program based, programmer based static prediction because for some branches
+
+00:29:53.573 --> 00:29:54.517 
+profile is good.
+
+00:29:54.517 --> 00:29:59.848 
+Maybe for some branches program based heuristics are good, for some branches programmer based is
+
+00:29:59.848 --> 00:30:00.237 
+better.
+
+00:30:01.597 --> 00:30:07.603 
+The difficulty is it becomes more complex to do this and you burden and sometimes you may not know
+
+00:30:07.603 --> 00:30:09.197 
+which one's better, right?
+
+00:30:09.637 --> 00:30:11.397 
+So I can combine all of these static techniques.
+
+00:30:12.877 --> 00:30:17.760 
+Unfortunately, there is a common disadvantage of all three techniques that we, I kind of, I kind of
+
+00:30:17.760 --> 00:30:19.437 
+adapt, I kind of hinted at, right?
+
+00:30:19.957 --> 00:30:25.037 
+Essentially you're picking only One Direction for a given branch.
+
+00:30:25.677 --> 00:30:28.397 
+What if that branch keeps changing that direct, changing its direction.
+
+00:30:28.517 --> 00:30:30.997 
+Take a not take and take a not take and take a not take, right?
+
+00:30:31.877 --> 00:30:36.958 
+None of these techniques that we described so far can adapt to dynamic changes in a given branches
+
+00:30:36.958 --> 00:30:37.477 
+behaviour.
+
+00:30:38.837 --> 00:30:41.477 
+Of course you can say that oh, I can have a dynamic compiler.
+
+00:30:41.477 --> 00:30:48.020 
+So once in a while I change, I re, I recompile the code dynamically automatically and I change the
+
+00:30:48.020 --> 00:30:50.157 
+hint bit in all of the branches.
+
+00:30:50.277 --> 00:30:54.357 
+Yes, it's possible to do that, but it's very difficult to do that at a very fine grain late.
+
+00:30:54.557 --> 00:30:57.157 
+What if a branch changes behaviour every execution?
+
+00:30:57.157 --> 00:30:59.237 
+Taken, not taken, take and not take and take and not take it.
+
+00:30:59.677 --> 00:31:04.317 
+You cannot possibly compile for that except without huge overheads.
+
+00:31:05.477 --> 00:31:07.037 
+So dynamic compiler essentially.
+
+00:31:07.037 --> 00:31:08.157 
+We've covered this in the past.
+
+00:31:08.157 --> 00:31:10.357 
+Actually it's a compiler that generates code at runtime.
+
+00:31:11.837 --> 00:31:16.957 
+Java JIT compiler for example, just in time compiler, common language runtime from Microsoft.
+
+00:31:17.117 --> 00:31:20.957 
+And we've seen the binary translator was a tattoo if you remember.
+
+00:31:20.957 --> 00:31:23.997 
+And NVIDIA has dynamic code optimised.
+
+00:31:23.997 --> 00:31:25.597 
+So these are actually very commonly used.
+
+00:31:25.917 --> 00:31:32.686 
+The idea is to figure out which parts of a code is executed often, using some mechanisms that
+
+00:31:32.686 --> 00:31:39.893 
+profile the code while the program is running, using some, using some hardware support for example,
+
+00:31:39.893 --> 00:31:47.100 
+and once in a while recompile the code so that you can actually optimise a code for the path that's
+
+00:31:47.100 --> 00:31:49.357 
+being executed most frequently.
+
+00:31:50.037 --> 00:31:54.117 
+So you can do that, and you can actually take advantage of that to improve branch prediction
+
+00:31:54.117 --> 00:31:54.517 
+accuracy.
+
+00:31:54.797 --> 00:31:58.837 
+But this comes at overheads in general because you need to compile dynamically.
+
+00:31:59.797 --> 00:32:05.277 
+OK, so now we're going to get to more sophisticated bench prediction, which is the runtime part.
+
+00:32:07.677 --> 00:32:08.757 
+No questions, let's keep going.
+
+00:32:13.149 --> 00:32:18.151 
+So when you predict a branch, you predict in the fetch stage and you resolve the branch in the
+
+00:32:18.151 --> 00:32:19.269 
+execute stage, right?
+
+00:32:19.869 --> 00:32:24.509 
+When you execute it, if the direction doesn't match the predicted direction, then you flash the
+
+00:32:24.509 --> 00:32:24.949 
+pipeline.
+
+00:32:26.029 --> 00:32:26.189 
+Yeah.
+
+00:32:26.869 --> 00:32:29.309 
+So whenever the branch is executed, yeah.
+
+00:32:31.869 --> 00:32:32.229 
+OK.
+
+00:32:32.949 --> 00:32:34.789 
+So the idea of dynamic branch prediction.
+
+00:32:34.909 --> 00:32:37.029 
+Is to predict branches based on dynamic information.
+
+00:32:37.029 --> 00:32:39.189 
+It's very simple, collected at runtime.
+
+00:32:39.829 --> 00:32:40.949 
+This is done with hardware.
+
+00:32:40.949 --> 00:32:43.309 
+Basically, you do it with some hardware support.
+
+00:32:43.309 --> 00:32:46.829 
+Let's talk about advanced and disadvantage, and then we're going to talk about some techniques.
+
+00:32:46.829 --> 00:32:50.949 
+Essentially, here you're predicting based on the history of the execution of branches.
+
+00:32:50.949 --> 00:32:56.405 
+You have more information, more context, which means that you should be able to adapt to dynamic
+
+00:32:56.405 --> 00:33:01.749 
+changes in each branch's behaviour, and we will see that there's no need for static profiling.
+
+00:33:02.469 --> 00:33:07.266 
+The input set represented in this problem goes away basically because you're dealing with what the
+
+00:33:07.266 --> 00:33:09.029 
+processor is executing at that time.
+
+00:33:09.029 --> 00:33:10.869 
+All of the data set is real.
+
+00:33:11.429 --> 00:33:14.869 
+It's not basically something you imagined that might happen.
+
+00:33:16.589 --> 00:33:18.589 
+This is disadvantage, of course, this is more complex.
+
+00:33:18.589 --> 00:33:23.509 
+This requires additional hardware, as we will see, and it will add more and more hardware over time.
+
+00:33:24.709 --> 00:33:28.589 
+OK, so let's start with the simplest of these predictors, which is the last time predictor.
+
+00:33:28.909 --> 00:33:34.992 
+It's kind of obvious, but the idea is to guess that the branch will take the same direction as its
+
+00:33:34.992 --> 00:33:36.669 
+last instance of execution.
+
+00:33:37.509 --> 00:33:42.359 
+You need to have a single bit per branch, in this case stored in the bTB for example, and this
+
+00:33:42.359 --> 00:33:45.869 
+indicates which direction the branch went last time it was executed.
+
+00:33:46.269 --> 00:33:52.440 
+OK, so if you look at this pattern of execution of branch, the 1st 10 times it's taken, the next 10
+
+00:33:52.440 --> 00:33:58.361 
+times it's not taken and then assume that it's going to go back to taken 10 times, not taken 10
+
+00:33:58.361 --> 00:34:01.229 
+times, and then it's going to go back to that.
+
+00:34:01.229 --> 00:34:06.697 
+Basically it's in a loop, it keeps executing in a loop and it's 10 times not taken and 10 times not
+
+00:34:06.697 --> 00:34:07.029 
+taken.
+
+00:34:07.669 --> 00:34:16.851 
+If you always predict the last time as the current prediction, for example, you will predict these
+
+00:34:16.851 --> 00:34:17.789 
+correctly.
+
+00:34:18.789 --> 00:34:24.669 
+You will mispredict this first end because it doesn't match the previous execution, right?
+
+00:34:25.149 --> 00:34:29.033 
+The previous execution is taken, the next execution is supposed to be not taken, but you will
+
+00:34:29.033 --> 00:34:29.869 
+mispredict this one.
+
+00:34:30.669 --> 00:34:36.319 
+And you will also mispredict this first T because the previous execution, assuming this executed
+
+00:34:36.319 --> 00:34:41.029 
+loop is, is not taken for that branch, but it's support, it's going to be taken.
+
+00:34:41.269 --> 00:34:47.121 
+So you'll mispredict this as N OK, so for these 20 instances of the same branch, you'll mispredict
+
+00:34:47.121 --> 00:34:49.749 
+twice whenever the branch changes direction.
+
+00:34:50.869 --> 00:34:56.608 
+So you get 90% accuracy, which is much nicer than 50% you would get with a static prediction
+
+00:34:56.608 --> 00:34:57.669 
+mechanism, right?
+
+00:34:58.949 --> 00:34:59.429 
+Sounds good.
+
+00:35:00.149 --> 00:35:05.375 
+Basically, the more generally, this always mispredicts the last iteration and the first iteration of
+
+00:35:05.375 --> 00:35:07.309 
+a loop branch, if you think about it.
+
+00:35:07.669 --> 00:35:13.658 
+Or you can think of it, whenever the branch changes direction because it's last time, it cannot
+
+00:35:13.658 --> 00:35:15.109 
+adapt beyond last time.
+
+00:35:15.109 --> 00:35:17.029 
+It doesn't have enough history.
+
+00:35:18.029 --> 00:35:24.314 
+OK, the accuracy for a loop with N iterations is n - 2 / n, which is what you see over here, 18 / 20
+
+00:35:24.314 --> 00:35:25.069 
+for example.
+
+00:35:26.349 --> 00:35:32.245 
+Now the good news is, if N is large, meaning you keep iterating over a very large loop, you get
+
+00:35:32.245 --> 00:35:33.549 
+almost 100% accuracy.
+
+00:35:34.469 --> 00:35:40.846 
+If N is small loop branches for loops with small N small number of iterations, you get very low
+
+00:35:40.846 --> 00:35:44.069 
+accuracy, in this case 0% accuracy, for example.
+
+00:35:44.669 --> 00:35:48.469 
+So this predictor doesn't do well if the branch changes direction every time, right?
+
+00:35:49.269 --> 00:35:51.709 
+Because you'll always predict what it did last time.
+
+00:35:52.269 --> 00:35:56.549 
+And unfortunately you'll get everything wrong over here, but we're going to fix that.
+
+00:35:56.709 --> 00:35:58.629 
+Yeah, this is clearly a predictable pattern, Yes.
+
+00:36:01.583 --> 00:36:04.983 
+Yeah, because the last time the branch was executed, it was not taken, right.
+
+00:36:07.263 --> 00:36:07.783 
+That's the reason.
+
+00:36:07.783 --> 00:36:11.855 
+Basically, you always keep a history of what was the last time this program counter, what happened
+
+00:36:11.855 --> 00:36:15.263 
+to what happened to this program counter branch at this program counter last time.
+
+00:36:21.263 --> 00:36:21.823 
+Oh, OK.
+
+00:36:21.823 --> 00:36:22.183 
+I see.
+
+00:36:22.183 --> 00:36:22.423 
+Yeah, yeah.
+
+00:36:22.423 --> 00:36:23.383 
+But that's a very good question.
+
+00:36:23.383 --> 00:36:24.503 
+Basically, we're going to talk about that.
+
+00:36:24.503 --> 00:36:28.103 
+You need to initialise that those bits to something and you may or may not be lucky.
+
+00:36:29.383 --> 00:36:31.343 
+Yeah, that's that depends on the initialisation.
+
+00:36:32.663 --> 00:36:33.223 
+That's very good.
+
+00:36:35.463 --> 00:36:37.503 
+This actually assumes that you are.
+
+00:36:37.983 --> 00:36:39.503 
+Yeah, I guess you may be correct.
+
+00:36:39.503 --> 00:36:45.703 
+But then, yeah, OK, in the long run you will go to n -, 2 / 2 N basically.
+
+00:36:46.543 --> 00:36:49.143 
+OK, So how do you implement this last time predictor?
+
+00:36:50.223 --> 00:36:56.463 
+Essentially, we have a program counter and the direction predictor has one bit.
+
+00:36:56.943 --> 00:37:01.063 
+It basically this one bit indicates whether the branch has taken last time, right?
+
+00:37:02.743 --> 00:37:03.503 
+Makes sense hopefully.
+
+00:37:04.023 --> 00:37:08.094 
+And the question is, of course, the size of the stretch direction predictor may be smaller than the
+
+00:37:08.094 --> 00:37:09.863 
+number of branches you have in the program.
+
+00:37:10.703 --> 00:37:15.303 
+So you need to hash into this direction predictor in some way index into the direction predictor.
+
+00:37:15.823 --> 00:37:18.543 
+So there are many design choices over here that we will not get into.
+
+00:37:19.103 --> 00:37:21.583 
+But if the size is huge, then it takes long to access.
+
+00:37:21.583 --> 00:37:24.343 
+If the size is small, you may have interference.
+
+00:37:24.743 --> 00:37:26.063 
+From other branches, right?
+
+00:37:26.063 --> 00:37:30.449 
+Because you need to hash into this index into it in some way, and some other branches may actually
+
+00:37:30.449 --> 00:37:31.703 
+interfere in the same entry.
+
+00:37:32.023 --> 00:37:35.663 
+OK, that's always a issue with branch prediction.
+
+00:37:36.223 --> 00:37:38.343 
+OK, this is another implementation of the last time predictor.
+
+00:37:38.343 --> 00:37:39.663 
+This is our program counter.
+
+00:37:40.023 --> 00:37:43.503 
+We're going to see this more when we talk about caches, so I'll go through this relatively quickly.
+
+00:37:43.903 --> 00:37:47.743 
+But the basic idea is you index the branch target buffer.
+
+00:37:48.863 --> 00:37:49.943 
+Oh, what happens here?
+
+00:37:50.143 --> 00:37:53.383 
+Now you index the branch target buffer with some bits of the program counter.
+
+00:37:53.583 --> 00:37:57.583 
+And you also store the tag which is really part of the program counter.
+
+00:37:57.663 --> 00:38:05.263 
+And if the tag matches, then you have the target for that particular program counter.
+
+00:38:05.383 --> 00:38:12.292 
+You also add one bit per each entry over here called the branch history table, which is really the
+
+00:38:12.292 --> 00:38:13.703 
+direction predictor.
+
+00:38:13.703 --> 00:38:17.223 
+So you can integrate the direction predictor inside the branch target buffer like this.
+
+00:38:17.583 --> 00:38:20.303 
+Instead of having just one target address per entry.
+
+00:38:20.303 --> 00:38:25.714 
+You also have a direction bit associated with the branch because you're using the PC program counter
+
+00:38:25.714 --> 00:38:27.663 
+to index into the bTB anyway, right?
+
+00:38:27.983 --> 00:38:30.983 
+And the rest is basically very similar to what I've shown you over here.
+
+00:38:32.183 --> 00:38:37.197 
+OK, we're going to cover this sort of structure a lot when we cover about caches, Cache will be
+
+00:38:37.197 --> 00:38:38.623 
+very, very similar to this.
+
+00:38:38.663 --> 00:38:43.153 
+You don't need to know this at this point, but hopefully you can empathise with what's going on a
+
+00:38:43.153 --> 00:38:43.663 
+little bit.
+
+00:38:43.663 --> 00:38:47.103 
+OK, so this is our state state machine per branch for a last time prediction.
+
+00:38:47.383 --> 00:38:51.703 
+There are two states 01 predict not taken, predict taken.
+
+00:38:52.503 --> 00:38:55.663 
+If the branch is actually taken, you stay in the predict taken state, right?
+
+00:38:56.303 --> 00:39:01.289 
+If the branch is actually not taken and you predict it's taken, you go back, you go to predict not
+
+00:39:01.289 --> 00:39:03.223 
+taken state and you stay in the state.
+
+00:39:03.223 --> 00:39:06.623 
+If you actually did the right thing, let's say, and you switch states.
+
+00:39:07.223 --> 00:39:14.851 
+If you look at this picture, you change your mind very quickly, basically with one single opposing
+
+00:39:14.851 --> 00:39:17.343 
+outcome than what you predicted.
+
+00:39:17.823 --> 00:39:19.183 
+You say, oh, OK, I did wrong.
+
+00:39:19.183 --> 00:39:24.343 
+Let me switch to being not taken as opposed to taken, right?
+
+00:39:24.703 --> 00:39:26.343 
+And then you can keep flip flopping, right?
+
+00:39:26.783 --> 00:39:31.103 
+Basically you don't have, let's say, hysteresis in your behaviour.
+
+00:39:32.863 --> 00:39:34.743 
+Do you guys know the concept of hysteresis?
+
+00:39:35.943 --> 00:39:39.623 
+For example, you design an air conditioning system, right?
+
+00:39:39.983 --> 00:39:45.263 
+And you decide to set the target temperature to 20°C.
+
+00:39:46.423 --> 00:39:47.623 
+You're at 20°C.
+
+00:39:47.623 --> 00:39:48.143 
+That's good.
+
+00:39:48.303 --> 00:39:55.623 
+The room heats up, it becomes 20.00001, and the system immediately starts cooling.
+
+00:39:56.583 --> 00:40:02.728 
+And then the temperature becomes 19.99999999, The system immediately becomes heating, starts
+
+00:40:02.728 --> 00:40:03.263 
+heating.
+
+00:40:04.383 --> 00:40:06.383 
+And the system keeps doing this forever.
+
+00:40:06.863 --> 00:40:11.311 
+It's basically oscillating and it's really terrible for a lot of things, a lot of reasons, including
+
+00:40:11.311 --> 00:40:11.623 
+health.
+
+00:40:12.463 --> 00:40:14.663 
+So this system doesn't have any hysteresis, right?
+
+00:40:14.783 --> 00:40:18.863 
+Hysteresis basically says you wait before you change your mind.
+
+00:40:19.023 --> 00:40:20.943 
+There is some slack in the system.
+
+00:40:21.143 --> 00:40:26.557 
+So normally you don't basically the, the, the a good air conditioning system doesn't really change
+
+00:40:26.557 --> 00:40:27.663 
+its mind so quickly.
+
+00:40:27.663 --> 00:40:31.826 
+It basically starts observing and if the temperature is really a little bit too high beyond the
+
+00:40:31.826 --> 00:40:33.623 
+threshold, then it starts cooling, right.
+
+00:40:34.783 --> 00:40:37.103 
+OK, so basically the same issue exists over here.
+
+00:40:37.103 --> 00:40:42.595 
+A last time predictor changes its prediction from taken to not taken or not taken to taken too
+
+00:40:42.595 --> 00:40:43.063 
+quickly.
+
+00:40:45.303 --> 00:40:49.715 
+I mean, sometimes it may be correct in doing so, but we can fix this problem with some simple
+
+00:40:49.715 --> 00:40:50.143 
+solution.
+
+00:40:50.543 --> 00:40:55.312 
+Even though the branch may be mostly taken or mostly not taken, basically it doesn't have a global
+
+00:40:55.312 --> 00:40:56.383 
+picture of the branch.
+
+00:40:56.903 --> 00:41:01.882 
+We're still not going to add a global picture here, but we're going to add hysteresis just like the
+
+00:41:01.882 --> 00:41:06.761 
+AC air conditioning that I described, add hysteresis to the predictor so that prediction does not
+
+00:41:06.761 --> 00:41:08.623 
+change on a single different outcome.
+
+00:41:09.903 --> 00:41:14.583 
+And the way we add hysteresis to a lot of predictors in computing is to add more bits.
+
+00:41:15.743 --> 00:41:21.092 
+Basically use more bits to track the history of predictions for a branch instead of a single bit,
+
+00:41:21.092 --> 00:41:21.423 
+right?
+
+00:41:21.943 --> 00:41:24.463 
+Two bits as opposed to one, or three bits as opposed to 1.
+
+00:41:25.423 --> 00:41:30.583 
+And go to different states that indicate different levels of takenness or not takenness.
+
+00:41:31.223 --> 00:41:36.623 
+OK, So for example, you can add 2 states each for taken or not taken instead of 1 state for each.
+
+00:41:37.423 --> 00:41:43.623 
+And whenever you change your mind, you go from let's say strongly taken state to weakly taken state.
+
+00:41:43.703 --> 00:41:48.823 
+You still predicting taken but you're you want to see another opposing outcome for example.
+
+00:41:49.023 --> 00:41:49.583 
+That's the idea.
+
+00:41:49.583 --> 00:41:51.943 
+Basically you can you can generalise this to end states.
+
+00:41:52.983 --> 00:41:58.137 
+So this is introduced in the Seminole paper by Jim Smith, who has also contributed a lot of other
+
+00:41:58.137 --> 00:42:00.263 
+things to computer architecture in 1981.
+
+00:42:00.263 --> 00:42:04.663 
+And this basically had a huge impact on how pipeline processors got designed.
+
+00:42:05.143 --> 00:42:05.863 
+So this is the idea.
+
+00:42:05.863 --> 00:42:09.623 
+Basically each branch is associated with a 2 bit counter or three bits.
+
+00:42:10.383 --> 00:42:14.635 
+One more bit provides hysteresis and a strong prediction does not change with one single different
+
+00:42:14.635 --> 00:42:14.983 
+outcome.
+
+00:42:14.983 --> 00:42:16.423 
+This is also called bimodal prediction.
+
+00:42:16.423 --> 00:42:20.183 
+I don't like this term, but that's it's got stuck a little bit.
+
+00:42:20.223 --> 00:42:21.743 
+Basically what this is what we're going to do.
+
+00:42:21.943 --> 00:42:24.263 
+For example if you have a 2 bit.
+
+00:42:24.423 --> 00:42:26.343 
+Saturating counter, we're going to saturate.
+
+00:42:28.703 --> 00:42:34.783 
+Two states are allocated to predicted taken and two states are allocated to predicted not taken.
+
+00:42:35.023 --> 00:42:37.823 
+You can see 01001011 over here, right?
+
+00:42:39.143 --> 00:42:44.803 
+And we're using saturating arithmetic, meaning you increment the counter and decrement the counter,
+
+00:42:44.803 --> 00:42:49.263 
+but there's a maximum value which is 11 and there's a minimum value that's 00.
+
+00:42:49.703 --> 00:42:53.783 
+You cannot decrement it below that, and you cannot increment it above this, right?
+
+00:42:53.783 --> 00:42:55.423 
+That's why it's called saturating arithmetic.
+
+00:42:56.143 --> 00:43:03.014 
+And the idea is if the counter state is in this predicted taken, strongly predicted taken, and the
+
+00:43:03.014 --> 00:43:09.606 
+branch is actually not taken, you discovered that by executing the branch, you go into another
+
+00:43:09.606 --> 00:43:13.463 
+predicted taken state first before switching your mind.
+
+00:43:14.103 --> 00:43:16.423 
+And this is a weekly taken state.
+
+00:43:17.423 --> 00:43:23.498 
+If at that point the branch is actually not taken again in that instance, then you switch your mind,
+
+00:43:23.498 --> 00:43:23.863 
+right?
+
+00:43:24.543 --> 00:43:27.743 
+Then you go to a predicted not taken state that's weakly predicted, not taken.
+
+00:43:27.983 --> 00:43:32.623 
+So that's basically the implementation of hysteresis using a counter based mechanism.
+
+00:43:32.983 --> 00:43:34.343 
+And it's very low cost.
+
+00:43:35.303 --> 00:43:36.623 
+You have two bits as opposed to 1.
+
+00:43:36.943 --> 00:43:39.823 
+You can argue that you're doubling the cost, of course that's true.
+
+00:43:39.823 --> 00:43:41.463 
+But two bits is not bad.
+
+00:43:41.543 --> 00:43:44.423 
+We're going to see some predictors that has huge budgets.
+
+00:43:45.423 --> 00:43:48.623 
+For example, this thing, even though it's old, has huge branch predictors.
+
+00:43:48.623 --> 00:43:50.463 
+Some of the best branch predictors are inside this thing.
+
+00:43:51.263 --> 00:43:56.477 
+OK, anyway, so I already said this, but you have strongly taken and weakly taken, strongly take, not
+
+00:43:56.477 --> 00:43:58.303 
+taken, and weakly not taken states.
+
+00:43:59.423 --> 00:44:00.743 
+OK, so how do you implement this?
+
+00:44:01.903 --> 00:44:06.681 
+You essentially need a 2 bit counter associated with each branch and also a counter increment
+
+00:44:06.681 --> 00:44:07.863 
+decrement logic, right?
+
+00:44:09.223 --> 00:44:11.263 
+Now let's take a look at the accuracy of this, right?
+
+00:44:11.703 --> 00:44:18.863 
+So let's take a look at a branch that has N iterations, a loop branch with N iterations.
+
+00:44:19.423 --> 00:44:21.823 
+It'll only make a mistake once, right?
+
+00:44:23.503 --> 00:44:25.503 
+Assuming countries initialise the weekly take.
+
+00:44:25.983 --> 00:44:27.903 
+So let's go back your question over here.
+
+00:44:27.903 --> 00:44:34.030 
+So if you assume weekly taken, the first instance will become strongly taken and you'll become
+
+00:44:34.030 --> 00:44:36.703 
+strongly taken in all of these instances.
+
+00:44:37.463 --> 00:44:41.503 
+And then you'll predict this branch instance as taken.
+
+00:44:42.303 --> 00:44:45.743 
+You'll be incorrect because this is really not taken, right?
+
+00:44:46.263 --> 00:44:49.103 
+But then you'll go to a state that's weekly taken.
+
+00:44:49.543 --> 00:44:52.903 
+So the next instance when you go back over here, you'll predict it correct again.
+
+00:44:54.183 --> 00:44:57.543 
+So this is assuming you're initialized to weekly taken.
+
+00:44:57.943 --> 00:45:01.699 
+If you're weekly not taken, you can do the analysis yourself and you're going to do this in your
+
+00:45:01.699 --> 00:45:03.343 
+homework and maybe in the exam, who knows?
+
+00:45:03.863 --> 00:45:06.663 
+But the good news over here is we have 95% accuracy, right?
+
+00:45:09.183 --> 00:45:12.983 
+We reduced it from 90%, increase it from 90%.
+
+00:45:13.343 --> 00:45:15.903 
+And if you look over here, unfortunately, we're still at 50% accuracy.
+
+00:45:16.263 --> 00:45:20.663 
+We didn't fix this problem even though there's also a good nicely predictable, right?
+
+00:45:21.463 --> 00:45:22.503 
+So this works nicely.
+
+00:45:22.503 --> 00:45:26.083 
+If the branch doesn't change its behaviour that much, we're going to develop other techniques to fix
+
+00:45:26.083 --> 00:45:28.303 
+this problem because this is really easily predictable, right?
+
+00:45:28.623 --> 00:45:33.338 
+If you actually keep track of the branch's history in the past, we're going to call this a local
+
+00:45:33.338 --> 00:45:34.223 
+history predictor.
+
+00:45:34.543 --> 00:45:37.703 
+You can get this perfectly correct also in the long run.
+
+00:45:38.583 --> 00:45:40.743 
+So the upside is we get better prediction accuracy.
+
+00:45:40.743 --> 00:45:45.703 
+It's not n - 2 / N, it's n -, 1 / N now, but more hardware cost.
+
+00:45:46.023 --> 00:45:49.303 
+But the counter can be part of the bTB entry as usual.
+
+00:45:50.183 --> 00:45:51.463 
+OK, let's talk about this now.
+
+00:45:52.183 --> 00:45:57.960 
+If people have figured out that this gives you 85 to 90% accuracy for many programs, that's what the
+
+00:45:57.960 --> 00:46:03.623 
+paper, Jim Smith's paper from 1981 showed, for example, and essentially all processors immediately
+
+00:46:03.623 --> 00:46:04.663 
+adopted this idea.
+
+00:46:05.383 --> 00:46:08.623 
+Just an example of academic research having almost immediate impact.
+
+00:46:09.223 --> 00:46:11.383 
+I've been very happy about the research that we do.
+
+00:46:11.383 --> 00:46:15.663 
+Also, you can have immediate impact in products, but this is not good enough basically.
+
+00:46:17.503 --> 00:46:19.063 
+Basically, you know the branch problem, right?
+
+00:46:19.103 --> 00:46:20.143 
+Let's take a look at this.
+
+00:46:20.143 --> 00:46:27.343 
+80% accuracy with 80% accuracy with the same set up, your IPC is only one as opposed to 5, right?
+
+00:46:28.423 --> 00:46:32.063 
+And you're fetching 8 four 100% extractions with 85%.
+
+00:46:32.623 --> 00:46:37.103 
+Your IPC is 1.25 and you're fetching 300% extra instructions.
+
+00:46:37.783 --> 00:46:38.903 
+So basically, we're not there.
+
+00:46:41.143 --> 00:46:42.383 
+Then the question is, what do you do?
+
+00:46:42.463 --> 00:46:42.743 
+Right.
+
+00:46:43.103 --> 00:46:46.023 
+Let me introduce the high level over here and then we're going to take a break.
+
+00:46:46.543 --> 00:46:49.983 
+So the next Seminole paper came ten years after this.
+
+00:46:50.223 --> 00:46:53.063 
+This is a paper from my PhD advisor, Yael Pat.
+
+00:46:53.343 --> 00:46:55.863 
+He and his students at the time did a lot of great research.
+
+00:46:56.583 --> 00:47:01.689 
+They also were the ones who actually enabled auto ward execution to make work in real life by
+
+00:47:01.689 --> 00:47:05.863 
+enabling precise exceptions to be used together with out of order execution.
+
+00:47:05.863 --> 00:47:08.143 
+A lot of along with a lot of other things that we didn't discuss.
+
+00:47:08.543 --> 00:47:12.774 
+But one of the issues that they faced in that micro architecture is branch prediction becomes a much
+
+00:47:12.774 --> 00:47:15.863 
+bigger problem if you have a deeper wider out of order execution machine.
+
+00:47:15.863 --> 00:47:20.663 
+You need to fill the machine with correct instructions, otherwise you're executing useless stuff.
+
+00:47:21.823 --> 00:47:24.383 
+So they basically worked on how to make branch prediction much better.
+
+00:47:24.943 --> 00:47:31.040 
+And they wrote this paper in 1991, it got immediately adopted also to Intel Pentium Pro as we will
+
+00:47:31.040 --> 00:47:36.703 
+discuss, which is the most first, most successful auto order execution machine of its time.
+
+00:47:37.463 --> 00:47:42.720 
+So there are two realisations basically last time and two bit counter predictors exploit last time
+
+00:47:42.720 --> 00:47:47.978 
+predictability, but they don't exploit some other types of predictability that are relatively easy
+
+00:47:47.978 --> 00:47:50.983 
+to exploit if you know how to design the right hardware.
+
+00:47:51.983 --> 00:47:55.983 
+And 1st predictability is a branch's outcome can be correlated with other branches outcomes.
+
+00:47:55.983 --> 00:47:59.943 
+This is actually probably the biggest leap over here.
+
+00:48:00.623 --> 00:48:04.223 
+Use other branches outcomes to predict the current branch's outcome, right?
+
+00:48:04.383 --> 00:48:08.863 
+This is called global branch correlation and all existing processors use this.
+
+00:48:09.543 --> 00:48:13.919 
+And the second realisation is that a branch's outcome can be correlated with past outcomes of the
+
+00:48:13.919 --> 00:48:17.303 
+same branch other than the outcome of the branch last time it was executed.
+
+00:48:17.663 --> 00:48:20.503 
+This may be commuted, but you're looking at last time predictability, right?
+
+00:48:21.423 --> 00:48:26.183 
+But if you go back over here, this picture, last time doesn't help you, right?
+
+00:48:26.623 --> 00:48:27.823 
+Because last time is changing.
+
+00:48:28.183 --> 00:48:33.823 
+Why not look at a more longer history that's local to that branch?
+
+00:48:33.903 --> 00:48:35.823 
+Then you can predict that much better, right?
+
+00:48:36.343 --> 00:48:40.821 
+So I can basically identify patterns much better if you actually go back and have a longer history,
+
+00:48:40.821 --> 00:48:43.943 
+it's called the local branch correlation or local history predictors.
+
+00:48:44.063 --> 00:48:49.263 
+This also employed in the best processors, let's say, because it's so good to do.
+
+00:48:50.343 --> 00:48:52.543 
+OK, so let's take a break over here.
+
+00:48:53.703 --> 00:48:55.943 
+We're going to be back at 1515, sorry.
+
+00:48:56.383 --> 00:48:59.343 
+And then we'll continue with global and local correlation.
+
+00:48:59.743 --> 00:49:03.263 
+Now we'll see how it's implemented, because implementation is really important over here.
+
+00:49:07.986 --> 00:49:08.466 
+Better now.
+
+00:49:09.386 --> 00:49:11.426 
+OK, so let's continue now.
+
+00:49:11.786 --> 00:49:17.786 
+Now we're going to go into much more exciting techniques and these are all in your processors.
+
+00:49:18.066 --> 00:49:19.106 
+That's the fascinating part.
+
+00:49:19.186 --> 00:49:22.746 
+Well, everything we discussed in your processors actually so far out of order execution.
+
+00:49:24.346 --> 00:49:26.986 
+Well, we'll go into deeper and deeper things.
+
+00:49:27.706 --> 00:49:33.146 
+Sometimes people think branch prediction is like black magic, you know, why does it work?
+
+00:49:33.426 --> 00:49:36.346 
+And there are a lot of things actually that you need to tune to make it work.
+
+00:49:36.546 --> 00:49:41.186 
+There's partly tuning, but there's a lot of insight into these mechanisms also, right?
+
+00:49:41.186 --> 00:49:42.906 
+They're really exploiting the program behaviour.
+
+00:49:43.946 --> 00:49:49.946 
+OK, let's start with the global branch correlation, the first insight in this 1991 paper.
+
+00:49:50.426 --> 00:49:55.058 
+And the idea is this basically recently executed branch outcomes and the execution path are
+
+00:49:55.058 --> 00:49:59.793 
+correlated with the outcome of the next branch or the current, the current branch that you're
+
+00:49:59.793 --> 00:50:01.066 
+trying to predict, right?
+
+00:50:01.066 --> 00:50:01.746 
+That's the idea.
+
+00:50:02.746 --> 00:50:08.146 
+For example, you can look at this code and you can clearly say that the second branch's outcome will
+
+00:50:08.146 --> 00:50:10.306 
+be correlated with the first one, right?
+
+00:50:10.386 --> 00:50:12.946 
+If the first branch is not taken, second is also not taken.
+
+00:50:13.706 --> 00:50:14.266 
+That sounds good.
+
+00:50:14.266 --> 00:50:14.506 
+Now.
+
+00:50:14.706 --> 00:50:16.546 
+Now I can use this for my prediction, right?
+
+00:50:18.346 --> 00:50:21.506 
+You can also look at this code and this code.
+
+00:50:22.106 --> 00:50:25.226 
+If the first branch is taken, the second is definitely not taken, right?
+
+00:50:26.426 --> 00:50:31.799 
+So these are good things to exploit, potentially to predict later branches based on the outcome of
+
+00:50:31.799 --> 00:50:32.786 
+previous branches.
+
+00:50:32.986 --> 00:50:36.306 
+OK, you can convince yourself these are different kinds of structures.
+
+00:50:36.586 --> 00:50:40.946 
+There are different reasons why the second is not taken if the first is taken.
+
+00:50:41.426 --> 00:50:48.671 
+But in the end it boils down to the fact that if the first branch is T, the next branch should be N,
+
+00:50:48.671 --> 00:50:49.106 
+right?
+
+00:50:49.546 --> 00:50:50.226 
+That's the idea.
+
+00:50:50.466 --> 00:50:56.986 
+You should predict the next branch is N OK, a bit more complicated here.
+
+00:50:57.106 --> 00:50:59.906 
+If the there are three branches yz and X.
+
+00:51:00.786 --> 00:51:04.706 
+If Y&Z are both taken, then X is also taken.
+
+00:51:05.786 --> 00:51:09.666 
+If Y or Z are not taken, then X is also not taken.
+
+00:51:09.866 --> 00:51:10.106 
+Right?
+
+00:51:11.266 --> 00:51:20.346 
+Basically if you see TT then X should be T If you see any N then X should be N.
+
+00:51:23.226 --> 00:51:28.706 
+Now we can design A predictor that predicts based on the history of these branches, right?
+
+00:51:28.706 --> 00:51:29.266 
+That's the idea.
+
+00:51:29.746 --> 00:51:30.506 
+Another one over here.
+
+00:51:30.506 --> 00:51:36.398 
+This was a very famous workload and spec workloads that people used to evaluate microprocessors with
+
+00:51:36.398 --> 00:51:37.106 
+at the time.
+
+00:51:37.466 --> 00:51:39.106 
+That's where people used to compete, right?
+
+00:51:39.106 --> 00:51:40.346 
+Today, these are AI workloads.
+
+00:51:40.346 --> 00:51:44.903 
+Of course, at that time there were some set of workloads, Standard Performance Evaluation
+
+00:51:44.903 --> 00:51:47.106 
+Corporation spec generated these workloads.
+
+00:51:47.106 --> 00:51:52.746 
+And this is a equation to truth table workloads, equal thought, let's say.
+
+00:51:52.746 --> 00:51:58.013 
+And you can see that this was one of the most difficult branches to predict until processor
+
+00:51:58.013 --> 00:52:02.066 
+designers started to put global branch predictors into their machines.
+
+00:52:02.066 --> 00:52:08.026 
+So here, for example, if B1 this branch is taken and B2 is taken, then B 3 is not taken, right?
+
+00:52:08.906 --> 00:52:12.506 
+Because there are some data dependencies that are set as you can see, right?
+
+00:52:12.506 --> 00:52:17.666 
+You can convince yourself again, only a global branch predictor can actually do this nicely.
+
+00:52:18.906 --> 00:52:22.826 
+OK, so how do you capture this global branch correlation in hardware?
+
+00:52:23.466 --> 00:52:27.426 
+The idea is very simple, basically similar to what I just described right?
+
+00:52:27.426 --> 00:52:33.443 
+You associate branch outcomes with a global taken not taken history TN or 01 taken as one, usually
+
+00:52:33.443 --> 00:52:39.460 
+10 history of all branches, and make a prediction based on the outcome of the branch the last time
+
+00:52:39.460 --> 00:52:42.346 
+the same global branch history was encountered.
+
+00:52:42.826 --> 00:52:47.956 
+So you have a global branch history register that keeps track of the taken not taken outcome of the
+
+00:52:47.956 --> 00:52:48.786 
+last N branches.
+
+00:52:49.466 --> 00:52:49.906 
+N could be.
+
+00:52:49.986 --> 00:52:51.746 
+4IN Pentium proton was 4.
+
+00:52:51.946 --> 00:52:56.531 
+In today's machines it's up to 16, even even higher actually, as we will see thousands sometimes,
+
+00:52:56.531 --> 00:52:59.746 
+but that's a different type of prediction mechanism, as we will see.
+
+00:52:59.906 --> 00:53:01.586 
+But this exploits this global branch history.
+
+00:53:01.586 --> 00:53:01.906 
+Still.
+
+00:53:02.706 --> 00:53:09.826 
+You see in this global branch history once, and you predict the branch as taken and it was correct.
+
+00:53:10.186 --> 00:53:13.875 
+The next time you see the exact history, you'll predict as taken and hopefully you'll be correct
+
+00:53:13.875 --> 00:53:14.106 
+again.
+
+00:53:14.386 --> 00:53:17.546 
+If this predictability is actually pretty strong, this correlation is strong.
+
+00:53:18.106 --> 00:53:19.026 
+That's the idea basically.
+
+00:53:19.226 --> 00:53:21.586 
+So implementation, I've given you a kind of implementation.
+
+00:53:21.586 --> 00:53:26.328 
+Also keep track of the global TN taken, not taken, history of all branches and the register all
+
+00:53:26.328 --> 00:53:27.826 
+branches, all recent branches.
+
+00:53:27.826 --> 00:53:31.346 
+It's clear that's the register that's of limited size.
+
+00:53:31.386 --> 00:53:34.626 
+This is called the global history register or global register, Some people call it.
+
+00:53:35.186 --> 00:53:41.186 
+Use this global history register to index into a table that records the outcome or that recorded the
+
+00:53:41.186 --> 00:53:44.786 
+outcome that was seen for each GHR value in the recent past.
+
+00:53:45.386 --> 00:53:46.666 
+This is called pattern history table.
+
+00:53:46.666 --> 00:53:48.106 
+Table of two bit counters basically.
+
+00:53:48.626 --> 00:53:53.136 
+So instead of indexing a table of two bit counters with just a program counter, we're going to index
+
+00:53:53.136 --> 00:53:54.986 
+it with a global history register, right?
+
+00:53:56.226 --> 00:53:57.626 
+We'll still have the hysteresis.
+
+00:53:59.026 --> 00:54:01.266 
+This is called the global history or global branch predictor.
+
+00:54:01.266 --> 00:54:06.488 
+Basically you, the reason it's called also a 2 levels of history is you're, you're using 2 levels of
+
+00:54:06.488 --> 00:54:06.906 
+history.
+
+00:54:06.906 --> 00:54:14.084 
+One's the global history of all branches, and the other is history that you've seen at that point
+
+00:54:14.084 --> 00:54:17.266 
+for that global history in the past, right?
+
+00:54:17.506 --> 00:54:18.666 
+We're not using program counter.
+
+00:54:18.746 --> 00:54:21.786 
+Remember, program counter is not part of this equation right now, OK?
+
+00:54:21.786 --> 00:54:23.626 
+This is what the implementation looks like.
+
+00:54:23.626 --> 00:54:25.026 
+This is our global history register.
+
+00:54:25.866 --> 00:54:28.746 
+And let's assume that this has four bits.
+
+00:54:28.986 --> 00:54:30.666 
+These are the four previous branches.
+
+00:54:30.946 --> 00:54:33.786 
+This is the most recent previous branch.
+
+00:54:33.786 --> 00:54:37.564 
+This is the fourth most recent, the oldest branch that you've seen that you could accommodate in
+
+00:54:37.564 --> 00:54:38.706 
+your global history register.
+
+00:54:39.066 --> 00:54:42.986 
+So it's N bits, the directions of last N branches, essentially global history.
+
+00:54:43.226 --> 00:54:49.146 
+You use this to index into two bit counters like what we have seen earlier.
+
+00:54:49.146 --> 00:54:52.714 
+It could be also one bit counter, but we're going to use the 2 bit counters so that we keep
+
+00:54:52.714 --> 00:54:53.146 
+hysteresis.
+
+00:54:53.666 --> 00:54:56.386 
+This is a table of saturating counters for each history entry.
+
+00:54:56.986 --> 00:55:02.093 
+And this gives you the direction the branch to the last time the same history was seen, except it's
+
+00:55:02.093 --> 00:55:04.106 
+not the same branch potentially, right?
+
+00:55:04.106 --> 00:55:06.266 
+Because we're using history, we're not using program counter.
+
+00:55:06.626 --> 00:55:10.346 
+So there is some interference that happens because of this.
+
+00:55:10.546 --> 00:55:12.826 
+We can fix this problem later on, but we're going to talk about that.
+
+00:55:13.546 --> 00:55:19.346 
+So this works actually surprisingly well because it exploits some program behaviour.
+
+00:55:20.066 --> 00:55:21.706 
+And these are two bit counters, as you see.
+
+00:55:21.946 --> 00:55:25.106 
+So 2 levels of history, history one and then history, history at that.
+
+00:55:25.106 --> 00:55:25.466 
+History.
+
+00:55:26.786 --> 00:55:31.847 
+OK, so the, the paper that I assigned to you, which is a very influential technical report, this was
+
+00:55:31.847 --> 00:55:36.808 
+never published anywhere, but it was actually a technical report by Digital Equipment Corporation,
+
+00:55:36.808 --> 00:55:38.226 
+Western Research Laboratory.
+
+00:55:38.426 --> 00:55:45.005 
+Scott MacFarlane did a lot of research on branch predictors and he wrote this paper where he
+
+00:55:45.005 --> 00:55:47.866 
+described how some of these things work.
+
+00:55:48.266 --> 00:55:49.506 
+And I like his example.
+
+00:55:49.506 --> 00:55:55.626 
+For example, if you look at these two loops, there's one branch that test J, that's the inner loop.
+
+00:55:55.786 --> 00:55:58.146 
+There's one branch that test I, that's the outer loop, right?
+
+00:55:58.706 --> 00:56:02.866 
+And you know that the results are taken, taken, not taken over here.
+
+00:56:02.866 --> 00:56:05.266 
+And the first one is usually taken, right?
+
+00:56:07.146 --> 00:56:08.066 
+Almost always taken.
+
+00:56:09.386 --> 00:56:16.713 
+So this branch test I, this red branch, let's start with that outer loop, last three branches before
+
+00:56:16.713 --> 00:56:18.106 
+this test J, right?
+
+00:56:19.386 --> 00:56:24.586 
+And the history is always taken taken, not taken for the last three branches.
+
+00:56:25.186 --> 00:56:31.026 
+And this is the earlier branch that tested I previously in the previous iteration.
+
+00:56:31.346 --> 00:56:32.586 
+So that's also taken, right?
+
+00:56:32.586 --> 00:56:34.706 
+If you've gone to this place, it must have been taken, right?
+
+00:56:35.306 --> 00:56:40.466 
+So the history that you see at this branch is always TTTN at the global register.
+
+00:56:40.466 --> 00:56:42.506 
+Taken, taken, taken, taken, not taken.
+
+00:56:43.546 --> 00:56:43.826 
+Yeah.
+
+00:56:44.626 --> 00:56:48.026 
+So you predict taken for that eye branch because it's a loop branch, right?
+
+00:56:48.586 --> 00:56:49.706 
+It's mostly taken, right.
+
+00:56:50.106 --> 00:56:56.146 
+So you shift in the next history, meaning you drop out the oldest one and you put in the newest one.
+
+00:56:56.146 --> 00:57:00.421 
+So the history becomes taken, taken, not taken, taken, which is essentially taken, taken, not taken,
+
+00:57:00.421 --> 00:57:01.106 
+taken over here.
+
+00:57:01.786 --> 00:57:04.586 
+And whenever you see that history, the results is taken, right?
+
+00:57:05.146 --> 00:57:06.826 
+Because you're at that branch kind of.
+
+00:57:07.426 --> 00:57:13.239 
+And then you shift in that and the global history becomes like this 1011 again, the result and the
+
+00:57:13.239 --> 00:57:14.426 
+prediction is taken.
+
+00:57:14.986 --> 00:57:21.546 
+So this is one reason why one, one example that shows how a global history predictor works.
+
+00:57:21.546 --> 00:57:23.466 
+And you can read it if you're interested.
+
+00:57:24.266 --> 00:57:26.066 
+There are a lot of good Nuggets here.
+
+00:57:27.426 --> 00:57:34.146 
+OK, OK, so this was actually implemented right away in the Intel Pentium Pro branch predictor.
+
+00:57:35.146 --> 00:57:39.106 
+It's A2 level global branch predictor, so it has four bit global history register.
+
+00:57:39.106 --> 00:57:44.764 
+It's very small compared to today's predictors, but it has also multiple pattern history tables of
+
+00:57:44.764 --> 00:57:45.746 
+two bit counters.
+
+00:57:46.226 --> 00:57:49.906 
+Basically which pattern history table you use is the.
+
+00:57:49.986 --> 00:57:52.026 
+Determined by lower order bits of the branch address.
+
+00:57:52.026 --> 00:57:59.426 
+So they use a global history to index into one of the pattern history tables 2 bit counters.
+
+00:57:59.706 --> 00:58:03.506 
+And which 2 bit counters you index depends on the program counter a little bit.
+
+00:58:03.866 --> 00:58:09.261 
+So there's some differentiation based on the program counter also, so that not all branches
+
+00:58:09.261 --> 00:58:14.833 
+basically you, you basically try to use the program counter as context information to actually
+
+00:58:14.833 --> 00:58:17.146 
+decide how to predict a branch as well.
+
+00:58:18.866 --> 00:58:22.306 
+And this is the first widely commercially successful auto order execution machine.
+
+00:58:22.306 --> 00:58:27.603 
+It has all the concepts that we talked about auto order execution, superscalar execution, 2 level
+
+00:58:27.603 --> 00:58:31.426 
+branch prediction, global and precise exceptions using reorder buffer.
+
+00:58:32.986 --> 00:58:38.285 
+And it's basically the predecessor of all of these machines that are out here that are much bigger
+
+00:58:38.285 --> 00:58:38.826 
+right now.
+
+00:58:40.026 --> 00:58:41.466 
+OK, and that's Intel Pentium Pro.
+
+00:58:42.586 --> 00:58:48.103 
+OK, So this was our one level branch predictor you have, we indexed the direction predictor with the
+
+00:58:48.103 --> 00:58:48.986 
+program counter.
+
+00:58:49.066 --> 00:58:53.906 
+If you remember, the two level branch predictor looks like this.
+
+00:58:53.906 --> 00:58:57.706 
+Basically we don't use the program counter, but we use the global branch history register.
+
+00:58:57.946 --> 00:59:02.332 
+But you can have multiple direction predictor tables and you select which one to use based on some
+
+00:59:02.332 --> 00:59:03.586 
+bits of the program counter.
+
+00:59:03.826 --> 00:59:04.346 
+For example.
+
+00:59:04.346 --> 00:59:05.106 
+You could also do that.
+
+00:59:05.986 --> 00:59:07.466 
+That's what Pentium Pro did.
+
+00:59:09.946 --> 00:59:10.346 
+All good.
+
+00:59:11.626 --> 00:59:12.346 
+Fascinating, right?
+
+00:59:13.026 --> 00:59:13.346 
+Yes.
+
+00:59:16.112 --> 00:59:16.872 
+Yeah, yeah, absolutely.
+
+00:59:16.872 --> 00:59:20.992 
+I mean, Penteon Pro is probably one of the most successful processors of its time.
+
+00:59:21.472 --> 00:59:25.232 
+Yeah, it was a revolution and it was partially enabled by this branch predictor.
+
+00:59:29.072 --> 00:59:31.352 
+OK, OK.
+
+00:59:31.352 --> 00:59:33.392 
+So how do you improve global predictor accuracy?
+
+00:59:33.392 --> 00:59:34.512 
+I'll give you one other idea.
+
+00:59:34.752 --> 00:59:36.632 
+Essentially add more context information.
+
+00:59:37.232 --> 00:59:40.352 
+Intel did this in Pentium Pro with some way as we discussed, right?
+
+00:59:40.912 --> 00:59:45.960 
+You decide which pattern history table to use based on some program counter bits, but you can also
+
+00:59:45.960 --> 00:59:48.072 
+do it in some other way in a cheaper way.
+
+00:59:49.832 --> 00:59:52.312 
+You take into account which bank is being predicted.
+
+00:59:52.632 --> 00:59:57.221 
+This is called the G share predictor and the idea is to take the global history register and hash it
+
+00:59:57.221 --> 01:00:01.352 
+with the branch PC and that gives you more information about the branch you're predicting.
+
+01:00:02.072 --> 01:00:02.632 
+Looks like this.
+
+01:00:02.632 --> 01:00:04.192 
+You have the branch address program counter.
+
+01:00:04.192 --> 01:00:05.352 
+You have the branch history register.
+
+01:00:05.352 --> 01:00:08.072 
+You use a hash function which may be XOR.
+
+01:00:08.432 --> 01:00:12.318 
+You can have better hash functions but then they increase your latency potentially and then you
+
+01:00:12.318 --> 01:00:13.832 
+index into the pattern history table.
+
+01:00:13.952 --> 01:00:19.442 
+This turns out it gives you better prediction accuracy compared to just using branch history
+
+01:00:19.442 --> 01:00:21.472 
+register, global history register.
+
+01:00:22.392 --> 01:00:23.312 
+There are two reasons.
+
+01:00:23.792 --> 01:00:27.072 
+One is you use more context information for the prediction itself.
+
+01:00:27.232 --> 01:00:32.472 
+You take into account program counter because there are benefits to that also, as we can guess.
+
+01:00:33.072 --> 01:00:39.251 
+And you also better utilise the two bit counter array because if you actually use only history, some
+
+01:00:39.251 --> 01:00:43.392 
+histories, some, some parts of the array become hotter than others.
+
+01:00:43.392 --> 01:00:48.112 
+And if you're actually hashing using some other information, you better utilise the array.
+
+01:00:48.352 --> 01:00:50.112 
+So not everything maps to the same place.
+
+01:00:51.112 --> 01:00:54.392 
+OK, there's a lot more analysis of this than many other papers that I'm not going to talk about.
+
+01:00:54.392 --> 01:00:58.712 
+The downside of course whenever you use this sort of hashing is to increase your latency.
+
+01:00:59.112 --> 01:01:03.312 
+XOR is not that bad, but some other hashing functions may be bad.
+
+01:01:04.392 --> 01:01:06.872 
+OK, so this is what it looks like basically in my pictures.
+
+01:01:07.152 --> 01:01:12.192 
+You have global history, you have program counter, you use a hash function and then you index the
+
+01:01:12.192 --> 01:01:13.232 
+direction predictor.
+
+01:01:13.752 --> 01:01:17.312 
+On top of this, you may index different direction predictors with different PCs also.
+
+01:01:17.312 --> 01:01:22.261 
+So there is a lot of design space that people have explored in this and there are many papers
+
+01:01:22.261 --> 01:01:23.592 
+there's an on this topic.
+
+01:01:24.472 --> 01:01:26.992 
+OK, the question is, can we do better than this?
+
+01:01:27.072 --> 01:01:28.712 
+Let's go to the second realisation.
+
+01:01:28.832 --> 01:01:31.632 
+Second realisation is local branch correlation.
+
+01:01:32.032 --> 01:01:37.702 
+Essentially a branch is correlated with itself and we're going to try to exploit that beyond what a
+
+01:01:37.702 --> 01:01:39.192 
+2 bit counter can provide.
+
+01:01:40.432 --> 01:01:43.592 
+So this is again from the paper that I suggested.
+
+01:01:43.912 --> 01:01:46.352 
+So if you look at this loop branch, it's very predictable, right?
+
+01:01:46.952 --> 01:01:47.632 
+I'm going to read this.
+
+01:01:47.632 --> 01:01:52.468 
+Actually, if the loop test is done at the end of the body for this loop, the corresponding branch
+
+01:01:52.468 --> 01:01:57.255 
+will execute the pattern 1110 to the end, which is taken, taken, taken, not taken, where one and
+
+01:01:57.255 --> 01:02:01.743 
+zero represent taken and not taken, respectively, and N is the number of times the loop is
+
+01:02:01.743 --> 01:02:02.192 
+executed.
+
+01:02:02.632 --> 01:02:06.970 
+Clearly, if he knew the direction this branch had gone on the previous three executions, then we
+
+01:02:06.970 --> 01:02:09.592 
+could always be able to predict the next branch direction.
+
+01:02:10.232 --> 01:02:11.472 
+So you can think about that a little bit.
+
+01:02:11.472 --> 01:02:12.072 
+And that's true.
+
+01:02:12.712 --> 01:02:16.632 
+Basically, you keep repeating the same pattern, right?
+
+01:02:17.912 --> 01:02:23.312 
+So this is how it works for that particular 1110 and pattern.
+
+01:02:25.112 --> 01:02:33.090 
+So this is the history of the branch 1110 it's predicted taken and then you shifting something 1101
+
+01:02:33.090 --> 01:02:35.992 
+history, it's predicted taken again.
+
+01:02:35.992 --> 01:02:38.072 
+1011 it's predicted taken again.
+
+01:02:38.272 --> 01:02:41.592 
+The only time it's predicted not taken is 0111.
+
+01:02:41.672 --> 01:02:45.432 
+The last history is 0111 and you can guess why again, right, 0111.
+
+01:02:45.512 --> 01:02:46.752 
+The next one will be 0, right?
+
+01:02:47.592 --> 01:02:54.552 
+OK, so basically what happens is if you have a branch predictor that keeps track of, let's say the
+
+01:02:54.552 --> 01:03:01.512 
+last four iterations of the branch, you map that local history to different 2 bit counters, right?
+
+01:03:02.072 --> 01:03:06.712 
+And that enables you to distinguish the different iterations of the loop.
+
+01:03:07.352 --> 01:03:10.472 
+And this gives you a better predictability in this particular example, right?
+
+01:03:10.552 --> 01:03:11.672 
+There could be other examples.
+
+01:03:12.672 --> 01:03:13.512 
+So that's the idea.
+
+01:03:15.032 --> 01:03:18.791 
+By having a separate pattern history table entry for each local history, we can distinguish
+
+01:03:18.791 --> 01:03:20.072 
+different iterations of a loop.
+
+01:03:20.792 --> 01:03:22.072 
+This works for short loops.
+
+01:03:22.072 --> 01:03:26.127 
+If the loops are long, like a million times iterating, this may not work, but you may not care
+
+01:03:26.127 --> 01:03:30.312 
+anyway because hopefully you're going to predict those loops with almost perfect accuracy, right?
+
+01:03:30.872 --> 01:03:31.472 
+That's the idea.
+
+01:03:32.432 --> 01:03:33.472 
+Short loops are harder.
+
+01:03:34.832 --> 01:03:38.072 
+OK, so how do you capture this?
+
+01:03:38.232 --> 01:03:42.472 
+I've shown you an example of this, but we have a per branch history register.
+
+01:03:43.072 --> 01:03:47.232 
+Associate the predicted outcome of a branch with the taken not taken history of the same branch.
+
+01:03:47.512 --> 01:03:51.931 
+For every branch you have a history register and make a prediction based on the outcome of the
+
+01:03:51.931 --> 01:03:54.752 
+branch the last time the same local history was encountered.
+
+01:03:55.752 --> 01:04:00.640 
+This is called the local history predictor or local branch predictor and it's again uses 2 levels of
+
+01:04:00.640 --> 01:04:01.032 
+history.
+
+01:04:01.272 --> 01:04:05.718 
+The first level is the per branch history register, the second level is the history at that history
+
+01:04:05.718 --> 01:04:06.392 
+register value.
+
+01:04:06.552 --> 01:04:07.552 
+2 bit counters basically.
+
+01:04:07.552 --> 01:04:09.392 
+Second level is always 2 bit counters.
+
+01:04:09.392 --> 01:04:10.352 
+I like thinking of it that way.
+
+01:04:10.472 --> 01:04:11.912 
+It could be 3 bits also, or one bit.
+
+01:04:12.752 --> 01:04:15.112 
+So the picture looks kind of similar.
+
+01:04:15.192 --> 01:04:18.312 
+But now our local history registers are a bit more expensive, right?
+
+01:04:18.912 --> 01:04:21.272 
+The idea is a set of local history registers.
+
+01:04:21.272 --> 01:04:22.512 
+Each of them are M bits.
+
+01:04:23.352 --> 01:04:28.192 
+M bits are how many of the same branch you have kept track of in terms of history.
+
+01:04:28.752 --> 01:04:33.112 
+And you choose which local history register to use based on the program counter of the branch.
+
+01:04:33.112 --> 01:04:35.552 
+So you index this table using the program counter.
+
+01:04:36.752 --> 01:04:41.243 
+Every time you see the same program counter, it maps to the same entry and that gives you the local
+
+01:04:41.243 --> 01:04:43.512 
+history that you've seen for that program counter.
+
+01:04:43.832 --> 01:04:47.712 
+And you use that local history to index the pattern history table.
+
+01:04:47.832 --> 01:04:49.312 
+Basically that's the idea.
+
+01:04:49.912 --> 01:04:51.832 
+Pattern history table, maybe one or many.
+
+01:04:51.872 --> 01:04:54.352 
+Again, I'm going to actually generalise this later on.
+
+01:04:54.552 --> 01:04:56.592 
+So the second level is very similar to what we've seen.
+
+01:04:56.592 --> 01:04:59.072 
+It's a table of saturating counters for each history entry.
+
+01:04:59.632 --> 01:05:01.232 
+And you have the.
+
+01:05:01.552 --> 01:05:04.992 
+Basically they store the direction the branch took the last time the same history was seen, right?
+
+01:05:05.832 --> 01:05:09.872 
+So the only difference between local and global history is which history do you use?
+
+01:05:10.992 --> 01:05:15.632 
+In global history register, we had a single history register where all branches contributed to it.
+
+01:05:15.952 --> 01:05:18.952 
+Here we have a per branch history register.
+
+01:05:19.272 --> 01:05:20.952 
+Again, per branch is hard to implement clearly.
+
+01:05:20.952 --> 01:05:24.592 
+If you have a million branches in your program, do you have a million entries?
+
+01:05:24.592 --> 01:05:25.232 
+No.
+
+01:05:25.232 --> 01:05:27.032 
+So what you do is you do some sort of hashing.
+
+01:05:27.632 --> 01:05:29.632 
+Some branches will map to the same history register.
+
+01:05:29.632 --> 01:05:34.500 
+Hopefully they won't destroy each other's accuracy, but this is a real problem and people analyse
+
+01:05:34.500 --> 01:05:37.712 
+this problem for with many works they try to reduce that effect.
+
+01:05:38.672 --> 01:05:42.712 
+OK, so this is what the local history branch predictor looks like.
+
+01:05:42.712 --> 01:05:47.552 
+Using the program counter you pick a local history register, so which takes time.
+
+01:05:47.552 --> 01:05:49.912 
+Now this is a longer latency process.
+
+01:05:50.432 --> 01:05:56.086 
+And then you use the local history register to index into the direction predictor pattern history
+
+01:05:56.086 --> 01:06:01.392 
+tables and each Register here provides which directions early instance of this branch went.
+
+01:06:03.032 --> 01:06:09.272 
+OK, OK, so there's a generalisation of this in the original paper.
+
+01:06:09.712 --> 01:06:15.787 
+I'll go through this relatively quickly, but essentially branch history registry can be global or it
+
+01:06:15.787 --> 01:06:17.792 
+could be for per set of branches.
+
+01:06:17.792 --> 01:06:20.832 
+Based on some program counter you decide a global history.
+
+01:06:21.592 --> 01:06:22.872 
+Or it could be per branch.
+
+01:06:24.752 --> 01:06:27.592 
+Pattern history table counters can be adaptive or static.
+
+01:06:27.672 --> 01:06:29.632 
+Adaptive means you have two bit counters.
+
+01:06:29.632 --> 01:06:32.352 
+Static means compiler decides what to do.
+
+01:06:32.392 --> 01:06:33.392 
+That's very difficult to do.
+
+01:06:33.832 --> 01:06:35.992 
+Nobody uses static as far as I know.
+
+01:06:36.992 --> 01:06:43.476 
+And pattern history table can be global, basically used by all branches, or they can be used per
+
+01:06:43.476 --> 01:06:47.192 
+different set of branches based on the program counter.
+
+01:06:47.232 --> 01:06:50.472 
+Or they could be per branch, which is very hard to implement anyway, right?
+
+01:06:50.912 --> 01:06:52.752 
+So this is the global predictor.
+
+01:06:53.432 --> 01:06:55.032 
+The branch history register is global.
+
+01:06:56.672 --> 01:06:59.752 
+The pattern history table is global, shared across all branches.
+
+01:06:59.752 --> 01:07:05.973 
+There is no program counter involvement let's say and you have pattern history counters that are
+
+01:07:05.973 --> 01:07:08.112 
+adaptive, meaning 2 bit counters.
+
+01:07:08.272 --> 01:07:13.632 
+This is the cheapest version, let's say global, and this is the most expensive version.
+
+01:07:13.632 --> 01:07:19.064 
+Everything is per branch and you can see that there's a huge design space over here and with hashing
+
+01:07:19.064 --> 01:07:20.912 
+functions, design space increases.
+
+01:07:22.992 --> 01:07:23.432 
+Sounds good.
+
+01:07:24.472 --> 01:07:28.399 
+OK, so if you're interested, you can read the retrospective of this paper on two level adaptive
+
+01:07:28.399 --> 01:07:31.872 
+training branch prediction where they talk about how they came up with it, etcetera.
+
+01:07:32.752 --> 01:07:35.312 
+The question of course we ask is, is this the end?
+
+01:07:35.992 --> 01:07:36.712 
+Can we do better?
+
+01:07:37.272 --> 01:07:37.512 
+Right.
+
+01:07:38.072 --> 01:07:38.672 
+And we can.
+
+01:07:39.472 --> 01:07:45.072 
+Basically, there are many ideas that people have developed and it turns out.
+
+01:07:45.512 --> 01:07:47.792 
+One idea doesn't fit all meaning.
+
+01:07:48.112 --> 01:07:49.952 
+Global history is good for some branches.
+
+01:07:49.952 --> 01:07:52.032 
+Local history is good for some other branches.
+
+01:07:52.752 --> 01:07:54.432 
+Predictably, all of branches varies.
+
+01:07:55.512 --> 01:07:56.512 
+I already said all of this.
+
+01:07:56.712 --> 01:08:01.232 
+For some others, a simple 2 bit counter is enough, because they don't really require history right?
+
+01:08:01.232 --> 01:08:02.912 
+They're basically stand alone.
+
+01:08:03.352 --> 01:08:07.112 
+They check some value and they're not really dependent that much on the program path, for example.
+
+01:08:07.472 --> 01:08:09.512 
+For yet others, a single bit is enough, right?
+
+01:08:09.912 --> 01:08:12.552 
+For some others, even static prediction is enough.
+
+01:08:12.552 --> 01:08:16.352 
+Right for meaning always taken for example, that says a single bit, I guess.
+
+01:08:16.552 --> 01:08:20.275 
+So basically the observation is that there is heterogeneity in the predictability behaviour of
+
+01:08:20.275 --> 01:08:20.632 
+branches.
+
+01:08:22.152 --> 01:08:24.272 
+No one-size-fits-all branch prediction algorithm.
+
+01:08:25.032 --> 01:08:30.272 
+So we the idea is to exploit that heterogeneity by designing heterogeneous predictors.
+
+01:08:30.272 --> 01:08:35.445 
+Whenever you see different behaviour, a good design principle is to think hybrid or heterogeneous
+
+01:08:35.445 --> 01:08:37.312 
+and we're going to do exactly that.
+
+01:08:38.792 --> 01:08:44.296 
+So hybrid branch predictors, which is first introduced by MacFarlane that technical report, use more
+
+01:08:44.296 --> 01:08:49.306 
+than one type of predictor, multiple algorithms to select the best and then select the best
+
+01:08:49.306 --> 01:08:49.912 
+prediction.
+
+01:08:50.912 --> 01:08:55.072 
+Now you're faced with a choice that's that's selecting the best predictor.
+
+01:08:55.272 --> 01:08:57.352 
+How do you select the best prediction becomes an issue, right?
+
+01:08:58.112 --> 01:09:01.032 
+So for example, you can have a hybrid of two bit counters and global predictor.
+
+01:09:02.032 --> 01:09:05.923 
+The advantages, let's talk about the events and we'll talk about some examples of this, but you get
+
+01:09:05.923 --> 01:09:06.552 
+better accuracy.
+
+01:09:06.552 --> 01:09:10.664 
+Basically, different predictors are better for different branches as long as you're choosing the
+
+01:09:10.664 --> 01:09:11.992 
+right predictor for the branch.
+
+01:09:13.632 --> 01:09:16.192 
+There is another advantage which is reduced warm up time.
+
+01:09:16.192 --> 01:09:20.625 
+We did not discuss this much, but faster warm up predictor can be used until the slower warm up
+
+01:09:20.625 --> 01:09:21.512 
+predictor warms up.
+
+01:09:21.832 --> 01:09:26.946 
+So if you think about a long history, if your history is 16 previous branches, it takes time to
+
+01:09:26.946 --> 01:09:28.992 
+actually populate that history, right?
+
+01:09:29.072 --> 01:09:33.051 
+Local history becomes even harder to populate potentially if you have lots of local histories,
+
+01:09:33.051 --> 01:09:33.432 
+etcetera.
+
+01:09:33.952 --> 01:09:41.672 
+So you may use a 2 bit counter prediction until that predictor warms up, right?
+
+01:09:42.272 --> 01:09:43.952 
+So larger tables are harder to warm up.
+
+01:09:43.952 --> 01:09:45.312 
+This is in general true.
+
+01:09:45.792 --> 01:09:49.992 
+And if you don't have a table you use a single bit, then it's much easier.
+
+01:09:50.632 --> 01:09:51.552 
+OK, there are other.
+
+01:09:51.672 --> 01:09:52.712 
+There are also disadvantages.
+
+01:09:52.712 --> 01:09:57.323 
+Now you need to have a meta predictor or selector or choice predictor to decide which predictor to
+
+01:09:57.323 --> 01:09:57.512 
+use.
+
+01:09:58.152 --> 01:10:01.352 
+You have longer access latency because you make choices, right?
+
+01:10:01.432 --> 01:10:03.112 
+There's at least a Max, as you will see.
+
+01:10:03.112 --> 01:10:06.792 
+So there's more hardware and complexity, but this is well warranted.
+
+01:10:06.792 --> 01:10:11.867 
+Every branch predictor that you have in your pockets or anywhere is a hybrid predictor today, and it
+
+01:10:11.867 --> 01:10:12.832 
+may look like this.
+
+01:10:13.032 --> 01:10:19.672 
+This is from 1990s alpha 21 to 64 microprocessor, which was the biggest competitor to a Pentium Pro.
+
+01:10:20.032 --> 01:10:24.438 
+And they also designed an out of order machine with some similar mechanisms, except their branch
+
+01:10:24.438 --> 01:10:25.632 
+predictor was much better.
+
+01:10:26.392 --> 01:10:28.592 
+And I'll give you some real parameters from that machine.
+
+01:10:28.592 --> 01:10:30.432 
+The minimum branch penalty was 7 cycles.
+
+01:10:30.592 --> 01:10:32.432 
+Typical branch penalty was 11 cycles.
+
+01:10:32.432 --> 01:10:33.592 
+That's the misprediction penalty.
+
+01:10:34.232 --> 01:10:41.487 
+They use a target address cache inside the instruction cache, and they reset the predictor tables
+
+01:10:41.487 --> 01:10:43.432 
+when the process switched.
+
+01:10:44.072 --> 01:10:48.913 
+We're going to talk about processes later on, but it's good to think about how do these things
+
+01:10:48.913 --> 01:10:51.952 
+change with different when different programs are executed.
+
+01:10:52.312 --> 01:10:53.632 
+But let's take a look at this predictor.
+
+01:10:54.112 --> 01:10:58.897 
+This predictor is essentially, you can see that there's a global history over here of 12 bits, and
+
+01:10:58.897 --> 01:11:01.192 
+there's a global predictor 2 to the 12 entries.
+
+01:11:01.232 --> 01:11:02.792 
+Each of them is 2 bits, 2 bit counters.
+
+01:11:02.792 --> 01:11:10.222 
+You can see there is a local history table indexed by the program counter, and each history is 10
+
+01:11:10.222 --> 01:11:10.912 
+bit long.
+
+01:11:11.632 --> 01:11:19.646 
+And you have a local predictor that's essentially 2 to the 10 entries and each has three bits SO3
+
+01:11:19.646 --> 01:11:21.712 
+bits saturating counters.
+
+01:11:21.712 --> 01:11:25.392 
+Basically that's what they decided to do based on whatever decisions they made.
+
+01:11:25.392 --> 01:11:29.512 
+So local predictor gives you a local prediction, global predictor gives you a global prediction.
+
+01:11:29.832 --> 01:11:34.632 
+And then there's a choice predictor over here that decides which one was better.
+
+01:11:35.472 --> 01:11:40.467 
+And that is, it turns out, according to them, at least according to this picture at least, they use
+
+01:11:40.467 --> 01:11:42.032 
+the global history to the site.
+
+01:11:42.072 --> 01:11:46.345 
+Basically, there's a separate choice predictor that gets trained which predictor has done better at
+
+01:11:46.345 --> 01:11:49.152 
+this particular global history in the past using some hysteresis.
+
+01:11:49.152 --> 01:11:54.653 
+And then they choose, OK, and this is better than any other predictor, including the global
+
+01:11:54.653 --> 01:11:59.792 
+predictor that's used in Pentium Pro because it uses more information, more hardware.
+
+01:12:00.912 --> 01:12:05.312 
+So now you can also see that there's a multiplexer over here that makes things longer latency.
+
+01:12:06.512 --> 01:12:11.352 
+OK, OK, So there are also other ideas people have developed.
+
+01:12:11.352 --> 01:12:13.032 
+One is bias branches and branch filtering.
+
+01:12:13.032 --> 01:12:14.312 
+That's a very good idea actually.
+
+01:12:14.312 --> 01:12:21.032 
+In general, classify your branches and do as much work as the branch needs, right?
+
+01:12:21.032 --> 01:12:24.502 
+If the branch doesn't need a sophisticated prediction algorithm, don't use a sophisticated
+
+01:12:24.502 --> 01:12:25.312 
+prediction algorithm.
+
+01:12:25.312 --> 01:12:29.192 
+That's going to be one of the principles that is going to be used in a lot of these techniques.
+
+01:12:29.632 --> 01:12:32.232 
+And it turns out many branches are biased in One Direction.
+
+01:12:32.312 --> 01:12:34.472 
+There are some branches that are 99% taken right.
+
+01:12:34.472 --> 01:12:37.152 
+You don't need the sophisticated machinery for them.
+
+01:12:38.592 --> 01:12:39.472 
+There are multiple reasons.
+
+01:12:39.472 --> 01:12:41.432 
+One is you're wasting hardware.
+
+01:12:41.432 --> 01:12:45.432 
+The second is you're polluting the branch prediction structures that could be used.
+
+01:12:45.512 --> 01:12:49.472 
+For something that really requires the hardware to get better accuracy, right?
+
+01:12:50.512 --> 01:12:54.304 
+Basically you make the prediction of other branches difficult by causing interference in the branch
+
+01:12:54.304 --> 01:12:55.952 
+prediction tables and in history registers.
+
+01:12:56.032 --> 01:12:56.632 
+That's the idea.
+
+01:12:57.112 --> 01:13:01.739 
+If you can somehow remove these branches, meaning detect such biased branches and predict them with
+
+01:13:01.739 --> 01:13:05.432 
+a simpler predictor like last time or static predictor, you can do much better.
+
+01:13:05.992 --> 01:13:07.512 
+And a lot of processors do this actually.
+
+01:13:07.512 --> 01:13:12.709 
+They detect which branches are easily predictable using different types of methods, either using
+
+01:13:12.709 --> 01:13:17.744 
+some sort of profiling, dynamic profiling, using some counters, or they look at the counters,
+
+01:13:17.744 --> 01:13:18.232 
+etcetera.
+
+01:13:18.752 --> 01:13:21.912 
+And this paper is the one that's that introduced this idea.
+
+01:13:23.352 --> 01:13:23.992 
+Sounds good, right?
+
+01:13:24.152 --> 01:13:24.992 
+It makes sense, actually.
+
+01:13:24.992 --> 01:13:29.832 
+A lot of things make sense, but over time things got developed better.
+
+01:13:30.672 --> 01:13:31.992 
+So the question is, are we done right?
+
+01:13:31.992 --> 01:13:37.432 
+So you do all of these and you get maybe 90 to 97% prediction accuracy on average.
+
+01:13:38.232 --> 01:13:40.192 
+Unfortunately, some difficult workloads suffer.
+
+01:13:40.632 --> 01:13:41.992 
+Not all workloads have this.
+
+01:13:42.032 --> 01:13:44.752 
+Some workloads are still at 50%, maybe 40%.
+
+01:13:45.392 --> 01:13:45.872 
+For example.
+
+01:13:45.872 --> 01:13:47.672 
+Compilers are usually very difficult to predict.
+
+01:13:47.672 --> 01:13:53.152 
+GCC compiler, if you're executing that, it's very difficult to predict the branches inside there.
+
+01:13:54.032 --> 01:13:55.312 
+So these are some old numbers.
+
+01:13:55.352 --> 01:14:01.232 
+Maximum IPC with tournament prediction is 9, whereas if you have perfect prediction, IPC can be 35
+
+01:14:01.232 --> 01:14:02.792 
+according to some results.
+
+01:14:03.472 --> 01:14:07.943 
+So that's why people keep developing branch predictors and there's actually a championship branch
+
+01:14:07.943 --> 01:14:08.912 
+prediction coming up.
+
+01:14:09.272 --> 01:14:10.272 
+If you're so inclined.
+
+01:14:10.272 --> 01:14:13.272 
+You can actually think new ideas and submit and who knows, maybe you'll win.
+
+01:14:13.912 --> 01:14:16.592 
+I'll have a link over there on the on the slide soon.
+
+01:14:16.592 --> 01:14:19.472 
+But let me give you some more recent ideas as well, right?
+
+01:14:20.072 --> 01:14:22.192 
+So the ideas are actually very interesting.
+
+01:14:23.592 --> 01:14:24.992 
+One is loop branches.
+
+01:14:25.392 --> 01:14:27.312 
+You can actually do better with these.
+
+01:14:27.632 --> 01:14:31.993 
+The other is using machine learning and the other is using actually sophisticated hybrid history
+
+01:14:31.993 --> 01:14:32.312 
+length.
+
+01:14:33.472 --> 01:14:36.072 
+So the loop branches essentially.
+
+01:14:36.072 --> 01:14:41.709 
+If you can detect a loop iteration count, maybe you don't need to use a predictor using histories
+
+01:14:41.709 --> 01:14:45.952 
+right you the guess is going to be this loop is going to iterate 5 times.
+
+01:14:46.792 --> 01:14:49.872 
+Assuming that's stable, you can actually do a much better prediction.
+
+01:14:49.872 --> 01:14:50.792 
+That's the idea over here.
+
+01:14:51.272 --> 01:14:55.592 
+This works well for loops with small number of iterations where iteration count is predictable.
+
+01:14:56.272 --> 01:15:00.161 
+This way you actually do remove those loops from the prediction structures other prediction
+
+01:15:00.161 --> 01:15:00.632 
+structures.
+
+01:15:00.632 --> 01:15:03.632 
+This is used in Intel Pentium M perceptron.
+
+01:15:04.072 --> 01:15:05.592 
+How many people know about perceptrons here?
+
+01:15:06.352 --> 01:15:07.152 
+OK, that's good.
+
+01:15:07.152 --> 01:15:09.592 
+These are single layer neural networks.
+
+01:15:09.712 --> 01:15:12.952 
+Let's say they're not networks, they're really perceptrons.
+
+01:15:13.272 --> 01:15:17.996 
+But you these learn the direction correlations between individual branches and assign weights to
+
+01:15:17.996 --> 01:15:20.112 
+correlations using simple machine learning.
+
+01:15:20.112 --> 01:15:21.352 
+I'm going to cover this if we have time.
+
+01:15:21.712 --> 01:15:26.952 
+This was introduced in 2001 and it's essentially in many processors today also.
+
+01:15:27.992 --> 01:15:30.392 
+And the third idea is to have hybrid history length.
+
+01:15:30.952 --> 01:15:33.512 
+Some branches are predictable with short history lengths.
+
+01:15:33.752 --> 01:15:38.862 
+Some branches require very long history lengths because they may be correlated with some other part
+
+01:15:38.862 --> 01:15:41.392 
+of the program that you executed ages ago, right?
+
+01:15:42.592 --> 01:15:47.272 
+How do you actually capture both history lengths and classify which branches should be predicted
+
+01:15:47.272 --> 01:15:49.272 
+with what kind of history lengths, right?
+
+01:15:49.712 --> 01:15:55.941 
+This is going to, and this is a very clever idea, basically have tables that have history lengths
+
+01:15:55.941 --> 01:15:58.832 
+that are part of a geometric function, right?
+
+01:15:59.512 --> 01:16:02.232 
+So some mystery lengths are small, but some mystery lengths are very long.
+
+01:16:02.472 --> 01:16:05.872 
+And then you manage the tables to decide which branch should be predicted by which table.
+
+01:16:06.592 --> 01:16:08.432 
+And this is called the tage predictor.
+
+01:16:08.432 --> 01:16:11.992 
+And again, it's even more popular than the perceptron wrench predictor.
+
+01:16:11.992 --> 01:16:16.065 
+A lot of high performance processors, including these things are based on the tage predictor right
+
+01:16:16.065 --> 01:16:16.232 
+now.
+
+01:16:17.152 --> 01:16:19.552 
+OK, let's take a look at the loop and jump predictors.
+
+01:16:19.552 --> 01:16:20.992 
+I'm not going to talk about the jump predictor.
+
+01:16:20.992 --> 01:16:22.392 
+These are indirect predictors.
+
+01:16:22.472 --> 01:16:25.632 
+I have some backup slides if you're interested, but this is a loop predictor.
+
+01:16:25.632 --> 01:16:32.056 
+For example, somehow you identify how many iteration counts you will have in a loop, that's called
+
+01:16:32.056 --> 01:16:32.712 
+the limit.
+
+01:16:33.232 --> 01:16:38.502 
+And every time you execute the branch, you increment the count, then check it compared to the limits
+
+01:16:38.502 --> 01:16:42.192 
+and if the count reaches the limit, your prediction will be not taken.
+
+01:16:42.392 --> 01:16:43.352 
+You mean you go out of the loop?
+
+01:16:43.352 --> 01:16:44.672 
+Otherwise your prediction will be taken.
+
+01:16:45.152 --> 01:16:50.539 
+This works well if you can identify these branches that are predictable using same iteration counts
+
+01:16:50.539 --> 01:16:51.192 
+in the past.
+
+01:16:52.232 --> 01:16:52.472 
+OK.
+
+01:16:52.992 --> 01:16:56.992 
+And if you look at INTEMP and two M advanced branch prediction is a good part of the chip.
+
+01:16:58.152 --> 01:17:04.728 
+This is Intel's picture, so I'm hoping that they got it right, although you never know, but it's a
+
+01:17:04.728 --> 01:17:10.901 
+substantial part of the processor actually with branch prediction structures, not as much as
+
+01:17:10.901 --> 01:17:12.512 
+memory, but substantial.
+
+01:17:12.512 --> 01:17:14.232 
+And branch prediction also has a lot of memory in it.
+
+01:17:14.232 --> 01:17:18.941 
+So OK, so let's talk about some of these more advanced prediction mechanisms that are employed in
+
+01:17:18.941 --> 01:17:19.912 
+existing processors.
+
+01:17:20.112 --> 01:17:20.752 
+Perceptrons.
+
+01:17:20.752 --> 01:17:23.712 
+So perceptrons were developed in 1950s.
+
+01:17:24.592 --> 01:17:29.792 
+Essentially, the idea was to have a simplified model of a biological neuron, right?
+
+01:17:30.552 --> 01:17:36.245 
+It's an artificial neuron, and today's neural networks are all artificial neural networks, and
+
+01:17:36.245 --> 01:17:39.032 
+they're all started from perceptron basically.
+
+01:17:40.832 --> 01:17:42.672 
+It's also a simple binary classifier.
+
+01:17:42.992 --> 01:17:45.232 
+Basically, a perceptron maps an input vector.
+
+01:17:45.712 --> 01:17:47.752 
+X to a zero or one.
+
+01:17:48.112 --> 01:17:50.112 
+I'm going to put this into the branch prediction context soon.
+
+01:17:51.192 --> 01:17:52.912 
+Input is a vector of X.
+
+01:17:53.032 --> 01:17:54.592 
+It could be a vector of words, for example.
+
+01:17:55.872 --> 01:18:00.482 
+And perceptron learns the linear function, if one exists, of how each element of the vector affects
+
+01:18:00.482 --> 01:18:02.672 
+the output stored in an internal weight vector.
+
+01:18:03.192 --> 01:18:07.632 
+And you may multiply this with the probability of each word being in a language, for example.
+
+01:18:07.912 --> 01:18:12.192 
+And you see a set of words and you basically multiply it with some weights.
+
+01:18:12.192 --> 01:18:17.959 
+And then the you train it in some way such that this can tell you whether the words belong to
+
+01:18:17.959 --> 01:18:20.192 
+English with some likelihood, right?
+
+01:18:20.352 --> 01:18:21.392 
+It's a binary classifier.
+
+01:18:21.392 --> 01:18:24.232 
+So English or not English, German or not German, whatever.
+
+01:18:24.592 --> 01:18:27.632 
+But we're going to apply it to the context of branch prediction.
+
+01:18:28.152 --> 01:18:30.752 
+So this is the computation that we're going to do.
+
+01:18:31.832 --> 01:18:36.892 
+You have the vector X that is the input, and then you have a vector of weights which store the
+
+01:18:36.892 --> 01:18:37.592 
+correlations.
+
+01:18:38.032 --> 01:18:39.152 
+And then there's some bias.
+
+01:18:39.152 --> 01:18:42.952 
+You may set it to 0 if you don't want any bias, but for bias branches it's actually quite useful.
+
+01:18:43.552 --> 01:18:48.552 
+And the output is whether that computation is greater than 0.
+
+01:18:49.152 --> 01:18:54.272 
+So in the branch prediction context, vector X is the branch history register bits taken, not taken.
+
+01:18:54.312 --> 01:18:55.392 
+1 zeros, right?
+
+01:18:55.872 --> 01:18:56.952 
+That's the global history register.
+
+01:18:56.952 --> 01:18:58.032 
+Assume that this is global history.
+
+01:18:58.032 --> 01:19:01.592 
+Right now output is a prediction for the current branch.
+
+01:19:02.552 --> 01:19:08.398 
+Now you can actually train the weights to figure out which bits in the global history register are
+
+01:19:08.398 --> 01:19:12.872 
+positively or negatively correlated with the outcome of the current branch.
+
+01:19:13.392 --> 01:19:14.472 
+That's the idea, right?
+
+01:19:15.832 --> 01:19:17.712 
+So a little bit more detail.
+
+01:19:17.832 --> 01:19:21.752 
+We would like to use a perceptron to learn the correlations between branch history register bits.
+
+01:19:22.072 --> 01:19:26.672 
+These are the XS over here and the branch outcome.
+
+01:19:27.312 --> 01:19:31.192 
+So a perceptron learns the target Boolean function of N inputs over here.
+
+01:19:31.272 --> 01:19:32.792 
+These are the N inputs that you have.
+
+01:19:32.792 --> 01:19:34.392 
+And then the bias over here.
+
+01:19:34.872 --> 01:19:36.592 
+Each branch is associated with a perceptron.
+
+01:19:36.592 --> 01:19:37.552 
+You can think of it that way.
+
+01:19:37.752 --> 01:19:41.387 
+Of course, there could be aliasing, but in the best case, each branch is associated with a
+
+01:19:41.387 --> 01:19:41.832 
+perceptron.
+
+01:19:42.472 --> 01:19:45.112 
+A perceptron contains a set of weights WI.
+
+01:19:45.112 --> 01:19:46.272 
+These are the weights over here.
+
+01:19:46.432 --> 01:19:52.650 
+So you store these set of weights with the perceptron based on the PC program counter, and each
+
+01:19:52.650 --> 01:19:56.512 
+weight corresponds to a bit in the global history register.
+
+01:19:56.872 --> 01:20:00.912 
+So this bit in the global history register is correlated with this branch using this weight.
+
+01:20:02.192 --> 01:20:05.432 
+It represents how much that bit is correlated with the direction of the branch, right?
+
+01:20:05.432 --> 01:20:09.701 
+For example, if you have positive correlation, you have a large positive weight based on what you've
+
+01:20:09.701 --> 01:20:13.927 
+seen in the past, you keep updating the weights and if you have a negative correlation, you'll have
+
+01:20:13.927 --> 01:20:14.952 
+a large negative weight.
+
+01:20:15.312 --> 01:20:15.992 
+That's the idea.
+
+01:20:16.912 --> 01:20:18.632 
+And this is the function that we're going to compute.
+
+01:20:18.632 --> 01:20:25.909 
+Basically we we do a vector multiplication or dot product computation, we're going to multiply the
+
+01:20:25.909 --> 01:20:33.038 
+branch history register bits with the correlated weights associated with the current branch that
+
+01:20:33.038 --> 01:20:34.152 
+we're fetching.
+
+01:20:35.432 --> 01:20:40.952 
+That's the multiplication over here, and we're going to add a bias bit, and that's our output.
+
+01:20:41.152 --> 01:20:44.872 
+If that output is greater than some threshold, we're going to say the branch is predicted taken.
+
+01:20:44.992 --> 01:20:46.872 
+Otherwise it's predicted not taken, right?
+
+01:20:47.472 --> 01:20:48.632 
+So that sounds nice, right?
+
+01:20:48.632 --> 01:20:51.472 
+It's very, the key is learning those weights, of course.
+
+01:20:51.512 --> 01:20:52.792 
+So how do you do the prediction?
+
+01:20:52.952 --> 01:20:58.823 
+Express global history registers as one taken and -1 in this case, 0 doesn't work, unfortunately,
+
+01:20:58.823 --> 01:21:02.152 
+because you need to do positive and negative not taken.
+
+01:21:02.472 --> 01:21:06.792 
+You take a dot product of the global history register and the weights, as I said, if the output is
+
+01:21:06.792 --> 01:21:08.952 
+greater than 0, you predict the branch has taken.
+
+01:21:09.992 --> 01:21:13.832 
+Sounds nice, expensive because you have a dot product computation right?
+
+01:21:13.832 --> 01:21:20.272 
+Now for every branch, you're fetching the branch you want to predict what's the next?
+
+01:21:20.272 --> 01:21:21.192 
+What is the direction?
+
+01:21:21.592 --> 01:21:24.752 
+And you have a matrix, not matrix dot product multiplication, right?
+
+01:21:26.032 --> 01:21:29.472 
+If you can do it in one cycle, that's good, but you didn't do other stuff also, right?
+
+01:21:29.712 --> 01:21:32.912 
+So it's not easy to implement in a single cycle.
+
+01:21:34.192 --> 01:21:34.552 
+OK.
+
+01:21:34.632 --> 01:21:38.340 
+That's why people developed a lot of pipelining mechanisms that I'm not going to talk about how to
+
+01:21:38.340 --> 01:21:38.832 
+make it work.
+
+01:21:39.512 --> 01:21:40.872 
+So this is the prediction function.
+
+01:21:40.952 --> 01:21:44.232 
+Let me go into this over here, you have the branch address program counter.
+
+01:21:44.232 --> 01:21:49.632 
+You index a table of perceptrons and you select the perceptron that maps to that particular branch.
+
+01:21:50.152 --> 01:21:52.032 
+These are essentially the weights.
+
+01:21:52.432 --> 01:21:54.112 
+And then you have the global history register.
+
+01:21:54.512 --> 01:22:00.072 
+You basically multiply the global history register with the perceptron and compute Y.
+
+01:22:00.352 --> 01:22:01.672 
+And then the prediction is over here.
+
+01:22:01.672 --> 01:22:07.608 
+And then there's a training part, which I will not go into, but you update the weights to account
+
+01:22:07.608 --> 01:22:08.832 
+for the correlation.
+
+01:22:08.832 --> 01:22:13.992 
+Basically, if both branches are taken, you increment the weights.
+
+01:22:13.992 --> 01:22:17.592 
+If board branches are not taken, you decrement the associated weight, basically.
+
+01:22:18.472 --> 01:22:19.872 
+OK, There's also a bias weight.
+
+01:22:19.872 --> 01:22:21.752 
+This is the bias of the branch independent of the history.
+
+01:22:21.752 --> 01:22:22.752 
+There's a way of setting it.
+
+01:22:22.952 --> 01:22:28.365 
+So if the branch is really truly biased, you basically bias it to be taken or not taken using this
+
+01:22:28.365 --> 01:22:28.752 
+weight.
+
+01:22:28.752 --> 01:22:29.792 
+And you can also train that.
+
+01:22:31.872 --> 01:22:32.152 
+OK.
+
+01:22:32.152 --> 01:22:34.032 
+I think I've shown all of these over here.
+
+01:22:34.992 --> 01:22:38.888 
+So what is the advantage and this advantage of this, the big advantage is it's a more sophisticated
+
+01:22:38.888 --> 01:22:39.912 
+learning mechanism, right?
+
+01:22:39.912 --> 01:22:45.432 
+And it directly leads to better accuracy when this was first published in 2001.
+
+01:22:45.512 --> 01:22:50.021 
+I was doing my PhD and I was working on some prefetching mechanisms called run at execution, which
+
+01:22:50.021 --> 01:22:51.632 
+we may cover later on a little bit.
+
+01:22:52.032 --> 01:22:58.965 
+And I said I need a better branch predictor because my mechanism was important, needed better branch
+
+01:22:58.965 --> 01:23:00.352 
+prediction accuracy.
+
+01:23:00.352 --> 01:23:03.712 
+And I immediately implemented this thing in the paper and it immediately worked.
+
+01:23:04.392 --> 01:23:07.552 
+I got 20% better accuracy and my mechanism became better also.
+
+01:23:08.912 --> 01:23:09.512 
+So it's good.
+
+01:23:09.512 --> 01:23:10.312 
+Basically it works.
+
+01:23:11.632 --> 01:23:17.355 
+So it enables also Long Branch history lengths because you're doing actually a multiplication across
+
+01:23:17.355 --> 01:23:22.621 
+very long lengths potentially it gives you better accuracy at the cost of multiplication, of
+
+01:23:22.621 --> 01:23:28.001 
+course, right dot product computation, OK, this advantage is complexity, meaning adder tree to
+
+01:23:28.001 --> 01:23:32.752 
+compute the perceptron output, right, that multiplication and then also comparison.
+
+01:23:32.792 --> 01:23:33.752 
+So this is not simple.
+
+01:23:33.752 --> 01:23:39.272 
+Basically in the end, previously we were doing table look UPS, we weren't doing any computation.
+
+01:23:39.272 --> 01:23:43.472 
+Now we're doing computation to predict a branch, right?
+
+01:23:44.072 --> 01:23:48.312 
+So it's expensive in terms of energy complexity, hardware area, a lot of things.
+
+01:23:50.392 --> 01:23:52.672 
+Of course, it has the downsides of perceptrons.
+
+01:23:53.192 --> 01:23:57.525 
+Perceptrons, unfortunately, it cannot learn X or functions, for example, linearly inseparable
+
+01:23:57.525 --> 01:23:57.992 
+functions.
+
+01:23:57.992 --> 01:24:02.084 
+I'm not going to go through this in detail, but every machine learning mechanism has self some
+
+01:24:02.084 --> 01:24:02.912 
+potential downside.
+
+01:24:02.912 --> 01:24:10.017 
+Perceptrons being a single layer and being based operating the way we discussed, they cannot learn
+
+01:24:10.017 --> 01:24:11.032 
+all functions.
+
+01:24:11.472 --> 01:24:15.352 
+You can make this better by having multi layer perceptrons, which complicates the mechanism.
+
+01:24:15.552 --> 01:24:19.792 
+You can make this better by having neural networks, which makes the mechanism even more complex.
+
+01:24:19.792 --> 01:24:20.032 
+Right.
+
+01:24:21.032 --> 01:24:22.472 
+We're going to talk about that maybe later on.
+
+01:24:24.112 --> 01:24:25.792 
+Yeah, I think I've said this.
+
+01:24:25.792 --> 01:24:29.432 
+It cannot learn extra type of correlation between two history bits and branch outcome, for example.
+
+01:24:29.672 --> 01:24:35.503 
+But despite all of these disadvantages, a successful example of use of machine learning in hardware
+
+01:24:35.503 --> 01:24:38.272 
+in processor design today, things are changing.
+
+01:24:38.272 --> 01:24:44.000 
+There is more stuff that's being proposed using machine learning, but this was the first, one of the
+
+01:24:44.000 --> 01:24:49.441 
+first successful use of machine learning in processor design in something as critical as branch
+
+01:24:49.441 --> 01:24:50.072 
+prediction.
+
+01:24:51.472 --> 01:24:54.832 
+OK, so for example, Samsung designed this processor Xenos.
+
+01:24:55.072 --> 01:24:56.472 
+You can read about that.
+
+01:24:56.592 --> 01:24:59.552 
+They employ, they employ A perceptron predictor.
+
+01:24:59.552 --> 01:25:01.992 
+AMD also employs perceptron predictors.
+
+01:25:02.232 --> 01:25:05.592 
+I don't know if they still employ, but in some, some of these processors they do employ.
+
+01:25:06.432 --> 01:25:12.752 
+And you can see also some pictures that basically describe how these operate on AMD chips.
+
+01:25:14.712 --> 01:25:18.381 
+OK, let me give you another idea, which is a competitor which doesn't have one of some of the
+
+01:25:18.381 --> 01:25:20.552 
+downsides, but which doesn't use machine learning also.
+
+01:25:22.712 --> 01:25:27.032 
+And some of there's some overlap in the predictability of the branches.
+
+01:25:27.672 --> 01:25:32.232 
+I think in the end the two approaches can be combined also and people are looking into that.
+
+01:25:32.832 --> 01:25:34.672 
+But let me give you the idea and then you can think about it.
+
+01:25:34.672 --> 01:25:37.032 
+Maybe the idea is to use multiple history lengths.
+
+01:25:37.032 --> 01:25:38.192 
+And I've already given you the idea.
+
+01:25:38.192 --> 01:25:41.832 
+Basically, different branches require different history lengths for better prediction accuracy.
+
+01:25:42.232 --> 01:25:46.312 
+Some require very few history bits because they're correlated with a close by branch.
+
+01:25:46.672 --> 01:25:50.637 
+Some require thousands of history bits because they're correlated with some branch that was executed
+
+01:25:50.637 --> 01:25:51.272 
+a long time ago.
+
+01:25:51.392 --> 01:25:51.632 
+Right?
+
+01:25:52.592 --> 01:25:58.100 
+And the idea is to have multiple pH TS, better history tables indexed with global history registers
+
+01:25:58.100 --> 01:26:03.443 
+with different history lengths and intelligently decide which one to use, intelligently allocate
+
+01:26:03.443 --> 01:26:08.562 
+pattern history table entries, 2 bit counters, basically two different branches in different
+
+01:26:08.562 --> 01:26:08.952 
+tables.
+
+01:26:09.632 --> 01:26:10.632 
+So it kind of looks like this.
+
+01:26:10.632 --> 01:26:12.712 
+It looks complicated, but it's not that bad actually.
+
+01:26:13.392 --> 01:26:16.472 
+So there's one predictor that's very simple.
+
+01:26:16.872 --> 01:26:18.272 
+You use just the program counter.
+
+01:26:18.912 --> 01:26:19.792 
+It doesn't need any history.
+
+01:26:19.792 --> 01:26:24.032 
+For example, there's another predictor that requires a small history.
+
+01:26:25.232 --> 01:26:27.912 
+So history length over here is something but small.
+
+01:26:28.512 --> 01:26:30.992 
+There's another predictor that that follows.
+
+01:26:30.992 --> 01:26:31.672 
+Large history.
+
+01:26:31.672 --> 01:26:33.192 
+Longer history, longer history, right?
+
+01:26:34.032 --> 01:26:36.032 
+And this is a geometric series.
+
+01:26:36.032 --> 01:26:37.632 
+You can make a different series, etcetera.
+
+01:26:37.632 --> 01:26:42.872 
+But the history over here may be 4 bits, the history over here may be 1000 bits, right?
+
+01:26:42.992 --> 01:26:44.832 
+That's the idea, OK.
+
+01:26:45.512 --> 01:26:51.986 
+And the key is basically deciding which predictor to use, because if you actually pollute all the
+
+01:26:51.986 --> 01:26:56.992 
+predictors with the same branch, this is going to be very expensive, right?
+
+01:26:57.432 --> 01:27:03.480 
+So there are some algorithms that decide which predictors are best and the branches get allocated to
+
+01:27:03.480 --> 01:27:04.872 
+those different tables.
+
+01:27:04.872 --> 01:27:07.872 
+I'm not going to go into that, but this is the basic idea.
+
+01:27:07.872 --> 01:27:10.312 
+There's a lot of optimization that needs to be done over here.
+
+01:27:10.632 --> 01:27:11.712 
+So it kind of looks like this.
+
+01:27:12.192 --> 01:27:16.592 
+You have, for example, this can be better predicted with a small amount of history, large amount of
+
+01:27:16.592 --> 01:27:18.592 
+history, and longer amount of history, right?
+
+01:27:18.752 --> 01:27:19.472 
+That's the idea.
+
+01:27:21.152 --> 01:27:26.344 
+So the advantages, if you can choose the best history length to predict each branch, you can get a
+
+01:27:26.344 --> 01:27:27.192 
+better accuracy.
+
+01:27:27.232 --> 01:27:30.152 
+And this is actually proven also with another predictor that works.
+
+01:27:31.872 --> 01:27:36.792 
+It enables Long Branch history lengths in a much more feasible way than perceptron, right?
+
+01:27:36.792 --> 01:27:41.655 
+If you want thousand history lengths, you have a small table, and you're very careful in which
+
+01:27:41.655 --> 01:27:45.432 
+branches go to that small table with perceptron if you want to have 1000.
+
+01:27:45.592 --> 01:27:50.882 
+Bits you need to have 1000 bits in the weight vector and that's expensive and that makes the
+
+01:27:50.882 --> 01:27:56.459 
+multiplication tree also bad, you know, so disadvantageous Hardware design complexity is not low,
+
+01:27:56.459 --> 01:27:58.472 
+probably lower than the perceptron.
+
+01:27:58.912 --> 01:28:03.512 
+This could be more easily accommodated in the cycle time you need to.
+
+01:28:03.592 --> 01:28:08.526 
+The downside is there is some black magic that you need to figure out, meaning you need to choose
+
+01:28:08.526 --> 01:28:13.512 
+good hash functions and table sizes and update policies to maximise accuracy and minimise latency.
+
+01:28:15.112 --> 01:28:21.381 
+And there's another successful recent idea that is used in many modern Prostor designs, including
+
+01:28:21.381 --> 01:28:25.712 
+AMD Zen, which uses perceptron at one level and tage another level.
+
+01:28:27.152 --> 01:28:33.512 
+So you can see there is this L1 hash perceptron over here and there's tage somewhere else.
+
+01:28:33.792 --> 01:28:38.512 
+Yeah, yeah, new tage bench predictor they add.
+
+01:28:38.792 --> 01:28:40.272 
+Anyway, L2 over here.
+
+01:28:40.712 --> 01:28:41.032 
+OK.
+
+01:28:41.832 --> 01:28:47.272 
+And this is kind of the AM DS tage predictor, but you can take a look at it more.
+
+01:28:47.752 --> 01:28:49.072 
+OK, so why does this work?
+
+01:28:50.432 --> 01:28:54.952 
+Essentially, different branch branches are correlated with different branches, right?
+
+01:28:54.952 --> 01:28:55.992 
+That's the idea over here.
+
+01:28:56.992 --> 01:28:58.552 
+And it's good to analyse this once in a while.
+
+01:28:58.552 --> 01:29:00.192 
+And I think this analysis needs to be done.
+
+01:29:00.352 --> 01:29:04.112 
+Unfortunately, I don't see a lot of work to really understand things these days.
+
+01:29:04.472 --> 01:29:10.677 
+There's this beautiful paper again from my advisor and one of his students where they showed they
+
+01:29:10.677 --> 01:29:16.690 
+analysed a lot of programs at the time in 1990s, and they showed that if you want to predict a
+
+01:29:16.690 --> 01:29:22.896 
+branch very accurately, there are only three past branches, maximum three, that really matter for
+
+01:29:22.896 --> 01:29:23.152 
+you.
+
+01:29:24.352 --> 01:29:26.672 
+The problem is those 3 branches can be anywhere.
+
+01:29:27.312 --> 01:29:32.377 
+For some branches, they're close by, for some branches they're far away, and for some branches
+
+01:29:32.377 --> 01:29:33.832 
+they're all over the place.
+
+01:29:35.392 --> 01:29:41.409 
+So if you can somehow magically identify 3 branches, that really enable you to predict this branch
+
+01:29:41.409 --> 01:29:42.392 
+more accurately.
+
+01:29:42.672 --> 01:29:43.832 
+So there's a lot of opportunity.
+
+01:29:44.632 --> 01:29:48.512 
+It could be an idea to start the championship branch prediction with if you're so inclined.
+
+01:29:49.512 --> 01:29:51.312 
+OK, the question is always can we do better?
+
+01:29:51.312 --> 01:29:51.592 
+Right.
+
+01:29:51.592 --> 01:29:53.072 
+And we're going to do better.
+
+01:29:53.072 --> 01:29:57.312 
+This is the state-of-the-art in branch Prediction, at least published branch prediction.
+
+01:29:57.752 --> 01:30:01.992 
+This is from Andre Sesnick, who's the developer of TH Predictors.
+
+01:30:02.552 --> 01:30:06.152 
+I will not go through this in detail again, but the main ideas are all there.
+
+01:30:06.152 --> 01:30:07.632 
+You can see there's global, local.
+
+01:30:07.872 --> 01:30:10.072 
+There's also something like skeleton that I will not go into.
+
+01:30:10.432 --> 01:30:14.712 
+There's the main TH predictor, which is based on some global history and program counter.
+
+01:30:15.152 --> 01:30:19.152 
+And there's also some confidence which we will discuss how confident are you in your prediction?
+
+01:30:19.632 --> 01:30:24.440 
+If you're not confident, then you use some other stuff and there's some statistical analysis that
+
+01:30:24.440 --> 01:30:25.432 
+this predictor does.
+
+01:30:25.432 --> 01:30:27.432 
+And then there's a loop predictor over here.
+
+01:30:27.432 --> 01:30:32.472 
+So you can see that there is a huge hybrid mechanism over here and loop predictor is not gone.
+
+01:30:32.472 --> 01:30:37.244 
+It's still important, you know, if you can get get rid of the loops easily, get rid of the loops
+
+01:30:37.244 --> 01:30:37.592 
+easily.
+
+01:30:38.512 --> 01:30:39.952 
+So this is a sophisticated predictor.
+
+01:30:39.952 --> 01:30:43.552 
+It's the, it's the one that won the championship branch prediction about 10 years ago.
+
+01:30:43.552 --> 01:30:45.152 
+And you can take a look at it.
+
+01:30:46.152 --> 01:30:47.032 
+Some other ideas.
+
+01:30:47.072 --> 01:30:52.112 
+People have used convolutional neural networks in branch prediction more recently.
+
+01:30:52.152 --> 01:30:54.872 
+This is very hard to do, I think especially dynamically.
+
+01:30:56.912 --> 01:31:02.863 
+The idea is to use it for hard to predict branches, especially if you know that a branch is really,
+
+01:31:02.863 --> 01:31:07.432 
+really hard to predict, try to use something much more sophisticated, right?
+
+01:31:09.032 --> 01:31:10.192 
+So that's the idea over here.
+
+01:31:10.352 --> 01:31:15.037 
+I will not go through this in detail, but this users Commission neural network predictor for very
+
+01:31:15.037 --> 01:31:19.192 
+hard to predict branches and users stage SCL, which is this thing for everything else.
+
+01:31:20.032 --> 01:31:23.879 
+So you can see that people actually people cannot get rid of the previous thing because they
+
+01:31:23.879 --> 01:31:26.472 
+actually designed for many different types of branches, right?
+
+01:31:27.912 --> 01:31:29.432 
+OK, but maybe you'll get rid of it, I don't know.
+
+01:31:29.512 --> 01:31:31.712 
+So branch confidence estimation, I should also talk about this.
+
+01:31:31.712 --> 01:31:36.443 
+This basically idea is estimate if the prediction is likely to be correct, estimate how confident
+
+01:31:36.443 --> 01:31:37.712 
+you are in the prediction.
+
+01:31:37.712 --> 01:31:39.832 
+Basically, why do you want to do this?
+
+01:31:40.352 --> 01:31:42.952 
+Well, it could be very useful in deciding how to speculate, right?
+
+01:31:43.432 --> 01:31:49.420 
+For example, which predictor to use, which pattern history table to use, whether to keep fetching on
+
+01:31:49.420 --> 01:31:53.552 
+this path, whether whether to switch to some other thread or program?
+
+01:31:55.352 --> 01:31:58.312 
+Yeah, whether to switch to some other way of handling the branch, right?
+
+01:31:59.072 --> 01:32:05.398 
+For example, if you've fetched 5 low confident branches in your pipeline and you can basically guess
+
+01:32:05.398 --> 01:32:07.992 
+that you may be on the wrong path, right?
+
+01:32:08.192 --> 01:32:10.752 
+And if you're on the wrong path, maybe you stop fetching to save energy.
+
+01:32:11.592 --> 01:32:17.242 
+Wrong path is not necessarily useful useless, but it's more being on the correct path is more likely
+
+01:32:17.242 --> 01:32:19.672 
+useful than being on the wrong path, right?
+
+01:32:20.512 --> 01:32:26.611 
+OK, I mean the the reason I say wrong path is not necessarily useless is because you may actually be
+
+01:32:26.611 --> 01:32:29.112 
+pre fetching some data on the wrong path.
+
+01:32:29.152 --> 01:32:30.192 
+We'll get back to that later on.
+
+01:32:31.032 --> 01:32:36.070 
+OK, So this is an example of how to estimate confidence, keep a record of correct incorrect outcomes
+
+01:32:36.070 --> 01:32:40.908 
+of past and instance of the branch based on those patterns, guess if the current prediction will
+
+01:32:40.908 --> 01:32:42.672 
+likely be correct or incorrect, OK.
+
+01:32:43.232 --> 01:32:45.312 
+And there are many confidence estimation because including.
+
+01:32:45.552 --> 01:32:49.312 
+Based mechanisms that people have developed, this is separate from the branch prediction by the way.
+
+01:32:49.952 --> 01:32:53.112 
+You have a branch prediction mechanism and you have a confidence estimation mechanism.
+
+01:32:53.232 --> 01:32:58.209 
+And confidence estimation mechanism enables you to do better branch prediction and also maybe not
+
+01:32:58.209 --> 01:33:01.032 
+doing branch prediction and doing something else right.
+
+01:33:01.472 --> 01:33:03.232 
+And one application is pipeline gating.
+
+01:33:03.392 --> 01:33:09.002 
+And I've already given you the idea if you have more low confidence branches than a threshold in
+
+01:33:09.002 --> 01:33:11.632 
+your machine, stop fetching from that threat.
+
+01:33:11.832 --> 01:33:13.192 
+Save energy, for example.
+
+01:33:14.272 --> 01:33:15.952 
+OK, so are we done with branch prediction?
+
+01:33:16.152 --> 01:33:17.392 
+And the idea is, no.
+
+01:33:17.392 --> 01:33:21.672 
+This was the last branch prediction competition in 2025.
+
+01:33:21.672 --> 01:33:25.872 
+You can look at the results of this, but if you're interested, there's another one coming up.
+
+01:33:26.392 --> 01:33:28.032 
+The submission deadline is May 8th.
+
+01:33:29.232 --> 01:33:31.872 
+So if you have very good ideas on branch prediction, maybe you can win.
+
+01:33:32.112 --> 01:33:36.992 
+And maybe your idea can go into all of the major microprostors.
+
+01:33:37.912 --> 01:33:39.992 
+OK, we're going to stop here.
+
+01:33:40.712 --> 01:33:41.552 
+I'll see you tomorrow.
+

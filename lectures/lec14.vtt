@@ -1,0 +1,4559 @@
+WEBVTT
+
+00:00:01.303 --> 00:00:01.943 
+Nice to meet up.
+
+00:00:03.223 --> 00:00:03.623 
+It's fine.
+
+00:00:03.623 --> 00:00:04.943 
+Sound check everything's fine.
+
+00:00:04.983 --> 00:00:07.903 
+OK, OK, so welcome back everyone.
+
+00:00:08.463 --> 00:00:13.902 
+So we are going to finish what we have started seeing yesterday on the out of order execution and
+
+00:00:13.902 --> 00:00:19.285 
+then we would briefly touch up on the data flow and superscalar execution for the, you know, the
+
+00:00:19.285 --> 00:00:20.743 
+course of today's lecture.
+
+00:00:20.903 --> 00:00:27.199 
+And then we are going to move to a different, you know, problem solving skills that raised by modern
+
+00:00:27.199 --> 00:00:30.663 
+high performance processor, which is branch prediction.
+
+00:00:30.663 --> 00:00:31.823 
+It's fascinating topic.
+
+00:00:31.823 --> 00:00:34.303 
+So so yeah, so let's so let's get started.
+
+00:00:35.703 --> 00:00:38.143 
+Wait a SEC, something is not working.
+
+00:00:38.143 --> 00:00:44.550 
+OK, so yeah, so so this is the road map that we are seeing for couple of you know, the last few past
+
+00:00:44.550 --> 00:00:45.383 
+few lectures.
+
+00:00:45.383 --> 00:00:49.543 
+We have started from the single core, single cycle, multi cycle micro architectures.
+
+00:00:49.543 --> 00:00:51.343 
+Then we introduced pipelining.
+
+00:00:51.343 --> 00:00:55.463 
+We introduced you know precise exception support on the pipeline processes.
+
+00:00:55.943 --> 00:01:01.809 
+Yesterday we talked about the out of order execution and then today we are going to finish the out
+
+00:01:01.809 --> 00:01:04.383 
+of order execution, whatever that has left.
+
+00:01:04.943 --> 00:01:09.044 
+We're just going to rejog the memory from yesterday's lecture and then we're going to start with the
+
+00:01:09.044 --> 00:01:09.783 
+branch prediction.
+
+00:01:09.783 --> 00:01:14.905 
+That's the fascinating part of the problem and hopefully I can, you know, convince you that why
+
+00:01:14.905 --> 00:01:19.543 
+that's a problem and then what sort of the solutions that modern architectures impose.
+
+00:01:20.263 --> 00:01:20.543 
+OK.
+
+00:01:20.543 --> 00:01:25.931 
+So again, these are the readings, so I'm not going to go too much into details, but the combining
+
+00:01:25.931 --> 00:01:31.374 
+branch predictor, this is a influential walk and then definitely go through the micro architecture
+
+00:01:31.374 --> 00:01:36.318 
+for superscalar processes paper, paper that also gives you a broader understanding of how
+
+00:01:36.318 --> 00:01:38.263 
+superscalar processes have evolved.
+
+00:01:38.943 --> 00:01:42.063 
+OK, OK, so so so let's wrap it up.
+
+00:01:42.063 --> 00:01:48.012 
+So just to jog your memory, we have seen like these are the four major operations that we need to do
+
+00:01:48.012 --> 00:01:53.308 
+for enabling out of order scheduling or out of order execution in modern high performance
+
+00:01:53.308 --> 00:01:53.903 
+processor.
+
+00:01:54.063 --> 00:01:58.776 
+So we need to link the consumer with the producer so that we saw that we we do it with register
+
+00:01:58.776 --> 00:01:59.223 
+renaming.
+
+00:01:59.503 --> 00:02:03.710 
+Then we want to buffer the instructions that we saw that we can do it with the, you know,
+
+00:02:03.710 --> 00:02:04.703 
+reservation stations.
+
+00:02:05.103 --> 00:02:09.183 
+Then we keep track of the readiness via broadcasting this tag.
+
+00:02:09.183 --> 00:02:11.863 
+Whenever one instruction finishes it's execution.
+
+00:02:12.183 --> 00:02:17.731 
+And then when all the sources of the instruction is ready, then we have a specific logic that wakes
+
+00:02:17.731 --> 00:02:22.943 
+up the instruction and then it can be executed on the and it can be dispatched for execution.
+
+00:02:23.183 --> 00:02:26.623 
+OK, so these are the four broader operations that we have seen.
+
+00:02:26.703 --> 00:02:31.063 
+Again, like these are the like just a in a nutshell.
+
+00:02:31.503 --> 00:02:37.274 
+And so just just to jog this thing, and this is where we would also start with today's lecture is
+
+00:02:37.274 --> 00:02:42.808 
+that what we essentially show for like see in out of order execution is that you still give a
+
+00:02:42.808 --> 00:02:48.283 
+illusion to the programmer that your machine is executing on the von Neumann order, but then
+
+00:02:48.283 --> 00:02:53.103 
+internally you're actually executing in the out of order, which is the data flow.
+
+00:02:53.343 --> 00:02:58.930 
+And now we are going to also take a look at like what happens if you, you know, completely expose
+
+00:02:58.930 --> 00:03:04.517 
+the data flow to the programmer also so that the machine does not even stay in in the von Neumann
+
+00:03:04.517 --> 00:03:04.863 
+model.
+
+00:03:05.103 --> 00:03:08.863 
+So what sort of advantages, what sort of disadvantages that we would see?
+
+00:03:09.103 --> 00:03:10.863 
+That's the we are going to follow also.
+
+00:03:11.303 --> 00:03:16.468 
+So just to jog the memory that the the this data flow graph that this, you know, out of order
+
+00:03:16.468 --> 00:03:21.023 
+machine that internally generates that are also limited by the instruction window.
+
+00:03:21.303 --> 00:03:26.380 
+Instruction window is essentially the reorder buffer size like how many instructions that you have
+
+00:03:26.380 --> 00:03:29.023 
+fetched, but the you have not committed yet, right?
+
+00:03:29.023 --> 00:03:35.143 
+So internally, if you remember that how the the, the, the camel analogy, right?
+
+00:03:35.143 --> 00:03:39.640 
+So you have something on the front that is happening in the in order something on the back that is
+
+00:03:39.640 --> 00:03:43.862 
+also happening in order in somewhere in the middle that that gets garbled up and I'm getting
+
+00:03:43.862 --> 00:03:45.423 
+executed on the out of order mode.
+
+00:03:45.823 --> 00:03:48.863 
+So we have seen this, this, you know, the the.
+
+00:03:49.783 --> 00:03:56.660 
+Simulation yesterday just by looking at and I'm not sure whether some of you or all of you have also
+
+00:03:56.660 --> 00:04:03.468 
+gone through this part that I couldn't cover yesterday but you can you know take a look at previous
+
+00:04:03.468 --> 00:04:10.277 
+lectures so at given at any snapshot like this sort of snapshot of the internals of the reservation
+
+00:04:10.277 --> 00:04:16.810 
+station as well as the registered alias table, you can actually deconstruct the data dependency
+
+00:04:16.810 --> 00:04:17.223 
+graph.
+
+00:04:17.223 --> 00:04:23.708 
+So that's the benefit of, you know, benefit for your understanding also how modern outer photo
+
+00:04:23.708 --> 00:04:24.743 
+processes work.
+
+00:04:24.743 --> 00:04:27.023 
+And it's essentially fascinating to see.
+
+00:04:27.703 --> 00:04:28.023 
+OK.
+
+00:04:28.223 --> 00:04:33.810 
+And then we have also taken a look at, I mean, quickly I have introduced in the last part of to
+
+00:04:33.810 --> 00:04:39.397 
+yesterday's lecture that once you start seeing the out of order processor and then then we also
+
+00:04:39.397 --> 00:04:42.103 
+introduce the reorder buffer at the later end.
+
+00:04:42.103 --> 00:04:47.106 
+So, so that we can have the full picture in our mind that out of order processing with the precise
+
+00:04:47.106 --> 00:04:48.383 
+exception support, right?
+
+00:04:48.383 --> 00:04:51.063 
+So what, what sort of, you know, support that we needed?
+
+00:04:51.063 --> 00:04:54.903 
+We wanted to we showed that, OK, there are two types of register maps.
+
+00:04:54.903 --> 00:04:57.703 
+1 register map would be on the front end register map.
+
+00:04:57.703 --> 00:05:00.543 
+So this is only used for the renaming part.
+
+00:05:00.543 --> 00:05:06.525 
+So that's also speculative like contains, let's say, the valid bits and what sort of tag that you
+
+00:05:06.525 --> 00:05:10.103 
+should be listening to to get the value of that registers.
+
+00:05:10.343 --> 00:05:14.814 
+And then we have also introduced the architectural register map, which is a, let's say, the
+
+00:05:14.814 --> 00:05:16.583 
+checkpointed version of the program.
+
+00:05:16.583 --> 00:05:22.097 
+So if your programs for phase is any exception, if your program needs to be, let's say, stop to
+
+00:05:22.097 --> 00:05:27.554 
+handle some sort of interrupts, then this is where you should be restarting your program from,
+
+00:05:27.554 --> 00:05:27.903 
+right?
+
+00:05:27.903 --> 00:05:30.303 
+So you already have a architectural checkpoint.
+
+00:05:30.303 --> 00:05:31.903 
+So that's the architectural register map.
+
+00:05:32.543 --> 00:05:35.863 
+And we have also seen this graph that I mean seen this picture that OK.
+
+00:05:36.263 --> 00:05:41.125 
+So once we started adding the reorder buffer, then I hopefully motivated that you see value
+
+00:05:41.125 --> 00:05:43.103 
+replications across the board, right?
+
+00:05:43.103 --> 00:05:48.727 
+Like you have value inside the this front end register file, you have the value in the architectural
+
+00:05:48.727 --> 00:05:52.383 
+register map and then you also have values in the reorder buffer.
+
+00:05:52.383 --> 00:05:57.603 
+So I kind of quickly motivated you that OK, instead of storing the full value, you can actually
+
+00:05:57.603 --> 00:05:58.263 
+store A tag.
+
+00:05:58.543 --> 00:06:05.232 
+So the idea is that OK, you're the namespace of the tag won't be as big the, the value what it takes
+
+00:06:05.232 --> 00:06:06.503 
+to store the value.
+
+00:06:06.503 --> 00:06:13.101 
+So you can store 64 bit value that's takes more space than if you just simply store, let's say 12
+
+00:06:13.101 --> 00:06:16.503 
+bits or, you know, 14 bits per the, the, the tags.
+
+00:06:16.823 --> 00:06:18.063 
+So that's what we we did.
+
+00:06:18.063 --> 00:06:24.249 
+And then this is where we left off in the last lecture that you have this now gigantic store of, you
+
+00:06:24.249 --> 00:06:28.703 
+know, values in the same one place, which is the physical register file.
+
+00:06:28.703 --> 00:06:33.340 
+So this is what we call the physical register file and then that kind of, you know, you have the tag
+
+00:06:33.340 --> 00:06:37.746 
+and then the value and then everything else is actually pointing towards this physical register
+
+00:06:37.746 --> 00:06:38.303 
+file, right?
+
+00:06:38.303 --> 00:06:42.663 
+So you the front end register map, each entry is also pointing towards a physical register file.
+
+00:06:42.823 --> 00:06:47.163 
+Similarly, reorder buffer entry is also pointing towards the physical register file and also the
+
+00:06:47.163 --> 00:06:48.023 
+architectural maps.
+
+00:06:48.543 --> 00:06:55.206 
+OK, so this is one of the picture that you know, Pentium 3 and the net burst they they used to have
+
+00:06:55.206 --> 00:06:55.543 
+this.
+
+00:06:55.703 --> 00:07:02.516 
+So we Professor Muthu already discussed about this part in the precise exception lecture, but then
+
+00:07:02.516 --> 00:07:06.063 
+we like after two yesterday's, you know discussion.
+
+00:07:06.063 --> 00:07:07.463 
+So this is what we ended off.
+
+00:07:07.463 --> 00:07:13.867 
+Like you have the front end registered renaming table, you have the back end register aliasing table
+
+00:07:13.867 --> 00:07:17.903 
+and then everything is pointing towards the same register file.
+
+00:07:17.903 --> 00:07:19.383 
+So that is kind of in the middle.
+
+00:07:19.383 --> 00:07:21.343 
+And then you also have the reorder buffer, yes.
+
+00:07:21.623 --> 00:07:30.343 
+Do we have two levels of indirection from from from the register file to the physical file to the
+
+00:07:30.343 --> 00:07:30.703 
+ROP?
+
+00:07:30.703 --> 00:07:31.183 
+No, no, no.
+
+00:07:31.183 --> 00:07:35.703 
+So each, each one has only one level of indirection that points to the physical register file.
+
+00:07:36.063 --> 00:07:39.823 
+So ROP points to the stores the pointers to the physical register file.
+
+00:07:40.183 --> 00:07:44.380 
+Similarly, front end register map also points to the physical register file and architectural
+
+00:07:44.380 --> 00:07:46.863 
+register map also points to the physical register file.
+
+00:07:46.863 --> 00:07:50.303 
+So it's like your value would be stored only one data structure.
+
+00:07:50.303 --> 00:07:52.103 
+I mean think of it as a data structure in hardware.
+
+00:07:52.303 --> 00:07:54.223 
+Your value would be stored in only one place.
+
+00:07:54.543 --> 00:07:56.263 
+Everything else points towards that place.
+
+00:07:56.583 --> 00:08:00.720 
+Instead of storing the values and replicating the values all over the place, you're just storing the
+
+00:08:00.720 --> 00:08:02.583 
+pointers and then that gives you the savings.
+
+00:08:03.983 --> 00:08:05.983 
+OK, any other question at this point?
+
+00:08:05.983 --> 00:08:11.583 
+So this is the independent pro processor that introduced out of order execution for the first time.
+
+00:08:11.983 --> 00:08:14.383 
+And you know this has evolved.
+
+00:08:14.383 --> 00:08:19.989 
+So this is one of the picture of the out of order processor, the like the functional level pictures
+
+00:08:19.989 --> 00:08:25.538 
+of out of order processor from this paper, which is definitely take a look at it and I'm going to,
+
+00:08:25.538 --> 00:08:29.503 
+you know, show you some of the, you know, there are multiple examples.
+
+00:08:29.503 --> 00:08:34.583 
+So this is A21264 processor that that also employs out of order execution.
+
+00:08:34.583 --> 00:08:35.463 
+Then this is a MIPS.
+
+00:08:35.543 --> 00:08:38.903 
+This is something what you are also using for your labs, right?
+
+00:08:38.903 --> 00:08:44.761 
+So this is, you know, one of the first, you know, processes from the MIPS, the generation that also,
+
+00:08:44.761 --> 00:08:48.863 
+you know, tried to keep the hardware as simple as possible, but still.
+
+00:08:49.503 --> 00:08:53.969 
+Succumbed to the out of order processing and I'm adding all the hardware suppose that needed to you
+
+00:08:53.969 --> 00:08:55.143 
+know push the performance.
+
+00:08:55.143 --> 00:09:01.025 
+So that's one of the you know examples IBM power four I'm not going to bore you to depth with all of
+
+00:09:01.025 --> 00:09:06.143 
+this information but then you know these are the processes that you can get a hands on.
+
+00:09:06.143 --> 00:09:08.463 
+So this is aimed at Zen Zen 2.
+
+00:09:08.783 --> 00:09:14.731 
+So people have kind of even though there are not like not all of the information that you are seeing
+
+00:09:14.731 --> 00:09:17.943 
+over here is publicly disclosed by the company itself.
+
+00:09:17.943 --> 00:09:22.758 
+But then people have also reverse engineered these processes to see like what type of, you know, out
+
+00:09:22.758 --> 00:09:25.503 
+of order execution engine that they have in build inside.
+
+00:09:25.743 --> 00:09:29.543 
+So what you can see over here is that, you know, so this is the rename table.
+
+00:09:29.543 --> 00:09:31.143 
+So that that that what you're seeing over here.
+
+00:09:31.143 --> 00:09:32.503 
+So that's a integer rename.
+
+00:09:33.183 --> 00:09:36.543 
+And then this is also the is it working fine?
+
+00:09:36.543 --> 00:09:36.783 
+Yeah.
+
+00:09:37.063 --> 00:09:37.303 
+OK.
+
+00:09:37.463 --> 00:09:40.583 
+So then you also have the floating point, you know, renaming table.
+
+00:09:40.583 --> 00:09:47.746 
+So these are like, think of, you know, internally, this is whatever we have told you on the register
+
+00:09:47.746 --> 00:09:48.463 
+file size.
+
+00:09:48.743 --> 00:09:53.058 
+So they just internally break it down for the non floating point operations and the floating point
+
+00:09:53.058 --> 00:09:53.543 
+operations.
+
+00:09:53.543 --> 00:09:57.243 
+So that's that's, you know, what are the components that you're looking at for the integer
+
+00:09:57.243 --> 00:10:00.943 
+operations on the left hand side, on the floating point operations on the right hand side.
+
+00:10:00.943 --> 00:10:05.663 
+And then you can see the same thing like all of these are the execution units.
+
+00:10:05.663 --> 00:10:13.027 
+So this, you know, so this, this renamer is going to rename the instructions and then put it in the
+
+00:10:13.027 --> 00:10:14.143 
+reorder buffer.
+
+00:10:14.143 --> 00:10:17.143 
+And then this would be dispatched to all the execution units.
+
+00:10:17.143 --> 00:10:19.103 
+So that's the integer execution unit.
+
+00:10:19.103 --> 00:10:21.743 
+And this is the floating point execution unit so that you can see.
+
+00:10:22.183 --> 00:10:25.783 
+So this is one example from AMD and then this is also from Apple.
+
+00:10:25.983 --> 00:10:29.463 
+I mean, you're literally now coming close to the state-of-the-art.
+
+00:10:29.463 --> 00:10:30.663 
+Like what exactly is happening?
+
+00:10:30.983 --> 00:10:36.065 
+And we would go back to this, you know, figures again and again while we complete the superscalar
+
+00:10:36.065 --> 00:10:39.943 
+because that's the last piece of the, let's say, design that we would add.
+
+00:10:40.223 --> 00:10:45.078 
+And that would make you finally arrive at the processor that you're using right now in your phones,
+
+00:10:45.078 --> 00:10:45.863 
+in your laptops.
+
+00:10:45.863 --> 00:10:51.077 
+OK, So what you can see over here is that the entirety of this view order buffer is like gigantic
+
+00:10:51.077 --> 00:10:52.583 
+view order buffer like 6:30.
+
+00:10:52.583 --> 00:10:59.183 
+So let's say, you know, maybe 3-4 years back or maybe five years back, it used to be much smaller.
+
+00:10:59.543 --> 00:11:05.331 
+But now nowadays, and this is also become possible because of multiple reasonings like the Apple
+
+00:11:05.331 --> 00:11:07.743 
+uses a different sort of, you know, ISA.
+
+00:11:07.903 --> 00:11:08.783 
+So that's ARM ISA.
+
+00:11:08.783 --> 00:11:15.579 
+So it's, it's much easier to let's say decode much easier to scale up the system as compared to more
+
+00:11:15.579 --> 00:11:17.143 
+complex ISA like X8664.
+
+00:11:17.463 --> 00:11:22.572 
+So that's why you are obviously seeing over here like 630 instruction reorder buffer, let's say
+
+00:11:22.572 --> 00:11:23.863 
+micro op reorder buffer.
+
+00:11:23.863 --> 00:11:26.863 
+And then then that is backed up by this integer renamer.
+
+00:11:27.623 --> 00:11:29.623 
+So you have different, you know, physical register files.
+
+00:11:29.623 --> 00:11:31.983 
+So this is the PRF that that's what it stands for.
+
+00:11:32.343 --> 00:11:34.783 
+So that's the integer execution unit.
+
+00:11:34.983 --> 00:11:37.063 
+And this is the floating point execution unit.
+
+00:11:37.063 --> 00:11:41.823 
+So, and each renamer is again backed up by different execution, let's say units.
+
+00:11:42.023 --> 00:11:45.303 
+I mean, recall the the pipeline design that we have shown, right?
+
+00:11:45.303 --> 00:11:48.503 
+So different execution unit would have different, let's say latency.
+
+00:11:48.623 --> 00:11:50.383 
+So these are the execution unit that you are seeing.
+
+00:11:50.983 --> 00:11:56.817 
+OK, we would come back to this picture again, like when we would call let's we would go to the Super
+
+00:11:56.817 --> 00:11:58.743 
+scale, which is this 8 wide part.
+
+00:11:58.743 --> 00:12:03.239 
+So we would come back to this picture, but it's just to show you that you know this is exactly
+
+00:12:03.239 --> 00:12:05.823 
+happening what we just taught you on the out of order.
+
+00:12:05.823 --> 00:12:08.743 
+This is exactly happening inside this state-of-the-art processes also.
+
+00:12:09.463 --> 00:12:15.024 
+OK, so now some question that we need to just ponder about before moving into the, the the data flow
+
+00:12:15.024 --> 00:12:15.303 
+part.
+
+00:12:15.303 --> 00:12:18.223 
+Is that why out of order execution is beneficial?
+
+00:12:18.223 --> 00:12:22.103 
+I mean, we have hopefully, you know, motivated towards this answer.
+
+00:12:22.103 --> 00:12:27.125 
+So by now, I guess you can, you know, answer this question that OK, out of order execution is
+
+00:12:27.125 --> 00:12:29.663 
+beneficial because of latency tolerance, right?
+
+00:12:29.983 --> 00:12:36.160 
+So if you have long latency instructions that are supposed to block any dependence from getting
+
+00:12:36.160 --> 00:12:41.103 
+executed, now you have a mechanism that can extract that parallelism, right?
+
+00:12:41.103 --> 00:12:46.543 
+So even if you have some dependence, you can keep it aside and let the independence go on.
+
+00:12:46.783 --> 00:12:52.263 
+Once the dependent instructions would have all of their operands ready, then they can be executed.
+
+00:12:52.263 --> 00:12:54.983 
+So it actually is a latency tolerance mechanism.
+
+00:12:54.983 --> 00:12:59.167 
+So if you have, let's say, long latency operations like floating point operations, memory
+
+00:12:59.167 --> 00:13:02.223 
+operations, then under that circumstances, this is useful, right?
+
+00:13:02.463 --> 00:13:09.431 
+So that obviously brings up one question like what if you're all, you know, instructions take one
+
+00:13:09.431 --> 00:13:09.863 
+cycle?
+
+00:13:09.983 --> 00:13:14.423 
+So that obviously means that there is much less thing to hide, right?
+
+00:13:14.423 --> 00:13:19.430 
+If if every instruction takes one cycle, then obviously the benefit that you can come up from out of
+
+00:13:19.430 --> 00:13:21.183 
+order execution becomes bit lesser.
+
+00:13:21.703 --> 00:13:23.143 
+But life is not that easy.
+
+00:13:23.143 --> 00:13:27.623 
+So we would have the benefits of the out of order execution for quite some time.
+
+00:13:28.303 --> 00:13:32.917 
+Now the another question that we want to ponder is that what if an instruction takes thousands of
+
+00:13:32.917 --> 00:13:33.583 
+cycles, right.
+
+00:13:33.583 --> 00:13:38.543 
+So you may actually think that on on what circumstance instruction would take thousands of cycles?
+
+00:13:38.903 --> 00:13:41.103 
+It's not actually that, you know, uncommon.
+
+00:13:41.103 --> 00:13:45.983 
+I mean, not let's say not thousands, but let's say multi 100 is not that uncommon.
+
+00:13:45.983 --> 00:13:46.303 
+Why?
+
+00:13:46.303 --> 00:13:48.743 
+Because once you start hitting the memory and.
+
+00:13:48.943 --> 00:13:54.272 
+This is the memory wall that we always keep talking about, that if your program is doing some
+
+00:13:54.272 --> 00:13:59.143 
+computations, which is, you know, you know, arithmetic operations, that life is easy.
+
+00:13:59.303 --> 00:14:03.743 
+But the moment you do like you're doing arithmetic operations on something, what is that something?
+
+00:14:03.743 --> 00:14:07.663 
+You're probably fetching the data from memory and then you're computing on that data, right?
+
+00:14:07.863 --> 00:14:08.983 
+So who gives you that data?
+
+00:14:08.983 --> 00:14:10.463 
+So that's the load store operations.
+
+00:14:10.663 --> 00:14:12.063 
+And that actually takes a lot of time.
+
+00:14:12.503 --> 00:14:17.329 
+Now, if you think of easily like if you, if you're executing LLMS, if you're executing any, let's
+
+00:14:17.329 --> 00:14:22.057 
+say, you know, big data applications, like even even even, let's say you know, Google Chrome or
+
+00:14:22.057 --> 00:14:22.903 
+something, right?
+
+00:14:22.903 --> 00:14:28.584 
+So if the, the, the more number of tabs that you're going to open that are also going to create lots
+
+00:14:28.584 --> 00:14:30.743 
+of memory, you know, footprint, right?
+
+00:14:30.743 --> 00:14:35.982 
+And then definitely these memory footprint is, you know, not small enough to be stored inside your
+
+00:14:35.982 --> 00:14:36.303 
+cache.
+
+00:14:36.623 --> 00:14:41.009 
+So that means once your cache hierarchy starts failing and failing, meaning that once your cache
+
+00:14:41.009 --> 00:14:45.441 
+hierarchy starts missing, then you would go to the main memory and and you know, God knows what's
+
+00:14:45.441 --> 00:14:47.863 
+out there and that actually creates a lot of latency.
+
+00:14:48.343 --> 00:14:53.318 
+So then the question is that, OK, what if your instruction takes, let's say multi cycles, even 1000
+
+00:14:53.318 --> 00:14:54.223 
+cycles of latency?
+
+00:14:54.743 --> 00:15:00.781 
+So the first question that we want to answer the how large your instruction window should be to
+
+00:15:00.781 --> 00:15:02.943 
+continue feeding this giant right?
+
+00:15:02.943 --> 00:15:07.772 
+I mean, if you have small instruction window, then you can easily fill it up while you're waiting
+
+00:15:07.772 --> 00:15:09.863 
+for the, you know, long latency operation.
+
+00:15:10.063 --> 00:15:15.489 
+So this is one question that you, you know, you, you, you, I mean that that that can keep you awake
+
+00:15:15.489 --> 00:15:15.983 
+at night.
+
+00:15:15.983 --> 00:15:20.826 
+If once you start designing out of photo processor, like how many of the cycles of the latency,
+
+00:15:20.826 --> 00:15:25.263 
+sorry, how many latency, how big of the latency your out of photo machine can tolerate.
+
+00:15:25.583 --> 00:15:31.697 
+So obviously, you know, the, the, the thing that that limits this scalability of this Thomas
+
+00:15:31.697 --> 00:15:34.223 
+algorithm is the hardware size, right?
+
+00:15:34.223 --> 00:15:37.263 
+So how big is your reorder buffer?
+
+00:15:37.263 --> 00:15:38.863 
+So now you can easily think of it in this way.
+
+00:15:38.863 --> 00:15:42.983 
+Let's say if your reorder buffer is 500 entry, right?
+
+00:15:43.263 --> 00:15:45.543 
+And you can fetch 1 instruction every cycle.
+
+00:15:45.543 --> 00:15:51.023 
+So that means you're literally having a, you know, possibility of 500 cycles to tolerate, right?
+
+00:15:51.383 --> 00:15:55.801 
+And then if you, if you're hitting that wall, if your instruction is taking it's A1 instruction is
+
+00:15:55.801 --> 00:15:58.823 
+taking even more than 500 cycles, you know that there is a problem.
+
+00:15:58.823 --> 00:16:03.303 
+So you would eventually fill up the entire buffer and then you do have no place to go.
+
+00:16:03.303 --> 00:16:09.237 
+And then then your, you know, instruction level parallelism exploitation would start coming to an
+
+00:16:09.237 --> 00:16:09.543 
+halt.
+
+00:16:10.063 --> 00:16:13.423 
+OK, so that's something that you know, it's it's, it's a good thing to analyse.
+
+00:16:13.423 --> 00:16:18.802 
+And then this is how most of the architects, modern architects, they also come up with that, you
+
+00:16:18.802 --> 00:16:23.958 
+know, sizes like, OK, what should be your reorder buffer size, how much your latency you can
+
+00:16:23.958 --> 00:16:24.463 
+tolerate.
+
+00:16:24.463 --> 00:16:26.143 
+And that actually gets dictated by this thing.
+
+00:16:26.383 --> 00:16:31.445 
+The another part that would also dictate that not only just the, you know, size of the reorder
+
+00:16:31.445 --> 00:16:31.823 
+buffer.
+
+00:16:31.823 --> 00:16:37.082 
+So this is what we call the depth of the pipeline, but also the width of the pipeline which we will
+
+00:16:37.082 --> 00:16:38.623 
+come on the superscalar side.
+
+00:16:38.623 --> 00:16:44.100 
+So once we go under the superscalar, you know, part of the lecture and then that would be even more
+
+00:16:44.100 --> 00:16:44.543 
+evident.
+
+00:16:45.383 --> 00:16:47.343 
+OK, so that's to wrap it up.
+
+00:16:47.343 --> 00:16:49.903 
+So what are the advantages of the out of order execution?
+
+00:16:50.103 --> 00:16:54.823 
+So advantages obviously is the latency tolerance, so higher performance in than in order execution.
+
+00:16:54.823 --> 00:17:01.254 
+If you have this sort of mechanisms inbuilt, it also gives you the benefit of exploiting irregular
+
+00:17:01.254 --> 00:17:07.751 
+parallelism, like you're not extracting or you're not asking this from the programmer to specify OK
+
+00:17:07.751 --> 00:17:11.623 
+which instructions can be dynamically executed in parallel.
+
+00:17:11.983 --> 00:17:16.883 
+But your hardware is now capable enough to understand that, OK, these instructions are independent
+
+00:17:16.883 --> 00:17:18.583 
+so I can execute them in parallel.
+
+00:17:19.023 --> 00:17:22.023 
+The dependent instructions would automatically get serialized, right?
+
+00:17:22.023 --> 00:17:26.845 
+So that's what that's what the benefit of out of order execution is that it can dynamically find and
+
+00:17:26.845 --> 00:17:28.823 
+exploit parallel operations in a program.
+
+00:17:28.863 --> 00:17:32.143 
+Like if you think of like pipeline execution, it's some sort of parallelism, right?
+
+00:17:32.143 --> 00:17:37.343 
+So you are over overlapping the latency on, you know, one under the other.
+
+00:17:37.343 --> 00:17:38.983 
+So that's what the parallelism means.
+
+00:17:39.583 --> 00:17:40.623 
+So yeah.
+
+00:17:40.903 --> 00:17:43.583 
+But then there are disadvantages, obviously.
+
+00:17:43.583 --> 00:17:48.863 
+So the one of the disadvantages is the more we add machineries to extract this sort of parallelism,
+
+00:17:48.863 --> 00:17:53.023 
+the more you're making the processor complex and progressively complex, right?
+
+00:17:53.023 --> 00:17:56.063 
+So and that complexity, you know, there is no freelance, right.
+
+00:17:56.063 --> 00:18:00.263 
+So that complexity would also potentially lengthen the critical path delay.
+
+00:18:00.263 --> 00:18:04.063 
+And then that would also dictate, let's say the clock cycle time.
+
+00:18:04.863 --> 00:18:09.425 
+Of the processor like how fast your processor can be clocked like it's 3 gigahertz or is it even
+
+00:18:09.425 --> 00:18:09.663 
+more?
+
+00:18:10.103 --> 00:18:11.343 
+So that's one problem.
+
+00:18:11.663 --> 00:18:15.481 
+And the other problem obviously is that you're you're adding more hardware so now your core is
+
+00:18:15.481 --> 00:18:16.863 
+becoming bigger and bigger, right?
+
+00:18:16.863 --> 00:18:22.604 
+So now, previously, if you, if you could have, let's say like a physical footprint of the core, you
+
+00:18:22.604 --> 00:18:28.345 
+could have, you know, let's say, fit that core inside, I don't know, some X nanometre per square or
+
+00:18:28.345 --> 00:18:30.143 
+X, you know, millimetre square.
+
+00:18:30.143 --> 00:18:31.663 
+Then now it's getting bigger and bigger.
+
+00:18:31.663 --> 00:18:34.423 
+So that's a physical, you know, space that you want.
+
+00:18:34.743 --> 00:18:36.303 
+So just to keep this in mind.
+
+00:18:36.303 --> 00:18:42.614 
+So this is the, you know, the, the, the the equation that we always keep this in mind is that so the
+
+00:18:42.614 --> 00:18:48.863 
+amount of time that your program would take to execute is just the number of this is just a simple.
+
+00:18:49.303 --> 00:18:50.823 
+Let's say mental model for you, right?
+
+00:18:50.823 --> 00:18:55.130 
+So the number of instructions that you have average clocks per instruction that you're going to take
+
+00:18:55.130 --> 00:18:56.423 
+and then the clock cycle time.
+
+00:18:56.423 --> 00:18:58.943 
+So you always need to make sure that you can.
+
+00:18:58.943 --> 00:19:04.143 
+None of these three things are getting hard just to come out winning at the end, right?
+
+00:19:04.143 --> 00:19:05.503 
+So that's what you want to do.
+
+00:19:05.823 --> 00:19:07.543 
+Obviously, if you're not changing the program.
+
+00:19:07.543 --> 00:19:09.303 
+So the number of instructions stays the same.
+
+00:19:09.343 --> 00:19:14.810 
+If you executing the same program for in order processor and out of order processor, what out of
+
+00:19:14.810 --> 00:19:19.423 
+order processor gives you is it would give you the better, you know, average CPI.
+
+00:19:19.423 --> 00:19:25.463 
+So it's basically lowering down your clocks per clocks that you take to execute one instruction.
+
+00:19:25.823 --> 00:19:29.623 
+But at the same time, it may be increasing the clock cycle time.
+
+00:19:29.623 --> 00:19:34.263 
+So just be careful like this, these three things, this is what the Trinity looks like.
+
+00:19:34.263 --> 00:19:37.703 
+So if you want to optimise your, you know, accelerate anything.
+
+00:19:38.023 --> 00:19:42.652 
+So either you need to reduce the number of instructions which compiler can help you or maybe other
+
+00:19:42.652 --> 00:19:44.023 
+other ways that you can help.
+
+00:19:44.903 --> 00:19:50.063 
+You also need to have, let's say lower CPI or if you also need to have lower clock cycles.
+
+00:19:50.063 --> 00:19:51.463 
+So that's what the Trinity is.
+
+00:19:51.463 --> 00:19:58.990 
+And then we're going to come back to this, you know this equation again and again while we go to the
+
+00:19:58.990 --> 00:20:01.023 
+superscalar processor also.
+
+00:20:01.663 --> 00:20:06.023 
+OK, so this is just for from the part of the out of order processing.
+
+00:20:06.023 --> 00:20:10.423 
+But then what I just motivated yesterday on the register site.
+
+00:20:10.783 --> 00:20:16.476 
+But then there is a big part of the problem actually lies in how you can execute load store
+
+00:20:16.476 --> 00:20:18.103 
+instructions out of order.
+
+00:20:18.103 --> 00:20:19.343 
+So we are not going into that.
+
+00:20:19.583 --> 00:20:25.442 
+So if you're interested definitely check out this paper because that's the most, let's say complex
+
+00:20:25.442 --> 00:20:30.823 
+part of today's processor like executing ALU instructions out of order is OK, it's doable.
+
+00:20:31.343 --> 00:20:33.743 
+Load store instructions it's much more harder.
+
+00:20:34.023 --> 00:20:37.503 
+So that's what something we would do any question?
+
+00:20:37.503 --> 00:20:37.623 
+Yeah.
+
+00:20:37.623 --> 00:20:46.783 
+Does this kind of all the border execution always implies pipelining?
+
+00:20:48.543 --> 00:20:53.551 
+Yes, I mean, if you if you don't have pipelining then it defeats it defeats the process from the
+
+00:20:53.551 --> 00:20:54.543 
+very get go, right.
+
+00:20:54.543 --> 00:20:59.155 
+So you probably need, I mean, you definitely need some sort of overlapping that's the pipelining the
+
+00:20:59.155 --> 00:20:59.663 
+first days.
+
+00:20:59.903 --> 00:21:02.183 
+And then you will need the in order or out of order.
+
+00:21:02.623 --> 00:21:06.795 
+But then the the concept that we are going to introduce in the superscalar side that can be actually
+
+00:21:06.795 --> 00:21:09.383 
+useful for both the in order process and out of order process.
+
+00:21:09.383 --> 00:21:10.943 
+So I'll come back to that later.
+
+00:21:11.463 --> 00:21:12.943 
+OK, any other questions?
+
+00:21:14.383 --> 00:21:19.704 
+OK, so if not, so then let's let's take a look at, you know, the some other types of ways to extract
+
+00:21:19.704 --> 00:21:20.343 
+parallelism.
+
+00:21:20.343 --> 00:21:25.327 
+And so this is definitely not out of order processing is one way you can extract instruction level
+
+00:21:25.327 --> 00:21:27.463 
+parallelism, but this is not the only way.
+
+00:21:27.703 --> 00:21:30.663 
+So that's what I'm going to motivate here a bit.
+
+00:21:30.983 --> 00:21:35.885 
+So you have already seen, you know, the parts that we have grayed out, we have already covered this
+
+00:21:35.885 --> 00:21:36.183 
+thing.
+
+00:21:36.183 --> 00:21:37.663 
+So we have started with pipelining.
+
+00:21:37.663 --> 00:21:40.983 
+So that's the first level of, you know, parallelism that you are exploiting.
+
+00:21:40.983 --> 00:21:42.903 
+So just making it one after the other.
+
+00:21:43.463 --> 00:21:48.174 
+Then we have also briefly talked about fine grain multi threading, not me, but in the previous
+
+00:21:48.174 --> 00:21:53.037 
+lectures that instead of doing it, let's say power like parallelism inside a thread, then you can
+
+00:21:53.037 --> 00:21:55.343 
+actually parallelise across the thread, right.
+
+00:21:55.343 --> 00:21:59.462 
+So you would, you know, you would just fetch instructions from different threads and then come back
+
+00:21:59.462 --> 00:22:01.543 
+and then fetch instruction from different threads.
+
+00:22:01.983 --> 00:22:03.823 
+So that's what the final multi threading is.
+
+00:22:04.143 --> 00:22:06.423 
+And then you we have introduced out of order execution.
+
+00:22:06.423 --> 00:22:12.583 
+And then these are the topics that we are going to introduce a bit on let's say a bit high level.
+
+00:22:12.743 --> 00:22:17.863 
+So data flow, you have already seen the part of the data flow in the I sub lecture.
+
+00:22:18.383 --> 00:22:20.823 
+I'm just going to briefly talk about the data flow also.
+
+00:22:21.223 --> 00:22:27.383 
+And so it's essentially just like going to be like the out of order processing, but now you're not
+
+00:22:27.383 --> 00:22:33.543 
+going to be, let's say doing it in a transparent way inside the processor, but you won't you would
+
+00:22:33.543 --> 00:22:36.623 
+give this, you know, page to the programmer also.
+
+00:22:36.863 --> 00:22:38.143 
+So there are good side and the bad side.
+
+00:22:38.143 --> 00:22:40.183 
+So that's what we're going to introduce.
+
+00:22:40.503 --> 00:22:41.903 
+Then there is superscalar execution.
+
+00:22:41.903 --> 00:22:47.890 
+We're also going to introduce and hopefully in next few lectures, we're also going to, you know,
+
+00:22:47.890 --> 00:22:51.383 
+touch up on these other modes of extracting parallelism.
+
+00:22:51.383 --> 00:22:58.103 
+So VLIW so that that's one way SIMD processing, which current GPUs employ a lot.
+
+00:22:58.383 --> 00:23:03.023 
+And then we would also go for systolic adders, which is, you know, Google's TPU.
+
+00:23:03.023 --> 00:23:05.903 
+How many of you know, Google's TPU Any hence?
+
+00:23:06.183 --> 00:23:06.823 
+OK, that's good.
+
+00:23:06.863 --> 00:23:07.023 
+Yeah.
+
+00:23:07.183 --> 00:23:11.780 
+So that that's that explores the different types of, you know, parallelism, which is under the type
+
+00:23:11.780 --> 00:23:12.663 
+of systolic adders.
+
+00:23:12.663 --> 00:23:16.703 
+So we hopefully we are also going to cover this thing in next few lectures.
+
+00:23:17.263 --> 00:23:23.466 
+OK, so so yeah, so, so now, now let's let's go briefly and and and discuss the data flow
+
+00:23:23.466 --> 00:23:24.383 
+architecture.
+
+00:23:24.383 --> 00:23:30.253 
+So just to, you know, recap again, you have already seen how our data flow architecture looks like
+
+00:23:30.253 --> 00:23:35.943 
+it's out of orders, how the exact the execution of out of order for our dispatch machine works,
+
+00:23:35.943 --> 00:23:36.303 
+right?
+
+00:23:36.303 --> 00:23:42.805 
+So out of order ranging dynamically builds this data flow inside the processor and just the limit of
+
+00:23:42.805 --> 00:23:48.463 
+data flow building that you are doing is actually within the instruction window, right.
+
+00:23:48.463 --> 00:23:48.823 
+So that's.
+
+00:23:48.943 --> 00:23:52.383 
+Reorder buffer the number of instructions that you are considering at any point of time.
+
+00:23:52.383 --> 00:23:57.480 
+So that's the window of the instruction that you are creating the data flow graph for right and and
+
+00:23:57.480 --> 00:24:01.703 
+then this is we we already talked about and then this is what the data flow graph.
+
+00:24:01.703 --> 00:24:07.303 
+And as I said, like if you go back and then take a look at the previous lecture, so you can see that
+
+00:24:07.303 --> 00:24:12.791 
+just by looking at this, you know, execution units and then what is happening on the snapshot of a
+
+00:24:12.791 --> 00:24:16.263 
+processor state, you can actually create this data flow graph.
+
+00:24:16.823 --> 00:24:22.917 
+But then so yeah, so, so, so that that's what we discussed that OK, the way that this is getting
+
+00:24:22.917 --> 00:24:27.743 
+executed, that availability of the data, data mines, the order of execution.
+
+00:24:27.743 --> 00:24:34.595 
+So you would just simplify the instruction whenever they're ready and the data node of sorry, a data
+
+00:24:34.595 --> 00:24:36.583 
+flow node fires when it's OK.
+
+00:24:36.703 --> 00:24:42.103 
+So now, now the question is that, so maybe I'm, I'm, let me take a step back.
+
+00:24:42.343 --> 00:24:48.511 
+So what the data, the fundamentals of the data flow is essentially simple like what what you saw in
+
+00:24:48.511 --> 00:24:54.679 
+that out of order execution part that every instruction or if you know the availability of the data
+
+00:24:54.679 --> 00:24:59.103 
+is going to dictate when you can actually fire this instruction, right?
+
+00:24:59.423 --> 00:25:05.143 
+And then when all of your sources are ready, you can simply execute.
+
+00:25:05.743 --> 00:25:11.168 
+And then whatever the program that you're writing now think a bit different from, let's say, your
+
+00:25:11.168 --> 00:25:12.903 
+sequential view of the program.
+
+00:25:12.903 --> 00:25:17.415 
+So whatever program that you are going to write, you would also represent this program in terms of,
+
+00:25:17.415 --> 00:25:21.928 
+let's say, data flow graphs, that, OK, you're going to do this computation, you're going to do this
+
+00:25:21.928 --> 00:25:24.663 
+computation, you're going to do this a bunch of computation.
+
+00:25:24.663 --> 00:25:29.778 
+And then they are connected in this way as you can easily figure out that, OK, you may not be able
+
+00:25:29.778 --> 00:25:33.223 
+to understand, OK, how exactly I'm supposed to write this program.
+
+00:25:33.223 --> 00:25:37.103 
+So that's the exact problem of data flow, let's say architecture.
+
+00:25:37.103 --> 00:25:42.346 
+So if you exploit or if you expose this data flow architecture at the ISA level, so you are
+
+00:25:42.346 --> 00:25:45.343 
+expecting the programmers to even write in this way.
+
+00:25:45.583 --> 00:25:46.543 
+So that's the problem.
+
+00:25:46.903 --> 00:25:54.031 
+So people have done multiple jobs at this data flow architecture at the ISA level multiple times in
+
+00:25:54.031 --> 00:25:59.143 
+the 70s, in the 80s, in the 90s, even some in, in, in, you know, 2000s.
+
+00:25:59.143 --> 00:26:03.023 
+And it's not been that much successful to be honest.
+
+00:26:03.023 --> 00:26:09.326 
+So, so basically what, what, why the, the fundamental reason why this is not successful is the very
+
+00:26:09.326 --> 00:26:15.630 
+reason that if I tell you that, OK, whatever logic that you are thinking in your mind, come up with
+
+00:26:15.630 --> 00:26:18.623 
+a representation using data flow graphs, right?
+
+00:26:18.623 --> 00:26:21.823 
+So it's very hard for you to come up with.
+
+00:26:22.103 --> 00:26:25.743 
+And that's the barrier of entry towards this architecture.
+
+00:26:26.143 --> 00:26:33.446 
+So it's like if you the the life lesson that you can take, and many of you probably would, you know,
+
+00:26:33.446 --> 00:26:35.783 
+create new things in the future.
+
+00:26:36.063 --> 00:26:42.547 
+So probably that life lesson that you can take from here is that if you want to design a different,
+
+00:26:42.547 --> 00:26:45.823 
+let's say, jab at the processing mechanism, right?
+
+00:26:45.823 --> 00:26:50.543 
+So, oh, you come up with, let's say better out of order machinery or what not, right?
+
+00:26:50.983 --> 00:26:59.926 
+So try not to, it would be much easier to, let's say, easily get adopted if you don't put the burden
+
+00:26:59.926 --> 00:27:06.903 
+back to the programmers because that's definitely has a huge barrier of entry.
+
+00:27:06.903 --> 00:27:12.861 
+So if you need a architecture that needs a, let's say, full rethinking of the entire software stack,
+
+00:27:12.861 --> 00:27:18.343 
+like you are expecting too much from programmers and that barely works or very hardly works.
+
+00:27:18.823 --> 00:27:23.611 
+That doesn't mean that it won't work, but history actually tells us that it's, it's really hard to
+
+00:27:23.611 --> 00:27:27.423 
+convince if you need a full blown, you know, rewrite of the programming stack.
+
+00:27:27.983 --> 00:27:34.198 
+But this also tells you that if you can keep the program as is and then you can do that same things
+
+00:27:34.198 --> 00:27:37.463 
+internally, that's going to be extremely successful.
+
+00:27:37.903 --> 00:27:40.783 
+So that's what Intel showed for the out of order execution.
+
+00:27:41.103 --> 00:27:46.692 
+So people are building data flow at the same time, but it's just that data, you know, one one over
+
+00:27:46.692 --> 00:27:47.263 
+the other.
+
+00:27:47.263 --> 00:27:52.458 
+Just because the day out of order execution paradigm does not require the softwares to to be
+
+00:27:52.458 --> 00:27:55.903 
+rewritten or it doesn't burden the programmer to do the same.
+
+00:27:56.383 --> 00:28:00.863 
+So that's the benefit of or that's the, you know, recipe for the success.
+
+00:28:00.863 --> 00:28:02.023 
+So just keep in mind.
+
+00:28:02.423 --> 00:28:05.623 
+And yeah, so that's that's what the out of order execution, that's the prime example.
+
+00:28:05.623 --> 00:28:08.983 
+So try not to disturb as much as possible.
+
+00:28:08.983 --> 00:28:13.942 
+Try not to disturb the entire software stack and then come up with a better hardware architecture,
+
+00:28:13.942 --> 00:28:15.663 
+you would be successful hopefully.
+
+00:28:16.623 --> 00:28:20.983 
+But that being said, like the it's not that completely data flow architectures has not been
+
+00:28:20.983 --> 00:28:21.463 
+exploited.
+
+00:28:21.463 --> 00:28:26.623 
+So people have tried to do this thing in different types of hardware, like for example, Apgs.
+
+00:28:26.983 --> 00:28:28.223 
+They have been very much successful.
+
+00:28:28.223 --> 00:28:34.490 
+Like for example, you know, people have written handwritten kernels to process, let's say, video
+
+00:28:34.490 --> 00:28:35.143 
+encodings.
+
+00:28:35.423 --> 00:28:41.543 
+And then you can easily write this, let's say, specific pro programs using data flow methods.
+
+00:28:41.783 --> 00:28:44.303 
+And you can accelerate these programs in in their PGS.
+
+00:28:44.623 --> 00:28:48.903 
+So if you're designing, let's say, you know, I don't know, like, you know, programs for.
+
+00:28:48.943 --> 00:28:54.814 
+Or financial markets and then there is a huge demand for that to accelerate this programs using a
+
+00:28:54.814 --> 00:28:55.783 
+PGS or anything.
+
+00:28:56.023 --> 00:29:01.561 
+So maybe this would be useful, but for a general purpose computing part data flow is probably not
+
+00:29:01.561 --> 00:29:03.503 
+going to be that much influential.
+
+00:29:03.943 --> 00:29:04.303 
+OK.
+
+00:29:04.663 --> 00:29:08.943 
+So that that hopefully, you know, gives you some sort of understanding what the data flow is.
+
+00:29:09.663 --> 00:29:13.183 
+OK, so this is I'm I'm not going to, you know, go too much into details again.
+
+00:29:13.183 --> 00:29:16.383 
+So this is coming from the, you know, the lecture 9, I guess.
+
+00:29:16.423 --> 00:29:16.663 
+Yeah.
+
+00:29:16.903 --> 00:29:21.663 
+So this is like what sort of, you know, drop trade-offs that you are going.
+
+00:29:21.663 --> 00:29:27.393 
+If you go from like traditional von Neumann, which is a sequential level of execution that requires
+
+00:29:27.393 --> 00:29:32.834 
+a program counter to a data-driven execution, which does not have a program counter, then, you
+
+00:29:32.834 --> 00:29:36.423 
+know, all of a sudden everything starts, you know, going down.
+
+00:29:37.503 --> 00:29:42.032 
+OK, so, so now let's, let's talk about what, what are the different or let's say the, the good part
+
+00:29:42.032 --> 00:29:44.183 
+and the bad part of the data flow architecture.
+
+00:29:44.183 --> 00:29:48.968 
+So the advantages of the data flow as, as I mentioned that they're very good at exploiting irregular
+
+00:29:48.968 --> 00:29:49.543 
+parallelism.
+
+00:29:49.543 --> 00:29:57.868 
+Like if you, and you're also like relying on the, the programmer to expose this parallelism to via
+
+00:29:57.868 --> 00:29:59.823 
+their programme, right?
+
+00:29:59.823 --> 00:30:04.874 
+So you are writing the programme based on, let's say, data flow nodes that OK, these operations
+
+00:30:04.874 --> 00:30:08.543 
+would be together, that operations would be together and that's that.
+
+00:30:08.903 --> 00:30:12.963 
+So they're very good at exploiting irregular parallelism on a real dependence is constrained the
+
+00:30:12.963 --> 00:30:15.543 
+processing, which order that the processing you want to have.
+
+00:30:15.823 --> 00:30:19.743 
+And more often than not, they exploit more parallelism than a traditional von Neumann model.
+
+00:30:20.223 --> 00:30:20.583 
+OK.
+
+00:30:20.863 --> 00:30:26.103 
+But then so this is where the advantages probably ends and advantages are actually good.
+
+00:30:26.143 --> 00:30:29.463 
+It's not that it's bad, but the disadvantages are really huge.
+
+00:30:29.503 --> 00:30:34.903 
+Like for now you're actually trading off the entirety of the precise state semantics.
+
+00:30:34.903 --> 00:30:36.383 
+Like think of it in this way.
+
+00:30:36.383 --> 00:30:41.686 
+If you if your program has multiple data nodes and the only thing that is constraining you from
+
+00:30:41.686 --> 00:30:46.543 
+executing, which you know, instructions, you can execute only by their data dependency.
+
+00:30:46.743 --> 00:30:52.364 
+So you literally don't know any at any point of time if you have to abort the program or let's see
+
+00:30:52.364 --> 00:30:57.986 
+if I have to stop the program and go into handling interrupts, which of the nodes you have already
+
+00:30:57.986 --> 00:30:58.503 
+executed?
+
+00:30:58.503 --> 00:31:02.943 
+Like you have very less, you know, understanding of this precise semantics, right?
+
+00:31:02.943 --> 00:31:07.937 
+So some of the nodes probably have executed, some of the nodes we may not have executed because of
+
+00:31:07.937 --> 00:31:09.823 
+data dependencies and you don't know.
+
+00:31:10.223 --> 00:31:13.503 
+So this is what your von Neumann model provides you, right?
+
+00:31:13.503 --> 00:31:17.463 
+So von Neumann model provides you a sequential view of the program.
+
+00:31:17.463 --> 00:31:23.434 
+So you know that OK, if you want to go from one program to the other, you know, that is the precise
+
+00:31:23.434 --> 00:31:28.863 
+state that we are checkpointing and then we go somewhere else, we come back exactly there.
+
+00:31:29.383 --> 00:31:34.384 
+But now think of like if if conceptually you can think of like a you had dealing with a multi
+
+00:31:34.384 --> 00:31:37.343 
+threaded program at program level without any barriers.
+
+00:31:38.543 --> 00:31:43.498 
+Have you ever programmed this sort of things like multi threaded programs or GPU programming without
+
+00:31:43.498 --> 00:31:44.143 
+any barriers?
+
+00:31:44.143 --> 00:31:46.463 
+You know, this probably something yeah.
+
+00:31:46.783 --> 00:31:52.640 
+So you you start thinking, OK, let's let's accelerate this thing without multi thread and then you
+
+00:31:52.640 --> 00:31:57.063 
+go, OK, I and then, you know, your log becomes completely nonsense, right.
+
+00:31:57.063 --> 00:31:59.263 
+So it gets out of order.
+
+00:31:59.263 --> 00:32:00.783 
+So that's what we are dealing with.
+
+00:32:00.783 --> 00:32:05.356 
+So at at any point of time if you want to go back and say that OK, I want to move from this program
+
+00:32:05.356 --> 00:32:09.790 
+and then come back again, you don't know like which which thread has been executed at what level
+
+00:32:09.790 --> 00:32:11.223 
+that we have has been executed.
+
+00:32:11.223 --> 00:32:16.383 
+So you need some sort of a barrier and then you can easily backtrack what exactly was happening.
+
+00:32:16.383 --> 00:32:17.943 
+So that's exactly what we are looking at.
+
+00:32:17.943 --> 00:32:23.663 
+So if you get rid of these, you know, constraint that OK, there is no sequential semantics.
+
+00:32:24.343 --> 00:32:30.788 
+It's very hard for us human minds or even program like computer itself to come up with a precise
+
+00:32:30.788 --> 00:32:31.863 
+state semantics.
+
+00:32:31.863 --> 00:32:32.503 
+So that's one thing.
+
+00:32:33.063 --> 00:32:36.903 
+The second thing is like any any and obviously the hardware over it is huge.
+
+00:32:38.423 --> 00:32:43.853 
+In many cases you might actually also deal with too much of parallelism like you're literally waking
+
+00:32:43.853 --> 00:32:45.863 
+up or I won't say the word waking up.
+
+00:32:46.703 --> 00:32:52.118 
+You can literally like just because of this, you know, data dependency firing principle, you at any
+
+00:32:52.118 --> 00:32:57.315 
+single cycle, you may actually have a lots of numbers of instruction to be, you know, ready for
+
+00:32:57.315 --> 00:32:57.863 
+execution.
+
+00:32:58.303 --> 00:33:03.357 
+Then your life becomes harder that OK, out of all of these ready instructions, which one you want to
+
+00:33:03.357 --> 00:33:04.823 
+schedule, which one you want?
+
+00:33:04.823 --> 00:33:10.190 
+Not like we just want to de prioritise, right, Because the decision that you are going to make
+
+00:33:10.190 --> 00:33:15.671 
+eventually going to be important, OK, You prioritise one over the other that actually, you know,
+
+00:33:15.671 --> 00:33:18.983 
+like propagated a lot for the end to end execution, right.
+
+00:33:18.983 --> 00:33:20.543 
+So that becomes much more harder.
+
+00:33:20.943 --> 00:33:26.343 
+And then there are other, you know, topic problems like how to enable mutable data structure.
+
+00:33:26.343 --> 00:33:31.049 
+This is exactly what I was telling you about multi threaded, you know, programs, you write multi
+
+00:33:31.049 --> 00:33:35.412 
+threaded programs without any locks or semantics and try writing and reading the one data
+
+00:33:35.412 --> 00:33:35.903 
+structure.
+
+00:33:35.903 --> 00:33:37.943 
+You know what exactly that brings.
+
+00:33:38.143 --> 00:33:40.343 
+So that's what we are mentioning over here.
+
+00:33:40.823 --> 00:33:41.063 
+OK.
+
+00:33:41.263 --> 00:33:45.786 
+So hopefully I can, you know, convince you that there are good sides of data flow architecture, like
+
+00:33:45.786 --> 00:33:48.863 
+if you want to build a data flow architecture at the ISA level like.
+
+00:33:48.943 --> 00:33:54.023 
+You want to give this power to the programmers, but then it's very hard for the programmer.
+
+00:33:54.023 --> 00:33:55.823 
+I mean, average programmer is not that.
+
+00:33:56.023 --> 00:34:01.741 
+Let's say I once should, I should not use the word, but average, if you put the board into the
+
+00:34:01.741 --> 00:34:07.703 
+programmers, it barely walks because they're not that much, let's say, willing to put that effort.
+
+00:34:08.183 --> 00:34:12.543 
+So most of the party needs to be, or better needs to be done at the hardware level itself.
+
+00:34:13.183 --> 00:34:19.183 
+OK, so, so yeah, so there are multiple other, let's say, lectures and readings that you can cover.
+
+00:34:19.183 --> 00:34:21.063 
+And I'm not going to cover too much into detail.
+
+00:34:21.063 --> 00:34:23.183 
+So that's what the data flow architecture is.
+
+00:34:23.183 --> 00:34:27.425 
+And then Professor Moody used to cover this data flow architectures much more detail in previous
+
+00:34:27.425 --> 00:34:27.823 
+lectures.
+
+00:34:27.823 --> 00:34:30.423 
+So I'm have put all the, you know, links over there.
+
+00:34:30.743 --> 00:34:34.023 
+And that kind of brings me to the last part of this.
+
+00:34:34.303 --> 00:34:39.463 
+You know, this phase of the lecture is which is a super scalar execution.
+
+00:34:39.463 --> 00:34:44.743 
+And that's the last piece of the puzzle before we jump into some other types of techniques.
+
+00:34:44.743 --> 00:34:50.907 
+And then this would actually make your pipeline or the processor design exactly what you're using
+
+00:34:50.907 --> 00:34:51.543 
+right now.
+
+00:34:51.903 --> 00:34:53.023 
+That's the last piece of the puzzle.
+
+00:34:53.063 --> 00:34:53.583 
+Superscalar.
+
+00:34:54.143 --> 00:34:59.460 
+OK, so as the name suggests, what the superscalar execution is, the idea is that till now, whatever
+
+00:34:59.460 --> 00:35:04.509 
+you have seen is that if you if you recall that you know, data flow graph or not the data flow
+
+00:35:04.509 --> 00:35:09.611 
+graph, if you recall the pipeline, you're still doing 1 fetch at a time, 1 decode at a time and
+
+00:35:09.611 --> 00:35:11.223 
+then multiple executes, right?
+
+00:35:12.023 --> 00:35:17.916 
+What if we can increase that width So we can let's say fetch 2 instructions at a time, decode 2
+
+00:35:17.916 --> 00:35:19.343 
+instructions at a time.
+
+00:35:19.543 --> 00:35:24.270 
+Similarly, we can execute many things that that's the data flow order and then we can also let's say
+
+00:35:24.270 --> 00:35:25.783 
+commit 2 instructions at a time.
+
+00:35:25.943 --> 00:35:27.863 
+So that's what superscaler is going to do.
+
+00:35:28.183 --> 00:35:32.743 
+So the idea is that you you fetch, decode, execute, retire multiple instructions per cycle.
+
+00:35:33.143 --> 00:35:34.983 
+OK, so that's you know the key idea.
+
+00:35:35.343 --> 00:35:40.484 
+So if you if you have N wide superscalar processor and typically today's processor are like let's
+
+00:35:40.484 --> 00:35:43.823 
+say 6 to 8 wide, it can go even bigger than that in some cases.
+
+00:35:44.103 --> 00:35:48.669 
+But in, in, in on average, let's say it's, it's 8 wide processor that we are looking at at, at this
+
+00:35:48.669 --> 00:35:49.223 
+point today.
+
+00:35:49.943 --> 00:35:55.164 
+So in wide superscalar processor essentially means that you have the capability to fetch any
+
+00:35:55.164 --> 00:36:00.783 
+instructions, decode any instructions, rename any instructions, commit any instructions at a cycle.
+
+00:36:01.063 --> 00:36:06.383 
+So that's the power that we have bet now obviously nothing is free lunch.
+
+00:36:06.383 --> 00:36:08.703 
+You need to add hardware resources for doing so.
+
+00:36:09.103 --> 00:36:14.973 
+And now the the thing that you need to keep in mind that you need a data dependency mechanism to
+
+00:36:14.973 --> 00:36:20.783 
+also figure out the dependency between that group of instruction that you're fetching together.
+
+00:36:21.383 --> 00:36:24.503 
+So if if you in your mental model, think of it in this way.
+
+00:36:24.503 --> 00:36:29.913 
+So right now we are doing it on the like right now we are doing the data dependency search or data
+
+00:36:29.913 --> 00:36:32.343 
+dependency tracking at the horizontal scale.
+
+00:36:32.343 --> 00:36:36.952 
+Like you have different pipeline stages and then then you're executing another instructions
+
+00:36:36.952 --> 00:36:40.903 
+overlapping and then you have the dependency analysis in the horizontal scale.
+
+00:36:41.303 --> 00:36:46.076 
+But now you're instead of having one instruction going in like this, you have a bunch of instruction
+
+00:36:46.076 --> 00:36:46.983 
+going in one cycle.
+
+00:36:46.983 --> 00:36:51.583 
+So you're just making the, you know, BLOB a bit bigger and then that goes in this way.
+
+00:36:51.863 --> 00:36:57.712 
+So you not only need to, let's say detect the dependency on the horizontal scale, but you also need
+
+00:36:57.712 --> 00:37:00.903 
+to detect the dependency on the vertical scale, right.
+
+00:37:00.903 --> 00:37:04.729 
+So that's the, you know, the group of instructions that you're going to fetch, the group of
+
+00:37:04.729 --> 00:37:08.807 
+instruction that you're going to decode, you need to understand, OK, is there any data dependency
+
+00:37:08.807 --> 00:37:09.943 
+between those instructions?
+
+00:37:10.263 --> 00:37:17.284 
+OK, So that's what you know, that was makes actually this hardware a much more complicated and that
+
+00:37:17.284 --> 00:37:20.263 
+also makes the the this end to be limited.
+
+00:37:20.623 --> 00:37:21.783 
+Like in a real world.
+
+00:37:21.783 --> 00:37:24.983 
+You can also go for let's say 16 wide out of like super scaler.
+
+00:37:25.623 --> 00:37:28.983 
+That's not what we can afford to do, let's say one cycle.
+
+00:37:28.983 --> 00:37:30.343 
+So that's the what the problem is.
+
+00:37:30.343 --> 00:37:38.074 
+And if you recall that, that, you know, if you recall that the the, the, the equation, if you go for
+
+00:37:38.074 --> 00:37:45.573 
+one design decision that increases your weight, but at that comes at a cost of lower frequency or
+
+00:37:45.573 --> 00:37:52.223 
+lower, you know, cycle or a longer cycle length, then you are again losing in the end.
+
+00:37:52.223 --> 00:37:55.303 
+So we don't need to or do we don't want to do that.
+
+00:37:56.063 --> 00:38:01.703 
+OK, Now this is one thing that many people often, let's say, confuse a bit.
+
+00:38:02.063 --> 00:38:07.653 
+So when we talk about superscalar, we typically tend to think that oh, superscalar is a concept that
+
+00:38:07.653 --> 00:38:11.063 
+can only be applied on top of let's say out of order process.
+
+00:38:11.503 --> 00:38:12.183 
+Absolutely not.
+
+00:38:12.423 --> 00:38:18.635 
+And this is one thing that that paper that we are talking about, you know, is so he's, you know,
+
+00:38:18.635 --> 00:38:24.782 
+Seminole walk that also makes this a bit, you know, wrong assumptions that it's a modern out of
+
+00:38:24.782 --> 00:38:30.929 
+super scaler processes design, but it's actually internally discusses both like super scaler as
+
+00:38:30.929 --> 00:38:33.583 
+well as, you know, out of auto processor.
+
+00:38:33.903 --> 00:38:34.983 
+So what do I mean by this thing?
+
+00:38:34.983 --> 00:38:38.823 
+So this is the Cartesian, you know, design choice that you are actually looking at.
+
+00:38:38.823 --> 00:38:43.743 
+So your processor internally can have out of order dispatch in order dispatch.
+
+00:38:44.143 --> 00:38:48.863 
+And for both of those design point, you can literally come up with both scalar processor and.
+
+00:38:49.423 --> 00:38:50.303 
+Super scalar processor.
+
+00:38:50.623 --> 00:38:55.703 
+So scalar processor like you can literally have in order scalar in order super scalar.
+
+00:38:56.303 --> 00:39:01.131 
+Traditionally out of order scalar has not been developed because of the you know, the the way that
+
+00:39:01.131 --> 00:39:03.103 
+design has been progressed historically.
+
+00:39:03.343 --> 00:39:10.592 
+And then then we have out of order super scalar processor actually in in design wise Intel, I think
+
+00:39:10.592 --> 00:39:17.183 
+alpha also, they have both gone from in order super scalar try to push the boundary there.
+
+00:39:17.503 --> 00:39:20.863 
+And then they have introduced out of out of order scalar.
+
+00:39:21.103 --> 00:39:24.143 
+And then they have finally gone to out of sorry, out of order superscalar.
+
+00:39:24.663 --> 00:39:27.183 
+So that's the, you know, natural progression that we had looking at.
+
+00:39:27.543 --> 00:39:33.253 
+OK, but keep this in mind that scalar or superscalar processing is not a concept that is completely
+
+00:39:33.253 --> 00:39:35.503 
+tied up to the out of order processing.
+
+00:39:35.623 --> 00:39:41.369 
+OK, OK, so here is an example of what the out of order, you know, scalar superscalar process looks
+
+00:39:41.369 --> 00:39:41.663 
+like.
+
+00:39:41.663 --> 00:39:46.303 
+So as you can see over there and, and what, what I'm showing here is that instead of having one
+
+00:39:46.303 --> 00:39:51.140 
+instruction getting through the pipeline and then this is 1 simple example, because of the in order
+
+00:39:51.140 --> 00:39:53.143 
+pipeline, you have multiple instructions.
+
+00:39:53.143 --> 00:39:56.943 
+So I'm, I'm showing over here like you, you are getting 2 instructions at a time.
+
+00:39:56.943 --> 00:40:02.409 
+You are also looking up to the register file with two instructions, all of them, you know their
+
+00:40:02.409 --> 00:40:03.503 
+register opponents.
+
+00:40:03.783 --> 00:40:09.918 
+You're also going, let's say 2 instructions worth of data paths to the AL use and you're doing like
+
+00:40:09.918 --> 00:40:15.063 
+basically you're replicating everything for accommodating 2 instructions at a time.
+
+00:40:15.223 --> 00:40:21.242 
+So you can easily understand what is the, you know, the hardware over it that you can introduce over
+
+00:40:21.242 --> 00:40:21.543 
+here.
+
+00:40:21.983 --> 00:40:26.023 
+So the idea is that, you know, if you if you just replicate, your IPC becomes double, right?
+
+00:40:26.063 --> 00:40:27.623 
+I mean, that's easy peasy.
+
+00:40:28.023 --> 00:40:32.688 
+But then you also need to make the dependencies inside that 2 instructions that you're going to
+
+00:40:32.688 --> 00:40:32.983 
+fetch.
+
+00:40:33.223 --> 00:40:35.383 
+So I'm going to just show you someone example over here.
+
+00:40:35.383 --> 00:40:43.286 
+So, so see this is 1, you know the program and if we design let's say 2 wide super like in order,
+
+00:40:43.286 --> 00:40:46.383 
+sorry, SO2 wide in order for pipeline.
+
+00:40:46.383 --> 00:40:48.943 
+So we would expect the ideal IPC to be two.
+
+00:40:48.943 --> 00:40:50.783 
+And then this is what it's happening, right?
+
+00:40:50.783 --> 00:40:55.233 
+So look, if you look into this, like these two instructions, they're completely independent with
+
+00:40:55.233 --> 00:40:55.743 
+each other.
+
+00:40:55.983 --> 00:40:58.383 
+These two instructions again, they're independent with each other.
+
+00:40:58.743 --> 00:41:00.583 
+These two instructions are also there the same thing.
+
+00:41:00.863 --> 00:41:05.724 
+So what we are doing, we are essentially fetching 2 instructions together, decoding and it is
+
+00:41:05.724 --> 00:41:10.586 
+flowing through the pipeline while the second group of two instructions are going through the
+
+00:41:10.586 --> 00:41:11.423 
+pipeline, right.
+
+00:41:11.703 --> 00:41:16.768 
+So this is what you know if if you go on this part, you will actually see that OK, this entire 6
+
+00:41:16.768 --> 00:41:19.143 
+instructions will be fetched in three cycles.
+
+00:41:19.143 --> 00:41:21.103 
+So that would give you IPC of two.
+
+00:41:21.623 --> 00:41:22.943 
+Life is good, right?
+
+00:41:23.383 --> 00:41:27.903 
+But now if you, if I just change the programme a bit, now what is happening over here?
+
+00:41:27.903 --> 00:41:32.144 
+So you can see that if you want to fetch these two instructions together, they have a data
+
+00:41:32.144 --> 00:41:32.663 
+dependency.
+
+00:41:33.063 --> 00:41:36.743 
+So obviously you cannot have dependencies between these two.
+
+00:41:36.743 --> 00:41:42.246 
+If you want to execute the only way that you can execute OK, the first instruction that you can have
+
+00:41:42.246 --> 00:41:44.503 
+like the group of two that becomes empty.
+
+00:41:44.503 --> 00:41:49.151 
+So that's your empty slot because you can't, you can't literally execute this second instructions
+
+00:41:49.151 --> 00:41:49.583 
+together.
+
+00:41:50.143 --> 00:41:55.201 
+So what you need to do then you're scheduling, you know, the, the grouping goes a bit, you know,
+
+00:41:55.201 --> 00:41:55.623 
+haywire.
+
+00:41:55.623 --> 00:41:57.983 
+So now these two instructions will come together.
+
+00:41:57.983 --> 00:41:59.223 
+These two instructions becomes together.
+
+00:41:59.223 --> 00:41:59.783 
+And then this one.
+
+00:42:00.263 --> 00:42:04.628 
+Now, if I ask you a simple, so obviously if you, if you do this now all of the instructions are
+
+00:42:04.628 --> 00:42:06.743 
+getting fair, you know, issued in five cycles.
+
+00:42:06.743 --> 00:42:09.823 
+So you can see your IPC dropped from 2 to 1.2.
+
+00:42:10.263 --> 00:42:11.623 
+So that's the problem.
+
+00:42:12.263 --> 00:42:18.863 
+Now if I ask you a simple question, So what you can do to make this IPC come back up to two anyone?
+
+00:42:19.783 --> 00:42:20.063 
+Yes.
+
+00:42:22.463 --> 00:42:25.383 
+I mean we are already doing the data forwarding as much as we can.
+
+00:42:25.383 --> 00:42:27.903 
+So, so here we are forwarding, here we are forwarding.
+
+00:42:27.903 --> 00:42:32.423 
+So yeah, I mean we are we are our in order pipeline is still going strong.
+
+00:42:33.063 --> 00:42:37.303 
+Yes, yes.
+
+00:42:37.303 --> 00:42:42.543 
+But let's say if we want to stay with this design constraint, we can fetch only two.
+
+00:42:42.543 --> 00:42:45.663 
+So this is A2 wide super scaler with this design.
+
+00:42:45.663 --> 00:42:47.023 
+What else can you do?
+
+00:42:47.063 --> 00:42:47.423 
+Yes.
+
+00:43:00.023 --> 00:43:08.543 
+OK, but this is a true dependence, right?
+
+00:43:08.543 --> 00:43:13.894 
+So it doesn't matter if you, even if you have, you know, infinite registers, this is your program
+
+00:43:13.894 --> 00:43:16.543 
+and then the ad is literally dependent on loads.
+
+00:43:16.543 --> 00:43:17.983 
+So you can't get rid of that.
+
+00:43:18.423 --> 00:43:20.103 
+But there is maybe a different way.
+
+00:43:20.223 --> 00:43:23.863 
+Think, OK, I'll come back to you again.
+
+00:43:23.863 --> 00:43:27.823 
+Yes, which way we want to reorder?
+
+00:43:35.213 --> 00:43:35.373 
+Uh huh.
+
+00:43:48.243 --> 00:43:48.803 
+Makes sense.
+
+00:43:48.943 --> 00:43:55.485 
+I mean, if you if you have more registers then just don't use this T 0 here and then use a different
+
+00:43:55.485 --> 00:43:58.103 
+register and then probably just replace.
+
+00:43:58.503 --> 00:44:01.663 
+But the core idea is is exactly what what you wanted Sir.
+
+00:44:01.663 --> 00:44:08.684 
+Even in with this sequence of program, even with this set of architectural registers, if you just
+
+00:44:08.684 --> 00:44:15.561 
+Simply put this or and replace the OR with the add program like syntactically the program would
+
+00:44:15.561 --> 00:44:22.582 
+stay exactly same you, you would get the final same exact output, but you would have the IPC come
+
+00:44:22.582 --> 00:44:28.663 
+back up to two because see this or is only going to be dependent on this store What?
+
+00:44:29.303 --> 00:44:33.983 
+So if you replace this or with the AD, you're still obeying all the dependencies that you have.
+
+00:44:34.303 --> 00:44:38.569 
+It's just that you have restructured the code of bit and now your superscalar processor can execute
+
+00:44:38.569 --> 00:44:39.863 
+it with with, you know, 2 IPC.
+
+00:44:40.743 --> 00:44:46.127 
+So that's basically what I'm trying to tell you here is that if compilers are in, you know,
+
+00:44:46.127 --> 00:44:51.393 
+knowledgeable that, OK, it can reorder the instructions at compile time while obeying the
+
+00:44:51.393 --> 00:44:56.423 
+correctness of the program, you can get, you know, extract better benefits out of it.
+
+00:44:56.663 --> 00:44:59.903 
+So that's what also happens in in today's, you know, compilers.
+
+00:44:59.903 --> 00:45:04.943 
+So they they try to do, you know, all sorts of reasoning to handle the data dependences.
+
+00:45:05.423 --> 00:45:05.663 
+OK.
+
+00:45:05.743 --> 00:45:10.570 
+So I'm not going to go into the full details of this, that there are multiple ways of handling the
+
+00:45:10.570 --> 00:45:11.063 
+data flow.
+
+00:45:11.063 --> 00:45:16.013 
+We have, you know, solve all of these things like, you know, bypassing, waiting, eliminate,
+
+00:45:16.013 --> 00:45:20.583 
+eliminating the, you know, the, the, the, the data dependence at the software level.
+
+00:45:20.583 --> 00:45:22.223 
+So this is exactly what we discussed.
+
+00:45:22.223 --> 00:45:27.412 
+Like if you reorder, if your compiler can reorder instructions while obeying all the, you know,
+
+00:45:27.412 --> 00:45:29.543 
+correctness, you can handle this thing.
+
+00:45:29.543 --> 00:45:33.583 
+And all of this can be applied at superscalar process level.
+
+00:45:34.103 --> 00:45:34.423 
+OK.
+
+00:45:34.703 --> 00:45:39.570 
+So this just quickly go through before you know taking the break that So what we are the advantages
+
+00:45:39.570 --> 00:45:44.388 
+that we are looking at the superscalar execution is that obviously it would provide you the higher
+
+00:45:44.388 --> 00:45:45.863 
+instruction throughput, right.
+
+00:45:45.863 --> 00:45:50.183 
+I mean, I mean if you if you go 4 wide you were committing also 4 white.
+
+00:45:50.183 --> 00:45:52.783 
+I mean yeah, I mean that's no brainer, right.
+
+00:45:52.783 --> 00:45:56.983 
+So higher instruction throughput and then just just keep this in mind.
+
+00:45:56.983 --> 00:46:01.205 
+So if, if you have, let's say, higher instruction throughput essentially means that your CPI is
+
+00:46:01.205 --> 00:46:01.783 
+dropping now.
+
+00:46:01.943 --> 00:46:06.223 
+So overall, you know, the execution time of the program is also dropping.
+
+00:46:06.223 --> 00:46:11.778 
+But keep this in mind also that you don't want to operate at a level where you're just chasing the,
+
+00:46:11.778 --> 00:46:13.743 
+you know, dropping the CPI so much.
+
+00:46:14.063 --> 00:46:16.103 
+Now your cycle is also becoming larger.
+
+00:46:16.543 --> 00:46:21.765 
+So if you are operating and let's say instead of 3.2 gigahertz, if you're operating at 2 gigahertz,
+
+00:46:21.765 --> 00:46:26.988 
+you better compensate that with the, you know, the, the betterment of that you are doing inside the
+
+00:46:26.988 --> 00:46:27.463 
+hardware.
+
+00:46:27.743 --> 00:46:31.974 
+Otherwise you're eventually going to lose in in the end because that the wall clock time is not
+
+00:46:31.974 --> 00:46:33.623 
+going to, you know, go any different.
+
+00:46:34.023 --> 00:46:39.312 
+So the disadvantages and then that's what the, the type or the constraints that you need to keep in
+
+00:46:39.312 --> 00:46:44.547 
+mind while, you know, implementing these things in the hardware because that all the disadvantages
+
+00:46:44.547 --> 00:46:49.463 
+is going to or potentially going to increase the clock cycle time is at a higher complexity.
+
+00:46:49.463 --> 00:46:54.937 
+Now, if you go for, let's say, you know, 2 wide superscalar, 8 wide superscalar, now you need to add
+
+00:46:54.937 --> 00:47:00.303 
+so many circuitry to even detect the data dependency within that group that actually adds latency.
+
+00:47:00.303 --> 00:47:05.587 
+I mean, hopefully the I mean, in worst case, it can also significantly lengthen the clocks clock
+
+00:47:05.587 --> 00:47:05.863 
+time.
+
+00:47:06.463 --> 00:47:07.943 
+So that's what I'm showing over here.
+
+00:47:08.143 --> 00:47:12.956 
+It requires A dependency checking between the concurrent executions register renaming, which is the
+
+00:47:12.956 --> 00:47:16.263 
+current, you know, the bottleneck in today's out of order processor.
+
+00:47:16.263 --> 00:47:21.691 
+Like it becomes extremely complex to obey all of all of those dependencies within the, you know,
+
+00:47:21.691 --> 00:47:24.463 
+fetch group and then still renaming it correctly.
+
+00:47:24.863 --> 00:47:27.983 
+So that that thing that becomes much more complex.
+
+00:47:27.983 --> 00:47:34.750 
+And then, as I said, like this can all of this can actually indirectly affect your clock cycle time
+
+00:47:34.750 --> 00:47:41.107 
+and you don't want to go there to which eventually, you know, disrupts this final the the the
+
+00:47:41.107 --> 00:47:42.543 
+equation that we see.
+
+00:47:42.983 --> 00:47:45.023 
+And obviously it needs more hardware resources.
+
+00:47:45.303 --> 00:47:51.023 
+So that's I'll just, you know, close it with, with this part of the lecture, with this example.
+
+00:47:51.023 --> 00:47:54.263 
+So Intel Pentium is the first in order superscalar processor.
+
+00:47:54.263 --> 00:47:59.580 
+And then that actually came before the Pentium Pro and Pentium Pro actually introduced the out of
+
+00:47:59.580 --> 00:48:00.183 
+order part.
+
+00:48:00.383 --> 00:48:02.223 
+So think of it in this way.
+
+00:48:02.223 --> 00:48:07.552 
+So Intel 4 to 6, I think that that that's the first processor that Intel built with introduced
+
+00:48:07.552 --> 00:48:08.063 
+pipeline.
+
+00:48:08.583 --> 00:48:13.212 
+Then you have Intel Pentium, it was supposed to be called Intel 5 to 6, but then you know, somebody
+
+00:48:13.212 --> 00:48:14.943 
+came up with this for marketing term.
+
+00:48:14.943 --> 00:48:16.863 
+So that's Intel Pentium for you.
+
+00:48:16.863 --> 00:48:19.823 
+And then Intel Pentium introduce a superscalar in order pipeline.
+
+00:48:20.183 --> 00:48:25.703 
+Then you have Intel Pentium Pro, which is the out of order superscalar pipeline.
+
+00:48:26.063 --> 00:48:30.063 
+And this is the same thing that was going on for on from the alpha side also.
+
+00:48:30.063 --> 00:48:36.528 
+So A21, so 21164 is the first processor that introduced, I mean not first person like from first
+
+00:48:36.528 --> 00:48:42.858 
+person in the alpha side that introduced in order superscalar and then 21264 introduced out of
+
+00:48:42.858 --> 00:48:43.263 
+order.
+
+00:48:44.023 --> 00:48:48.863 
+Then this is the in out of order from Intel Pentium side our Alpha 21264.
+
+00:48:49.343 --> 00:48:51.863 
+Is out of order super scalar from alpha side.
+
+00:48:51.863 --> 00:48:56.263 
+And then yeah, for some reason alpha also went out of the market.
+
+00:48:56.623 --> 00:48:59.223 
+It will stay back and that's what you're seeing over today.
+
+00:49:00.023 --> 00:49:07.023 
+OK, so that's that's you know, and now all over the course of that generation, like since 2002, what
+
+00:49:07.023 --> 00:49:10.943 
+we are now to 2026, this is what we are actually seeing.
+
+00:49:10.943 --> 00:49:16.423 
+Like we have kept increasing the width of the pipeline, which is the Super scalar width.
+
+00:49:16.983 --> 00:49:22.136 
+And we have also kept the number of entries that we can hold in the pipeline, which is the depth of
+
+00:49:22.136 --> 00:49:24.583 
+the pipeline, the reorder buffer significantly.
+
+00:49:24.583 --> 00:49:28.823 
+And then that kept on, you know, providing performance benefits over the generations across.
+
+00:49:29.623 --> 00:49:32.943 
+So yeah, so, so this is again like I'm revisiting this figure again.
+
+00:49:32.943 --> 00:49:35.863 
+So as you can see over here that that's, I don't know whether you can see this.
+
+00:49:35.863 --> 00:49:36.103 
+Yeah.
+
+00:49:36.343 --> 00:49:38.023 
+So this is 4 instructions per cycle.
+
+00:49:38.023 --> 00:49:39.823 
+So this is coming from AMD Zen 2.
+
+00:49:40.103 --> 00:49:41.863 
+So that's the width of the Super scaler.
+
+00:49:42.263 --> 00:49:48.663 
+And if you go to Apple's M1 that actually clocks at 8, you know, wide decode.
+
+00:49:49.023 --> 00:49:52.983 
+So that's basically the superscalar width of your M1 processors.
+
+00:49:53.383 --> 00:49:56.343 
+I think map will still clocks at somewhere around 8 or 10 wide decode.
+
+00:50:04.064 --> 00:50:11.064 
+Bubbles meaning that you, you, you cannot commit those instructions at a group also.
+
+00:50:11.064 --> 00:50:15.464 
+So always keep this in mind that you would fetch in order, you would commit in order.
+
+00:50:15.944 --> 00:50:19.304 
+So if you can't commit, so let's say you have a width of, let's say 4.
+
+00:50:19.624 --> 00:50:22.144 
+So you can fetch 4, you can decode 4.
+
+00:50:22.344 --> 00:50:25.224 
+Then out of order becomes, you know, the entire out of order part.
+
+00:50:25.544 --> 00:50:29.184 
+And then everything gets populated in the reorder buffer, right?
+
+00:50:29.184 --> 00:50:33.464 
+So you're committing something from the reorder buffer exactly on, you know, 4 by 4.
+
+00:50:34.064 --> 00:50:35.744 
+So every cycle you are committing 4.
+
+00:50:35.984 --> 00:50:41.104 
+So now you would scan the reorder buffer from the oldest instruction to the youngest instruction.
+
+00:50:41.104 --> 00:50:45.787 
+You would say that OK, I would start committing the four cycle, I would start committing 4
+
+00:50:45.787 --> 00:50:46.464 
+instructions.
+
+00:50:47.184 --> 00:50:52.657 
+If I stop somewhere the remaining instructions at that second, even if you have space to commit, you
+
+00:50:52.657 --> 00:50:53.424 
+cannot commit.
+
+00:50:53.784 --> 00:50:56.824 
+So you would just commit 2 or let's say 1 and that's that.
+
+00:50:57.504 --> 00:51:00.224 
+So that actually drops the IPC significantly.
+
+00:51:00.424 --> 00:51:06.401 
+So even if we have the support for let's say 8 wide commit or 8 wide, you know, commit processor,
+
+00:51:06.401 --> 00:51:11.824 
+you may actually frequently see your process is not committing 8 instructions per cycle.
+
+00:51:12.704 --> 00:51:21.020 
+It would be very, you know, likely that you or it would very hard to see when you know anything
+
+00:51:21.020 --> 00:51:23.384 
+close to even 8 make sense.
+
+00:51:24.384 --> 00:51:29.599 
+OK, if you don't have any other question, then I think we would again like have some break and then
+
+00:51:29.599 --> 00:51:30.864 
+then let's meet at 3:15.
+
+00:51:31.304 --> 00:51:36.024 
+And then we would start with the second part of the lecture, which is branch prediction.
+
+00:51:39.179 --> 00:51:39.939 
+Everything is fine.
+
+00:51:40.939 --> 00:51:42.779 
+This is getting broadcasted.
+
+00:51:42.779 --> 00:51:43.299 
+Everything is fine.
+
+00:51:43.299 --> 00:51:50.599 
+OK, OK, so, so now we are going to take a look at other part of the lecture and this is something
+
+00:51:50.599 --> 00:51:57.749 
+that is really fascinating and I hope that I do a good job to you know make you also fascinated
+
+00:51:57.749 --> 00:51:59.179 
+about this problem.
+
+00:51:59.179 --> 00:52:04.219 
+And this is one of the quintessential puzzle to enable what we have built in now.
+
+00:52:04.659 --> 00:52:09.579 
+So out of order superscalar pipeline everything is fine or even simple pipeline is fine.
+
+00:52:09.899 --> 00:52:13.939 
+But then we have kind of briefly talked about this problem which is the branch prediction problem.
+
+00:52:13.939 --> 00:52:18.899 
+But branch prediction basically says that OK, what needs to be executed next?
+
+00:52:19.299 --> 00:52:26.356 
+One of your fellow classmate, he has asked the question that, OK, is there any reason why let's say
+
+00:52:26.356 --> 00:52:33.271 
+Apple or ARM can execute these many instructions make it, you know, wider superscaler as compared
+
+00:52:33.271 --> 00:52:35.339 
+to let's say X86 counterpart.
+
+00:52:35.779 --> 00:52:41.539 
+So one of the answer would be lying on on this, you know, top part of the lecture.
+
+00:52:42.019 --> 00:52:42.379 
+OK.
+
+00:52:42.859 --> 00:52:49.419 
+So, so yeah, so that's what the wait a SEC laser pointer is the pointer.
+
+00:52:49.539 --> 00:52:49.779 
+Yeah.
+
+00:52:50.379 --> 00:52:51.539 
+So on the grand scheme of things.
+
+00:52:51.539 --> 00:52:53.539 
+So this is what we are going to look at.
+
+00:52:53.539 --> 00:52:58.577 
+So again, so this is the last part of the piece of the puzzle to enable literally to enable what we
+
+00:52:58.577 --> 00:53:02.699 
+have built in now or the out of order superscalar which is the branch prediction.
+
+00:53:04.339 --> 00:53:07.219 
+So what we are going to deal with is the control dependence.
+
+00:53:07.219 --> 00:53:11.979 
+I think we have seen this control dependence in the ISA lectures if I am not mistaken.
+
+00:53:11.979 --> 00:53:17.918 
+But just to jog your memory, So what control dependence means that once you start designing A
+
+00:53:17.918 --> 00:53:19.579 
+pipeline processor, right?
+
+00:53:19.579 --> 00:53:22.899 
+So every cycle you are fetching next instruction, next instruction, next instruction.
+
+00:53:23.579 --> 00:53:25.179 
+What exactly is the next instruction?
+
+00:53:25.179 --> 00:53:29.660 
+So that's if you if you start going to the details, then you would see the OK, the devils are in the
+
+00:53:29.660 --> 00:53:30.019 
+details.
+
+00:53:30.419 --> 00:53:33.619 
+So what should we fetch from Indiana?
+
+00:53:33.619 --> 00:53:35.419 
+The next instruction, I mean next cycle.
+
+00:53:35.899 --> 00:53:37.259 
+So obviously the address is.
+
+00:53:37.619 --> 00:53:39.579 
+So the answer is the address of the next instruction.
+
+00:53:39.579 --> 00:53:40.779 
+But what is the next instruction?
+
+00:53:40.779 --> 00:53:45.259 
+So if you have a sequential piece of code that, oh, you're just writing, oh, I'm going to do this.
+
+00:53:45.259 --> 00:53:49.339 
+I'm like, I'm loading a value from array A and I'm adding something from array.
+
+00:53:49.419 --> 00:53:50.499 
+I'm storing something from array.
+
+00:53:50.739 --> 00:53:55.547 
+Life is good, but you are not only writing those that sort of code you have if else clause you have
+
+00:53:55.547 --> 00:53:58.219 
+fall loop, you have do while loop, you have while loop.
+
+00:53:58.219 --> 00:54:00.019 
+So these are like branch instructions, right.
+
+00:54:00.019 --> 00:54:01.859 
+So you keep on doing something.
+
+00:54:01.859 --> 00:54:07.376 
+If some condition is not met, you would go back or you would go you know if if let us say on some if
+
+00:54:07.376 --> 00:54:09.859 
+condition is met, then you go somewhere else.
+
+00:54:10.019 --> 00:54:12.979 
+If the if it is not made, then you would do the some other things.
+
+00:54:13.259 --> 00:54:16.899 
+So how exactly you would get to know that what is the address of the next instruction?
+
+00:54:16.899 --> 00:54:18.539 
+That is actually a bit problematic.
+
+00:54:18.539 --> 00:54:22.739 
+So if the instructions are so that's what we call the control dependence.
+
+00:54:22.739 --> 00:54:24.459 
+So you have seen the data dependence part.
+
+00:54:24.459 --> 00:54:30.177 
+So data dependence meaning that one instruction cannot be executed till its source operands are
+
+00:54:30.177 --> 00:54:30.539 
+ready.
+
+00:54:30.539 --> 00:54:31.699 
+So that's the data dependence.
+
+00:54:31.699 --> 00:54:33.099 
+So you cannot execute.
+
+00:54:33.579 --> 00:54:39.024 
+The other fundamental form of dependence is the control dependence, meaning that this instruction
+
+00:54:39.024 --> 00:54:44.414 
+you like where exactly you whether you would execute this instruction or not, it depends on some
+
+00:54:44.414 --> 00:54:46.379 
+let's say branch conditions, right?
+
+00:54:46.379 --> 00:54:47.699 
+And that's the control dependence.
+
+00:54:47.939 --> 00:54:53.299 
+So that is what we are going to look into this this this part of the lecture.
+
+00:54:53.539 --> 00:55:00.308 
+OK, so now the, the the question is that if you have, let us say non control for flow instruction,
+
+00:55:00.308 --> 00:55:06.939 
+like if you just have a sequential piece of code, then your next PC calculation is much simpler.
+
+00:55:07.739 --> 00:55:10.019 
+Now the question is what would be the next PC?
+
+00:55:10.339 --> 00:55:12.499 
+So that actually lies in in this condition.
+
+00:55:12.499 --> 00:55:17.579 
+So in case of ARM, in case of of probably risk 5 also.
+
+00:55:17.779 --> 00:55:22.259 
+So ARM ISA for sure is your instruction is going to be.
+
+00:55:22.259 --> 00:55:22.579 
+So what?
+
+00:55:22.579 --> 00:55:27.299 
+What would be your next instruction if you don't have any conditional branch If then your next
+
+00:55:27.299 --> 00:55:32.019 
+instruction would be whatever is your current instruction plus some instruction length, right?
+
+00:55:32.019 --> 00:55:33.579 
+Whether the size of the current instruction.
+
+00:55:34.099 --> 00:55:37.739 
+Now for ARM, the size of the current instruction is always fixed.
+
+00:55:38.499 --> 00:55:44.979 
+So you know if you are sequential then you always get to go from PC equals PC +4.
+
+00:55:44.979 --> 00:55:46.459 
+So it is like 4 bytes ahead.
+
+00:55:47.179 --> 00:55:50.299 
+Now for X86 ISA, that thing is not fixed.
+
+00:55:50.899 --> 00:55:56.939 
+So your X86 instruction can vary somewhere between you know like I think 2 bytes.
+
+00:55:56.939 --> 00:56:01.939 
+I am, I am probably mistaking here, but it can go as big as let's say 16 bytes, 17 bytes.
+
+00:56:02.299 --> 00:56:08.004 
+So that creates the problem that OK, if you know that OK, this instruction, what would be the next
+
+00:56:08.004 --> 00:56:08.179 
+in?
+
+00:56:08.179 --> 00:56:13.455 
+Well, like this instruction size, you don't even know the size because size would be only known at
+
+00:56:13.455 --> 00:56:16.579 
+the decode phase, like how big is that instruction, right?
+
+00:56:16.579 --> 00:56:22.472 
+So and then by the time you went to the decode phase, you already you know you're supposed to fetch
+
+00:56:22.472 --> 00:56:24.139 
+the next instruction, right?
+
+00:56:24.139 --> 00:56:28.219 
+So if you don't know the size and you don't know like what suppose you are supposed to fetch.
+
+00:56:28.539 --> 00:56:29.619 
+So you can easily see that.
+
+00:56:29.699 --> 00:56:31.939 
+Even like in complex ISR.
+
+00:56:32.099 --> 00:56:34.739 
+So this is one thing that also complicates the process.
+
+00:56:34.739 --> 00:56:40.859 
+So if you if you know that OK your every instruction is of fixed width, then you know that you you
+
+00:56:40.859 --> 00:56:45.419 
+can also say that OK, this part of the encoding is giving me the OP code.
+
+00:56:45.419 --> 00:56:46.899 
+This part is the source registers.
+
+00:56:46.899 --> 00:56:48.099 
+This part is what not right?
+
+00:56:48.499 --> 00:56:51.619 
+But if you make it variable, then life becomes harder.
+
+00:56:51.619 --> 00:56:56.675 
+So your decoder becomes harder to do and your pipeline also becomes harder to even keep feeding what
+
+00:56:56.675 --> 00:56:57.939 
+what exactly is going on?
+
+00:56:57.939 --> 00:57:04.477 
+So this is one of the reason why let's say risk based Isas like ARM can actually build much more,
+
+00:57:04.477 --> 00:57:11.084 
+let's say wider pipeline because you're, you know, many part of the decode logic, many part of the
+
+00:57:11.084 --> 00:57:14.859 
+fetch logic becomes much more easier as compared to X86.
+
+00:57:15.099 --> 00:57:19.499 
+Now you might actually question this, why then X86 even go into this direction?
+
+00:57:19.819 --> 00:57:23.991 
+So the answer lies in the fact that if you go for, let's say, you know, complex instruction, and
+
+00:57:23.991 --> 00:57:27.339 
+that's the age-old debate and I'm not going too much into details over there.
+
+00:57:27.659 --> 00:57:33.049 
+But if you go for complex instruction set ISA, then you can also represent the program much more
+
+00:57:33.049 --> 00:57:33.779 
+compact view.
+
+00:57:33.979 --> 00:57:35.819 
+Like you can literally cramp the program down.
+
+00:57:35.819 --> 00:57:39.819 
+Like you can have like 1 instruction that's going to do lots of things.
+
+00:57:39.819 --> 00:57:46.728 
+Like you can literally load 2 operands from memory and then do the addition and then store it in the
+
+00:57:46.728 --> 00:57:48.179 
+memory 1 instruction.
+
+00:57:48.899 --> 00:57:54.445 
+But if you want to do this thing in ARM, you literally need two different loads, then another AD and
+
+00:57:54.445 --> 00:57:55.499 
+then another store.
+
+00:57:56.019 --> 00:57:59.459 
+So instead of having 4 instructions, you can actually represent one instruction.
+
+00:57:59.459 --> 00:58:02.419 
+So that's, you know, COM makes the program compact.
+
+00:58:02.419 --> 00:58:09.739 
+And then that was some, let's say, legacy reasons why we went for, you know, CIS kind of ISA.
+
+00:58:10.019 --> 00:58:16.514 
+But hopefully I kind of motivated you that even like in complex ISA even identifying next PC, even
+
+00:58:16.514 --> 00:58:21.419 
+if you have a sequential logic that is also become may become problematic.
+
+00:58:21.659 --> 00:58:23.739 
+And if you have control logic, then you know, good luck.
+
+00:58:23.859 --> 00:58:27.219 
+So that is I am going to, you know, motivate over here.
+
+00:58:27.499 --> 00:58:32.741 
+So as I said, like easy to determine if you know the size of the face instruction, life becomes easy
+
+00:58:32.741 --> 00:58:35.939 
+if your size is, you know, constant or if it is a fixed size.
+
+00:58:35.939 --> 00:58:40.659 
+But then it becomes much more harder if you do not have the fixed size instruction.
+
+00:58:41.299 --> 00:58:47.279 
+OK, now it becomes much more problematic if you face a control flow instruction like let's say a
+
+00:58:47.279 --> 00:58:48.899 
+conditional branch, right?
+
+00:58:48.899 --> 00:58:52.019 
+Like, oh, if this is the condition, then you are going to do something.
+
+00:58:52.019 --> 00:58:58.585 
+Then how exactly would know that, OK, it's going to be like if it's true or false, like what exactly
+
+00:58:58.585 --> 00:59:04.955 
+we are going to do is like, oh, if this register contains a value X and that only going to happen
+
+00:59:04.955 --> 00:59:07.779 
+when you go to that execution phase, right?
+
+00:59:07.779 --> 00:59:12.849 
+Like then you will actually go to the comparators and then comparators would going to tell you that
+
+00:59:12.849 --> 00:59:17.818 
+OK, this is the output of this function that would depend, you know, dictate what whether you are
+
+00:59:17.818 --> 00:59:20.379 
+going to take the branch or not taking the branch.
+
+00:59:20.779 --> 00:59:24.699 
+So that's what you know, makes it even harder if you have a control flow branch.
+
+00:59:25.099 --> 00:59:31.428 
+The next PCE identification goes completely here and that's what we are going to gradually build up
+
+00:59:31.428 --> 00:59:37.437 
+on this part of the lecture and you know, next week's lecture is that what we have done in the
+
+00:59:37.437 --> 00:59:43.639 
+literature to make sure that you would always keep feeding the pipeline with as much correct work
+
+00:59:43.639 --> 00:59:47.539 
+as possible and as much in the correct direction as possible.
+
+00:59:47.899 --> 00:59:49.459 
+So that's what we are going to look into it.
+
+00:59:49.979 --> 00:59:55.059 
+OK, so before going too much into like first into the, you know, the branch prediction part.
+
+00:59:55.059 --> 00:59:57.619 
+So let's let's revise the basics first.
+
+00:59:58.059 --> 01:00:00.499 
+So we have different types of branch in the programme, right?
+
+01:00:00.499 --> 01:00:02.739 
+So I am going to give example.
+
+01:00:02.739 --> 01:00:07.899 
+So conditional branch is essentially the E fails clause that you write or maybe let's say you know
+
+01:00:07.899 --> 01:00:10.059 
+the while loop, do while loop everything.
+
+01:00:10.059 --> 01:00:11.339 
+So you have a condition.
+
+01:00:11.699 --> 01:00:17.625 
+So the direction whether you are going to take it or not, that's not not known at runtime, sorry, at
+
+01:00:17.625 --> 01:00:21.419 
+fetch time because it would only be known once you execute that.
+
+01:00:22.019 --> 01:00:26.219 
+And the number of possible targets are two, either you take it or not take it, right.
+
+01:00:26.219 --> 01:00:33.046 
+So that's easy now, but then you have unconditional branches like, you know, it's just always taking
+
+01:00:33.046 --> 01:00:34.139 
+branches, right?
+
+01:00:34.179 --> 01:00:39.861 
+You just jump to somewhere like when you when you let's say not function call, but let's say when
+
+01:00:39.861 --> 01:00:44.899 
+you're going to some part of the code, like you just simply have the jump instruction.
+
+01:00:45.179 --> 01:00:47.339 
+So that's going to be, you know, always taken.
+
+01:00:47.579 --> 01:00:52.499 
+And you know what is the the number of possible address is going to be only one.
+
+01:00:53.019 --> 01:00:58.588 
+But this is also going to be known to you at the decode phase because this address where you are
+
+01:00:58.588 --> 01:01:02.939 
+supposed to jump, that's embedded inside the bytes that you fetch just now.
+
+01:01:03.459 --> 01:01:07.019 
+But you don't know what that is once you go to the decode stage.
+
+01:01:07.019 --> 01:01:09.899 
+And I'm going to show you like that creates a problem.
+
+01:01:10.379 --> 01:01:11.299 
+Then you have the call.
+
+01:01:11.299 --> 01:01:12.859 
+This is just a simple function calls.
+
+01:01:12.939 --> 01:01:14.779 
+Obviously, it is always going to be taken.
+
+01:01:14.979 --> 01:01:16.939 
+There is only one possibility where you can go.
+
+01:01:16.939 --> 01:01:18.899 
+So that's the number of possible phase address.
+
+01:01:19.299 --> 01:01:24.727 
+Then you have return which is again like always taken, but it can be different types of written
+
+01:01:24.727 --> 01:01:25.699 
+addresses, right?
+
+01:01:25.699 --> 01:01:29.619 
+So if you let's say, call function A, then you're going to.
+
+01:01:30.739 --> 01:01:35.179 
+Function A calls B, then when B returns then you would come back to A.
+
+01:01:35.659 --> 01:01:39.859 
+But then if let's say B calls C and then when that C returns and you come back to B.
+
+01:01:39.979 --> 01:01:45.208 
+But you can easily say thing, I mean easily see that OK, if you keep track of who calls, then you
+
+01:01:45.208 --> 01:01:49.899 
+can also easily predict, OK, where to return because it's a stack kind of thing, right?
+
+01:01:49.899 --> 01:01:53.019 
+So whenever you call, you put it, put it on top, put it on top.
+
+01:01:53.059 --> 01:01:57.131 
+And whenever, when you are returning, so you are basically just popping it so you know exactly where
+
+01:01:57.131 --> 01:01:57.539 
+to return.
+
+01:01:57.659 --> 01:02:02.019 
+So that's also a bit easy to let's say predict where should I go.
+
+01:02:02.739 --> 01:02:08.335 
+But then the, the most critical part that is very hard to deal with is the conditional branches and
+
+01:02:08.335 --> 01:02:09.579 
+the indirect branches.
+
+01:02:09.579 --> 01:02:10.819 
+So that's the first and the last.
+
+01:02:11.139 --> 01:02:15.588 
+So conditional branches is hard to you know, deal because we do not know whether it is going to be
+
+01:02:15.588 --> 01:02:16.179 
+taken or not.
+
+01:02:16.179 --> 01:02:17.459 
+So that is the problem.
+
+01:02:17.819 --> 01:02:23.072 
+And the indirect branches are actually problematic because even though their direction is always
+
+01:02:23.072 --> 01:02:28.490 
+taken, but you can go literally multiple places like when you have when you write let us say switch
+
+01:02:28.490 --> 01:02:28.819 
+cases.
+
+01:02:29.259 --> 01:02:32.779 
+So switch there is a variable and then you have multiple switch cases.
+
+01:02:32.779 --> 01:02:35.499 
+So that is actually a indirect branch.
+
+01:02:35.819 --> 01:02:41.356 
+So what exactly it happens is that you jump to a register, whatever the value of the register is at
+
+01:02:41.356 --> 01:02:46.782 
+runtime, you literally jump over there and there is multiple things can be stored in the register
+
+01:02:46.782 --> 01:02:50.139 
+and you don't know unless you actually execute that program.
+
+01:02:50.139 --> 01:02:51.939 
+So that's what the indirect branches are.
+
+01:02:52.339 --> 01:02:59.870 
+So most of the machinery that that we invest in the processor is actually, you know, focused on this
+
+01:02:59.870 --> 01:03:03.259 
+two types, conditional and indirect branches.
+
+01:03:03.939 --> 01:03:09.507 
+OK, OK, so now, OK, so, so, so the, the problem that I hopefully I have all already kind of
+
+01:03:09.507 --> 01:03:15.382 
+motivated is that how to handle the control dependence is basically it's critical for us to keep
+
+01:03:15.382 --> 01:03:19.299 
+the pipeline full with correct sequence of dynamic instructions.
+
+01:03:19.739 --> 01:03:22.019 
+And there are multiple potential solution.
+
+01:03:22.019 --> 01:03:27.412 
+And I'm hopefully going to give you more motivation why this is so important to keep the pipeline
+
+01:03:27.412 --> 01:03:32.917 
+full with correct instructions because if you go on the wrong thing, whatever that you are going to
+
+01:03:32.917 --> 01:03:37.699 
+execute is probably going to be meaningless because you don't want to go on that part.
+
+01:03:37.939 --> 01:03:40.779 
+So think of it as assembly line.
+
+01:03:41.219 --> 01:03:47.232 
+If you have some sort of, you know, even that going to stop the assembly line, then you still need
+
+01:03:47.232 --> 01:03:51.099 
+to keep the assembly line fed with some, you know, predictions.
+
+01:03:51.139 --> 01:03:54.979 
+And that's what we are going to do so that you better be right at what you're predicting.
+
+01:03:54.979 --> 01:04:00.150 
+Otherwise, if you later on figure out that you went to a different wrong direction, everything that
+
+01:04:00.150 --> 01:04:05.113 
+you did till now is going to be flushed and then one slide would be I hope that that's going to
+
+01:04:05.113 --> 01:04:07.099 
+convince you why this is so important.
+
+01:04:07.539 --> 01:04:10.059 
+OK, So what are the potential solutions?
+
+01:04:10.219 --> 01:04:13.099 
+Obviously you just simply stall the entire assembly line, right?
+
+01:04:13.339 --> 01:04:14.939 
+You don't know what to do.
+
+01:04:15.339 --> 01:04:16.499 
+You fetch any instruction.
+
+01:04:16.739 --> 01:04:18.659 
+You don't know what is the next instruction going to be.
+
+01:04:18.659 --> 01:04:23.909 
+You stall the pipeline and I hope, you know, I am going to show like why that's not a good, you
+
+01:04:23.909 --> 01:04:24.739 
+know, solution.
+
+01:04:24.739 --> 01:04:30.993 
+Then the next solution is guess the next, you know, fetch address in computer architecture, if you
+
+01:04:30.993 --> 01:04:36.419 
+come up with any problem, the first set of thinking you should be can I predict this?
+
+01:04:36.659 --> 01:04:41.500 
+And that that's something that, you know, keep in mind, like if you if you come up with a problem
+
+01:04:41.500 --> 01:04:46.342 
+that OK, this is becoming, you know, data dependent or this is becoming something that's hard to,
+
+01:04:46.342 --> 01:04:48.539 
+you know, understand, let's just predict it.
+
+01:04:48.539 --> 01:04:48.899 
+Let's see.
+
+01:04:49.019 --> 01:04:51.659 
+So that's what we are going to do that OK, what is the next address?
+
+01:04:51.659 --> 01:04:55.019 
+You have a problem of understanding the next address, let's predict it.
+
+01:04:55.219 --> 01:04:56.499 
+So that's what the branch prediction is.
+
+01:04:57.179 --> 01:05:02.659 
+Then there is another, you know, way of dealing branch delay slot, which probably have seen a bit.
+
+01:05:02.859 --> 01:05:05.179 
+I am going to, you know, motivate a bit more over here.
+
+01:05:05.939 --> 01:05:06.979 
+Fine grain multi threading.
+
+01:05:06.979 --> 01:05:08.259 
+We have always seen this thing.
+
+01:05:08.259 --> 01:05:12.339 
+So it's basically just, you know, ignoring the entirety of the problem all together.
+
+01:05:12.339 --> 01:05:16.833 
+We are saying, oh, I fetch this, fetch this, fetch this, fetch this and then I decode this, decode
+
+01:05:16.833 --> 01:05:17.659 
+this, decode this.
+
+01:05:17.779 --> 01:05:21.979 
+So that's anyway going to give you some sort of head room if you have multiple threads.
+
+01:05:21.979 --> 01:05:24.939 
+But that give know this that it's not going to.
+
+01:05:26.019 --> 01:05:32.128 
+If your single thread performance is critical to you, final multi threading is not going to help you
+
+01:05:32.128 --> 01:05:32.739 
+that much.
+
+01:05:32.739 --> 01:05:37.136 
+If anything final multi threading is going to make your single threaded performance even go bad
+
+01:05:37.136 --> 01:05:39.219 
+because you are literally switching from one.
+
+01:05:39.659 --> 01:05:45.459 
+Like instead of you know, switching N instructions for that thread, you are actually switching.
+
+01:05:45.459 --> 01:05:50.139 
+Let us say you know, north instructions, sorry, one instruction every N cycles, right?
+
+01:05:50.139 --> 01:05:52.339 
+So that is what fine grain multi training does.
+
+01:05:52.699 --> 01:05:58.329 
+But if you do care about, let us say the performance as a whole, which you know GPU's commonly
+
+01:05:58.329 --> 01:06:04.199 
+employ that you have lots of threads going on, then fine grain multi training can help you in that
+
+01:06:04.199 --> 01:06:04.619 
+aspect.
+
+01:06:05.299 --> 01:06:05.659 
+OK.
+
+01:06:06.219 --> 01:06:10.165 
+And then there are other solutions like oh, you can eliminate the control flow instructions all
+
+01:06:10.165 --> 01:06:10.539 
+together.
+
+01:06:10.539 --> 01:06:12.299 
+So that is what we call the predicated execution.
+
+01:06:12.739 --> 01:06:17.742 
+And another problem is or another way of dealing with the problem is you don't know what exactly is
+
+01:06:17.742 --> 01:06:20.219 
+going to happen and let's execute both the parts.
+
+01:06:20.539 --> 01:06:25.059 
+Can someone say that what can be a problematic for the last solution?
+
+01:06:26.019 --> 01:06:26.419 
+Yes.
+
+01:06:30.339 --> 01:06:34.779 
+That's true, but there there might be a bigger problem over here.
+
+01:06:36.219 --> 01:06:36.659 
+Anyone.
+
+01:06:37.499 --> 01:06:43.506 
+It's actually easy to see if you have a branch, let's say you have two possible outcomes and then
+
+01:06:43.506 --> 01:06:49.328 
+you are all I'm, I'm making a, you know, assumption that OK, let's let's execute from both the
+
+01:06:49.328 --> 01:06:52.859 
+outcomes you encounter another branch and another branch.
+
+01:06:53.299 --> 01:06:55.059 
+It just keeps on expanding.
+
+01:06:55.259 --> 01:06:56.939 
+You know, the exponential space, right?
+
+01:06:56.939 --> 01:07:02.596 
+So how you can easily see that OK, if some branch is not resolved and then you found out another
+
+01:07:02.596 --> 01:07:04.659 
+branch that also again went to two.
+
+01:07:04.979 --> 01:07:10.064 
+So if you go let's say 5 unresolved branch and each branch can have two possibilities, you are
+
+01:07:10.064 --> 01:07:14.339 
+literally dealing with, you know, 32 possibilities at once and that's too much.
+
+01:07:14.339 --> 01:07:20.142 
+So the multipath execution in some cases, you know, it may be a solution, but it's definitely too
+
+01:07:20.142 --> 01:07:21.579 
+much hardware intensive.
+
+01:07:21.939 --> 01:07:26.682 
+So all that, you know, the mostly what what we are going to see is that the branch prediction as
+
+01:07:26.682 --> 01:07:29.499 
+the, you know, dominant solution to address this problem.
+
+01:07:29.979 --> 01:07:35.391 
+OK, so now let's let's start with, you know, understanding each of these bit more the, let's say,
+
+01:07:35.391 --> 01:07:40.636 
+convince like to to convince you that why the other solutions are not that great of, you know,
+
+01:07:40.636 --> 01:07:41.139 
+solution.
+
+01:07:41.659 --> 01:07:44.419 
+So the first thing that you can obviously do is solve the pipeline, right?
+
+01:07:44.859 --> 01:07:45.939 
+So let's see what happens.
+
+01:07:45.939 --> 01:07:53.533 
+So, so when you fetch this instruction, let's say you you fetch this instruction at you know T is 0
+
+01:07:53.533 --> 01:07:57.139 
+at this point you do not know what is the Yeah.
+
+01:07:57.259 --> 01:08:02.167 
+So, so if you face this instruction at T0, at this point, you do not know first of all that whether
+
+01:08:02.167 --> 01:08:06.779 
+it is a branch instruction or not because that is only going to be known at the decode phase.
+
+01:08:07.259 --> 01:08:09.819 
+And you also do not know like what is the size of the instruction?
+
+01:08:09.819 --> 01:08:12.979 
+What exactly you are going to go in the next cycle.
+
+01:08:13.019 --> 01:08:19.187 
+So even if you have a, let's say, you know, regular piece of code without having any branches, that
+
+01:08:19.187 --> 01:08:22.179 
+would still give you, you know, problems, right?
+
+01:08:22.179 --> 01:08:25.179 
+So you cannot fetch in this cycle.
+
+01:08:25.819 --> 01:08:31.191 
+And only if you have, you know, decoded and you understood that, oh, this is a branch and probably
+
+01:08:31.191 --> 01:08:36.454 
+this is what were the address that I, I'm sure I should be going that when you, you can actually
+
+01:08:36.454 --> 01:08:38.099 
+fetch an exchange instruction.
+
+01:08:38.099 --> 01:08:39.459 
+So that creates this bubble.
+
+01:08:39.939 --> 01:08:46.445 
+Right, so that if you go on and keep on doing this so it you can easily see that OK, everyone like
+
+01:08:46.445 --> 01:08:49.499 
+your, your IPC immediately gets halved, right?
+
+01:08:49.499 --> 01:08:54.419 
+So now one bubble you can see every, you know, cycles, right?
+
+01:08:54.419 --> 01:09:02.201 
+So that kind of makes, you know, hopefully that convinces you that OK, you know, having the stalls,
+
+01:09:02.201 --> 01:09:08.019 
+I mean stall until you know, the next one PC is not a good idea right now.
+
+01:09:08.259 --> 01:09:10.939 
+What are the other things fine grained multi threading I have already discussed.
+
+01:09:10.939 --> 01:09:13.379 
+So let's not go over, you know, the details into this.
+
+01:09:13.739 --> 01:09:17.859 
+And then the the the this piece of the puzzle is the the the branch prediction.
+
+01:09:18.219 --> 01:09:24.373 
+Now let me so this is a slide that, you know, I hope that it's going to be it should objectively
+
+01:09:24.373 --> 01:09:27.259 
+motivate you why branch prediction is needed.
+
+01:09:27.739 --> 01:09:30.379 
+So to to give a, you know, thought calculation.
+
+01:09:30.379 --> 01:09:31.579 
+Let's, so let's consider this thing.
+
+01:09:31.579 --> 01:09:37.259 
+So control flow instructions are too frequent in the code that we normally write.
+
+01:09:37.259 --> 01:09:40.219 
+So 15 to 25% of all the instructions.
+
+01:09:40.219 --> 01:09:44.410 
+I mean in general, just a rule of thumb, every 5 instructions that you are going to execute is
+
+01:09:44.410 --> 01:09:45.659 
+probably going to be branch.
+
+01:09:46.099 --> 01:09:47.459 
+So keep that in mind.
+
+01:09:47.539 --> 01:09:53.727 
+OK, So the question is that OK, next page address after the control flow instruction is not
+
+01:09:53.727 --> 01:10:00.255 
+determined after the North cycles in a pipeline process N cycles meaning that if you have let us
+
+01:10:00.255 --> 01:10:06.851 
+say from fetch to execute, if you have N number of you know, pipeline stages, definitely you need
+
+01:10:06.851 --> 01:10:11.339 
+to wait before you know what is the outcome of this branch, right?
+
+01:10:11.419 --> 01:10:11.939 
+For sure.
+
+01:10:12.819 --> 01:10:13.379 
+Is that correct?
+
+01:10:13.699 --> 01:10:16.539 
+So from the fetch to where you know execute.
+
+01:10:16.899 --> 01:10:21.353 
+Now, if you think of it in this way, oh, if this branch is also dependent on some other instruction,
+
+01:10:21.353 --> 01:10:25.139 
+let's say it's a memory instruction, that is this branch is going to depend on South.
+
+01:10:25.139 --> 01:10:26.499 
+What what do you mean by this?
+
+01:10:26.659 --> 01:10:28.019 
+You have probably written code like this.
+
+01:10:28.019 --> 01:10:33.099 
+Oh, if a of I, the array of you know, I is 0, then you do things.
+
+01:10:33.539 --> 01:10:35.899 
+What exactly internally does it do?
+
+01:10:36.619 --> 01:10:38.339 
+A of I is essentially a load instruction.
+
+01:10:38.339 --> 01:10:42.419 
+So that loads some piece of data from the memory to the register file.
+
+01:10:42.859 --> 01:10:46.019 
+And then then you are just simply checking whether this register value is 0 or not.
+
+01:10:46.459 --> 01:10:49.899 
+So your branch instruction is actually dependent on a memory instruction.
+
+01:10:50.099 --> 01:10:52.699 
+Now memory instruction can take even like many cycles.
+
+01:10:53.219 --> 01:10:59.939 
+So that also longest like how you know how much far from you fix the branch and when the branch is
+
+01:10:59.939 --> 01:11:01.859 
+going to be resolved, right.
+
+01:11:02.659 --> 01:11:07.467 
+So what I am saying is that even if you don't have any data dependence, it's like let's say you do
+
+01:11:07.467 --> 01:11:08.939 
+know what is going to be like.
+
+01:11:09.139 --> 01:11:12.579 
+All the operands of this branch instruction is known at that point.
+
+01:11:13.019 --> 01:11:17.139 
+Still you have to wait for this N cycles between the fetch and the execute stage.
+
+01:11:17.459 --> 01:11:19.979 
+You don't know what's going on between that.
+
+01:11:20.499 --> 01:11:23.899 
+Now if you have a wide superscalar processor, keep this in mind.
+
+01:11:23.899 --> 01:11:29.059 
+If you have W wide processor, you can literally fetch W instructions in one cycle.
+
+01:11:29.699 --> 01:11:33.451 
+Decode double instructions in one cycle and then by, you know, rename double instructions in one
+
+01:11:33.451 --> 01:11:34.859 
+cycle and so on and so forth, right.
+
+01:11:35.099 --> 01:11:40.279 
+So what we are looking at here that if you let us say if you have to wait for this N instructions
+
+01:11:40.279 --> 01:11:44.499 
+and you are saying that oh you know what, I am going to just predict something.
+
+01:11:44.859 --> 01:11:46.419 
+So what is the cost of prediction?
+
+01:11:47.059 --> 01:11:52.555 
+So you are literally by the time you would know what is the actual outcome of this branch, you would
+
+01:11:52.555 --> 01:11:55.139 
+have actually fetched N into West instructions.
+
+01:11:55.619 --> 01:11:56.259 
+Is that clear?
+
+01:11:57.539 --> 01:12:01.979 
+So, you know, you would get to know the output outcome of the branch at after N cycles.
+
+01:12:02.299 --> 01:12:06.809 
+And by that time you have already fetched and those instructions are keep flowing through the
+
+01:12:06.809 --> 01:12:08.459 
+pipeline N into West instructions.
+
+01:12:08.459 --> 01:12:13.139 
+Right now you can easily see like the the more you would increase the width of the pipeline.
+
+01:12:13.539 --> 01:12:15.179 
+It also it's a big gamble.
+
+01:12:15.179 --> 01:12:20.577 
+So you are executing more if your branch predictor is not working, you're also, you know, losing
+
+01:12:20.577 --> 01:12:20.859 
+more.
+
+01:12:21.059 --> 01:12:25.435 
+So this is the reason why your branch, you know, the branch prediction needs to be very, very
+
+01:12:25.435 --> 01:12:25.859 
+accurate.
+
+01:12:26.019 --> 01:12:28.299 
+And this is a slide that I'm, I'm going to, you know, show.
+
+01:12:28.739 --> 01:12:32.139 
+So let's for the sake of this discussion, let's say n = 20.
+
+01:12:32.139 --> 01:12:33.179 
+I mean 20 pipeline stages.
+
+01:12:33.179 --> 01:12:35.739 
+I mean, this is a, you know, very good assumption.
+
+01:12:36.059 --> 01:12:40.499 
+And in modern processor, it's the number of pipeline stages is even higher than this.
+
+01:12:40.819 --> 01:12:45.819 
+So let's say, you know, this is 20 pipeline stages and we have, let's say 5 wide superscalar fetch.
+
+01:12:46.179 --> 01:12:51.137 
+You already saw that, you know, AMD is operating somewhere around 6, but you know, but Apple is
+
+01:12:51.137 --> 01:12:53.539 
+operating somewhere even more than six, right?
+
+01:12:53.539 --> 01:12:56.419 
+So, so 5 is a, you know, decent assumption over here.
+
+01:12:56.699 --> 01:13:00.379 
+And, and also, you know, we are using this to keep the calculation easy.
+
+01:13:01.019 --> 01:13:04.779 
+So we are also assuming that everyone out of five instruction is a branch.
+
+01:13:04.779 --> 01:13:09.741 
+This is also not a bad assumption to make because that's what have been empirically studied over the
+
+01:13:09.741 --> 01:13:14.059 
+time that whatever code that we write, it has one out of five instructions as a branch.
+
+01:13:14.459 --> 01:13:19.339 
+And and then we also OK, so this is the assumption every five instruction block ends with a branch.
+
+01:13:19.899 --> 01:13:25.299 
+And then the question if I ask you that how long does it take to fetch 500 instructions?
+
+01:13:26.219 --> 01:13:28.459 
+So let us let us try to solve this thing, right.
+
+01:13:28.899 --> 01:13:34.514 
+So if you have 100% accuracy of the branch, so that means sorry, the 100% accuracy of the branch
+
+01:13:34.514 --> 01:13:35.099 
+predictor.
+
+01:13:35.099 --> 01:13:39.659 
+If you have that, then you are fetching 500 instructions.
+
+01:13:39.939 --> 01:13:43.459 
+You have the capability of fetching 5 instructions per cycle.
+
+01:13:43.459 --> 01:13:48.979 
+So answer is obvious 100 cycles you would need to fetch 500 instructions correct?
+
+01:13:49.579 --> 01:13:51.179 
+That is you know easy peasy.
+
+01:13:52.339 --> 01:13:57.557 
+Did you waste anything answer is not so you have 100% accurate every cycle whatever you fetch it is
+
+01:13:57.557 --> 01:13:59.139 
+actually on the correct thing.
+
+01:13:59.739 --> 01:14:00.699 
+Life is good right?
+
+01:14:00.699 --> 01:14:02.619 
+So you no wasted work.
+
+01:14:02.739 --> 01:14:04.019 
+Your IPC is 500.
+
+01:14:04.179 --> 01:14:07.659 
+The the number of you know cycles that you I mean this is the fetch IPC.
+
+01:14:07.659 --> 01:14:09.699 
+This is obviously not the commit IPC.
+
+01:14:09.699 --> 01:14:15.899 
+So thing in that fetch let us say the fetch IPC is you are fetching 500 instructions in 100 cycles.
+
+01:14:16.139 --> 01:14:20.179 
+So your IPC is 5, exactly the way that you have designed your processor.
+
+01:14:20.779 --> 01:14:21.779 
+But life is not that good.
+
+01:14:22.419 --> 01:14:26.019 
+So now let's say if you have 99% accuracy of branch predictor, what happens?
+
+01:14:26.019 --> 01:14:31.339 
+99% is much more higher than what your random prediction can do.
+
+01:14:31.419 --> 01:14:34.539 
+I mean, it's, it's actually almost behaving like an Oracle, right?
+
+01:14:34.539 --> 01:14:36.059 
+So you can easily imagine.
+
+01:14:36.059 --> 01:14:39.019 
+So if you have 99% accuracy, what what is happening?
+
+01:14:39.459 --> 01:14:44.347 
+So 100 of the cycle, like 100 cycles, obviously you need to fetch 500 instructions in the end,
+
+01:14:44.347 --> 01:14:44.659 
+right?
+
+01:14:44.659 --> 01:14:49.739 
+So you are no, you are not going anywhere from the 100 cycles for sure.
+
+01:14:50.379 --> 01:14:57.094 
+So that's that's, you know, 100 cycles that you have spent on the correct path, but then you're also
+
+01:14:57.094 --> 01:14:59.579 
+spending 20 cycles on the wrong path.
+
+01:14:59.579 --> 01:14:59.899 
+Why?
+
+01:14:59.899 --> 01:15:06.781 
+Because out of 100, you know branches, let's say 1 branch, you have mispredicted that one branch
+
+01:15:06.781 --> 01:15:09.219 
+actually took 20 cycles to finish.
+
+01:15:09.739 --> 01:15:13.019 
+And that 20 cycles, whatever you did in that 20 cycle is wasted.
+
+01:15:13.499 --> 01:15:17.099 
+So that's the 20 cycles that you have spent on the wrong path, right?
+
+01:15:17.619 --> 01:15:21.259 
+So the overall number of cycles that you are seeing is 120 cycles.
+
+01:15:21.859 --> 01:15:27.341 
+Now if you look into how many instructions that you have fetched those 20 cycles that you have, that
+
+01:15:27.341 --> 01:15:32.659 
+single branch got mispredicted out of 100 branches that you have, you actually went to something.
+
+01:15:32.659 --> 01:15:37.940 
+And since you are, you know, superscalar process, you have designed a superscalar process, you know,
+
+01:15:37.940 --> 01:15:42.219 
+you know, to to push the performance you have for that entirety of the 20 cycles.
+
+01:15:42.379 --> 01:15:44.739 
+You have also fetched like 5 instructions every cycle, right?
+
+01:15:44.739 --> 01:15:52.392 
+So that means you have, you know, instead of fetching, let us say only 100, sorry, instead of
+
+01:15:52.392 --> 01:15:57.659 
+fetching only 500 instructions, you have also fetched 20 into 5.
+
+01:15:57.659 --> 01:15:59.779 
+So that is 100 instructions more, right?
+
+01:15:59.779 --> 01:16:02.819 
+So that's, that's what the 20% extra instruction that you fetch.
+
+01:16:02.819 --> 01:16:07.419 
+So instead of fetching 600 like 500 instructions, you have now actually fetched 600 instructions.
+
+01:16:07.419 --> 01:16:08.299 
+So keep that in mind.
+
+01:16:08.979 --> 01:16:12.939 
+But now if you look into the correct IPC, because that's what it matters.
+
+01:16:12.939 --> 01:16:17.671 
+Like, I mean, I don't, I don't give the goodie points to the processor because it fits something,
+
+01:16:17.671 --> 01:16:21.379 
+you know, it did a good job or fetched at least something on the wrong path.
+
+01:16:21.379 --> 01:16:22.539 
+That's not how we measure.
+
+01:16:22.699 --> 01:16:29.133 
+So if you measure the correct path, fetch IPC which is the final, you know, IPC that we care about
+
+01:16:29.133 --> 01:16:29.659 
+for you.
+
+01:16:29.779 --> 01:16:31.739 
+The program, what did we see?
+
+01:16:32.059 --> 01:16:37.675 
+So you have fetched 500 instructions correctly because that's the programme is and we actually took
+
+01:16:37.675 --> 01:16:38.299 
+120 cycles.
+
+01:16:38.739 --> 01:16:40.619 
+So that already dropped your.
+
+01:16:41.219 --> 01:16:41.779 
+So this is what?
+
+01:16:41.779 --> 01:16:43.659 
+So this is like 4 IPC, right?
+
+01:16:43.659 --> 01:16:48.859 
+So you already dropped from you know 5 IPC to four IPC.
+
+01:16:49.099 --> 01:16:52.899 
+So you can see with just one person accuracy drop, this is the problem.
+
+01:16:53.539 --> 01:16:56.979 
+And on top of this, you are also fetching 20% extra instruction.
+
+01:16:57.579 --> 01:17:01.499 
+You did something which you need to flush again like flush meaning that you actually did not do
+
+01:17:01.499 --> 01:17:02.779 
+anything meaningful over there.
+
+01:17:03.019 --> 01:17:03.899 
+You need to redo it.
+
+01:17:04.019 --> 01:17:05.699 
+So that is wasted effort.
+
+01:17:06.219 --> 01:17:11.419 
+So now, yes, 20% additional instructions, 20% additional instructions.
+
+01:17:11.419 --> 01:17:19.158 
+You know that 20 * 1 sorry 20 * 1 OK, so, so if you since you need to fetch 500 instructions, so
+
+01:17:19.158 --> 01:17:26.413 
+definitely that is 100 cycles you would need to do in the correct path for sure one of the
+
+01:17:26.413 --> 01:17:27.139 
+branches.
+
+01:17:28.219 --> 01:17:31.059 
+We already saw that you know one out of five instructions are branched.
+
+01:17:31.059 --> 01:17:34.539 
+So that means you have in this 500 instructions you have 100 branches, correct?
+
+01:17:34.939 --> 01:17:40.579 
+So out of 100 branches, since you're 99% accuracy, 1 branch went into the wrong path like that it
+
+01:17:40.579 --> 01:17:41.859 
+got predicted wrongly.
+
+01:17:42.499 --> 01:17:47.979 
+So when you predicted wrongly, you do want to keep the pipeline flowing with something, right?
+
+01:17:47.979 --> 01:17:51.979 
+So you kept feeding some instructions in the wrong, wrong direction, right?
+
+01:17:51.979 --> 01:17:57.043 
+So let's say the branch should be taken, but you predicted to be not taken and you kept the pipeline
+
+01:17:57.043 --> 01:17:59.019 
+feeding with some garbage instructions.
+
+01:17:59.019 --> 01:18:03.560 
+I mean garbage meaning that they are not going to be useful in the end when you got to know about
+
+01:18:03.560 --> 01:18:07.259 
+this is going in the wrong path 20 cycles after you start fetching that branch.
+
+01:18:07.859 --> 01:18:13.466 
+So all the work that you did in 20 cycles got wasted and then you again restarted the, you know,
+
+01:18:13.466 --> 01:18:15.219 
+execution on the correct path.
+
+01:18:15.219 --> 01:18:16.819 
+But we fetch 5 at a time.
+
+01:18:16.859 --> 01:18:19.539 
+So of the 20 cycles, we would have fetched 100.
+
+01:18:19.939 --> 01:18:22.099 
+So that's that's the 20% extra instruction.
+
+01:18:22.099 --> 01:18:27.209 
+So now you have actually fetched instead of 500 instructions, you have actually fetched 600
+
+01:18:27.209 --> 01:18:27.939 
+instructions.
+
+01:18:28.099 --> 01:18:31.619 
+So that's what I'm showing over here as a 20% extra instruction.
+
+01:18:32.979 --> 01:18:39.933 
+So what you're saying is why we are not calculating IPCS 600 / 120 because we fetched 600
+
+01:18:39.933 --> 01:18:43.059 
+instruction and then we took 120 cycles.
+
+01:18:43.059 --> 01:18:43.859 
+Is that what you're asking?
+
+01:18:45.419 --> 01:18:54.099 
+I mean the 120 cycles, does that mean we executed 100?
+
+01:18:54.219 --> 01:18:58.259 
+And so, so it took 120 cycles to even fetch 500 instructions?
+
+01:18:58.259 --> 01:19:05.099 
+We resolved the branch at the last cycle of the pipeline 20 cycles.
+
+01:19:05.099 --> 01:19:06.939 
+So that is what Yeah, yeah.
+
+01:19:07.219 --> 01:19:12.155 
+So, so north is meaning that you know from the fetch to execute and then that is what I am writing
+
+01:19:12.155 --> 01:19:12.659 
+over here.
+
+01:19:12.699 --> 01:19:15.019 
+Probably I should not write 20 pipeline stages.
+
+01:19:15.219 --> 01:19:17.979 
+Let us say these are number of stages between the fetch and the execute.
+
+01:19:17.979 --> 01:19:18.299 
+Yes.
+
+01:19:19.259 --> 01:19:20.379 
+Does it make sense now?
+
+01:19:20.379 --> 01:19:20.899 
+Is it clear?
+
+01:19:21.379 --> 01:19:22.979 
+OK any other question?
+
+01:19:24.539 --> 01:19:28.739 
+Yes, if I have five wrong paths, I should still.
+
+01:19:42.309 --> 01:19:47.069 
+Yes, yes.
+
+01:19:47.069 --> 01:19:50.389 
+So you are using 20 cycles, you're wasting 20 cycles.
+
+01:19:50.869 --> 01:19:56.149 
+So you're, you're you're executing in the garbage direction for 20 cycles.
+
+01:19:56.549 --> 01:20:01.949 
+But how much you're fetching in those twenty cycles because you have superscalar?
+
+01:20:01.949 --> 01:20:02.389 
+Yes, exactly.
+
+01:20:02.549 --> 01:20:07.829 
+So in this case, if I have one drop, have two 3-4 or five, it doesn't matter.
+
+01:20:08.109 --> 01:20:13.939 
+I always have yes, no, no, no, no, no, no.
+
+01:20:13.939 --> 01:20:16.819 
+OK, OK, maybe we're going somewhere in the wrong side.
+
+01:20:17.059 --> 01:20:22.908 
+So, So what I'm showing over here is that 20 cycles you, that one single branch that got
+
+01:20:22.908 --> 01:20:26.099 
+mispredicted, it took 20 cycles to get resolved.
+
+01:20:26.579 --> 01:20:29.779 
+So within that 20 cycle, your pipeline is not stalling, right.
+
+01:20:29.779 --> 01:20:31.499 
+So you are feeding something to the pipeline.
+
+01:20:32.139 --> 01:20:35.659 
+So what we feed, we feed actually the wrong things into the pipeline.
+
+01:20:36.139 --> 01:20:40.782 
+So after that 20 cycles, once we get to know that OK, that we made the wrong prediction, we need to
+
+01:20:40.782 --> 01:20:44.019 
+floss the entire pipeline, go to the correct part and start fetching.
+
+01:20:44.579 --> 01:20:48.779 
+So the wasted cycle is 20.
+
+01:20:49.459 --> 01:20:53.579 
+The wasted work is not 20 because now you have 5 wide superscalar.
+
+01:20:53.819 --> 01:20:56.059 
+So wasted work is actually 5 into 20.
+
+01:20:56.539 --> 01:20:57.339 
+Is that making sense?
+
+01:21:01.019 --> 01:21:05.659 
+It's not 500 advances, its wasted work is 5 into 20 because you have 5 wide superscalar.
+
+01:21:05.899 --> 01:21:12.042 
+So if you have 6 white super scaler, your wasted effort is 6 into 20 because at every cycle you are
+
+01:21:12.042 --> 01:21:14.339 
+fetching 6 instructions put together.
+
+01:21:17.339 --> 01:21:17.819 
+Makes sense.
+
+01:21:18.579 --> 01:21:24.805 
+OK so now now hopefully if I go even even more than this would also make you even you know worse
+
+01:21:24.805 --> 01:21:25.259 
+things.
+
+01:21:25.259 --> 01:21:26.459 
+So 90% accuracy.
+
+01:21:26.459 --> 01:21:28.779 
+It's much higher than even making a random guess.
+
+01:21:29.139 --> 01:21:29.619 
+It's nowhere.
+
+01:21:29.699 --> 01:21:31.419 
+Close to when you know, 5050 kind of thing.
+
+01:21:31.419 --> 01:21:33.659 
+So if you go for 90% accuracy, what happens?
+
+01:21:33.659 --> 01:21:37.299 
+So again you need to do 100 cycles to fetch on the correct path.
+
+01:21:37.539 --> 01:21:42.101 
+But now instead of you know spending only one cycle on the wrong path, now you are actually spending
+
+01:21:42.101 --> 01:21:43.379 
+10 cycles on the wrong path.
+
+01:21:43.779 --> 01:21:47.259 
+Then your wasted cycle is 200, right?
+
+01:21:47.259 --> 01:21:51.827 
+So this is you can already see that your the amount of time that you are spending on the correct
+
+01:21:51.827 --> 01:21:55.539 
+path is lower than the amount of time that you are spending on the wrong path.
+
+01:21:55.899 --> 01:22:01.394 
+So you're literally seeing that if you make small adjustment or if your branch rate becomes a
+
+01:22:01.394 --> 01:22:06.299 
+slightly bad, you are actually wasting a lot then we are doing anything meaningful.
+
+01:22:06.299 --> 01:22:07.979 
+So that's what that's what we are showing over here.
+
+01:22:07.979 --> 01:22:11.019 
+100 cycles on the correct path and 200 cycles on the wrong path.
+
+01:22:11.019 --> 01:22:16.456 
+So eventually you took 300 cycles to even fetch only 500 correct instructions and how many
+
+01:22:16.456 --> 01:22:22.196 
+instructions that you have wasted like how many, how much work that you are do did in the wrong
+
+01:22:22.196 --> 01:22:22.499 
+path.
+
+01:22:22.819 --> 01:22:27.859 
+So you wasted, you know, 10 cycles on the wrong path.
+
+01:22:28.259 --> 01:22:31.539 
+So each cycle you have fetched, you know 5.
+
+01:22:32.059 --> 01:22:32.379 
+Sorry.
+
+01:22:33.379 --> 01:22:40.499 
+So you you have wasted 200 cycles on the wrong path because each branch took 1020 cycles to resolve.
+
+01:22:40.939 --> 01:22:43.419 
+So that means you have wasted 200 cycles on the wrong path.
+
+01:22:43.419 --> 01:22:48.072 
+Each cycle you actually fetch 5 instructions together because that's a wide width of the Super
+
+01:22:48.072 --> 01:22:48.419 
+scaler.
+
+01:22:48.419 --> 01:22:53.059 
+So that means you are now actually fetching instead of 100 instructions on the correct path.
+
+01:22:53.539 --> 01:22:59.321 
+You're not only fetching 100 instructions on the correct, but you're also fetching, you know, 200
+
+01:22:59.321 --> 01:22:59.739 
+into 5.
+
+01:22:59.739 --> 01:23:01.579 
+So that means, you know 1000.
+
+01:23:04.219 --> 01:23:04.499 
+Yeah.
+
+01:23:04.619 --> 01:23:07.499 
+So those many instructions on the wrong path also.
+
+01:23:08.019 --> 01:23:14.736 
+So what we are showing over here is then your IPC when you're calculating the IPCIPC meaning that
+
+01:23:14.736 --> 01:23:20.139 
+the amount of work that is in eventually needed which is the 500 instructions.
+
+01:23:20.139 --> 01:23:25.400 
+But instead of fetching this 500 instructions in only 100 cycles, now you have actually taking 300
+
+01:23:25.400 --> 01:23:26.259 
+cycles to fetch.
+
+01:23:26.659 --> 01:23:30.779 
+So that means that your your IPC is dropping to what 1.66?
+
+01:23:31.139 --> 01:23:37.750 
+So you actually started with the IPC of five, you just you know went to 10% accuracy drop and then
+
+01:23:37.750 --> 01:23:41.259 
+you when you're looking at a processor with 1.6 IPC.
+
+01:23:41.259 --> 01:23:43.579 
+So that's what the criticality of the branch breakdown, Yes.
+
+01:23:43.579 --> 01:23:48.339 
+And what's the accuracy part we getting right now in the real world, OK.
+
+01:23:48.339 --> 01:23:52.459 
+Also like is it possible to make programs more predictable?
+
+01:23:52.459 --> 01:23:53.179 
+We are coming to that.
+
+01:23:53.819 --> 01:23:58.299 
+We are coming to that, yes, you can do the maths also with the 60% accuracy.
+
+01:23:58.299 --> 01:24:03.739 
+I mean, it is again like now much better than having just a random guess which is 60%, right.
+
+01:24:04.019 --> 01:24:07.659 
+And if you if you do the same calculation now you're actually dealing with the IPC.
+
+01:24:08.219 --> 01:24:12.699 
+You started with A5 IPC processor and then you are dealing with a fraction IPC now.
+
+01:24:13.099 --> 01:24:17.890 
+So you can easily see like why branch predictor, you know that important like the accuracy of the
+
+01:24:17.890 --> 01:24:19.619 
+branch predictor is that important?
+
+01:24:19.859 --> 01:24:26.933 
+Maybe just to answer your question like the the accuracy that we are, we can extract in real
+
+01:24:26.933 --> 01:24:34.469 
+workloads or real life, you know, scenarios obviously depends on from workload to workload over 95
+
+01:24:34.469 --> 01:24:37.699 
+percent, 99% is not, you know, impossible.
+
+01:24:37.699 --> 01:24:38.539 
+So we can do.
+
+01:24:38.819 --> 01:24:41.699 
+But then there are workloads that, you know, it's very hard to predict.
+
+01:24:41.699 --> 01:24:44.299 
+Like for example, if you do a linked list traversals, right?
+
+01:24:44.299 --> 01:24:47.379 
+So you fetch something and then you go there.
+
+01:24:47.459 --> 01:24:52.912 
+So there is a linked list kind of traversal and then you do the O if my value is this and then I'm
+
+01:24:52.912 --> 01:24:55.139 
+going to do going to fetch the next one.
+
+01:24:55.379 --> 01:24:57.459 
+You have probably written this sort of code.
+
+01:24:58.219 --> 01:25:01.459 
+Yes, good luck with getting a much more IPC over there.
+
+01:25:02.379 --> 01:25:02.819 
+Makes sense.
+
+01:25:04.139 --> 01:25:09.271 
+OK, so so yeah, so so that I'm not going to you know, so this is basically the pictorial view of the
+
+01:25:09.271 --> 01:25:14.351 
+same thing that if if you have the you know, the the the next instruction, if you if you don't have
+
+01:25:14.351 --> 01:25:17.739 
+the branch predictor and then if if you have the branch predictor.
+
+01:25:17.739 --> 01:25:18.939 
+So if you don't have the branch predictor.
+
+01:25:18.939 --> 01:25:22.179 
+So this is what the fetch of each instruction is happening.
+
+01:25:22.179 --> 01:25:26.859 
+So this is the branch which can either be taken to this one or it can go into this.
+
+01:25:27.139 --> 01:25:32.215 
+If you have the branch predictor go going on correctly, then you can, you know, fetch the same
+
+01:25:32.215 --> 01:25:33.619 
+instruction and 12 cycles.
+
+01:25:33.699 --> 01:25:38.859 
+I'm not going to, you know, go too much into detail of this figure, but you can look it offline.
+
+01:25:39.019 --> 01:25:42.339 
+But then if you have a perfect branch predictor that can actually take, let's say, only each cycle.
+
+01:25:42.339 --> 01:25:46.939 
+So it's very important to have branch predictor getting right from the get go.
+
+01:25:47.659 --> 01:25:53.096 
+OK, so I'm not going to animate this, but let's now take a look at what are the different
+
+01:25:53.096 --> 01:25:56.579 
+possibilities that we can do branch prediction mechanism.
+
+01:25:56.939 --> 01:26:02.175 
+So one of the simplest way that you can do branch prediction is basically you always get the next PC
+
+01:26:02.175 --> 01:26:02.699 
+as PC +44.
+
+01:26:03.059 --> 01:26:06.539 
+In this case, we are just considering, let's say your every instruction is 4 byte wide.
+
+01:26:06.819 --> 01:26:08.939 
+So that's why we are saying PC Plus 4.
+
+01:26:08.939 --> 01:26:14.259 
+But consider this that with complex instruction set like X86, that's also even hard to do.
+
+01:26:14.619 --> 01:26:18.979 
+Like PC Plus 4 is not actually PC +4, it's PC Plus instruction size.
+
+01:26:18.979 --> 01:26:22.019 
+And you need to you know, understand what is the instruction size.
+
+01:26:22.019 --> 01:26:23.299 
+So that's a problem.
+
+01:26:23.299 --> 01:26:25.299 
+But for the sake of this discussion, let's consider.
+
+01:26:25.299 --> 01:26:29.619 
+Let's say you know you always get the next PC as APC +4, so always the next.
+
+01:26:29.699 --> 01:26:31.939 
+Sequential instruction is the next instruction to be executed.
+
+01:26:32.219 --> 01:26:35.219 
+This is a form of let's say next fetch address prediction.
+
+01:26:35.219 --> 01:26:37.819 
+And you can think of it as a branch prediction also.
+
+01:26:37.819 --> 01:26:41.299 
+Like you are literally feeding the pipeline with something, not just stalling the pipeline.
+
+01:26:42.339 --> 01:26:47.979 
+So obviously this is definitely, this is not going to, you know, cut the deal.
+
+01:26:48.299 --> 01:26:52.819 
+So we need to make sure that OK, how we can do to make this thing even better.
+
+01:26:53.459 --> 01:26:56.419 
+So one thing that you can do So what exactly this this is doing?
+
+01:26:56.419 --> 01:27:02.850 
+So it's basically saying that, oh, if you have a let's say, if case and then you have a, you know,
+
+01:27:02.850 --> 01:27:07.379 
+some pieces of program that you want to do if the if case is correct.
+
+01:27:07.739 --> 01:27:11.619 
+And otherwise if you you want to do let's say otherwise else case, right?
+
+01:27:11.939 --> 01:27:18.760 
+So if you have the compiler support, so compiler knows, let's say a specific branch that you are
+
+01:27:18.760 --> 01:27:24.019 
+looking at, it's let's say good amount of time it's going to be not taken.
+
+01:27:24.539 --> 01:27:29.731 
+So you can literally reorder the code saying that, oh, if if you know that, OK, your branch
+
+01:27:29.731 --> 01:27:35.209 
+predictor is actually just a next PC, so you're always going to be fall falling back to the next
+
+01:27:35.209 --> 01:27:40.459 
+PC, then you would reorder the code in such a way that your PC Plus four like the fall path.
+
+01:27:40.459 --> 01:27:42.899 
+So this is what we call the falling in a fall back edge.
+
+01:27:43.259 --> 01:27:51.344 
+So you would put the piece of code that is more getting exercised over there and the other piece of
+
+01:27:51.344 --> 01:27:56.979 
+code would be on on the, you know, the other the far end of the jump.
+
+01:27:57.619 --> 01:28:04.325 
+So it's basically what what I'm trying to motivate here is that we can actually layout the program
+
+01:28:04.325 --> 01:28:11.031 
+in the memory space so that if the compiler understands that OK, this, you know, branch is getting
+
+01:28:11.031 --> 01:28:16.779 
+taken frequently, then I would put the taken piece of code on the PC Plus four side.
+
+01:28:17.459 --> 01:28:22.607 
+If the compiler understands that, OK, this piece of code is getting the branch is not taken
+
+01:28:22.607 --> 01:28:28.208 
+frequently, then I would put the not taken path, the code that you actually belong to the not taken
+
+01:28:28.208 --> 01:28:31.659 
+path sequentially consistent like in the in the memory space.
+
+01:28:31.659 --> 01:28:32.979 
+Think of it in the memory space, right?
+
+01:28:32.979 --> 01:28:38.219 
+So you can reorder this program how exactly the program gets stored in the memory space.
+
+01:28:38.459 --> 01:28:43.419 
+S that what we can do to even with this branch prediction mechanism at hardware.
+
+01:28:44.019 --> 01:28:48.699 
+You can rearrange the, you know, software to make this, you know, effective.
+
+01:28:49.019 --> 01:28:51.379 
+So that hopefully answers the question that you are asking, right.
+
+01:28:51.739 --> 01:28:57.299 
+So, so this is what, you know, this paper is a beautiful paper that came up in PLD in 1990.
+
+01:28:57.299 --> 01:29:01.025 
+I mean, as you can see, like these are pretty old, you know, solutions that we have people have
+
+01:29:01.025 --> 01:29:01.379 
+explored.
+
+01:29:01.739 --> 01:29:04.139 
+So this is called profile guided code positioning.
+
+01:29:04.819 --> 01:29:08.619 
+OK, so people have also taken a jab at it in the hardware.
+
+01:29:08.619 --> 01:29:11.659 
+So Intel has implemented something called trace cache.
+
+01:29:12.059 --> 01:29:15.752 
+We're not going to go into too much into detail, but the idea of the trace cache is again the same
+
+01:29:15.752 --> 01:29:15.979 
+thing.
+
+01:29:15.979 --> 01:29:21.768 
+Like if you know that certain part of the branches are let's say more taken, then you would
+
+01:29:21.768 --> 01:29:27.621 
+restructure the code at hardware level so that your, you know, next PC equals PC Plus 4 gets
+
+01:29:27.621 --> 01:29:29.339 
+exercise much more heavily.
+
+01:29:30.099 --> 01:29:35.788 
+OK, Now what else can you do to make it more effective so you can get rid of the control flow
+
+01:29:35.788 --> 01:29:37.379 
+instructions all together.
+
+01:29:37.379 --> 01:29:39.539 
+So how can you do this?
+
+01:29:39.539 --> 01:29:40.659 
+So there are two mechanisms.
+
+01:29:40.659 --> 01:29:43.779 
+I am not going to go too much into details on this.
+
+01:29:44.019 --> 01:29:46.059 
+So, so think of Indiana this way.
+
+01:29:46.059 --> 01:29:51.468 
+So if you have let us say multiple if conditions or if this is so you when you write simulator code,
+
+01:29:51.468 --> 01:29:56.661 
+when you write game simulators like, oh, if this thing, game asset is not initialized, you know,
+
+01:29:56.661 --> 01:29:57.419 
+don't do this.
+
+01:29:57.459 --> 01:29:58.979 
+If this is not true, don't do this.
+
+01:29:59.139 --> 01:30:00.379 
+If this is not true, don't do this.
+
+01:30:00.459 --> 01:30:05.299 
+Like you check all of the conditions and then say that, OK, if any of these conditions are actually
+
+01:30:05.299 --> 01:30:09.992 
+invalid, then you don't initialize the game, let's say for example, or initialize the simulation
+
+01:30:09.992 --> 01:30:10.579 
+environment.
+
+01:30:10.979 --> 01:30:16.599 
+So instead of having multiple of such, you know, predicates and then branching all together, you can
+
+01:30:16.599 --> 01:30:22.164 
+just simply write one big branch saying that OK, if all of the conditions are, you know, either one
+
+01:30:22.164 --> 01:30:26.099 
+of the conditions are true or false, you just going to branch it once.
+
+01:30:26.379 --> 01:30:27.619 
+So that kind of helps.
+
+01:30:27.619 --> 01:30:30.859 
+So combine the predicates and test only once.
+
+01:30:30.899 --> 01:30:33.099 
+So that's, you know, one of the possibility.
+
+01:30:33.539 --> 01:30:39.526 
+The other possibility is you can convert this, you know, data like, sorry, the control flow
+
+01:30:39.526 --> 01:30:42.619 
+dependency to the data flow, data flow problem.
+
+01:30:42.619 --> 01:30:51.045 
+So if you have written codes like some value of the variable is and then if you if you use that
+
+01:30:51.045 --> 01:30:56.899 
+unary operator, so you check something, you know whether it is if?
+
+01:30:56.899 --> 01:31:00.739 
+And then you do something value and then: do something other value.
+
+01:31:00.739 --> 01:31:05.697 
+So that is basically instead of writing if else, you can literally do the same thing with the evils
+
+01:31:05.697 --> 01:31:06.299 
+case, right?
+
+01:31:06.579 --> 01:31:11.299 
+But have you ever wondered like why we do not write in if else case but in a unary operator?
+
+01:31:11.539 --> 01:31:16.939 
+Because the United operator actually converts this if else to a data flow control.
+
+01:31:16.939 --> 01:31:22.619 
+So you're, you're going to compute this thing and put the result in a register.
+
+01:31:22.899 --> 01:31:28.742 
+And that would be you know, so it's instead of causing a if else condition, it would actually 'cause
+
+01:31:28.742 --> 01:31:29.619 
+it a predicate.
+
+01:31:29.699 --> 01:31:31.499 
+So that is what we call it predicate condition.
+
+01:31:31.499 --> 01:31:35.139 
+So it would convert a data flow, sorry, control flow to a data flow.
+
+01:31:35.139 --> 01:31:40.539 
+So I am not getting, you know, too much details of this, but search for this.
+
+01:31:40.699 --> 01:31:44.535 
+So unary operators and an EFL's conditions, even though they do the same thing, they are not
+
+01:31:44.535 --> 01:31:46.579 
+actually treated in the same way in the hardware.
+
+01:31:47.139 --> 01:31:50.539 
+So one is much more beneficial to write over the other.
+
+01:31:50.659 --> 01:31:55.899 
+So these things you can use for maybe yeah, some other cases also.
+
+01:31:57.059 --> 01:32:02.099 
+OK, so, so yeah, we have probably gone through this one.
+
+01:32:02.099 --> 01:32:08.030 
+So we would just go back to this performance analysis and do the yeah, basic understanding a bit
+
+01:32:08.030 --> 01:32:08.339 
+more.
+
+01:32:08.499 --> 01:32:13.139 
+So, so let's say, you know, let's do some sort of understanding.
+
+01:32:13.139 --> 01:32:17.179 
+So, so, so let's say if you if you do a branch prediction, which is always PC +4, right?
+
+01:32:17.179 --> 01:32:19.979 
+So that's the easiest form of branch prediction that you can think of.
+
+01:32:20.339 --> 01:32:28.201 
+So what we are doing So we are saying that OK if wait yes, so OK so this instruction is let's say a
+
+01:32:28.201 --> 01:32:31.219 
+let's say a control flow instructions.
+
+01:32:31.219 --> 01:32:36.419 
+This is a branch instruction and then you decode it and you execute this instruction at this point.
+
+01:32:36.419 --> 01:32:42.704 
+So at any instruction that the instruction that got fetched at T0 you would out know the outcome of
+
+01:32:42.704 --> 01:32:44.419 
+that branch at t = 2 right.
+
+01:32:44.419 --> 01:32:49.059 
+So at this point you would get to know whether you have done the correct thing or not.
+
+01:32:49.419 --> 01:32:54.459 
+So when you would get to know that, OK, you have actually done the wrong thing.
+
+01:32:54.459 --> 01:32:57.899 
+So you have what did you fetch in the pipeline?
+
+01:32:57.899 --> 01:33:01.699 
+You actually fetched APC plus four in this cycle, PC Plus 8IN this cycle.
+
+01:33:01.979 --> 01:33:07.179 
+And then you get to know at this this stage t = 4 that OK, you did something wrong.
+
+01:33:07.699 --> 01:33:13.491 
+So at this you at this stage you would get to know that OK, I instead of actually fetching PC +4 or
+
+01:33:13.491 --> 01:33:17.939 
+PC Plus eight, I should have actually fetched PC Plus, sorry, the target PC.
+
+01:33:18.499 --> 01:33:22.179 
+So whatever you did in these two cycles, that is actually wrong.
+
+01:33:22.499 --> 01:33:27.812 
+So this is what we also, you know, evaluated that if you have let's say you know, the the amount of
+
+01:33:27.812 --> 01:33:32.857 
+cycles between the fetch and the execution is north cycles, then you will literally seeing the
+
+01:33:32.857 --> 01:33:35.219 
+north cycles bubble if you are wrong, right?
+
+01:33:35.459 --> 01:33:37.739 
+So we did this for, you know, evaluation before.
+
+01:33:37.739 --> 01:33:42.699 
+So what you need to do whatever you did in this basically doing it in the wrong path.
+
+01:33:42.939 --> 01:33:45.499 
+So just flush it and then start fetching it on the correct path.
+
+01:33:45.499 --> 01:33:47.299 
+So that's what happens in the pipeline.
+
+01:33:47.899 --> 01:33:52.229 
+Now if I do a simple basic performance analysis, if you think of it in this way, so if if you are
+
+01:33:52.229 --> 01:33:54.819 
+correct guessing, there is no penalty involved whatsoever.
+
+01:33:55.099 --> 01:33:57.939 
+But if you are incorrect guessing, then there is a two cycle bubble.
+
+01:33:57.939 --> 01:34:02.648 
+I mean in this case there is only, you know, 2 cycles between the fetch and the end of the execution
+
+01:34:02.648 --> 01:34:03.779 
+in the ALU stage, right.
+
+01:34:03.779 --> 01:34:09.574 
+So if, if that is the case and consider these sort of assumptions, I mean we are going to do a, some
+
+01:34:09.574 --> 01:34:11.139 
+sort of mental calculation.
+
+01:34:11.499 --> 01:34:16.808 
+There there is no data dependency which solves in the program 20% control flow, 20% instructions are
+
+01:34:16.808 --> 01:34:17.499 
+control flow.
+
+01:34:17.499 --> 01:34:24.114 
+It is you know it is not a bad thing to assume and 70% of the control flow instructions are also
+
+01:34:24.114 --> 01:34:30.867 
+taken then and an 86% of the time you are actually you know correct whatever the prediction is and
+
+01:34:30.867 --> 01:34:33.899 
+remaining 14% of the time you are incorrect.
+
+01:34:34.299 --> 01:34:35.419 
+So what happens in that case?
+
+01:34:35.419 --> 01:34:39.179 
+So your CPI obviously is going to be more than One South.
+
+01:34:39.179 --> 01:34:44.819 
+You would need one cycle to execute like the throughput wise for sure and what exactly you are
+
+01:34:44.819 --> 01:34:46.139 
+getting a penalty for.
+
+01:34:46.579 --> 01:34:52.219 
+So your 20% of the instructions are branches and out of that 20 percent, 70% of the, you know,
+
+01:34:52.219 --> 01:34:54.379 
+control flow instructions are taken.
+
+01:34:54.859 --> 01:34:58.819 
+So taken meaning that you, you would actually have a different target than just PC +4.
+
+01:34:59.019 --> 01:35:00.139 
+So those are the wrong ones.
+
+01:35:00.499 --> 01:35:07.915 
+So what you ended up with so instead of having a one CPI processor, you actually have a you know,
+
+01:35:07.915 --> 01:35:09.139 
+CPI of 1.28 now.
+
+01:35:09.739 --> 01:35:14.965 
+So this is what we are calling the probability of wrong case, meaning number of times you can see
+
+01:35:14.965 --> 01:35:20.299 
+one instruction to be branched and then how many times this is getting, you know, wrongly predicted
+
+01:35:20.299 --> 01:35:25.579 
+because you only have a simplistic naive version of the predictor, which is next, you know, PC +4.
+
+01:35:26.819 --> 01:35:29.339 
+So anything if you, if you can.
+
+01:35:29.899 --> 01:35:32.259 
+So, So what is the, the penalty over here?
+
+01:35:32.259 --> 01:35:35.299 
+So that that's the another mental calculation that you need to do.
+
+01:35:35.659 --> 01:35:41.539 
+So your overall CPI is going to be dominated by the probability of the wrong guess and the penalty
+
+01:35:41.539 --> 01:35:42.739 
+for the wrong guess.
+
+01:35:43.219 --> 01:35:49.296 
+So if you want to design A better processor, ideally you would want both of these matrix to be as
+
+01:35:49.296 --> 01:35:50.299 
+low as possible.
+
+01:35:50.819 --> 01:35:55.475 
+So you would like to decrease the probability of the wrong case as well as you want to decrease the
+
+01:35:55.475 --> 01:35:56.699 
+penalty of the wrong case.
+
+01:35:56.939 --> 01:36:01.059 
+So that's what we are going to look into from the next lecture.
+
+01:36:01.819 --> 01:36:06.979 
+So we would start building from even more sophisticated, but let's say basic version of branch
+
+01:36:06.979 --> 01:36:09.779 
+prediction with a static form of branch prediction.
+
+01:36:10.019 --> 01:36:14.723 
+And then, you know, we would build up to more advanced level of branch prediction, which is, let's
+
+01:36:14.723 --> 01:36:18.899 
+say you know, dynamic level of branch prediction that actually happens in the hardware.
+
+01:36:19.259 --> 01:36:23.891 
+And you would hopefully get to see some sort of the the state-of-the-art in this branch prediction
+
+01:36:23.891 --> 01:36:28.335 
+which people have predominantly used machine learning policies to be specific, like perceptron
+
+01:36:28.335 --> 01:36:29.659 
+learning in actual hardware.
+
+01:36:29.699 --> 01:36:31.179 
+Whatever to make this branch prediction work.
+
+01:36:32.539 --> 01:36:36.299 
+So that's another over area that you can think of as a research problem.
+
+01:36:37.139 --> 01:36:43.324 
+So with that said, so I'll close the session for today here and hope to see you in again in the next
+
+01:36:43.324 --> 01:36:43.819 
+session.
+
+01:36:44.419 --> 01:36:44.779 
+Thank you.
+

@@ -1,0 +1,4715 @@
+WEBVTT
+
+00:00:05.063 --> 00:00:09.743 
+Please welcome back after the Easter break.
+
+00:00:09.983 --> 00:00:15.823 
+I hope you all had some, you know, good time with friends and families.
+
+00:00:16.463 --> 00:00:20.903 
+So we are going to start after the break where we left off.
+
+00:00:20.903 --> 00:00:26.948 
+So if you remember we were covering precise exceptions, we are figuring out the principles how can
+
+00:00:26.948 --> 00:00:32.623 
+we handle precise exceptions in a processor and then today we are going to start from there.
+
+00:00:33.583 --> 00:00:39.134 
+So I think one of you have probably asked this question that how exactly a machine with precise
+
+00:00:39.134 --> 00:00:42.583 
+exception gets to know when the result is available, right.
+
+00:00:42.583 --> 00:00:45.983 
+So we're probably going, we're going to answer that question over here.
+
+00:00:46.543 --> 00:00:52.002 
+So for the course of today's lecture and tomorrow's lecture, I'm going to take the lectures because
+
+00:00:52.002 --> 00:00:55.863 
+Professor Muthlu is travelling for Cool chips Conference school chips.
+
+00:00:56.623 --> 00:00:59.383 
+So I'm a, so that my name is Rahul.
+
+00:00:59.743 --> 00:01:02.063 
+I'm a 25th Safari PhD graduate.
+
+00:01:02.063 --> 00:01:03.663 
+I recently graduated actually.
+
+00:01:03.983 --> 00:01:07.983 
+So currently I'm working at Huawei Research in, yeah, a couple of shops from here.
+
+00:01:08.863 --> 00:01:12.503 
+So previously I have worked at various capacities in Intel labs and an AMD.
+
+00:01:12.503 --> 00:01:16.919 
+And if you have any questions regarding today's lecture or any question in general, if you want to
+
+00:01:16.919 --> 00:01:18.903 
+ask me, that's the best way to reach me out.
+
+00:01:19.503 --> 00:01:24.978 
+So I traditionally walk in micro architecture and memory system design, for example, let's say high
+
+00:01:24.978 --> 00:01:30.233 
+performance, you know, memory storage system design, prefecture cache management, disaggregated
+
+00:01:30.233 --> 00:01:31.063 
+memory systems.
+
+00:01:32.023 --> 00:01:32.303 
+Yeah.
+
+00:01:32.303 --> 00:01:35.783 
+So that that's kind of my area of research interest.
+
+00:01:36.423 --> 00:01:41.863 
+And so I in my PPSDI have focused more on to the data-driven micro architecture.
+
+00:01:41.863 --> 00:01:47.451 
+So what exactly do we mean by this machine learning assisted policies inside the processor to make
+
+00:01:47.451 --> 00:01:52.869 
+better decisions like for example in memory systems in even in this out of order processor, you
+
+00:01:52.869 --> 00:01:58.515 
+know, many types of machineries we can the decision for that we are making, we can think of many of
+
+00:01:58.515 --> 00:02:01.823 
+those decisions can be driven by machine learning methods.
+
+00:02:02.063 --> 00:02:04.983 
+So that's what I have explored during my PSD.
+
+00:02:04.983 --> 00:02:08.503 
+So that's, you know, the the title slide of my PhD thesis.
+
+00:02:08.503 --> 00:02:10.463 
+As you can see that that's the title of the thesis.
+
+00:02:10.743 --> 00:02:12.903 
+If you're interested, that's the the link over there.
+
+00:02:12.903 --> 00:02:19.348 
+So feel free to go, you know, explore this directions and if you are interested in general in any of
+
+00:02:19.348 --> 00:02:25.278 
+the topics that we are covering here, you are getting exposed to, you know, cutting edge per
+
+00:02:25.278 --> 00:02:31.531 
+microprocessor design as well as, you know, many of this topics that you would be seeing over the
+
+00:02:31.531 --> 00:02:34.303 
+course of the lecture if you're interested.
+
+00:02:34.623 --> 00:02:40.378 
+So we are also looking for, you know, people who can join us as full time as well as, you know,
+
+00:02:40.378 --> 00:02:40.863 
+interns.
+
+00:02:40.863 --> 00:02:45.679 
+So definitely reach me out if you guys want to, you know, take a jab from the industry's
+
+00:02:45.679 --> 00:02:49.183 
+perspective, what the problems that we are seeing at this point.
+
+00:02:49.863 --> 00:02:54.023 
+OK, so with that said, so let's let's just jog the memory a bit over.
+
+00:02:54.023 --> 00:02:55.583 
+Did we leave off?
+
+00:02:55.943 --> 00:03:00.455 
+So, so we have like in the three weeks back we have covered some micro architecture fundamentals
+
+00:03:00.455 --> 00:03:01.583 
+before the Easter break.
+
+00:03:01.583 --> 00:03:07.875 
+We have also seen like how, how we designed the pipeline processor design and we you know, we saw
+
+00:03:07.875 --> 00:03:14.103 
+control dependence, data dependence handling, We also and then we ended up in precise exception.
+
+00:03:14.103 --> 00:03:19.903 
+So what sort of state machine that we want to we have designed to enforce the precise exception.
+
+00:03:19.903 --> 00:03:22.343 
+And then I hope you all are in the same page.
+
+00:03:22.343 --> 00:03:25.103 
+That precise exception is needed because of more multiple reasons.
+
+00:03:25.623 --> 00:03:28.623 
+Now one of the reasons is like debugging the program becomes easier.
+
+00:03:28.983 --> 00:03:34.062 
+And so we we would start from there and for the course of today's lecture and tomorrow's lecture, we
+
+00:03:34.062 --> 00:03:37.263 
+would actually try to push the boundary of what we can do more.
+
+00:03:37.663 --> 00:03:42.303 
+So these part of the processor design has been optimised for over multiple decades.
+
+00:03:42.303 --> 00:03:48.023 
+So we are going to give you, you know, step by step understanding of what has been done in the past.
+
+00:03:48.463 --> 00:03:52.687 
+So we would start from out of order execution and we would hopefully end the out of order execution
+
+00:03:52.687 --> 00:03:52.943 
+today.
+
+00:03:52.943 --> 00:03:58.150 
+And then for tomorrow, we would even go beyond the out of order execution to look for opportunities
+
+00:03:58.150 --> 00:04:00.623 
+of, you know, pushing performance even further.
+
+00:04:01.263 --> 00:04:07.465 
+OK, so these are the readings that we are going to do so so Smith and Sohid that paper we have that
+
+00:04:07.465 --> 00:04:11.663 
+that book we have also, you know, mentioned in in the past lecture.
+
+00:04:11.663 --> 00:04:14.503 
+So that's definitely going to be helpful for this course.
+
+00:04:14.503 --> 00:04:19.583 
+And then course of this, you know, lecture and then A2126 for micropulsor.
+
+00:04:19.583 --> 00:04:25.623 
+That's one of the first micropulsor that has this sort of, you know, mechanisms implemented.
+
+00:04:25.623 --> 00:04:31.313 
+So that's definitely a good read if you guys are interested, do this and then tomorrow, hopefully we
+
+00:04:31.313 --> 00:04:33.703 
+are also going to cover branch predictors.
+
+00:04:33.703 --> 00:04:37.063 
+We're going to give give you a flavour of branch predictors.
+
+00:04:37.063 --> 00:04:41.903 
+So that's one of the paper that you can definitely take a look at.
+
+00:04:42.503 --> 00:04:45.743 
+OK, so with that, so, so let's give a quick jog up.
+
+00:04:45.743 --> 00:04:48.183 
+So so this is where we left off last week, right?
+
+00:04:48.183 --> 00:04:49.943 
+So not last week like before the Easter.
+
+00:04:50.143 --> 00:04:52.983 
+So this is what the in order dispatch execution and out of.
+
+00:04:53.063 --> 00:04:58.100 
+Of order completion pipeline with precise exception used to look like right So you have the fetch
+
+00:04:58.100 --> 00:05:03.190 
+decode and you know the reorder buffer inserting stage in the beginning and then after you do this
+
+00:05:03.190 --> 00:05:08.072 
+then you have different execution units which can take variable latencies some of the like for
+
+00:05:08.072 --> 00:05:13.162 
+example integer ad can take one cycle integer multiplication can take even more if you have memory
+
+00:05:13.162 --> 00:05:18.199 
+instructions that can take even more like on the orders of let's say 100 cycles right and then at
+
+00:05:18.199 --> 00:05:18.823 
+the end you.
+
+00:05:18.823 --> 00:05:24.021 
+We have also introduced reorder buffer to maintain the precise exception so that even though
+
+00:05:24.021 --> 00:05:29.445 
+instructions are finishing their execution, let's say somewhat out of order, but then we are not
+
+00:05:29.445 --> 00:05:34.869 
+going to commit them out of order so that we can still buffer the results in the reorder buffer,
+
+00:05:34.869 --> 00:05:35.943 
+then we can commit.
+
+00:05:35.943 --> 00:05:41.030 
+So we have also seen this pipeline stages decode which as I said, like you access a register file,
+
+00:05:41.030 --> 00:05:45.806 
+reorder buffer, you allocate the entry in the reorder buffer, take the instruction if it can
+
+00:05:45.806 --> 00:05:48.143 
+execute and then so dispatch the instruction.
+
+00:05:48.143 --> 00:05:54.835 
+Now keep this in mind that till now what we have discussed that the dispatch of the instruction is
+
+00:05:54.835 --> 00:05:56.543 
+still happening in order.
+
+00:05:56.543 --> 00:06:01.156 
+So meaning that if you have some instructions that cannot be dispatched because of let's say it's
+
+00:06:01.156 --> 00:06:02.583 
+operands are not ready, right?
+
+00:06:02.583 --> 00:06:07.458 
+So one operand or maybe multiple operands are not ready, then anything which comes after that
+
+00:06:07.458 --> 00:06:09.503 
+instruction can also not be dispatched.
+
+00:06:09.623 --> 00:06:15.583 
+So that was the key limitations of the design that we have taken like seen till now.
+
+00:06:15.583 --> 00:06:17.943 
+And then that's what we are going to address in today's lecture.
+
+00:06:18.623 --> 00:06:23.734 
+Then the execution, as I said, like it can, you know, take multiple cycles and instruction can also
+
+00:06:23.734 --> 00:06:25.903 
+complete out of order and then completion.
+
+00:06:25.903 --> 00:06:30.991 
+But then once the instruction finishes its execution, it's not going to, you know, write the result
+
+00:06:30.991 --> 00:06:35.103 
+into the register file, but it's going to hold the result in the reorder buffer.
+
+00:06:35.103 --> 00:06:37.623 
+So that's the, you know, the completion stage here.
+
+00:06:37.903 --> 00:06:44.376 
+And then once we know that OK, this instruction, none of the instructions that happened in the
+
+00:06:44.376 --> 00:06:50.782 
+before this instruction has been caused any exception and this current instruction became the
+
+00:06:50.782 --> 00:06:56.223 
+oldest one, then we know for sure that OK, this instruction is ready to commit.
+
+00:06:56.423 --> 00:06:58.463 
+And then that's the retirement and the commit stage.
+
+00:06:58.663 --> 00:07:01.663 
+We use the name interchangeably retirement and commit.
+
+00:07:01.903 --> 00:07:08.063 
+And then we just simply commit the output of the instructions into the register file itself.
+
+00:07:08.303 --> 00:07:13.445 
+OK, so this this was the, you know, just to jog up of the memory, we have also seen this sort of
+
+00:07:13.445 --> 00:07:14.303 
+data dependence.
+
+00:07:14.303 --> 00:07:19.322 
+So, so the first dependence is the flow dependence is exactly the only true dependence that we care
+
+00:07:19.322 --> 00:07:21.503 
+about because this is the read after write.
+
+00:07:21.503 --> 00:07:24.823 
+So definitely, you know, this instruction cannot be executed before that.
+
+00:07:25.103 --> 00:07:30.108 
+And that's the true data dependence that we that we should care about the any other type of
+
+00:07:30.108 --> 00:07:33.023 
+dependence, like for example, this output dependence.
+
+00:07:33.503 --> 00:07:36.743 
+This is this is like write after write dependence, right?
+
+00:07:36.743 --> 00:07:42.601 
+So this is typically appearing because the number of registers that your program or the compiler is
+
+00:07:42.601 --> 00:07:45.383 
+seeing like the ISA registers that are limited.
+
+00:07:45.383 --> 00:07:51.263 
+Like had you like if you had more registers, you could have actually used a different register.
+
+00:07:51.263 --> 00:07:56.103 
+You just use the register because you don't have enough register at your ISO level.
+
+00:07:56.103 --> 00:07:57.823 
+So that's what the output dependence is.
+
+00:07:58.103 --> 00:08:02.463 
+And similarly that anti anti dependence is basically, you know, it's a write after read.
+
+00:08:02.743 --> 00:08:08.816 
+So this is also another artifact of let's say the less number of registers that you have in the ISA,
+
+00:08:08.816 --> 00:08:12.703 
+but not getting enforced by the programs data dependence, right?
+
+00:08:12.703 --> 00:08:17.795 
+So only data dependence that we truly care about, which is a true dependence that's in the form of
+
+00:08:17.795 --> 00:08:18.263 
+this one.
+
+00:08:18.463 --> 00:08:24.551 
+OK, so we have seen this and we have also seen now how we can handle or how let's say introducing
+
+00:08:24.551 --> 00:08:30.263 
+the reorder buffer can also handle this sort of, you know, the non true dependences, right?
+
+00:08:30.263 --> 00:08:33.063 
+So output and anti dependences how we can handle.
+
+00:08:33.183 --> 00:08:39.016 
+We also showed that you know, if you can, if you remember like we, we renamed this registers into
+
+00:08:39.016 --> 00:08:41.543 
+something called the reorder buffer entry.
+
+00:08:41.543 --> 00:08:46.622 
+And then instead of reading the value of this register from the register file, we actually read it
+
+00:08:46.622 --> 00:08:48.903 
+from the reorder buffer entry itself, right.
+
+00:08:48.903 --> 00:08:54.687 
+So there actually the question came up that OK, how exactly a specific instruction would get to know
+
+00:08:54.687 --> 00:08:56.943 
+that, OK, that register is done, right?
+
+00:08:56.943 --> 00:08:59.423 
+Like, well, how that that mechanism happened.
+
+00:08:59.423 --> 00:09:03.703 
+So that's what we are going to also, you know, shed into light in today's lecture.
+
+00:09:04.223 --> 00:09:09.913 
+OK, so Long story short, this sort of let's say the order buffer that we have introduced that also
+
+00:09:09.913 --> 00:09:15.198 
+gives like that gives us the power to eliminate this sort of anti and output dependences at
+
+00:09:15.198 --> 00:09:15.663 
+runtime.
+
+00:09:16.183 --> 00:09:22.447 
+And it also gives us some sort of an illusion that you in hardware you have more registers that what
+
+00:09:22.447 --> 00:09:24.703 
+your ISA could have provided, right.
+
+00:09:24.703 --> 00:09:29.223 
+So that was the benefit and we are going to tap on that benefit in today's lecture also.
+
+00:09:29.743 --> 00:09:32.943 
+So again like the these are the hardware structure that we introduced last lecture.
+
+00:09:33.503 --> 00:09:35.143 
+So this is this was a register file.
+
+00:09:35.143 --> 00:09:40.533 
+So you if you remember like so register file contains a value valid bit and then the if the valid
+
+00:09:40.533 --> 00:09:43.423 
+bit is set then you know that this value is correct.
+
+00:09:43.703 --> 00:09:47.783 
+If the valid bit is not set that means you know that OK that value you cannot trust.
+
+00:09:48.103 --> 00:09:50.903 
+But what you need to trust you need to look for this tag.
+
+00:09:51.503 --> 00:09:52.863 
+So tag is basically.
+
+00:09:53.103 --> 00:09:54.623 
+Think of it like a pointer, right?
+
+00:09:54.623 --> 00:09:59.263 
+So if you if you like pointer in terms of your, your code that you write.
+
+00:09:59.263 --> 00:10:04.194 
+So instead of reading the value from here, you actually go what the pointer says to this structure
+
+00:10:04.194 --> 00:10:07.063 
+and this structure is going to give you the value, right?
+
+00:10:07.063 --> 00:10:08.663 
+So that's what the reorder buffer is.
+
+00:10:08.663 --> 00:10:14.343 
+And if you remember, reorder buffer also has some sort of, you know, it's a circular queue, right?
+
+00:10:14.343 --> 00:10:20.689 
+So you have the oldest instruction, you have the new youngest instruction, and each entry in the
+
+00:10:20.689 --> 00:10:25.383 
+reorder buffer also has multiple, you know, attributes embedded inside.
+
+00:10:25.863 --> 00:10:32.863 
+So I'm not going to go into, you know, too much detail into this, all of this prior concepts that we
+
+00:10:32.863 --> 00:10:33.983 
+have introduced.
+
+00:10:33.983 --> 00:10:37.983 
+So these are the this is one example that we have also shown in the Pentium 3 processor.
+
+00:10:38.343 --> 00:10:43.223 
+And that's what, you know, our course of today's lecture is going to start.
+
+00:10:43.543 --> 00:10:49.607 
+So as I showed like so this chart and this illustration, I'm going to come back to this, you know,
+
+00:10:49.607 --> 00:10:50.783 
+illustration again.
+
+00:10:51.183 --> 00:10:55.539 
+So what we said that OK, so before going forward, let's let's you know, come to the same
+
+00:10:55.539 --> 00:10:56.183 
+nomenclature.
+
+00:10:56.183 --> 00:11:00.503 
+So dispatch is basically the act of sending an instruction into the functional unit, right?
+
+00:11:00.503 --> 00:11:08.871 
+So renaming the renaming the ROB stalls the false dependence we we can eliminate using the re order
+
+00:11:08.871 --> 00:11:09.463 
+buffer.
+
+00:11:09.863 --> 00:11:15.841 
+But the problem that that we are still facing is that once the instruction gets decoded and you
+
+00:11:15.841 --> 00:11:21.946 
+allocated this into the reorder buffer and the reorder buffer showed that this instruction cannot
+
+00:11:21.946 --> 00:11:23.583 
+be executed at this point.
+
+00:11:23.583 --> 00:11:23.943 
+Why?
+
+00:11:23.943 --> 00:11:28.503 
+Because one or many of your source registers are not ready.
+
+00:11:29.023 --> 00:11:35.518 
+Then what you do, your pipeline actually stalls like you cannot feed any other instruction that is
+
+00:11:35.518 --> 00:11:40.423 
+coming after this to the execution unit, even though they can be executed.
+
+00:11:40.423 --> 00:11:41.783 
+So let let me give you an example.
+
+00:11:42.103 --> 00:11:47.143 
+So I mean, Professor Moodle, you know, keeps on showing this figure pictures.
+
+00:11:47.143 --> 00:11:49.823 
+So that's a long latency instruction that strolls the pipeline.
+
+00:11:49.823 --> 00:11:55.383 
+And then, you know, independent instructions are getting blocked not to go into the execution unit.
+
+00:11:55.383 --> 00:11:58.223 
+So I'm not going to go into too much into detail of these pictures again.
+
+00:11:58.743 --> 00:12:02.663 
+But yeah, so that that's the problem that that we wanted to show.
+
+00:12:02.823 --> 00:12:09.183 
+So, so let me let me give you a concrete example just to, you know, tangibly explain this thing.
+
+00:12:09.543 --> 00:12:12.423 
+So if you look into this, let's say piece of code.
+
+00:12:12.783 --> 00:12:17.643 
+So this piece of code and this piece of code are exactly similar except from the fact that this is a
+
+00:12:17.643 --> 00:12:20.463 
+multiplication instruction and this is a load instruction.
+
+00:12:20.463 --> 00:12:21.343 
+That's the only thing, right?
+
+00:12:21.823 --> 00:12:26.383 
+So what am I showing over here is that this ad is actually dependent on this multiplication.
+
+00:12:26.383 --> 00:12:26.663 
+Why?
+
+00:12:26.663 --> 00:12:28.823 
+Because there is a true dependency, right?
+
+00:12:28.823 --> 00:12:33.053 
+So you are reading R3 which is getting produced by the previous instruction and that's the true
+
+00:12:33.053 --> 00:12:33.543 
+dependence.
+
+00:12:33.703 --> 00:12:35.823 
+Similarly, in this case there is a true dependency over here.
+
+00:12:36.303 --> 00:12:41.442 
+But then any instructions in the blue, if you look into this, all the instructions in the blue, they
+
+00:12:41.442 --> 00:12:44.063 
+are completely independent of this red instruction.
+
+00:12:44.583 --> 00:12:51.260 
+But by virtue of the machine that we already designed, none of these instructions can be can be feed
+
+00:12:51.260 --> 00:12:52.863 
+to those execution unit.
+
+00:12:52.863 --> 00:12:58.470 
+Basically, it cannot be dispatched unless this red instruction gets to dispatch and the red
+
+00:12:58.470 --> 00:13:01.983 
+instruction gets to dispatch only when the mall finishes.
+
+00:13:02.423 --> 00:13:06.423 
+So in this case also the rate instruction only gets to execute only when the load finishes.
+
+00:13:06.623 --> 00:13:12.104 
+So that's the critical part of the problem or the critical problem of the pipeline that we have
+
+00:13:12.104 --> 00:13:13.143 
+designed till now.
+
+00:13:13.423 --> 00:13:18.883 
+So even if you can see that there are independent instructions that could have been executed, but
+
+00:13:18.883 --> 00:13:21.023 
+your current design cannot execute it.
+
+00:13:21.303 --> 00:13:22.863 
+So let's let's try to fix this thing.
+
+00:13:23.063 --> 00:13:25.543 
+So as I said, like what are the similarities?
+
+00:13:25.543 --> 00:13:30.740 
+The similarities is that there is a like a this dependent instruction that is blocking everything
+
+00:13:30.740 --> 00:13:34.063 
+afterwards between these piece of code and that piece of code.
+
+00:13:34.583 --> 00:13:38.343 
+But then the how these two codes are also different.
+
+00:13:38.583 --> 00:13:43.920 
+The difference being is the following that in the left hand side piece of code your R3 is actually
+
+00:13:43.920 --> 00:13:45.663 
+dependent on the multiplication.
+
+00:13:46.023 --> 00:13:50.360 
+Now multiplication is still a deterministic operation like you know by the virtue of your design
+
+00:13:50.360 --> 00:13:53.343 
+that's a multiplication takes 4 cycles or maybe 6 cycles what not.
+
+00:13:53.623 --> 00:13:55.543 
+So that's a deterministic latency, right?
+
+00:13:55.703 --> 00:14:00.503 
+But on the right hand side, the load instruction, it does not have a deterministic latency.
+
+00:14:00.503 --> 00:14:00.743 
+Why?
+
+00:14:00.743 --> 00:14:05.764 
+Because if your load is found in the cache then you can actually service that load in a very fast
+
+00:14:05.764 --> 00:14:06.023 
+rate.
+
+00:14:06.023 --> 00:14:07.743 
+Like you know 3 cycles, 4 cycles.
+
+00:14:08.143 --> 00:14:12.903 
+But then if your if your load misses the cache hierarchy then you don't know like that's a gamble.
+
+00:14:12.903 --> 00:14:17.703 
+Like if it is coming from L2 cache, probably you would see some somewhere around 10 cycles.
+
+00:14:17.703 --> 00:14:22.784 
+If it's coming from LLC, then it would again take some, you know, 1020 cycles more if it is going to
+
+00:14:22.784 --> 00:14:25.223 
+DM that's completely different, you know, point.
+
+00:14:25.423 --> 00:14:31.309 
+So the whole part of the problem is that this dependence, the source instruction of the dependent is
+
+00:14:31.309 --> 00:14:32.663 
+also non deterministic.
+
+00:14:32.663 --> 00:14:38.543 
+You don't know at compile time what exactly is going to happen, what is the latency of this load.
+
+00:14:38.543 --> 00:14:40.743 
+So that how that exactly is important.
+
+00:14:40.743 --> 00:14:44.423 
+So we will, we would come back to this a bit later.
+
+00:14:44.423 --> 00:14:51.153 
+So if you think of it in this way, if you know that OK, there is a deterministic latency dependence,
+
+00:14:51.153 --> 00:14:52.903 
+then you know exactly how.
+
+00:14:53.063 --> 00:15:01.373 
+Many instructions that you should anticipate after this guy to find out that OK, if I put this red
+
+00:15:01.373 --> 00:15:05.783 
+ad, let's say 5 instructions later, I would be fine.
+
+00:15:06.143 --> 00:15:10.623 
+And all of the instructions that you are feeding in between are independent.
+
+00:15:10.983 --> 00:15:11.303 
+Why?
+
+00:15:11.303 --> 00:15:14.743 
+Because you know that OK multiplication has a static latency.
+
+00:15:15.143 --> 00:15:19.583 
+If it is latency 4, then you would try to manage a, you know, gap between 4:00.
+
+00:15:19.583 --> 00:15:25.583 
+If the compiler can manage right with the independent instruction, that can be done in this case.
+
+00:15:25.823 --> 00:15:31.338 
+But it might not be done in this case because at compiler level you have 0 idea what the load
+
+00:15:31.338 --> 00:15:32.703 
+latency is going to be.
+
+00:15:33.303 --> 00:15:36.863 
+Because unless you are actually executing in the runtime, you don't know.
+
+00:15:37.383 --> 00:15:43.413 
+So that's what you know how these two pieces of code are different in some sense that if you tell
+
+00:15:43.413 --> 00:15:48.263 
+the compiler that, OK, I know that there is a dependent instruction coming in.
+
+00:15:48.703 --> 00:15:55.711 
+So let's make, let's make this 2 instructions, the source and the dependent instruction far apart
+
+00:15:55.711 --> 00:16:00.263 
+and feed anything which is independent of these two in between.
+
+00:16:01.103 --> 00:16:06.119 
+Now, if you know what is the latency, you know how many you have to like, what is the distance that
+
+00:16:06.119 --> 00:16:07.183 
+you have to maintain?
+
+00:16:07.583 --> 00:16:12.411 
+But if you don't know the latency, then anything that you are going to feed in it may or may not
+
+00:16:12.411 --> 00:16:12.663 
+work.
+
+00:16:13.023 --> 00:16:14.583 
+So that's the part of the problem.
+
+00:16:14.583 --> 00:16:16.703 
+So I'm, I'm going to come back to this again.
+
+00:16:17.863 --> 00:16:19.623 
+So again, so, so what's the problem?
+
+00:16:19.623 --> 00:16:25.203 
+The problem is essentially that coming from the fact that we are having it in order dispatch, we
+
+00:16:25.203 --> 00:16:30.783 
+call it, you know, you use this terminologies interchangeably, dispatch scheduling or execution.
+
+00:16:31.223 --> 00:16:35.463 
+So the obvious solution is that we go for out of order dispatch, right?
+
+00:16:35.823 --> 00:16:39.343 
+But then the it's not that easy to do.
+
+00:16:39.383 --> 00:16:43.735 
+So let's let's take it, you know, step by step, like how how can we go from Indiana order dispatch
+
+00:16:43.735 --> 00:16:45.023 
+to the out of order dispatch?
+
+00:16:45.423 --> 00:16:48.943 
+The idea is actually pretty simple again, and you have seen this thing before.
+
+00:16:48.943 --> 00:16:52.063 
+We have introduced the concept of data flow execution, right?
+
+00:16:52.063 --> 00:16:56.103 
+So in this case, what we want to do, we want to go back to that paradigm.
+
+00:16:56.463 --> 00:17:01.261 
+So we want to say that, OK, one instruction, we can execute that instruction when all of its source
+
+00:17:01.261 --> 00:17:02.183 
+operands are ready.
+
+00:17:02.863 --> 00:17:04.943 
+So that's the part of the data flow.
+
+00:17:04.943 --> 00:17:10.722 
+So, so that's what I'm writing over here that we want to fire an instruction when all of its inputs
+
+00:17:10.722 --> 00:17:15.743 
+are the source operands are ready and the the data flow actually takes this even more.
+
+00:17:16.463 --> 00:17:20.663 
+But we are not going to, you know, go all the way into the data flow paradigm.
+
+00:17:20.983 --> 00:17:27.370 
+But what we are going to build is essentially a machine that from programmer's perspective it gives
+
+00:17:27.370 --> 00:17:33.434 
+you flow of the von Neumann architecture, which is a traditional, it's a sequential logic, but
+
+00:17:33.434 --> 00:17:36.983 
+internally it's going to behave as a data flow machine.
+
+00:17:37.503 --> 00:17:43.154 
+So you're not exposing the entirety of the data flows, you know a paradigm outside because as a
+
+00:17:43.154 --> 00:17:46.903 
+programmer that's actually very hard to program those machines.
+
+00:17:47.343 --> 00:17:51.601 
+So from programmer's perspective you are still giving an illusion of a Von Neumann machine, but
+
+00:17:51.601 --> 00:17:53.663 
+internally you would execute each instruction.
+
+00:17:54.063 --> 00:17:54.943 
+In a data flow manner.
+
+00:17:54.983 --> 00:18:01.503 
+So that's what I'm going to, you know, motivate in in this lecture, but then before going there.
+
+00:18:01.903 --> 00:18:03.943 
+So this is one way of handling this.
+
+00:18:04.303 --> 00:18:11.039 
+But as I, you know, mentioned before that there are multiple other ways of handling like one thing
+
+00:18:11.039 --> 00:18:17.775 
+that I just made a like a quick trailer that you can also use compiler to detect this sort of data
+
+00:18:17.775 --> 00:18:21.143 
+dependency at compile time and handle this thing.
+
+00:18:21.143 --> 00:18:26.857 
+So that's what I showed over here that if compiler detects that, oh, these two instructions are kind
+
+00:18:26.857 --> 00:18:29.943 
+of, you know, they are producer consumer relationship.
+
+00:18:30.543 --> 00:18:37.013 
+So let's keep the consumer far separated from the producer and feed some independent instructions in
+
+00:18:37.013 --> 00:18:43.224 
+between so that by the time producer consumer gets executed, you would have a guarantee that OK,
+
+00:18:43.224 --> 00:18:44.583 
+producer is finished.
+
+00:18:45.423 --> 00:18:48.743 
+But then that only works if you know that what is the latency of the producer.
+
+00:18:48.743 --> 00:18:53.198 
+If your producer's latency is variable, then compiler has zero idea OK how many independent
+
+00:18:53.198 --> 00:18:54.863 
+instructions that we want to feed.
+
+00:18:55.023 --> 00:18:55.903 
+So that's one problem.
+
+00:18:55.903 --> 00:18:59.303 
+The second problem is you may or may not actually see those many independent instructions.
+
+00:18:59.303 --> 00:19:01.743 
+So compiler's perspective, the life becomes harder.
+
+00:19:02.783 --> 00:19:08.412 
+Hardware becomes much easier if you go for the first principle, but then compiler's life becomes
+
+00:19:08.412 --> 00:19:08.823 
+harder.
+
+00:19:09.423 --> 00:19:12.903 
+OK, so, so this is one way of addressing this problem.
+
+00:19:12.903 --> 00:19:17.183 
+So any other way, can you think of any other way to address this problem?
+
+00:19:17.183 --> 00:19:22.183 
+So let's say I would go back like so this thing, so there is a dependence.
+
+00:19:22.343 --> 00:19:24.663 
+Any other way that you can think of addressing this?
+
+00:19:25.863 --> 00:19:30.303 
+Anyone think a bit differently?
+
+00:19:30.303 --> 00:19:36.748 
+If you, if you're in a computer architecture lecture, anything that you see a problem, just first
+
+00:19:36.748 --> 00:19:38.543 
+ask yourself this question.
+
+00:19:38.623 --> 00:19:39.343 
+Can I predict?
+
+00:19:39.783 --> 00:19:40.863 
+Can I speculate something?
+
+00:19:42.743 --> 00:19:43.103 
+Yes.
+
+00:19:51.003 --> 00:19:52.923 
+OK, so you want to store.
+
+00:19:53.103 --> 00:19:59.300 
+Instruction somewhere like OK, keep it aside, let them or let the other ones go and once that gets
+
+00:19:59.300 --> 00:20:01.703 
+ready and then then fire it up, right.
+
+00:20:01.823 --> 00:20:03.983 
+So that's exactly what we are going to do in out of order.
+
+00:20:04.383 --> 00:20:09.137 
+So out of order we are going to create something called, let's say you know, resting station or like
+
+00:20:09.137 --> 00:20:10.183 
+a reservation station.
+
+00:20:10.383 --> 00:20:15.927 
+So any instruction that you cannot fire at this point, you would just keep it aside, let the others
+
+00:20:15.927 --> 00:20:17.383 
+go as long as they can go.
+
+00:20:17.863 --> 00:20:20.223 
+And then once they get ready, they would also go.
+
+00:20:20.903 --> 00:20:23.183 
+That's that's that's one of the solution, yes.
+
+00:20:23.463 --> 00:20:24.223 
+Anything else?
+
+00:20:26.903 --> 00:20:27.343 
+Yes.
+
+00:20:34.303 --> 00:20:34.583 
+Uh huh.
+
+00:20:44.433 --> 00:20:44.953 
+OK.
+
+00:21:02.183 --> 00:21:04.703 
+OK, so that, that's actually a fascinating thing.
+
+00:21:04.703 --> 00:21:09.423 
+So I'm, I'm I'm going to expand a bit what what you just said for the control flow.
+
+00:21:09.623 --> 00:21:11.383 
+You can actually also do this for the data flow.
+
+00:21:11.383 --> 00:21:16.896 
+So what what I'm going to like extend your solution is that if we can actually, let's say predict
+
+00:21:16.896 --> 00:21:20.023 
+that, OK, what is the output of this R3 is going to be?
+
+00:21:20.623 --> 00:21:25.676 
+Even though R3 is going to take, let's say 4 cycles, I would just simply speculate, OK, maybe R CS
+
+00:21:25.676 --> 00:21:26.863 
+value is going to be 0.
+
+00:21:26.863 --> 00:21:27.223 
+I don't know.
+
+00:21:27.903 --> 00:21:32.223 
+If you predict something, then you know that, OK, this instruction can go on, right?
+
+00:21:32.223 --> 00:21:35.303 
+So because, you know, have some sort of speculative value for R3.
+
+00:21:35.783 --> 00:21:37.183 
+So just keep on executing that.
+
+00:21:37.623 --> 00:21:42.482 
+But then at eventually when if you realise that, oh, I have made a mistake, that prediction was
+
+00:21:42.482 --> 00:21:45.143 
+wrong, then you need to again re execute everything.
+
+00:21:45.463 --> 00:21:49.684 
+So that's exactly what you mentioned it from the control flow side, but this is exactly what can
+
+00:21:49.684 --> 00:21:51.663 
+also happen for the data dependency breaking.
+
+00:21:51.983 --> 00:21:52.463 
+So exactly.
+
+00:21:52.463 --> 00:21:55.903 
+So that's that's what the second solution is for what we call the value prediction.
+
+00:21:55.903 --> 00:22:00.965 
+So value prediction meaning that if you have a producer consumer relationship, just predict what the
+
+00:22:00.965 --> 00:22:04.863 
+producer is going to produce so that your consumer can at least go on, right?
+
+00:22:05.263 --> 00:22:09.063 
+If your speculation is wrong, you go back and then retry.
+
+00:22:09.783 --> 00:22:15.558 
+So now if you can easily imagine, obviously you cannot speculate and keep it going, even your
+
+00:22:15.558 --> 00:22:16.863 
+speculation is wrong.
+
+00:22:17.103 --> 00:22:17.463 
+Why?
+
+00:22:17.463 --> 00:22:20.943 
+Because then that would affect the correctness of the program, right?
+
+00:22:21.063 --> 00:22:28.583 
+So value prediction only works in cases where you can literally predict the value very accurately.
+
+00:22:28.983 --> 00:22:36.081 
+Otherwise the amount of work that you would waste by speculating is going to overpower your
+
+00:22:36.081 --> 00:22:36.783 
+benefits.
+
+00:22:37.103 --> 00:22:44.537 
+So that's why you know value prediction works if you're let's say program is going on in a very
+
+00:22:44.537 --> 00:22:46.103 
+predictable pattern.
+
+00:22:46.383 --> 00:22:49.223 
+But if it is not, then value predictor actually can harm performance.
+
+00:22:49.223 --> 00:22:51.423 
+But value prediction is one of the solution.
+
+00:22:51.823 --> 00:22:53.183 
+Other solution anyone?
+
+00:22:54.903 --> 00:22:55.383 
+Anything.
+
+00:22:56.223 --> 00:23:00.273 
+OK, maybe the other solution is a bit bit tougher for you to guess, but this is one form of, you
+
+00:23:00.273 --> 00:23:03.143 
+know, multi threading, which is called fine grained multi threading.
+
+00:23:03.423 --> 00:23:08.743 
+Fine grained multi threading says that oh, I don't care about the dependencies.
+
+00:23:08.903 --> 00:23:13.205 
+I mean, obviously I do care about dependencies, but I am not going to get bottlenecked by the
+
+00:23:13.205 --> 00:23:14.223 
+dependent instruction.
+
+00:23:14.703 --> 00:23:19.703 
+What I'm going to do is like every cycle I'm just going to execute from different threads.
+
+00:23:20.143 --> 00:23:25.466 
+I'm going to execute 11 instruction from thread one, next cycle from thread 2, next cycle from
+
+00:23:25.466 --> 00:23:26.543 
+thread 3 and go on.
+
+00:23:26.903 --> 00:23:29.223 
+And then again I would come back and go on.
+
+00:23:29.503 --> 00:23:35.109 
+So the hope is that if you have enough threads then if you see that OK one produce an instruction
+
+00:23:35.109 --> 00:23:40.831 
+then at least you can execute the other instruction from other threads before you come back to that
+
+00:23:40.831 --> 00:23:41.583 
+thread again.
+
+00:23:42.063 --> 00:23:44.223 
+So that there is a time gap between this.
+
+00:23:44.703 --> 00:23:47.103 
+So what is exactly happening in fine grade multi threading?
+
+00:23:47.103 --> 00:23:51.383 
+You are not making each single thread fast.
+
+00:23:51.863 --> 00:23:54.063 
+You're making all of them run together.
+
+00:23:54.423 --> 00:23:59.368 
+But then if your single thread performance is not that great, also your whole system's performance
+
+00:23:59.368 --> 00:24:03.103 
+would increase, but the single thread performance may or may not increase.
+
+00:24:03.383 --> 00:24:06.943 
+So that's the upside and the downsides of multithreading, fine grained multithreading.
+
+00:24:07.743 --> 00:24:13.854 
+So the whole part of the question that or, or or the motivation that I wanted to show is that there
+
+00:24:13.854 --> 00:24:17.743 
+are alternative approach for, you know, out of order execution.
+
+00:24:18.063 --> 00:24:20.383 
+But all of those approaches have their own pitfalls.
+
+00:24:20.383 --> 00:24:24.543 
+And that's the reason why out of order execution is so powerful and so dominant in today's, you
+
+00:24:24.543 --> 00:24:25.463 
+know, process design.
+
+00:24:25.463 --> 00:24:31.255 
+Anything that you are probably using your phone, your laptop most likely have some out of order
+
+00:24:31.255 --> 00:24:31.743 
+process.
+
+00:24:32.023 --> 00:24:35.423 
+If not, you know all the course, all those processes have out of order execution.
+
+00:24:35.783 --> 00:24:37.903 
+OK, so that's what the we are going to do.
+
+00:24:37.943 --> 00:24:40.623 
+So so what's the key idea of automatic execution?
+
+00:24:40.623 --> 00:24:46.343 
+It's basically as you mentioned like so if I have some non ready instructions, get out of the way.
+
+00:24:47.023 --> 00:24:52.943 
+Let make the Viper make the highway going for the instructions that are ready to.
+
+00:24:53.063 --> 00:24:53.863 
+Execute right.
+
+00:24:54.063 --> 00:24:56.343 
+So that so this is what I'm writing over here.
+
+00:24:56.503 --> 00:25:00.056 
+So move the non ready instructions out of the way of the independent ones such that the independent
+
+00:25:00.056 --> 00:25:00.703 
+ones can dispatch.
+
+00:25:00.863 --> 00:25:02.183 
+So that's exactly what you mentioned.
+
+00:25:02.303 --> 00:25:07.344 
+So that's what out of what the execution is going to do where exactly we are going to keep them
+
+00:25:07.344 --> 00:25:07.663 
+aside.
+
+00:25:08.063 --> 00:25:10.103 
+It's basically what we call reservation stations.
+
+00:25:10.103 --> 00:25:11.903 
+There are multiple nomenclatures in the literature.
+
+00:25:12.383 --> 00:25:14.143 
+People call it, you know, instruction queue.
+
+00:25:14.143 --> 00:25:15.623 
+People call it reservation station.
+
+00:25:15.863 --> 00:25:20.103 
+But you know, we like the name reservation Station because it's like a highway kind of thing, right?
+
+00:25:20.103 --> 00:25:24.343 
+So if you're not going to use the highway, don't stop in the middle of the highway.
+
+00:25:24.623 --> 00:25:29.223 
+Just set aside and keep the other traffic flowing.
+
+00:25:29.543 --> 00:25:32.103 
+And once you are done, then you can join the highway.
+
+00:25:32.543 --> 00:25:34.463 
+So we're going to do it a bit differently.
+
+00:25:34.543 --> 00:25:39.265 
+So we are going to just do it in a way that, OK, all the instructions would by default would go to
+
+00:25:39.265 --> 00:25:43.892 
+the reservation station and they would come back whenever they're getting ready just to make the
+
+00:25:43.892 --> 00:25:48.422 
+scheduling and all the, you know, the control logic much more regular, OK, so that's the whole
+
+00:25:48.422 --> 00:25:48.663 
+idea.
+
+00:25:48.903 --> 00:25:53.758 
+Now the the The thing is that we are going to monitor the source values of instruction that are
+
+00:25:53.758 --> 00:25:58.614 
+resting in the waiting area because that's what exactly going to know that OK, now I'm ready to
+
+00:25:58.614 --> 00:25:59.023 
+execute.
+
+00:25:59.023 --> 00:26:03.951 
+So once all the source values of an instructions are available, then you know that OK, I can fire
+
+00:26:03.951 --> 00:26:06.543 
+this instruction and they can merge on the highway.
+
+00:26:06.743 --> 00:26:08.863 
+Now they can you know, start getting executed.
+
+00:26:09.223 --> 00:26:13.814 
+OK, so that's merging on the highway is basically what we are calling that instruction would get
+
+00:26:13.814 --> 00:26:18.263 
+dispatched to the functional units which whether it's adder multiplier, load store, whatever.
+
+00:26:18.263 --> 00:26:19.943 
+So it would go over there.
+
+00:26:20.303 --> 00:26:22.663 
+So that is that is happening in the control flow order.
+
+00:26:22.663 --> 00:26:28.428 
+So you would you would fetch the instruction in von Neumann order sequential, but you would execute
+
+00:26:28.428 --> 00:26:29.943 
+them in a data flow order.
+
+00:26:29.943 --> 00:26:35.731 
+So that is the real benefit of out of order processor that you are not exposing this data flow graph
+
+00:26:35.731 --> 00:26:40.999 
+to the programmer because it you are still giving the illusion of sequential execution, but
+
+00:26:40.999 --> 00:26:44.183 
+internally it is actually executing based on data flow.
+
+00:26:45.063 --> 00:26:45.303 
+OK.
+
+00:26:45.703 --> 00:26:50.486 
+So the benefit is obviously that latency tolerance that, you know, if you have independent
+
+00:26:50.486 --> 00:26:55.534 
+instructions in the sequence of instruction stream, then those like independent instruction can
+
+00:26:55.534 --> 00:27:00.743 
+still go on while the other instructions may actually still be waiting on the reservation station.
+
+00:27:01.343 --> 00:27:03.743 
+OK, so this is what the timeline would look like.
+
+00:27:03.743 --> 00:27:05.943 
+So I'm just going to give you like a quick rundown.
+
+00:27:06.223 --> 00:27:11.492 
+So in case of in order dispatch with the precise exception, this is recall like this is what we left
+
+00:27:11.492 --> 00:27:12.863 
+off from the last lecture.
+
+00:27:13.143 --> 00:27:17.183 
+So, and this is the, you know, code sequence that we are going to execute.
+
+00:27:17.183 --> 00:27:19.183 
+So this is Imol ad ad Imol and an ad.
+
+00:27:19.263 --> 00:27:20.983 
+So this ad is dependent on this Imol.
+
+00:27:21.143 --> 00:27:26.103 
+This ad is this red ad is dependent on this ad.
+
+00:27:26.343 --> 00:27:28.063 
+So there is AR3R3, right?
+
+00:27:28.383 --> 00:27:32.343 
+So what's going to happen is that if you in case of Indiana order dispatch.
+
+00:27:32.343 --> 00:27:38.025 
+So once the second instruction, this is the ad would get decoded, then it gets to understand that
+
+00:27:38.025 --> 00:27:39.783 
+OK, I can't execute right now.
+
+00:27:39.783 --> 00:27:40.143 
+Why?
+
+00:27:40.143 --> 00:27:41.543 
+Because I'm dependent on this guy.
+
+00:27:42.023 --> 00:27:47.183 
+So as long as this guy is executing, my previous producer is executing, I can't dispatch.
+
+00:27:47.743 --> 00:27:54.343 
+So what it also does that this the second ad, which is the blue one, which is independent, right?
+
+00:27:54.343 --> 00:27:55.583 
+So that would also get stalled.
+
+00:27:56.023 --> 00:28:01.306 
+So this is the problem that we started with and how the out of order dispatch is going to solve this
+
+00:28:01.306 --> 00:28:01.623 
+thing.
+
+00:28:01.863 --> 00:28:03.703 
+The third one now can also dispatch.
+
+00:28:03.703 --> 00:28:07.183 
+So while the second one is actually waiting on the reservation system side.
+
+00:28:07.183 --> 00:28:09.303 
+So that's the benefit of that that we are going to exploit.
+
+00:28:09.823 --> 00:28:15.454 
+So that eventually if you do this entire, you know, pipeline design, what you can see that OK, this
+
+00:28:15.454 --> 00:28:21.029 
+set of instructions would actually do would have taken 16 cycles if you have in order dispatch, if
+
+00:28:21.029 --> 00:28:26.660 
+you have the out of order dispatch obviously with the correctness guarantee and then there is a lot
+
+00:28:26.660 --> 00:28:29.903 
+of machinery that would go on to make this thing correct.
+
+00:28:30.823 --> 00:28:32.023 
+And that's the whole part of the lecture.
+
+00:28:32.583 --> 00:28:37.943 
+You can actually execute this in 12 cycles and 16 to 12 cycle is like 25%, you know speed up.
+
+00:28:38.063 --> 00:28:43.792 
+So that's quite significant and reality when when you know you, you would see that there are
+
+00:28:43.792 --> 00:28:49.895 
+multiple papers that have quoted that from an aggressive in order pipeline to an out of order, you
+
+00:28:49.895 --> 00:28:53.943 
+would see the speed up somewhere between to 20% to 30% even more.
+
+00:28:54.263 --> 00:28:56.423 
+So that's the power that that we are chasing at this point.
+
+00:28:56.423 --> 00:28:57.023 
+OK, we have question.
+
+00:28:57.023 --> 00:28:58.383 
+Yes, it depends on the register one or one.
+
+00:28:58.383 --> 00:29:08.483 
+So how are these registers having to cost?
+
+00:29:08.483 --> 00:29:10.283 
+Well, the first let us.
+
+00:29:20.183 --> 00:29:22.903 
+Now the second AD writes the value to R3 right?
+
+00:29:23.743 --> 00:29:26.783 
+So oh OK, so probably read it from right to left.
+
+00:29:27.303 --> 00:29:35.550 
+So it multiplies R2 and R1, puts it into R3 and then second one actually reads from RR 1 and R3 and
+
+00:29:35.550 --> 00:29:37.383 
+puts it into R3 again.
+
+00:29:39.063 --> 00:29:42.383 
+Oh, the second ad, second AD yeah.
+
+00:29:42.383 --> 00:29:52.863 
+So the so the second AD can execute with the the with the I mall because when you execute this R1.
+
+00:29:53.063 --> 00:29:59.388 
+With the precise exception, if you recall, like what we do, we do actually for the R1, we say that,
+
+00:29:59.388 --> 00:30:05.586 
+OK, I'm going to produce the R1 not in the actual register file, but I'm going to hold that value
+
+00:30:05.586 --> 00:30:07.823 
+in the reorder buffer entry, right?
+
+00:30:07.823 --> 00:30:12.632 
+So that R1 whenever you're going to write something, you would actually rename that thing to
+
+00:30:12.632 --> 00:30:13.783 
+something else, right?
+
+00:30:13.783 --> 00:30:17.383 
+So it's either going to be reorder buffer entry or it's going to be someone else, right?
+
+00:30:17.783 --> 00:30:22.758 
+So that's that's the benefit that that we would have like if if you like that, that's essentially
+
+00:30:22.758 --> 00:30:27.785 
+going to break this anti dependence or the output dependence that this is not a true dependence as
+
+00:30:27.785 --> 00:30:28.863 
+you mentioned, right.
+
+00:30:28.863 --> 00:30:34.231 
+So that's exactly going to break it that any instruction that comes after this ad is not actually
+
+00:30:34.231 --> 00:30:36.943 
+going to read from the R1 from the register file.
+
+00:30:36.943 --> 00:30:39.463 
+It would actually point it to the reorder buffer entries in the row.
+
+00:30:40.063 --> 00:30:45.616 
+This entry is now responsible for R1 whenever that entry is ready, just take the value from there,
+
+00:30:45.616 --> 00:30:46.863 
+not the register file.
+
+00:30:47.783 --> 00:30:48.143 
+Makes sense.
+
+00:30:48.823 --> 00:30:50.263 
+OK, Any other question?
+
+00:30:50.263 --> 00:31:00.303 
+Yes, in this case I mean, OK, so I'm, I'm showing over here because no, no, no, no, no.
+
+00:31:00.303 --> 00:31:01.463 
+Wait, wait, wait a SEC, wait a second.
+
+00:31:03.783 --> 00:31:08.623 
+Yeah, probably in this case, if you have the in order dispatch, it's not going to cause the problem.
+
+00:31:08.623 --> 00:31:09.063 
+You don't.
+
+00:31:09.063 --> 00:31:11.503 
+You can probably execute without reorder buffer.
+
+00:31:11.823 --> 00:31:17.383 
+But if there is a discrepancy because we're only showing a small piece of code, right?
+
+00:31:17.383 --> 00:31:19.863 
+I mean, there would be something before something later.
+
+00:31:20.223 --> 00:31:24.143 
+So reorder buffer is in general needed to ensure precise exception.
+
+00:31:24.703 --> 00:31:29.839 
+But as you say, like we can use the word drop the reorder buffer, but then you would also drop in
+
+00:31:29.839 --> 00:31:34.023 
+the precise exception losing the debugging capability and everything with that.
+
+00:31:34.823 --> 00:31:35.103 
+OK.
+
+00:31:35.423 --> 00:31:36.183 
+Next question, yes.
+
+00:32:11.263 --> 00:32:11.783 
+No, no, no.
+
+00:32:11.783 --> 00:32:16.950 
+So, So if, OK, if, if I'm, if I understood your question correctly, So if all are all the
+
+00:32:16.950 --> 00:32:22.583 
+instructions waiting for the right back for the dependency to finish, is that what you're saying?
+
+00:32:25.023 --> 00:32:25.943 
+The previous one, right?
+
+00:32:25.943 --> 00:32:26.703 
+So no.
+
+00:32:26.703 --> 00:32:28.463 
+So, so in this case, what would happen?
+
+00:32:28.463 --> 00:32:30.423 
+So you don't actually wait for the right back.
+
+00:32:30.423 --> 00:32:35.303 
+You remember, we, we when we designed the pipeline, we also designed a bypassing path, right?
+
+00:32:35.303 --> 00:32:37.423 
+Like the, the forwarding logic.
+
+00:32:37.743 --> 00:32:43.422 
+So the forwarding logic says that, OK, once my mole is done from this cycle to the next cycle, I
+
+00:32:43.422 --> 00:32:44.783 
+would forward the data.
+
+00:32:44.783 --> 00:32:47.823 
+I don't have to wait for the right back to finish, right?
+
+00:32:47.823 --> 00:32:51.983 
+So I that's the reason why this execution can actually start at this cycle.
+
+00:32:52.583 --> 00:32:58.805 
+If you don't have that forwarding path, then your execution would actually be pushed to this cycle,
+
+00:32:58.805 --> 00:32:59.183 
+right?
+
+00:32:59.463 --> 00:33:02.343 
+So you can you can you can do that timing diagram.
+
+00:33:02.343 --> 00:33:02.583 
+Yes.
+
+00:33:20.503 --> 00:33:21.823 
+OK, that's a good question.
+
+00:33:21.823 --> 00:33:29.895 
+So right back is only going to be doing when your instruction is about to commit for for for this,
+
+00:33:29.895 --> 00:33:34.343 
+you know, for for the course of this, let's say slide.
+
+00:33:34.583 --> 00:33:35.423 
+Think of it in this way.
+
+00:33:35.423 --> 00:33:40.619 
+So when your instruction is not in the speculative path, it's completely anything before the
+
+00:33:40.619 --> 00:33:46.041 
+instruction has also not done, you know, any exceptions and interrupts, we are at the head, then
+
+00:33:46.041 --> 00:33:47.623 
+the right back would happen.
+
+00:33:47.623 --> 00:33:51.143 
+So for the sake of this slide, think of it in this way.
+
+00:33:51.143 --> 00:33:53.943 
+The right back actually updates the architectural state.
+
+00:33:54.543 --> 00:34:00.901 
+Once you're done, there is no going back because that point, if you put a break point, let's say in
+
+00:34:00.901 --> 00:34:07.067 
+in your code that has done for sure before that anything and everything can be discarded also or
+
+00:34:07.067 --> 00:34:12.463 
+they can be delayed to make sure that the right back happens, you know, in in order.
+
+00:34:12.823 --> 00:34:18.805 
+So whatever happens, this W should be going in the ladder execute can finish at before, but the
+
+00:34:18.805 --> 00:34:21.703 
+right well, the West should be going in order.
+
+00:34:21.703 --> 00:34:24.543 
+So that's what the von Neumann machine enforces.
+
+00:34:27.983 --> 00:34:30.143 
+OK, Any other question?
+
+00:34:31.743 --> 00:34:34.623 
+OK, if not so, so let's say what what?
+
+00:34:34.623 --> 00:34:40.312 
+So as I said, like this is a significant performance speed up, but then you also need to make sure
+
+00:34:40.312 --> 00:34:45.943 
+that the machinery is correct so that your instruction is getting executed in the correct manner.
+
+00:34:46.383 --> 00:34:50.063 
+Nobody wants to buy a processor which gives you confidently wrong number.
+
+00:34:50.183 --> 00:34:52.103 
+I mean, that's not LLM for gods sake, right?
+
+00:34:52.263 --> 00:34:52.983 
+So we want to.
+
+00:34:53.063 --> 00:34:54.703 
+Design something that is completely correct.
+
+00:34:54.703 --> 00:34:57.183 
+So what it what does it take to make this process of work?
+
+00:34:57.583 --> 00:35:00.703 
+So this is what we were going to, you know, go go through.
+
+00:35:00.943 --> 00:35:05.543 
+So what are the steps that we need broadly to enable the out of order execution?
+
+00:35:05.783 --> 00:35:06.663 
+So we need 4 steps.
+
+00:35:06.783 --> 00:35:12.943 
+First we need to link the consumer of a value to the producer, right?
+
+00:35:12.943 --> 00:35:16.343 
+So, so there needs to be a connection between the producer instruction and the consumer instruction.
+
+00:35:16.583 --> 00:35:18.423 
+Whichever way it is, we are game.
+
+00:35:18.583 --> 00:35:24.018 
+So we just need to use A tag that says that producer is going to produce this tag X and tag X is
+
+00:35:24.018 --> 00:35:26.623 
+going to be consumed by, you know, consumer Y.
+
+00:35:26.903 --> 00:35:27.983 
+What is that tag X?
+
+00:35:27.983 --> 00:35:29.263 
+It can be really large.
+
+00:35:29.263 --> 00:35:35.094 
+So that's what gives us that renaming capability that, OK, even though I'm from architectural
+
+00:35:35.094 --> 00:35:40.863 
+perspective, I'm actually producing, let's say R11, but internally I'm mapping R11 to tag X.
+
+00:35:41.183 --> 00:35:43.743 
+And that tag namespace can be huge, literally huge.
+
+00:35:44.223 --> 00:35:49.714 
+And that that's what the, you know, width of them or the extent of the parallelism that we can also
+
+00:35:49.714 --> 00:35:51.823 
+exploit from the, you know, processor.
+
+00:35:52.103 --> 00:35:56.343 
+So first, we need to link the consumer of the value to the producer instructions.
+
+00:35:56.583 --> 00:35:59.383 
+Second, we need to buffer the instructions until they're ready to execute.
+
+00:35:59.383 --> 00:36:04.601 
+That's the reservation station that I talked about like somewhere that they would rest before their
+
+00:36:04.601 --> 00:36:07.343 
+operands are ready and they can be fired to execute.
+
+00:36:07.623 --> 00:36:07.863 
+OK.
+
+00:36:08.503 --> 00:36:12.143 
+The third thing that we need instructions need to keep track of readiness of their source values.
+
+00:36:12.143 --> 00:36:14.503 
+Obviously there should be some sort of a wake up logic.
+
+00:36:14.503 --> 00:36:18.908 
+We are going to discuss that, that when the instruction would go get to know that OK, all of my
+
+00:36:18.908 --> 00:36:20.903 
+operands are ready now I can actually file.
+
+00:36:20.903 --> 00:36:22.703 
+So that's the logic that we need.
+
+00:36:22.943 --> 00:36:27.296 
+And the second thing that we need that when all the source of values of an instructions are ready,
+
+00:36:27.296 --> 00:36:30.583 
+then we can disperse the instruction to their appropriate functional unit.
+
+00:36:30.703 --> 00:36:35.143 
+So these are the four broader things that we want to do to enable this.
+
+00:36:35.823 --> 00:36:39.863 
+For the first one, as I said, like for the linking any tag is fine.
+
+00:36:40.063 --> 00:36:43.503 
+What is the namespace of the tag you can think of any broader namespace.
+
+00:36:43.503 --> 00:36:48.833 
+We are going to give an example of what exactly do we mean by tag in in when we are going to do
+
+00:36:48.833 --> 00:36:54.107 
+some, you know calculations or it's a simulations of out of order processor, we need to buffer
+
+00:36:54.107 --> 00:36:56.183 
+where exactly we are going to buffer.
+
+00:36:56.183 --> 00:36:58.863 
+So we are going to introduce a hardware structure called reservation station.
+
+00:36:59.543 --> 00:37:03.263 
+So that's where we are going to put all the instructions.
+
+00:37:03.503 --> 00:37:08.253 
+So think of it in the in the that highway analogy, every, you know, car that wants to go to the
+
+00:37:08.253 --> 00:37:11.103 
+highway, they would first go to that reservation station.
+
+00:37:11.103 --> 00:37:15.893 
+And when they are saying that, OK, now I'm ready to go and merge the traffic to the highway, they
+
+00:37:15.893 --> 00:37:19.103 
+would just simply go to the highway and just start executing, OK.
+
+00:37:19.303 --> 00:37:21.223 
+So that's what the reservation station is.
+
+00:37:21.503 --> 00:37:27.096 
+And then how we are going to enable this in, you know, keep a track of the readiness because
+
+00:37:27.096 --> 00:37:32.932 
+whenever one instruction gets executed and it the execution produces the value, so that can be a
+
+00:37:32.932 --> 00:37:38.343 
+producer, then it would also broadcast the output value to using that tag to all of them.
+
+00:37:38.583 --> 00:37:40.663 
+I'm going to show what exactly does that mean.
+
+00:37:40.943 --> 00:37:47.343 
+And then one instruction or any other instruction can be waken up, waken up, meaning that OK, now
+
+00:37:47.343 --> 00:37:53.545 
+they are ready to execute at any cycle if all of their source operands are ready to, you know,
+
+00:37:53.545 --> 00:37:55.063 
+available at that time.
+
+00:37:55.503 --> 00:38:01.440 
+Now keep this in mind that at any cycle, at any cycle, you can actually have multiple instructions
+
+00:38:01.440 --> 00:38:05.863 
+that are waking up and then say that, Oh my, all of my sources are ready.
+
+00:38:06.103 --> 00:38:08.223 
+Another instruction is also saying all of my sources are ready.
+
+00:38:08.223 --> 00:38:12.912 
+So if you have, let's say multiple instruction at every cycle waking up at same time, then you still
+
+00:38:12.912 --> 00:38:15.023 
+need to have some sort of a scheduling logic.
+
+00:38:15.063 --> 00:38:18.503 
+And then that says that, OK, I'm going to prioritise this guy over the other guy.
+
+00:38:18.863 --> 00:38:21.143 
+So how that prioritisation happens?
+
+00:38:21.143 --> 00:38:26.463 
+So there are multiple, you know, prior works that have let's advocated one over the other.
+
+00:38:26.663 --> 00:38:31.155 
+If you want to think of, let's say in a machine learning way that OK, maybe some sort of fancy
+
+00:38:31.155 --> 00:38:35.743 
+paradise and is going to make the life better, that can actually be useful on in this case also.
+
+00:38:36.183 --> 00:38:42.019 
+So that's, you know, one one of the things that you can also contribute even in this sort of area
+
+00:38:42.019 --> 00:38:43.463 
+that is widely explored.
+
+00:38:43.983 --> 00:38:45.183 
+OK, so that's that's what I say.
+
+00:38:45.183 --> 00:38:49.805 
+Like if the instructions are awake, then you need to select one of which instruction that you want
+
+00:38:49.805 --> 00:38:50.183 
+to fire.
+
+00:38:50.463 --> 00:38:53.863 
+And that selection logic, you can also make it much sophisticated.
+
+00:38:54.063 --> 00:38:56.903 
+I mean, it is already sophisticated nowadays, but OK.
+
+00:38:57.583 --> 00:39:06.438 
+OK, so so Thomasulo's algorithm, so it's named invented by Robert Thomasulo, who is the legendary
+
+00:39:06.438 --> 00:39:09.543 
+designer in an IBM36091 processor.
+
+00:39:09.543 --> 00:39:13.663 
+So this is the first processor that came up without of order execution logic.
+
+00:39:13.983 --> 00:39:18.314 
+So that's why you know, this is one of the most famous algorithm that you would see in computer
+
+00:39:18.314 --> 00:39:20.503 
+architecture named after him, Robert Thomas Low.
+
+00:39:20.823 --> 00:39:23.063 
+So that's one of the way that we can do this.
+
+00:39:23.703 --> 00:39:26.703 
+So if you're interested, definitely take a look at that paper.
+
+00:39:27.103 --> 00:39:33.121 
+The only problem that Thomas Low's algorithm or that incarnation of the machine had is that they
+
+00:39:33.121 --> 00:39:37.823 
+enabled out of order execution, but they did not enforce precise exception.
+
+00:39:38.143 --> 00:39:45.470 
+So that was in a hindsight was a disastrous decision from business perspective, but it was a major
+
+00:39:45.470 --> 00:39:52.574 
+bold step from science progress perspective that this is the first machine that was implemented
+
+00:39:52.574 --> 00:39:53.023 
+using.
+
+00:39:53.063 --> 00:39:55.303 
+Out of photo execution capability, OK.
+
+00:39:55.303 --> 00:39:59.714 
+And then they targeted the functional like sorry, by the floating point units in the beginning
+
+00:39:59.714 --> 00:40:04.079 
+because those are the ones that has actually huge latency for doing floating point divisions,
+
+00:40:04.079 --> 00:40:05.863 
+floating one multiplication and so on.
+
+00:40:06.503 --> 00:40:09.103 
+OK, so, so that's what I said.
+
+00:40:09.103 --> 00:40:11.103 
+Like the major difference is the precise exceptions.
+
+00:40:11.103 --> 00:40:16.951 
+And then there are multiple prior walks that actually like these are the Seminole walks in this
+
+00:40:16.951 --> 00:40:19.783 
+direction, which try to patch that deficiency.
+
+00:40:19.983 --> 00:40:25.844 
+And once you have both of these like you have out of order execution as well as precise exception,
+
+00:40:25.844 --> 00:40:31.706 
+then you have a like a, you know, it's important cocktail to go for the actual product level, mass
+
+00:40:31.706 --> 00:40:32.903 
+deployed processing.
+
+00:40:33.143 --> 00:40:36.343 
+That's what we we we do have in all of our phones.
+
+00:40:36.783 --> 00:40:41.503 
+It enforces out of order execution as well as it also provides you the precise exception.
+
+00:40:42.343 --> 00:40:48.943 
+OK, so that's Interferington flow that that first you know the the one that that uses this paradigm.
+
+00:40:49.423 --> 00:40:51.583 
+OK, So what what exactly we are going to do?
+
+00:40:51.583 --> 00:40:54.463 
+So initially we saw this guy right?
+
+00:40:54.623 --> 00:40:56.303 
+So now we are going to introduce this guy.
+
+00:40:56.463 --> 00:40:57.303 
+So that's the scheduler.
+
+00:40:57.623 --> 00:41:01.823 
+What the scheduler is doing after the decode you are going to put everything in the scheduler.
+
+00:41:01.823 --> 00:41:04.783 
+So that's basically the you know the reservation situation kind of thing.
+
+00:41:04.783 --> 00:41:06.503 
+So all the instruction would go here.
+
+00:41:06.983 --> 00:41:08.583 
+So that part happens in order.
+
+00:41:09.183 --> 00:41:13.623 
+So because you need to give the illusion of, you know, von Neumann machine, right?
+
+00:41:13.623 --> 00:41:15.183 
+So this thing is happening in order.
+
+00:41:15.343 --> 00:41:19.503 
+You put something inside and the entirety of this middle part is happening out of order.
+
+00:41:19.503 --> 00:41:20.903 
+That's the data flow execution.
+
+00:41:21.303 --> 00:41:24.343 
+And then once you're done, you're buffering everything in the reorder buffer.
+
+00:41:24.343 --> 00:41:29.041 
+You're not committing everything all at once because you can't give the illusion to the programmer
+
+00:41:29.041 --> 00:41:31.103 
+also that, OK, it's happening out of order.
+
+00:41:31.103 --> 00:41:32.183 
+So that's also not going to work.
+
+00:41:32.983 --> 00:41:35.983 
+So think of it as like a humpback whale kind of thing.
+
+00:41:36.223 --> 00:41:37.583 
+So you have a head and a tail.
+
+00:41:37.903 --> 00:41:43.966 
+So both of these things are, let's say, happening in proper sequential order, but you have a massive
+
+00:41:43.966 --> 00:41:45.543 
+2 comebacks in the middle.
+
+00:41:45.743 --> 00:41:48.503 
+So one is the scheduler, another one is the reorder buffer.
+
+00:41:48.503 --> 00:41:52.103 
+So everything that happens in between is getting garbled up.
+
+00:41:52.463 --> 00:41:54.063 
+It's pure data flow execution.
+
+00:41:54.223 --> 00:41:58.979 
+And then whatever comes out, obviously I'm not pointing towards that one, but whatever comes out,
+
+00:41:58.979 --> 00:42:00.303 
+that also happens in order.
+
+00:42:00.943 --> 00:42:06.943 
+So goes in order, comes out in order, happens somewhere, gets data flow execution in the middle.
+
+00:42:07.583 --> 00:42:10.023 
+OK, so that's what we are going to look at.
+
+00:42:10.303 --> 00:42:14.561 
+So I'm not going to go too much into detail of, you know, all this previous machines, but these are
+
+00:42:14.561 --> 00:42:16.583 
+really influential and quintessential machines.
+
+00:42:16.583 --> 00:42:21.783 
+So that's one of the, you know, IBMC 1691 in the real, you know, things at that point.
+
+00:42:21.783 --> 00:42:26.383 
+It used to be like a full blown, you know, rooms.
+
+00:42:27.303 --> 00:42:28.943 
+So that's that's another picture of this one.
+
+00:42:28.983 --> 00:42:34.236 
+OK, so before going there, so how exactly we are going to handle this thing, we are going to borrow
+
+00:42:34.236 --> 00:42:36.943 
+many of concepts of the registered renaming itself.
+
+00:42:36.943 --> 00:42:40.303 
+So I'm just going to you know flash through this slide again.
+
+00:42:40.503 --> 00:42:45.090 
+So we have seen that how exactly we do did the registered renaming when we introduce the precise
+
+00:42:45.090 --> 00:42:45.903 
+exception, right.
+
+00:42:46.103 --> 00:42:51.223 
+So your register would now get renamed to a reorder buffer ID.
+
+00:42:51.543 --> 00:42:53.423 
+So it used to be reorder buffer ID.
+
+00:42:53.423 --> 00:42:56.503 
+Now we are going to also introduce the reservation station ID.
+
+00:42:56.863 --> 00:43:00.463 
+So it's basically that's the source where you should get the data.
+
+00:43:00.623 --> 00:43:01.823 
+That's what the idea is.
+
+00:43:02.183 --> 00:43:04.783 
+You have already seen this registered renaming in the previous lectures.
+
+00:43:04.783 --> 00:43:09.307 
+If you're, you know, getting a bit garbled up, so please consult the previous lecture, but we're
+
+00:43:09.307 --> 00:43:12.183 
+essentially going to borrow those concepts from that lecture.
+
+00:43:12.943 --> 00:43:16.383 
+OK, so this is what we, we started with the registered renaming.
+
+00:43:16.383 --> 00:43:19.623 
+So these are the registers that you have available.
+
+00:43:20.023 --> 00:43:24.223 
+We kind of, you know, just reordered things a bit in the illustration.
+
+00:43:24.223 --> 00:43:27.063 
+So you have the tag, you have the value, you have the valid bit, right.
+
+00:43:27.063 --> 00:43:32.135 
+So if the valid bit is set, then you know that the value that you can trust, if the valid bit is not
+
+00:43:32.135 --> 00:43:37.157 
+set, then the tag that's something that you need to keep in track like who exactly is going to give
+
+00:43:37.157 --> 00:43:38.223 
+you the value, right?
+
+00:43:38.423 --> 00:43:42.343 
+So we also, you know, introduce the reorder buffer like this.
+
+00:43:42.343 --> 00:43:46.263 
+So we, you know, we had that re register file, we had the reorder buffer entry.
+
+00:43:46.383 --> 00:43:50.783 
+So that's what we kind of ended up in the last lecture, right?
+
+00:43:50.943 --> 00:43:52.623 
+So we are going to start from here.
+
+00:43:52.903 --> 00:43:58.023 
+So we are going to have this reorder buffer for the sake of our discussion.
+
+00:43:58.103 --> 00:44:03.269 
+For now, we are going to ignore the reorder buffer because reorder buffer is only there for
+
+00:44:03.269 --> 00:44:08.663 
+reordering the results so that you would also commit in order and that's the precise exception.
+
+00:44:08.983 --> 00:44:14.663 
+But we are only going to focus now how exactly you can manage to fire them out of order also.
+
+00:44:14.663 --> 00:44:18.652 
+So that's why I'm just, you know, for the sake of simplicity, we are going to ignore the reorder
+
+00:44:18.652 --> 00:44:18.943 
+buffer.
+
+00:44:18.943 --> 00:44:21.943 
+But at the last part of the lecture, we are going to introduce back it again.
+
+00:44:22.543 --> 00:44:24.863 
+OK, so this is what the Thomas Solis algorithm is.
+
+00:44:24.863 --> 00:44:29.743 
+So I'm just going to go a bit verbose here and I probably need to accelerate.
+
+00:44:29.743 --> 00:44:36.575 
+OK, So what the what the algorithm says if the register reservation station is available before
+
+00:44:36.575 --> 00:44:37.223 
+renaming.
+
+00:44:37.223 --> 00:44:42.617 
+So when you are doing the renaming you you at that stage like after the decode stage you would look
+
+00:44:42.617 --> 00:44:47.684 
+up if the register station, reservation station is available then instruction and the renamed
+
+00:44:47.684 --> 00:44:50.463 
+operands are inserted into the reservation station.
+
+00:44:50.863 --> 00:44:52.983 
+Only rename if the reservation.
+
+00:44:53.183 --> 00:44:58.674 
+Is available, obviously if you don't have parking space, then you can't do anything then your things
+
+00:44:58.674 --> 00:44:59.663 
+would get stalled.
+
+00:45:00.023 --> 00:45:03.383 
+If you have parking space, then get parked and then you can go on.
+
+00:45:03.983 --> 00:45:04.223 
+Yeah.
+
+00:45:04.223 --> 00:45:05.783 
+So that's that's the install part.
+
+00:45:06.263 --> 00:45:10.887 
+And while you are in the reservation station, each instruction is going to watch the common data was
+
+00:45:10.887 --> 00:45:12.783 
+whatever you know for tag of its sources.
+
+00:45:13.023 --> 00:45:17.263 
+When the tag is seen, you would grab the value from the source, keep it in the reservation station.
+
+00:45:17.263 --> 00:45:20.223 
+When both the operands are available, instruction would be ready to dispatch.
+
+00:45:20.623 --> 00:45:24.143 
+Don't worry, I'm going to give you a pictorial example of what exactly this means.
+
+00:45:24.143 --> 00:45:29.423 
+And I'm just, you know, reading through the Volvos part of the algorithm first and then we'll go to
+
+00:45:29.423 --> 00:45:30.063 
+the example.
+
+00:45:30.903 --> 00:45:35.512 
+So once you're all the opponents of an instruction are ready, then you can dispatch the instruction
+
+00:45:35.512 --> 00:45:36.583 
+to the functional unit.
+
+00:45:36.583 --> 00:45:42.950 
+When the instruction is ready and once the instruction gets executed, your execution is done, then
+
+00:45:42.950 --> 00:45:49.123 
+we would, you know the, the, the result that the instruction generated, it would be broadcasted
+
+00:45:49.123 --> 00:45:50.943 
+through the common data bus.
+
+00:45:50.943 --> 00:45:51.943 
+So that's the CDB.
+
+00:45:52.463 --> 00:45:58.515 
+And then register file, reorder buffer, reservation, station entry, everything is kind of listening
+
+00:45:58.515 --> 00:45:59.983 
+to that common data bus.
+
+00:46:00.383 --> 00:46:03.463 
+It would say that, oh, this tag is now generated with this value.
+
+00:46:03.583 --> 00:46:05.183 
+I'm going to just capture that value.
+
+00:46:05.303 --> 00:46:07.543 
+If the tag is matched, I'm going to capture the value.
+
+00:46:07.543 --> 00:46:12.844 
+And then I would consider that, OK, if my instruction is dependent on that tag, now I have the
+
+00:46:12.844 --> 00:46:13.183 
+value.
+
+00:46:13.543 --> 00:46:17.543 
+So if all of my dependence are met, I can actually find the instruction.
+
+00:46:18.143 --> 00:46:23.127 
+OK, so that's that's what the, you know, the very boring way of saying what Thomas and his
+
+00:46:23.127 --> 00:46:24.623 
+instruction is going to do.
+
+00:46:24.903 --> 00:46:27.263 
+And we are going to give you one example of this thing.
+
+00:46:27.743 --> 00:46:33.258 
+So before going to the break, I would probably just, you know, introduce a bit and then we would go
+
+00:46:33.258 --> 00:46:33.983 
+to the break.
+
+00:46:34.743 --> 00:46:35.583 
+I'm running so slow.
+
+00:46:35.663 --> 00:46:37.983 
+I'm not probably an out of order machine at this point.
+
+00:46:37.983 --> 00:46:43.332 
+OK, so, so we are going to take an example of this piece of code and how exactly this would get
+
+00:46:43.332 --> 00:46:45.303 
+executed by out of order processor.
+
+00:46:45.623 --> 00:46:52.196 
+OK, for the sake of this example, consider that your pipeline is let's say you have only four states
+
+00:46:52.196 --> 00:46:56.863 
+fetch, decode, execute and wherever write back execute can be variable.
+
+00:46:57.223 --> 00:47:00.463 
+So if you have addition then that takes four cycle latency.
+
+00:47:00.463 --> 00:47:03.103 
+If you have multiplication that takes six cycle latency.
+
+00:47:03.383 --> 00:47:03.703 
+OK.
+
+00:47:04.183 --> 00:47:10.064 
+And we are going to you know, see how this instruction, let's say all the pipeline designs that you
+
+00:47:10.064 --> 00:47:15.708 
+did first non pipeline processor to a pipeline processor, but in order dispatch to out of order
+
+00:47:15.708 --> 00:47:18.263 
+dispatch, how exactly this this progresses?
+
+00:47:18.423 --> 00:47:23.634 
+OK, so let's let's you know see first part of it and then the out of order, I'm going to show it
+
+00:47:23.634 --> 00:47:24.503 
+after the break.
+
+00:47:25.063 --> 00:47:27.823 
+So if you don't have a pipeline, then what happens?
+
+00:47:28.183 --> 00:47:31.903 
+You have what you have 3 additions to multiplications.
+
+00:47:31.903 --> 00:47:33.783 
+You can do the simple math.
+
+00:47:34.063 --> 00:47:37.983 
+So this is going to take 50 cycles if there is no pipeline whatsoever.
+
+00:47:38.463 --> 00:47:41.183 
+So every instruction there is no overlap.
+
+00:47:41.503 --> 00:47:43.823 
+It's just everything exposed one after the other.
+
+00:47:43.943 --> 00:47:45.263 
+So that's going to take 50 cycles.
+
+00:47:45.263 --> 00:47:46.623 
+You can do it easy math.
+
+00:47:47.343 --> 00:47:51.593 
+Now we can go for let's say in order to dispatch pipeline, but without forwarding like your the
+
+00:47:51.593 --> 00:47:56.023 
+question that you ask like OK, what happens where if you have forwarding without forwarding, right?
+
+00:47:56.343 --> 00:47:58.383 
+So this is what what I'm going to show over here.
+
+00:47:58.663 --> 00:48:03.543 
+So if you have without forwarding, then I would probably go back to this once more.
+
+00:48:03.983 --> 00:48:08.123 
+So you can see that this is a multiplication instruction and this multiplication, this add is
+
+00:48:08.123 --> 00:48:09.503 
+dependent on this model, right?
+
+00:48:09.503 --> 00:48:13.223 
+So what we are going to see, multiplication takes 6 cycles.
+
+00:48:13.623 --> 00:48:19.005 
+If you don't have the forward path, then you need to wait for the ride back to finish and then you
+
+00:48:19.005 --> 00:48:20.543 
+can decode this instruction.
+
+00:48:20.943 --> 00:48:26.760 
+If you do the math that would come out to be 31 cycle, which by itself is benefit or improvement on
+
+00:48:26.760 --> 00:48:29.463 
+top of 50 cycles that you started with, right.
+
+00:48:29.463 --> 00:48:36.136 
+So that's one stage of benefit that you have pipeline processor without any bypass path, then you
+
+00:48:36.136 --> 00:48:38.063 
+can improve it upon further.
+
+00:48:38.303 --> 00:48:41.943 
+It's a pipeline in order to dispatch pipeline processor with forwarding.
+
+00:48:42.103 --> 00:48:46.743 
+So if you do forwarding, then what happens that I'm just going to show one example.
+
+00:48:46.743 --> 00:48:52.459 
+So the second instruction instead of getting, let's say decoded at this place, it can actually
+
+00:48:52.459 --> 00:48:57.933 
+forward the data from the execution of the the once the execution finishes of the previous
+
+00:48:57.933 --> 00:48:58.663 
+instruction.
+
+00:48:59.023 --> 00:49:00.743 
+So then it can start executing over here.
+
+00:49:01.423 --> 00:49:05.543 
+So that if you do the math that already comes down to 25 cycles.
+
+00:49:06.183 --> 00:49:12.695 
+So you started off with 50 with non pipeline processor UN you already see 25 cycles with whatever
+
+00:49:12.695 --> 00:49:15.583 
+that we have covered till the last lecture.
+
+00:49:16.063 --> 00:49:22.395 
+Now what we are going to cover is basically it's going to truncate this down 25 cycles to even for
+
+00:49:22.395 --> 00:49:26.983 
+the 220 cycles, it may not be looking really big because it's 25 to 20.
+
+00:49:26.983 --> 00:49:30.183 
+But if you see it from where you actually started on, even if you see it from here.
+
+00:49:30.463 --> 00:49:33.343 
+So this is like, you know what 20% performance improvement, right?
+
+00:49:33.343 --> 00:49:36.143 
+So from 25 to even 5% less.
+
+00:49:36.663 --> 00:49:37.903 
+So that's what we are going to do.
+
+00:49:37.983 --> 00:49:43.830 
+So previously we used to have this example on, you know hand handwritten thing, but I'm going to
+
+00:49:43.830 --> 00:49:46.023 
+just use the presentation over here.
+
+00:49:46.703 --> 00:49:52.983 
+OK, So I think we can take a break here and let's meet after 10 minutes and.
+
+00:49:57.340 --> 00:49:58.180 
+Sitting down.
+
+00:49:58.180 --> 00:49:59.140 
+Everyone sits down.
+
+00:49:59.340 --> 00:50:02.780 
+OK, so we are going to start where we left off.
+
+00:50:02.780 --> 00:50:06.780 
+I will try to, you know, accelerate as much as possible, but let's see how much I can do.
+
+00:50:07.180 --> 00:50:13.380 
+So we saw this piece of code getting executed by non pipeline processor with 50 cycles.
+
+00:50:13.420 --> 00:50:16.580 
+If you have pipeline processor, but with, you know, no bypassing.
+
+00:50:16.580 --> 00:50:22.508 
+We saw that it it, you know, taken down and then you have, you know, with bypassing, you already
+
+00:50:22.508 --> 00:50:24.300 
+ended up in 25 cycles, right.
+
+00:50:24.580 --> 00:50:28.900 
+So I'm going to show you like how we can do without of order dispatch using 20 cycles.
+
+00:50:28.900 --> 00:50:31.540 
+So that's that's what the, you know, you know, thing is going to be.
+
+00:50:31.740 --> 00:50:35.300 
+So before going there, so let me set the stage before start.
+
+00:50:35.300 --> 00:50:37.940 
+We will start simulating this, you know, small piece of code.
+
+00:50:38.220 --> 00:50:40.420 
+So on the on on the top over here.
+
+00:50:40.420 --> 00:50:42.340 
+So that's the piece of code that we are going to execute.
+
+00:50:42.340 --> 00:50:44.460 
+It's essentially the same that I showed before.
+
+00:50:44.460 --> 00:50:46.380 
+It's just written in a nicer fashion.
+
+00:50:46.700 --> 00:50:52.180 
+And so so each each execution unit.
+
+00:50:52.660 --> 00:50:54.980 
+So we have two execution unit for for example.
+
+00:50:54.980 --> 00:51:00.100 
+So you have the addition unit and the multiplication unit and addition unit takes like 4 cycles.
+
+00:51:00.340 --> 00:51:01.220 
+But consider this thing.
+
+00:51:01.220 --> 00:51:03.220 
+So 4 cycles is also pipeline.
+
+00:51:03.220 --> 00:51:07.860 
+Pipeline meaning that every cycle the addition unit can take 1 instruction.
+
+00:51:08.060 --> 00:51:13.648 
+So internally think of like how we pipeline the processor, we can also pipeline every functional
+
+00:51:13.648 --> 00:51:13.940 
+unit.
+
+00:51:13.940 --> 00:51:18.340 
+So not all the whole part of the AD needs to be done at 4 cycles.
+
+00:51:18.340 --> 00:51:21.340 
+You can let's say you know stage it in four different cycles.
+
+00:51:21.340 --> 00:51:23.220 
+So every cycle it can take 1 instruction.
+
+00:51:23.220 --> 00:51:27.020 
+Similarly for the multiplication unit also it can take 1 instruction every cycle.
+
+00:51:27.340 --> 00:51:30.220 
+OK, so that's like the pipeline execution unit.
+
+00:51:30.460 --> 00:51:34.700 
+And for every execution unit you also have the reservation station.
+
+00:51:34.700 --> 00:51:38.540 
+So that's the reservation station for ADD reservation station for multiplication.
+
+00:51:38.700 --> 00:51:42.660 
+OK, so we start with all the reservation stations are invalid and empty.
+
+00:51:42.860 --> 00:51:46.100 
+So in this case, what exactly each reservation entry is storing.
+
+00:51:46.420 --> 00:51:51.500 
+So you have 4 reservation entry for ADD 4 for the multiplication.
+
+00:51:52.460 --> 00:51:53.620 
+So what each entry is storing.
+
+00:51:53.620 --> 00:51:55.820 
+So each entry has A tag of the entry.
+
+00:51:56.260 --> 00:52:02.325 
+Then whether this entry is valid or not, if that is not valid then which tag it should be looking up
+
+00:52:02.325 --> 00:52:03.660 
+and what is the value?
+
+00:52:04.300 --> 00:52:06.540 
+So this is for operand one or the source one.
+
+00:52:06.540 --> 00:52:08.540 
+And this is also for the source 2.
+
+00:52:08.820 --> 00:52:11.940 
+Similarly you will also have the same thing for the multiplication unit.
+
+00:52:11.940 --> 00:52:16.581 
+So I'm going to, you know, as we go on, this would get clear like how exactly we are going to
+
+00:52:16.581 --> 00:52:17.580 
+populate this thing.
+
+00:52:18.220 --> 00:52:23.312 
+And then we have the register alias tables on the on the, you know, all the registers are actually
+
+00:52:23.312 --> 00:52:24.820 
+also starting with the valid.
+
+00:52:24.820 --> 00:52:26.820 
+So these these are the valid bits.
+
+00:52:26.860 --> 00:52:27.780 
+All of them are one.
+
+00:52:28.020 --> 00:52:30.540 
+That means all of these values can be trusted.
+
+00:52:30.900 --> 00:52:35.620 
+OK, so this is the stage of what we want to start with.
+
+00:52:36.420 --> 00:52:38.500 
+OK, so now let's let's let's go 1 by 1.
+
+00:52:38.500 --> 00:52:40.980 
+So cycle zero, we fetch the first instruction.
+
+00:52:41.020 --> 00:52:42.860 
+Definitely nothing else happens at this point.
+
+00:52:43.060 --> 00:52:45.060 
+So that's not sorry, cycle one.
+
+00:52:45.380 --> 00:52:49.540 
+This gets fetched now cycle 2, so the first one gets into decode stage.
+
+00:52:49.860 --> 00:52:51.580 
+So now we want to decode this.
+
+00:52:51.620 --> 00:52:52.460 
+So what happens?
+
+00:52:52.740 --> 00:52:57.300 
+So first instruction is a multiplication R1R2 goes to R3.
+
+00:52:57.780 --> 00:52:59.100 
+So what we do?
+
+00:52:59.340 --> 00:53:04.540 
+So we say that OK, First things first, do we have any reservation station entry for multiplication?
+
+00:53:04.540 --> 00:53:05.300 
+The answer is yes.
+
+00:53:05.420 --> 00:53:07.620 
+They all of the things are free, right?
+
+00:53:07.780 --> 00:53:12.780 
+So we know that OK, there is a space OK, then we want to say that OK, what are my source registers?
+
+00:53:12.780 --> 00:53:17.180 
+That's the first line of, you know, understanding whether I can execute this guy or not.
+
+00:53:17.660 --> 00:53:19.380 
+So my first first register is R1.
+
+00:53:19.700 --> 00:53:21.460 
+What is R1R1 is valid.
+
+00:53:21.780 --> 00:53:23.220 
+So that means I can trust the value.
+
+00:53:23.420 --> 00:53:24.340 
+So what did I do?
+
+00:53:24.540 --> 00:53:28.220 
+I simply copy that value saying that OK, my first register is R1.
+
+00:53:28.580 --> 00:53:30.300 
+So that's the valid bit that I copied.
+
+00:53:30.580 --> 00:53:35.260 
+That's the value that I can trust since it is valid means that I am I can trust this guy.
+
+00:53:35.700 --> 00:53:39.820 
+OK, Similarly, I have this another operant which is R2R2.
+
+00:53:39.820 --> 00:53:45.683 
+What is R2R2 is also valid and we would just copy it over there that OK, R2 is valid and R2's value
+
+00:53:45.683 --> 00:53:45.980 
+is 2.
+
+00:53:46.820 --> 00:53:52.100 
+OK, Now the third part of the, the, the, the operations that we are going to do.
+
+00:53:52.420 --> 00:53:54.020 
+So now we are going to write R3.
+
+00:53:54.580 --> 00:53:56.980 
+So R3 would be produced by me.
+
+00:53:57.340 --> 00:54:05.570 
+So what we are going to do, we say that OK, now whoever comes after me should actually read R3 from
+
+00:54:05.570 --> 00:54:05.820 
+me.
+
+00:54:06.380 --> 00:54:07.700 
+So how would I do this?
+
+00:54:07.940 --> 00:54:13.940 
+I will actually say that OK, now R3 is invalid and then you keep A tag of X.
+
+00:54:14.060 --> 00:54:17.740 
+So that means X is the one who is going to give you the result.
+
+00:54:17.740 --> 00:54:21.660 
+So you have seen this thing for the precise exception using reorder buffer, right?
+
+00:54:21.660 --> 00:54:24.540 
+So you used to have the reorder buffer entries number over there.
+
+00:54:24.780 --> 00:54:26.460 
+So now I'm actually putting the.
+
+00:54:26.940 --> 00:54:27.580 
+Tag over there.
+
+00:54:27.580 --> 00:54:31.420 
+So that's the tag that you got OK, so at this point what what exactly does that say?
+
+00:54:31.660 --> 00:54:34.740 
+It says that OK, you this instruction has two operands.
+
+00:54:34.740 --> 00:54:36.580 
+Both the operands are valid.
+
+00:54:37.180 --> 00:54:43.797 
+It's generating some data which is, you know, X and you put the X over here because now it's
+
+00:54:43.797 --> 00:54:45.740 
+generating R3R3 is invalid.
+
+00:54:46.020 --> 00:54:50.700 
+So anyone who wants to read R3 now would see that OK, this is not valid.
+
+00:54:51.140 --> 00:54:57.420 
+That means the value you cannot trust this value you actually need to pull for this tag, OK?
+
+00:54:57.660 --> 00:54:58.260 
+Is this clear?
+
+00:54:59.300 --> 00:55:04.329 
+If that's the case, then another thing that you you can also see that both of its operands are ready
+
+00:55:04.329 --> 00:55:06.140 
+because it's both of them are valid.
+
+00:55:06.300 --> 00:55:10.180 
+So that means from the next cycle onwards, you can actually start this instruction.
+
+00:55:11.220 --> 00:55:11.620 
+Makes sense.
+
+00:55:11.620 --> 00:55:16.500 
+So that's the logic that we we already come up with that OK, If both of them are valid.
+
+00:55:16.500 --> 00:55:17.780 
+So that's a wake up logic.
+
+00:55:18.220 --> 00:55:19.540 
+Then you can start this instruction.
+
+00:55:19.740 --> 00:55:20.020 
+OK.
+
+00:55:20.660 --> 00:55:25.185 
+And the second time at this cycle also the second instruction gets fetched, which is the, you know,
+
+00:55:25.185 --> 00:55:26.420 
+the nature of the pipeline.
+
+00:55:26.900 --> 00:55:28.300 
+Now let's go to the third cycle.
+
+00:55:28.300 --> 00:55:28.980 
+So what happens?
+
+00:55:28.980 --> 00:55:32.020 
+So your first instruction start executing life is good.
+
+00:55:32.620 --> 00:55:34.260 
+The second instruction now gets decoded.
+
+00:55:34.260 --> 00:55:35.380 
+What is the second instruction?
+
+00:55:35.380 --> 00:55:36.460 
+It's the add instruction.
+
+00:55:36.820 --> 00:55:37.860 
+You do the same thing.
+
+00:55:37.980 --> 00:55:41.020 
+So I mean that that's what we are sure showing over here.
+
+00:55:41.020 --> 00:55:42.220 
+The both the operands are ready.
+
+00:55:42.220 --> 00:55:47.540 
+So you can wake up and you can start the instruction and that would go to the multiplication unit.
+
+00:55:47.820 --> 00:55:49.180 
+It's going to take 6 cycles.
+
+00:55:49.180 --> 00:55:52.420 
+So 6 cycles, meaning it's going to finish in cycle 8.
+
+00:55:53.020 --> 00:55:57.180 
+And then there is it's going to be too many operations going on in that cycle.
+
+00:55:57.180 --> 00:55:58.140 
+So we'll come back to that.
+
+00:55:58.460 --> 00:56:03.220 
+OK, So it gets, you know, so it's starting the execution at at this cycle.
+
+00:56:03.820 --> 00:56:07.300 
+Now the second instruction would now start getting decoded.
+
+00:56:07.300 --> 00:56:08.460 
+So what what do we do?
+
+00:56:08.740 --> 00:56:10.420 
+We do the same thing that we did for before.
+
+00:56:10.700 --> 00:56:12.460 
+So what we're what we're going to do?
+
+00:56:12.460 --> 00:56:15.820 
+So we would first read, OK, who is my first operand?
+
+00:56:15.820 --> 00:56:17.340 
+My first operand is R3.
+
+00:56:17.820 --> 00:56:18.420 
+Now guess what?
+
+00:56:18.420 --> 00:56:20.580 
+R3 is not ready anymore.
+
+00:56:21.180 --> 00:56:23.140 
+R3 you would actually get OK, 0X.
+
+00:56:23.220 --> 00:56:28.340 
+So you blindly copy the 0X0X, meaning that zero basically tells you that this instruction is not
+
+00:56:28.340 --> 00:56:28.660 
+ready.
+
+00:56:28.900 --> 00:56:30.340 
+At least one operand is not ready.
+
+00:56:30.700 --> 00:56:31.620 
+What is the second operand?
+
+00:56:31.620 --> 00:56:32.700 
+Second operand is R4.
+
+00:56:32.780 --> 00:56:33.740 
+Yeah, R4 is ready.
+
+00:56:33.740 --> 00:56:35.140 
+So it is going to be 1/4.
+
+00:56:35.300 --> 00:56:37.380 
+So tag is don't care.
+
+00:56:37.820 --> 00:56:39.660 
+And then what is the destination?
+
+00:56:39.660 --> 00:56:40.900 
+The destination is R5.
+
+00:56:41.140 --> 00:56:48.060 
+So now you just rename this R5 to say that OK, whoever comes after me now would read this entry.
+
+00:56:48.060 --> 00:56:55.234 
+It would say that OK, R5 is invalid and redirect them to entry A, which is the reservation station
+
+00:56:55.234 --> 00:56:55.820 
+entry A.
+
+00:56:56.500 --> 00:56:57.700 
+That's what the pointer is.
+
+00:56:57.700 --> 00:57:01.020 
+So it is basically you're creating a pointer inside your hardware, right?
+
+00:57:01.020 --> 00:57:08.526 
+So you do some changes and now this guy is now going to be represented like responsible for doing
+
+00:57:08.526 --> 00:57:09.300 
+the value.
+
+00:57:09.460 --> 00:57:15.740 
+So anything who comes after this ad now needs to read R5 from this guy, not from the anywhere else.
+
+00:57:16.420 --> 00:57:16.820 
+Makes sense.
+
+00:57:17.220 --> 00:57:18.780 
+OK, so that's that's what happens.
+
+00:57:18.780 --> 00:57:22.620 
+And then, you know, you also execute like face the next instruction.
+
+00:57:22.940 --> 00:57:27.371 
+But you can easily see that OK, so this instruction is not ready to execute at this point because at
+
+00:57:27.371 --> 00:57:29.100 
+least one of the operands is not ready.
+
+00:57:29.300 --> 00:57:31.940 
+So at next cycle, you cannot fire this instruction.
+
+00:57:32.100 --> 00:57:34.620 
+That's the, you know, the data dependency that we met.
+
+00:57:34.700 --> 00:57:35.020 
+Yes.
+
+00:57:37.420 --> 00:57:38.820 
+Oh, the till is like don't care.
+
+00:57:38.820 --> 00:57:43.300 
+Like if, if, if the value, if the valid bit is 1, then we don't care about the tag.
+
+00:57:43.300 --> 00:57:44.780 
+So it's like, you know, don't care.
+
+00:57:44.780 --> 00:57:45.420 
+I don't care.
+
+00:57:45.420 --> 00:57:46.380 
+What's the value over there?
+
+00:57:49.300 --> 00:57:58.829 
+Sorry, yes, so, so we so valid bit is 1, meaning so the~ basically I'm using it like a don't care,
+
+00:57:58.829 --> 00:58:00.580 
+you know, operant.
+
+00:58:00.580 --> 00:58:05.340 
+So I mean don't care, meaning that since this is valid, then value is already ready.
+
+00:58:05.460 --> 00:58:10.964 
+I don't care about this guy, but if it is invalid, then I do care about what is exactly written over
+
+00:58:10.964 --> 00:58:11.900 
+here, which is X.
+
+00:58:12.220 --> 00:58:13.140 
+So that's what the~ is.
+
+00:58:13.340 --> 00:58:15.820 
+OK, are we clear till this point?
+
+00:58:16.420 --> 00:58:18.140 
+OK, so now let's go to the fourth cycle.
+
+00:58:18.140 --> 00:58:21.140 
+So fourth cycle, first one keeps executing, so that's fine.
+
+00:58:21.420 --> 00:58:25.860 
+The second one, unfortunately we can't execute because we already saw that there is one invalid guy.
+
+00:58:26.220 --> 00:58:27.420 
+OK, so that's life is good.
+
+00:58:27.420 --> 00:58:29.700 
+The third one now starts getting decoded.
+
+00:58:30.020 --> 00:58:30.820 
+So what happens?
+
+00:58:30.820 --> 00:58:31.780 
+We do the same thing.
+
+00:58:32.140 --> 00:58:34.500 
+R2R2 is already ready.
+
+00:58:34.500 --> 00:58:35.860 
+So that's one and two.
+
+00:58:36.620 --> 00:58:40.900 
+And then we also have the second operand which is R6R6 is also ready.
+
+00:58:41.460 --> 00:58:42.060 
+Now guess what?
+
+00:58:42.060 --> 00:58:43.860 
+So both of these operands are ready.
+
+00:58:44.060 --> 00:58:47.340 
+So that means you know for sure that this can be executed at this point.
+
+00:58:47.900 --> 00:58:51.180 
+So that's the out of order dispatch that you are enabling.
+
+00:58:51.620 --> 00:58:57.109 
+So if you had the machine which is in order dispatch, you couldn't have actually exposed this
+
+00:58:57.109 --> 00:58:57.700 
+execution.
+
+00:58:57.980 --> 00:58:59.660 
+Now you can actually expose this execution.
+
+00:58:59.940 --> 00:59:00.340 
+Make sense?
+
+00:59:01.260 --> 00:59:02.620 
+So let's finish this instruction.
+
+00:59:02.620 --> 00:59:05.300 
+So now this instruction is also going to write R7.
+
+00:59:05.300 --> 00:59:08.260 
+So what we are going to do, we are going to just simply write this guy.
+
+00:59:08.460 --> 00:59:14.430 
+We say that OK, now anything that comes after this instruction now needs to read this R7 to AS0B,
+
+00:59:14.430 --> 00:59:20.340 
+meaning that this value is not ready and whoever needs this value should now consult this entry.
+
+00:59:20.860 --> 00:59:21.580 
+That's the whole idea.
+
+00:59:22.180 --> 00:59:22.620 
+Makes sense.
+
+00:59:24.140 --> 00:59:24.380 
+Clear.
+
+00:59:24.380 --> 00:59:26.020 
+OK, so now let's you know.
+
+00:59:26.580 --> 00:59:29.020 
+The next one and then let's go to the cycle 5.
+
+00:59:29.340 --> 00:59:33.460 
+So what the cycle 5 is doing so the first multiplication is going on.
+
+00:59:33.700 --> 00:59:38.980 
+The second addition can can still go on the third one now can go why?
+
+00:59:38.980 --> 00:59:41.060 
+Because the third one is essentially this ad.
+
+00:59:41.340 --> 00:59:42.740 
+So which ad is this one?
+
+00:59:43.020 --> 00:59:44.540 
+So this can actually start executing.
+
+00:59:44.540 --> 00:59:47.500 
+So that's again, that's the power of out of order dispatch, right?
+
+00:59:47.740 --> 00:59:50.220 
+So you have both the opponents to be ready.
+
+00:59:50.540 --> 00:59:53.020 
+So you just Simply put both the operands over here.
+
+00:59:53.020 --> 00:59:56.580 
+So six goes here, two goes here and the tag also goes here.
+
+00:59:56.820 --> 01:00:04.044 
+So each this this functional unit after four cycle is going to broadcast the both of these things
+
+01:00:04.044 --> 01:00:05.460 
+that all B is done.
+
+01:00:05.700 --> 01:00:07.580 
+So that would be appearing over here.
+
+01:00:08.180 --> 01:00:12.740 
+And the result of 6 + 2 eight would be appearing over here after 4 cycles.
+
+01:00:12.740 --> 01:00:15.940 
+So that's going to be cycle number 38.
+
+01:00:16.940 --> 01:00:20.820 
+OK, does it make sense all with me?
+
+01:00:20.900 --> 01:00:28.320 
+OK, so now we decode the 4th 1, so the 4th and is R8 to R9 we do the same thing and I'm I'm not
+
+01:00:28.320 --> 01:00:32.460 
+going to you know, do do it the animations by itself.
+
+01:00:32.460 --> 01:00:33.820 
+So so this was the state.
+
+01:00:34.140 --> 01:00:39.852 
+So as you can see that when we decode the first one, so R8R8 is going to be valid, R9R9 is also
+
+01:00:39.852 --> 01:00:43.220 
+going to be valid so that we would end up in this state.
+
+01:00:43.220 --> 01:00:44.020 
+So this is valid.
+
+01:00:44.020 --> 01:00:46.620 
+This is valid and R10 is going to get written.
+
+01:00:46.620 --> 01:00:49.300 
+So R10 would be pointing TO0C, correct?
+
+01:00:50.300 --> 01:00:50.940 
+Everything is fine.
+
+01:00:51.620 --> 01:00:57.595 
+OK, so now you can easily see that this instruction is also getting ready, also ready to get
+
+01:00:57.595 --> 01:00:58.180 
+executed.
+
+01:00:58.620 --> 01:01:03.540 
+So that's another instruction that you discovered which can be executed out of order, right?
+
+01:01:03.540 --> 01:01:08.900 
+So while this guy is waiting, you can still execute this to add.
+
+01:01:09.340 --> 01:01:11.380 
+That's another discovery, right?
+
+01:01:11.660 --> 01:01:15.140 
+So sixth cycle, your multiplication is still going on.
+
+01:01:15.420 --> 01:01:17.780 
+Your second first addition cannot move.
+
+01:01:18.020 --> 01:01:20.180 
+Your second addition can move.
+
+01:01:20.340 --> 01:01:24.500 
+Your third addition can also move, which is this this C, right?
+
+01:01:24.820 --> 01:01:29.900 
+And now the, you know, the 5th instruction gets decoded.
+
+01:01:30.260 --> 01:01:31.380 
+So what is the fifth instruction?
+
+01:01:31.380 --> 01:01:34.500 
+5th instruction again, like R7R10, you can do the same thing.
+
+01:01:34.700 --> 01:01:35.860 
+R7 is 0B.
+
+01:01:36.100 --> 01:01:38.180 
+So I'm, I'm allocating the second entry.
+
+01:01:38.180 --> 01:01:44.511 
+I'm not going, you know too much into detail, but you can see that R7 has this first operand to be 0
+
+01:01:44.511 --> 01:01:47.740 
+B, second operand to be 0 C, which is R10R10 is 0C.
+
+01:01:47.980 --> 01:01:49.500 
+So you put it at 0C over there.
+
+01:01:49.780 --> 01:01:50.780 
+And what am I writing?
+
+01:01:50.820 --> 01:01:51.940 
+I'm writing R11.
+
+01:01:52.140 --> 01:01:53.580 
+So R11 becomes zero.
+
+01:01:53.580 --> 01:01:54.100 
+And why?
+
+01:01:54.100 --> 01:01:54.420 
+Why?
+
+01:01:54.420 --> 01:01:54.820 
+Why?
+
+01:01:54.820 --> 01:02:00.461 
+Because This is why this is the reason why you know if anything comes after this instruction or
+
+01:02:00.461 --> 01:02:02.540 
+needs to read this kind make sense.
+
+01:02:03.660 --> 01:02:04.420 
+Are we clear?
+
+01:02:06.620 --> 01:02:09.300 
+OK, I can see nods yes question.
+
+01:02:09.300 --> 01:02:23.030 
+So when result it's inside the reservation station, right?
+
+01:02:23.030 --> 01:02:23.430 
+Yes.
+
+01:02:23.550 --> 01:02:24.510 
+This is waiting.
+
+01:02:24.590 --> 01:02:25.470 
+This is chilling.
+
+01:02:25.510 --> 01:02:26.510 
+Both of them are chilling.
+
+01:02:26.510 --> 01:02:38.100 
+Yes in the pipeline order or no so, so B got fired first.
+
+01:02:38.580 --> 01:02:39.980 
+So B started execution.
+
+01:02:40.100 --> 01:02:43.140 
+B is the second ad which is this 1.
+
+01:02:43.300 --> 01:02:45.900 
+So it started execution then C got fired.
+
+01:02:45.900 --> 01:02:47.700 
+So it's just like a pipeline one by one.
+
+01:02:47.700 --> 01:02:57.894 
+Just wondering when we do it in pipeline then we can actually have just one summation like
+
+01:02:57.894 --> 01:02:59.820 
+complement other.
+
+01:03:02.500 --> 01:03:08.053 
+Oh yes, yes, if you if you have another adder, you can just you know, start both of them together
+
+01:03:08.053 --> 01:03:08.340 
+also.
+
+01:03:09.500 --> 01:03:17.203 
+But with one adder, it's also possible because addition itself is taking 4 cycles, but it internally
+
+01:03:17.203 --> 01:03:21.980 
+is pipeline so it can take one in new instruction every cycle.
+
+01:03:21.980 --> 01:03:24.540 
+So it's also going like internally step by step.
+
+01:03:25.140 --> 01:03:25.580 
+Makes sense.
+
+01:03:27.260 --> 01:03:27.700 
+Are we clear?
+
+01:03:28.500 --> 01:03:34.975 
+Yes, there's just a section of the actual reservation station, but we also have to store the
+
+01:03:34.975 --> 01:03:37.580 
+destination register and the OP code.
+
+01:03:37.580 --> 01:03:38.580 
+And so starting over here, no.
+
+01:03:39.060 --> 01:03:43.952 
+So anything, anything that is getting this, like all the destination registers would also get
+
+01:03:43.952 --> 01:03:44.900 
+renamed over here.
+
+01:03:44.900 --> 01:03:48.060 
+Just execute what we find in the reservation station.
+
+01:03:49.500 --> 01:03:52.940 
+So we need to know where to store well, how the value is getting stored.
+
+01:03:53.580 --> 01:03:56.660 
+Like once the value is ready, I'm coming back.
+
+01:03:57.180 --> 01:03:59.900 
+Hold on any other question.
+
+01:04:01.940 --> 01:04:07.582 
+OK, so let's go to the the 4th one like the seventh cycle now so seventh cycle is this so execution
+
+01:04:07.582 --> 01:04:13.225 
+of the multiplication going on ad cannot move on second ad is going on the third ad is going on the
+
+01:04:13.225 --> 01:04:18.868 
+1st, the second multiplication which is this guy you can easily see that OK now this multiplication
+
+01:04:18.868 --> 01:04:22.060 
+cannot go on because both of its offering are not ready.
+
+01:04:22.300 --> 01:04:23.700 
+So definitely you can't go on.
+
+01:04:23.700 --> 01:04:26.300 
+So you need to, you know, chill till your.
+
+01:04:26.660 --> 01:04:32.900 
+All the operands are ready, OK, and then you get you decode the 5th, the last instruction.
+
+01:04:33.260 --> 01:04:37.980 
+Now this instruction is a bit complicated, so follow through.
+
+01:04:38.140 --> 01:04:43.260 
+OK, So what this instruction is doing, it's actually reading R5 and writing R5 both together.
+
+01:04:44.740 --> 01:04:45.180 
+Look at this.
+
+01:04:45.300 --> 01:04:52.034 
+OK, So what we are actually doing, so we first go one by one, first look up the source, populate
+
+01:04:52.034 --> 01:04:54.700 
+this, then our change the destination.
+
+01:04:55.020 --> 01:04:56.020 
+That's the algorithm.
+
+01:04:56.420 --> 01:04:57.420 
+So you look up the source.
+
+01:04:57.540 --> 01:04:59.460 
+What is R5R5IS0A?
+
+01:04:59.660 --> 01:05:01.220 
+So you do 0A.
+
+01:05:01.580 --> 01:05:06.340 
+What is the other source which is R11R11IS0YR11IS0Y.
+
+01:05:06.780 --> 01:05:08.820 
+Then what you are writing, you are writing R5.
+
+01:05:09.300 --> 01:05:10.860 
+You overwrite R5 again.
+
+01:05:11.180 --> 01:05:13.180 
+So now R5 is getting overwritten.
+
+01:05:13.180 --> 01:05:15.060 
+So previously it used to be 0 A.
+
+01:05:15.940 --> 01:05:20.580 
+Now you would overwrite and then it would make it 0 D So what exactly happened?
+
+01:05:21.060 --> 01:05:23.300 
+So what exactly happened is the following.
+
+01:05:23.300 --> 01:05:28.140 
+So R5 got produced here and R5 got rewritten here.
+
+01:05:28.780 --> 01:05:35.220 
+So anything that came between these two saw an entry OF0A over here.
+
+01:05:35.740 --> 01:05:42.712 
+So any instruction that came between these two would know if I need to access R5, I would go to
+
+01:05:42.712 --> 01:05:43.300 
+entry A.
+
+01:05:44.340 --> 01:05:50.620 
+But the moment this ad came in, it read from A, but then it written to itself.
+
+01:05:51.540 --> 01:05:55.940 
+So in the architectural register space, you have still have the R5 and R5.
+
+01:05:56.260 --> 01:06:03.317 
+But in your execution stage, what we did, we said that OK, now R5 since R5 is now getting generated
+
+01:06:03.317 --> 01:06:09.020 
+by this entry, now anything that comes after this ad now needs to get R5 from D.
+
+01:06:09.780 --> 01:06:17.086 
+So that's what basically happened that OK, now R5 got again renamed to A tag D So what exactly does
+
+01:06:17.086 --> 01:06:24.172 
+mean that if any instruction comes after this and wants to ask for R5, it would actually get the
+
+01:06:24.172 --> 01:06:26.460 
+value from B, not value from A.
+
+01:06:27.460 --> 01:06:33.279 
+That also makes ensures that OK, you are getting the correct value in the program order, not in the
+
+01:06:33.279 --> 01:06:34.220 
+incorrect value.
+
+01:06:37.860 --> 01:06:38.340 
+A is gone.
+
+01:06:44.620 --> 01:06:49.860 
+The the the, the A is whoever has a over here, right?
+
+01:06:49.860 --> 01:06:51.940 
+And I'm coming, I'm coming.
+
+01:06:52.260 --> 01:06:59.831 
+So, so when this instruction would be generating the value, we would actually broadcast that tag
+
+01:06:59.831 --> 01:07:00.620 
+over here.
+
+01:07:00.620 --> 01:07:01.500 
+So I'm coming.
+
+01:07:01.500 --> 01:07:01.940 
+I'm coming.
+
+01:07:01.980 --> 01:07:05.660 
+So what happens to the A and where did it go?
+
+01:07:10.380 --> 01:07:10.700 
+Uh huh.
+
+01:07:15.420 --> 01:07:15.980 
+Say that again.
+
+01:07:21.100 --> 01:07:21.340 
+Uh huh.
+
+01:07:25.420 --> 01:07:26.340 
+The A is gone.
+
+01:07:26.340 --> 01:07:26.700 
+So what?
+
+01:07:26.700 --> 01:07:27.260 
+What happens?
+
+01:07:27.620 --> 01:07:29.620 
+So, OK, so that's a good question.
+
+01:07:29.620 --> 01:07:32.020 
+So, so look at this instruction itself, right?
+
+01:07:32.020 --> 01:07:35.700 
+So this instruction still needs A, and now a is gone from here.
+
+01:07:36.460 --> 01:07:40.340 
+So how exactly this would ever get resolved and then make this valid bit to one?
+
+01:07:40.340 --> 01:07:41.580 
+That's a genuine question, right?
+
+01:07:41.900 --> 01:07:43.140 
+Because a is not even here.
+
+01:07:43.460 --> 01:07:49.540 
+So what this entry means that it this entry means that I'm listening for tag a.
+
+01:07:50.100 --> 01:07:53.620 
+So now when whoever generous and I'm coming to that later.
+
+01:07:53.620 --> 01:08:00.020 
+So when you would generate some answer from this execution unit, it would actually broadcast the
+
+01:08:00.020 --> 01:08:02.420 
+output as well as broadcast the tag.
+
+01:08:07.140 --> 01:08:10.980 
+Here we have saved it here, the a is not there.
+
+01:08:11.220 --> 01:08:13.020 
+But here we have actually saved the a.
+
+01:08:13.380 --> 01:08:19.780 
+So we are going to match the logic here, here, here, here and here.
+
+01:08:20.140 --> 01:08:23.380 
+So anywhere we would find a, we would just replace with the value.
+
+01:08:23.900 --> 01:08:25.260 
+So a is gone from here.
+
+01:08:25.260 --> 01:08:28.380 
+So that means we are not going to replace here, but we would replace here.
+
+01:08:29.660 --> 01:08:30.220 
+I'm going to come.
+
+01:08:30.420 --> 01:08:32.660 
+I'm going to show you like what exactly is happening.
+
+01:08:33.380 --> 01:08:38.580 
+So since tag is gone from here, so think of tag meaning like it's it's a pointer, right?
+
+01:08:38.860 --> 01:08:39.980 
+So you don't have the pointer.
+
+01:08:39.980 --> 01:08:41.740 
+So that means you are not going to update this guy.
+
+01:08:42.100 --> 01:08:42.460 
+Why?
+
+01:08:42.460 --> 01:08:48.740 
+Because that from this guy's perspective that R5 is renamed, but someone needs the R5 over here.
+
+01:08:48.740 --> 01:08:54.676 
+So you're not only going to broadcast the tag to this registered areas table, you're also going to
+
+01:08:54.676 --> 01:08:57.220 
+broadcast tag to this reservation station.
+
+01:08:57.420 --> 01:08:59.220 
+This reservation station both opens.
+
+01:08:59.220 --> 01:09:05.659 
+And I'm the hopefully the, you know, the next few slides is going to make make that clear so that
+
+01:09:05.659 --> 01:09:08.780 
+that is the part of the cost of this machinery.
+
+01:09:08.780 --> 01:09:10.860 
+So you need to literally broadcast everywhere?
+
+01:09:11.060 --> 01:09:11.420 
+Yes.
+
+01:09:17.540 --> 01:09:17.820 
+Uh huh.
+
+01:09:27.500 --> 01:09:30.020 
+Yes, yes, we are going to come back to that.
+
+01:09:30.180 --> 01:09:36.195 
+So hopefully I'm I'm going to, you know, give you that output that OK, at the end of the day, R5 is
+
+01:09:36.195 --> 01:09:38.140 
+what R5 is literally this entry.
+
+01:09:38.340 --> 01:09:43.134 
+This entry should actually compute the correct value and you can you can cross verify what it's
+
+01:09:43.134 --> 01:09:43.740 
+going to do.
+
+01:09:44.020 --> 01:09:48.460 
+OK, OK, so now, so all the six instructions have been decoded.
+
+01:09:48.460 --> 01:09:50.860 
+They have all already put into the reservation station.
+
+01:09:50.860 --> 01:09:54.180 
+So I hope that you are your, you know, good over here.
+
+01:09:55.140 --> 01:09:57.620 
+Do we have any question, any confusion at this point?
+
+01:09:59.180 --> 01:10:01.300 
+OK, if not, so let's let's go.
+
+01:10:01.460 --> 01:10:02.780 
+What happens in RA?
+
+01:10:02.780 --> 01:10:03.980 
+I mean, cycle 8.
+
+01:10:04.220 --> 01:10:08.860 
+Now cycle 8 starts making lots of more, you know, communications.
+
+01:10:10.260 --> 01:10:12.300 
+So First things first, multiplication finished.
+
+01:10:12.580 --> 01:10:13.660 
+So multiplication.
+
+01:10:14.700 --> 01:10:15.380 
+No, sorry, actually.
+
+01:10:15.380 --> 01:10:17.780 
+So multiplication is going to be finished at this cycle.
+
+01:10:17.780 --> 01:10:18.940 
+So that means it's finished.
+
+01:10:19.140 --> 01:10:21.700 
+So even 6 cycles are done, right?
+
+01:10:21.980 --> 01:10:24.060 
+So what what actually happened?
+
+01:10:24.260 --> 01:10:25.860 
+So multiplication, when it's done.
+
+01:10:25.860 --> 01:10:30.820 
+So it's going to multiply 1 into two, it's going to create the value 2.
+
+01:10:31.380 --> 01:10:33.940 
+And it's also going to take this tag X.
+
+01:10:34.180 --> 01:10:36.380 
+It's also going to put the tag X over here.
+
+01:10:36.660 --> 01:10:40.100 
+Now I'm going to broadcast this tag the entire place.
+
+01:10:40.780 --> 01:10:45.260 
+So I'm going to broadcast the tag first to the register alias table.
+
+01:10:45.780 --> 01:10:50.963 
+Check whoever has this thing then I'm going to broadcast it for the source one of reservation
+
+01:10:50.963 --> 01:10:56.426 
+station one, source 2 of reservation station one, source one of reservation station 2 and source 2
+
+01:10:56.426 --> 01:10:57.820 
+of reservation station 2.
+
+01:10:58.420 --> 01:11:00.060 
+It literally gets broadcasted everywhere.
+
+01:11:01.500 --> 01:11:01.980 
+Makes sense.
+
+01:11:02.220 --> 01:11:09.535 
+So once you broadcast this tag X, you saw that OK, there are two entries which are seeing the match
+
+01:11:09.535 --> 01:11:12.860 
+one entries R3 and another entry is this guy.
+
+01:11:13.380 --> 01:11:19.540 
+So which which means that now both of them are not transient anymore.
+
+01:11:19.740 --> 01:11:23.180 
+I have the data or what exactly that value is.
+
+01:11:23.660 --> 01:11:24.580 
+What is the value?
+
+01:11:24.940 --> 01:11:27.740 
+Now you broadcast the value, OK that becomes true.
+
+01:11:28.140 --> 01:11:31.260 
+This becomes true and then your valid becomes 1.
+
+01:11:31.540 --> 01:11:34.220 
+So that means now that value is ready.
+
+01:11:35.340 --> 01:11:40.540 
+Now at this point if somebody reads from this, it knows that OK, the value is correct.
+
+01:11:42.620 --> 01:11:43.940 
+Is this understandable?
+
+01:11:45.220 --> 01:11:51.085 
+So you're literally whenever you're completing A execution, you're not only broadcasting the value
+
+01:11:51.085 --> 01:11:53.420 
+of the execution, but who generates it.
+
+01:11:53.860 --> 01:11:58.961 
+And that tag is getting broadcasted not only to the register area stable, but also to this all the
+
+01:11:58.961 --> 01:12:01.460 
+source operands of all the reservation stations.
+
+01:12:01.460 --> 01:12:04.140 
+So that's a huge broadcasting wire.
+
+01:12:04.300 --> 01:12:08.660 
+And these things actually cost, you know, the area increase power, increase everything.
+
+01:12:08.660 --> 01:12:13.380 
+So that's the reason why this is so power hungry structure in out of auto processes.
+
+01:12:14.620 --> 01:12:15.260 
+Is this clear?
+
+01:12:16.620 --> 01:12:17.220 
+Any question?
+
+01:12:17.300 --> 01:12:23.580 
+Yes, used for optimization that it will be broadcasted to everyone.
+
+01:12:23.900 --> 01:12:27.700 
+So it does not need to think of who really needs it or not.
+
+01:12:27.700 --> 01:12:29.620 
+Yes, that's a naive way of implementing.
+
+01:12:29.700 --> 01:12:34.874 
+But we can also optimize this as you say, like you know, you we have actually done a lot of
+
+01:12:34.874 --> 01:12:40.503 
+research, not we I mean past decades and in multiple decades we have done a lot of research that to
+
+01:12:40.503 --> 01:12:41.300 
+optimize that.
+
+01:12:41.300 --> 01:12:44.820 
+OK, how can this broadcast can be, you know, narrowed down?
+
+01:12:45.180 --> 01:12:45.500 
+Yes.
+
+01:12:46.780 --> 01:12:49.940 
+OK, so now let's let's see what what else is happening on this case.
+
+01:12:49.940 --> 01:12:54.500 
+So add one, sorry, this second add is also done, right?
+
+01:12:54.700 --> 01:12:55.740 
+So what is the second add?
+
+01:12:55.740 --> 01:12:57.260 
+Second, add actually stays here.
+
+01:12:57.620 --> 01:13:01.740 
+So it started in cycle 5 and now it ended in cycle 8.
+
+01:13:01.740 --> 01:13:03.300 
+So that's what we are seeing over here.
+
+01:13:03.300 --> 01:13:04.860 
+So two and six gets added.
+
+01:13:05.100 --> 01:13:10.300 
+So that's your value 8 and this is the tag because this entry is getting, you know, done.
+
+01:13:10.580 --> 01:13:11.980 
+So that's the tag of B.
+
+01:13:12.300 --> 01:13:15.020 
+What you do, you do the same thing broadcast the tag over here.
+
+01:13:15.020 --> 01:13:18.780 
+So that's the tag match and then broadcast the tag in the source one.
+
+01:13:19.020 --> 01:13:20.300 
+Broadcast the tag in the source two.
+
+01:13:20.300 --> 01:13:22.300 
+There is no no one that is consuming this.
+
+01:13:23.220 --> 01:13:24.340 
+Can someone consume this?
+
+01:13:24.340 --> 01:13:24.580 
+Yes.
+
+01:13:24.580 --> 01:13:28.220 
+So this is another match and then broadcast the tag to this one.
+
+01:13:28.460 --> 01:13:29.780 
+There is no one that is consuming.
+
+01:13:29.900 --> 01:13:35.917 
+So now you know that OK, anywhere that you're going to find this tag B, let's just update that tag B
+
+01:13:35.917 --> 01:13:36.940 
+with the value 8.
+
+01:13:37.100 --> 01:13:38.620 
+So I'm going to update this eight.
+
+01:13:38.980 --> 01:13:40.420 
+I would put eight over there.
+
+01:13:40.420 --> 01:13:42.300 
+Make it the make the valid bit to one.
+
+01:13:42.300 --> 01:13:45.220 
+Put eight over here, make the valid bit to 1 make sense.
+
+01:13:45.460 --> 01:13:51.352 
+So now you can see that OK, once your value gets generated, it starts populating that structure or
+
+01:13:51.352 --> 01:13:55.020 
+as well as it also start, you know, modifying this structure.
+
+01:13:55.420 --> 01:14:00.260 
+So the reservation system also is seeing that OK, things are actually getting, you know, completed.
+
+01:14:00.820 --> 01:14:06.100 
+Now at any point of time, any cycle, we would also check whether all of my source operands are done.
+
+01:14:06.420 --> 01:14:08.300 
+Then I can also find that instruction.
+
+01:14:08.980 --> 01:14:11.540 
+So, so that's when that's what happens.
+
+01:14:11.540 --> 01:14:14.620 
+So now, now the second, the third ad is still going on.
+
+01:14:14.620 --> 01:14:16.020 
+So we don't have anything over there.
+
+01:14:16.220 --> 01:14:21.264 
+And you know this multiplication, which is this one, this still has this thing left, so it can't
+
+01:14:21.264 --> 01:14:21.580 
+start.
+
+01:14:21.860 --> 01:14:25.300 
+The last ad, this has still this, so we can't start.
+
+01:14:25.820 --> 01:14:26.500 
+So do we.
+
+01:14:26.580 --> 01:14:29.740 
+Have any, any new instruction which is ready to execute at this point?
+
+01:14:29.740 --> 01:14:30.420 
+Probably not.
+
+01:14:30.780 --> 01:14:33.780 
+So now let's go to the cycle #9 so this is done.
+
+01:14:33.780 --> 01:14:34.700 
+The first guy is done.
+
+01:14:34.700 --> 01:14:40.292 
+Now first guy is committing, meaning that it, it, it, its effect to the final architectural
+
+01:14:40.292 --> 01:14:41.460 
+checkpoint is done.
+
+01:14:41.500 --> 01:14:43.100 
+So then that's not going back.
+
+01:14:43.260 --> 01:14:45.580 
+We are not going back to from that part at all.
+
+01:14:46.180 --> 01:14:48.740 
+Now the second guy, So what, what happened?
+
+01:14:48.740 --> 01:14:53.860 
+So once, OK, I actually forgot this One South.
+
+01:14:54.180 --> 01:15:00.300 
+So the first ad since your multiplication got done, so the first ad is this guy.
+
+01:15:00.700 --> 01:15:05.700 
+So this guy's one of the operand which was the the first opponent.
+
+01:15:05.700 --> 01:15:07.580 
+This operand was 0 before.
+
+01:15:08.140 --> 01:15:14.580 
+So if I go back, so before this, this operands at cycle 8, this operand was 0.
+
+01:15:15.020 --> 01:15:20.489 
+But you, since you broadcasted this, now both of these operands are actually ready, so it can
+
+01:15:20.489 --> 01:15:24.900 
+actually start from cycle #9 So that's what we are going to show over here.
+
+01:15:24.900 --> 01:15:26.420 
+So this is cycle 8.
+
+01:15:26.620 --> 01:15:31.540 
+So cycle 9 that gets done, and then cycle 9, this can start.
+
+01:15:31.820 --> 01:15:35.220 
+So this guy was actually chilling in Reservation Station.
+
+01:15:35.460 --> 01:15:38.820 
+Now since both of its operands are ready, now it can start its execution.
+
+01:15:38.820 --> 01:15:42.060 
+So that's how we are also maintaining the data flow.
+
+01:15:42.540 --> 01:15:43.140 
+Is that clear?
+
+01:15:45.260 --> 01:15:47.220 
+OK, so now what we do?
+
+01:15:47.220 --> 01:15:50.460 
+So OK, so now, so the second ad is also done.
+
+01:15:50.660 --> 01:15:54.300 
+The the third ad now gets done now, right.
+
+01:15:54.300 --> 01:15:56.260 
+So at this cycle, so the third ad is done.
+
+01:15:56.500 --> 01:15:57.460 
+So who is the third ad?
+
+01:15:57.500 --> 01:15:58.900 
+Third ad is essentially here.
+
+01:15:59.500 --> 01:16:03.020 
+So what it was doing, it was adding eight into 8:00 and 9:00.
+
+01:16:03.060 --> 01:16:04.380 
+So that becomes 17.
+
+01:16:04.620 --> 01:16:05.180 
+It's done.
+
+01:16:05.180 --> 01:16:07.260 
+So that means I'm I'm broadcasting C.
+
+01:16:07.500 --> 01:16:10.420 
+So I'm broadcasted C and 17 to all of them.
+
+01:16:10.740 --> 01:16:17.292 
+So I am not animating everything so but if you if you go back, so it used to be C over here and C
+
+01:16:17.292 --> 01:16:17.900 
+was here.
+
+01:16:18.460 --> 01:16:22.660 
+So I am updating both this and this to be 17.
+
+01:16:22.660 --> 01:16:24.740 
+So now this is not invalid anymore.
+
+01:16:25.140 --> 01:16:26.500 
+That is not invalid anymore.
+
+01:16:27.220 --> 01:16:27.740 
+Makes sense.
+
+01:16:28.500 --> 01:16:34.420 
+Now you can also see that this multiplication had two source operands.
+
+01:16:34.420 --> 01:16:38.660 
+One of them were not ready but that got ready at this cycle.
+
+01:16:38.820 --> 01:16:43.940 
+So now this multiplication can get fired like it can start its execution makes sense.
+
+01:16:44.420 --> 01:16:49.690 
+So from the next cycle what what we are going to see is that this multiplication is reservation
+
+01:16:49.690 --> 01:16:51.300 
+system Y is ready to execute.
+
+01:16:51.580 --> 01:16:54.380 
+So we are going to start the cycle execution in the next cycle.
+
+01:16:54.940 --> 01:16:57.340 
+So that's what we are in the cycle 10 is.
+
+01:16:57.580 --> 01:17:02.260 
+So first instruction is done, second instruction is in the same getting executed.
+
+01:17:03.020 --> 01:17:05.500 
+You know, the that ad is also done.
+
+01:17:05.700 --> 01:17:07.380 
+You can start this multiplication.
+
+01:17:07.380 --> 01:17:10.740 
+So that multiplication is getting started for what is what.
+
+01:17:10.740 --> 01:17:14.140 
+This AD cannot still go on because this is the last ad.
+
+01:17:14.340 --> 01:17:18.140 
+None of the operands are ready at this point, so it still needs to hold back.
+
+01:17:18.980 --> 01:17:25.560 
+OK, so I'm not, I'm not, you know, animating this one because this is just a mundane execution
+
+01:17:25.560 --> 01:17:25.980 
+cycle.
+
+01:17:25.980 --> 01:17:28.220 
+So cycle #11, you still execute.
+
+01:17:28.460 --> 01:17:29.860 
+Now let's go to cycle #12.
+
+01:17:30.260 --> 01:17:30.940 
+So what happens?
+
+01:17:30.940 --> 01:17:33.540 
+The cycle #12 this ad is finishing.
+
+01:17:34.420 --> 01:17:35.780 
+So what is the this ad?
+
+01:17:35.780 --> 01:17:36.900 
+This is the first ad.
+
+01:17:36.900 --> 01:17:38.860 
+So first ad, meaning that this is this ad.
+
+01:17:39.980 --> 01:17:44.140 
+So you used to be like this before you start the cycle 12.
+
+01:17:44.540 --> 01:17:45.380 
+So what did you do?
+
+01:17:45.500 --> 01:17:47.220 
+So you added two with four.
+
+01:17:47.220 --> 01:17:50.580 
+So that means it's coming 6 over here, and then this is a over here.
+
+01:17:51.220 --> 01:17:56.911 
+So you would broadcast A through the entire thing, broadcast A on this tag, broadcast A on this tag,
+
+01:17:56.911 --> 01:17:58.220 
+this tag, and this tag.
+
+01:17:58.980 --> 01:17:59.660 
+Who has A?
+
+01:18:00.260 --> 01:18:01.580 
+Nobody has A over there.
+
+01:18:02.220 --> 01:18:04.500 
+So this is what you ask, right?
+
+01:18:04.500 --> 01:18:06.540 
+So nobody has A over here.
+
+01:18:07.060 --> 01:18:09.260 
+So I'm not updating A anywhere here.
+
+01:18:10.020 --> 01:18:11.220 
+But now who has A?
+
+01:18:11.540 --> 01:18:13.220 
+A is here actually.
+
+01:18:13.900 --> 01:18:17.940 
+So even though A is gone from this table, A is still here.
+
+01:18:18.580 --> 01:18:23.818 
+So when this ad gets finished and then this is getting finished at this cycle, you're actually
+
+01:18:23.818 --> 01:18:25.100 
+broadcasting A and six.
+
+01:18:25.740 --> 01:18:27.180 
+You would match A over here.
+
+01:18:27.180 --> 01:18:27.780 
+No one is.
+
+01:18:27.860 --> 01:18:32.540 
+No one has A this guy had a so we we started with this.
+
+01:18:32.940 --> 01:18:34.860 
+So now that means that this is ready.
+
+01:18:35.300 --> 01:18:40.500 
+So you actually make it make it valid and that would take the value 6.
+
+01:18:42.140 --> 01:18:42.620 
+Make sense?
+
+01:18:44.540 --> 01:18:52.221 
+Is this clear when I am going a bit too far, but I think can understand if just let me know if it's
+
+01:18:52.221 --> 01:18:53.540 
+not going inside.
+
+01:18:57.460 --> 01:18:58.660 
+I did not show the broadcast.
+
+01:18:58.660 --> 01:19:03.550 
+I mean, that's animation, but I can, I mean, This is why I said like if you, if you start at the
+
+01:19:03.550 --> 01:19:05.180 
+beginning of let's say cycle 12.
+
+01:19:05.660 --> 01:19:07.060 
+So think of what is happening.
+
+01:19:07.060 --> 01:19:11.540 
+So at cycle 12, this this ad is finishing.
+
+01:19:12.020 --> 01:19:15.660 
+So let me let me animate this to you like for you in mind.
+
+01:19:15.660 --> 01:19:17.180 
+So this ad is finishing.
+
+01:19:17.820 --> 01:19:18.700 
+So what is this ad?
+
+01:19:18.700 --> 01:19:19.660 
+This is the first ad.
+
+01:19:20.100 --> 01:19:22.260 
+So first ad goes to our first reservation station.
+
+01:19:22.260 --> 01:19:23.620 
+That's how we we did it.
+
+01:19:24.060 --> 01:19:25.500 
+So what is the first reservation station?
+
+01:19:25.500 --> 01:19:26.420 
+He's doing 4.
+
+01:19:26.580 --> 01:19:29.620 
++2 sorry, 2 + 4, that becomes 6.
+
+01:19:30.180 --> 01:19:31.340 
+And who is generating it?
+
+01:19:31.580 --> 01:19:31.620 
+A?
+
+01:19:32.140 --> 01:19:37.620 
+So a comes here, then a would get broadcasted over here, over here, over here, over here, over here.
+
+01:19:38.060 --> 01:19:38.500 
+Make sense?
+
+01:19:38.900 --> 01:19:41.540 
+So a is vanished from here because you have rewritten.
+
+01:19:41.940 --> 01:19:47.199 
+So nobody is going to capture that value at this point, but somebody has A here, so that is actually
+
+01:19:47.199 --> 01:19:48.620 
+going to capture the value.
+
+01:19:49.100 --> 01:19:51.420 
+So that's how a a got resolved over here.
+
+01:19:52.180 --> 01:19:57.785 
+So if that tag is alive anywhere in the either in the reservation station, Oregon, in the registered
+
+01:19:57.785 --> 01:19:59.860 
+area stable, it would take the value.
+
+01:20:01.540 --> 01:20:02.060 
+Is that clear?
+
+01:20:04.020 --> 01:20:07.620 
+OK, so now, so that's why you know the multiplication is going on South.
+
+01:20:07.620 --> 01:20:08.260 
+That's that.
+
+01:20:08.260 --> 01:20:13.460 
+And then we end up in the OK, so this multiplication, so this is right back.
+
+01:20:13.460 --> 01:20:14.340 
+That's also finished.
+
+01:20:14.700 --> 01:20:18.500 
+And then then this is E 5, which is the multiplication.
+
+01:20:18.500 --> 01:20:19.940 
+Multiplication is still going on.
+
+01:20:20.300 --> 01:20:25.420 
+And then at this cycle 15, this multiplication is finishing, right?
+
+01:20:25.420 --> 01:20:27.900 
+So let's let's go back what it used to be.
+
+01:20:28.140 --> 01:20:31.380 
+So at cycle 15, this multiplication is finishing.
+
+01:20:31.580 --> 01:20:32.660 
+What is this multiplication?
+
+01:20:32.660 --> 01:20:35.940 
+This is the second model, meaning we are actually in this entry.
+
+01:20:36.380 --> 01:20:43.340 
+So what it does it's multiplying 8 with 17 so 8 into 17 that coming to be 136.
+
+01:20:43.820 --> 01:20:46.980 
+So 136 is getting calculated by this entry.
+
+01:20:46.980 --> 01:20:47.620 
+So why?
+
+01:20:47.620 --> 01:20:50.980 
+And 1:36 get broadcasted who has this thing?
+
+01:20:50.980 --> 01:20:51.820 
+So let's go back.
+
+01:20:52.340 --> 01:20:56.100 
+This guy has why this guy has why there is no other why.
+
+01:20:56.540 --> 01:20:58.180 
+So this entry would be updated.
+
+01:20:58.500 --> 01:21:02.300 
+This entry would be updated with 136 and 136.
+
+01:21:02.860 --> 01:21:06.340 
+So now guess what this all of the opponents are done.
+
+01:21:06.740 --> 01:21:14.599 
+So that means this can fire after, you know, 4 cycles from now on, this would complete and then this
+
+01:21:14.599 --> 01:21:15.700 
+would be done.
+
+01:21:15.900 --> 01:21:17.900 
+It would say that OK, D is done.
+
+01:21:18.220 --> 01:21:19.660 
+D is computing 142.
+
+01:21:19.900 --> 01:21:22.220 
+You broadcast, you put 142.
+
+01:21:22.580 --> 01:21:23.620 
+That's the final output.
+
+01:21:24.540 --> 01:21:27.340 
+So you start with all valid, you end with all valid.
+
+01:21:27.900 --> 01:21:29.580 
+And what is the output of the value?
+
+01:21:29.580 --> 01:21:33.900 
+Because R5 is the final one that is getting renamed, right?
+
+01:21:34.220 --> 01:21:38.572 
+So you would expect the final value to of this program to be here, and that's the final value of
+
+01:21:38.572 --> 01:21:39.660 
+this program to be here.
+
+01:21:42.420 --> 01:21:46.460 
+Now the tax is just, I mean, in this example, yes, in this example, yes, obviously.
+
+01:21:46.460 --> 01:21:54.260 
+I mean, if you if you have a long program, then then this keeps on going at this point.
+
+01:21:54.260 --> 01:21:56.020 
+Yeah, at this point, the tags are 11.
+
+01:21:56.300 --> 01:21:57.260 
+What does this mean?
+
+01:21:57.260 --> 01:22:01.420 
+It means that every value that you have in the registered alias table is correct.
+
+01:22:01.900 --> 01:22:05.420 
+So if somebody wants to read the data from them, just read it there.
+
+01:22:05.660 --> 01:22:07.060 
+You are not dependent on someone.
+
+01:22:07.100 --> 01:22:09.660 
+That's it and that's what it is happening.
+
+01:22:09.660 --> 01:22:12.460 
+So you are you are done with all the instructions, you are done with all the instructions.
+
+01:22:13.300 --> 01:22:13.940 
+Is that clear?
+
+01:22:15.900 --> 01:22:21.120 
+OK, so if this is this case, then you know, let's just you know, accelerate a bit since we are kind
+
+01:22:21.120 --> 01:22:22.860 
+kind of running out of time also.
+
+01:22:23.220 --> 01:22:29.388 
+But So what, what do we, So what are the other design choices that we need to ensure to, to have
+
+01:22:29.388 --> 01:22:31.380 
+this sort of, you know, design?
+
+01:22:31.660 --> 01:22:35.420 
+So what is it in the hardware to perform this tag broadcast and value capture?
+
+01:22:35.420 --> 01:22:36.460 
+Like this is what I showed.
+
+01:22:36.460 --> 01:22:40.488 
+Like the tag is getting broadcasted everywhere and whoever the tag matches, then it would just
+
+01:22:40.488 --> 01:22:41.860 
+simply capture the value, right?
+
+01:22:41.860 --> 01:22:44.100 
+So that's, that's the common data bus that we showed.
+
+01:22:44.500 --> 01:22:46.820 
+So obviously we need to make the value valid.
+
+01:22:46.820 --> 01:22:52.340 
+We wake up an instruction that's, you know, another form of circuitry that we need to need.
+
+01:22:52.540 --> 01:22:56.380 
+So these are essentially new wires comparators and logic.
+
+01:22:56.380 --> 01:22:58.100 
+So that would be going over there.
+
+01:22:58.100 --> 01:22:59.820 
+So that's adds complexity.
+
+01:23:00.380 --> 01:23:05.158 
+Now the other question is that does the tag need to be the same idea of the reservation station
+
+01:23:05.158 --> 01:23:05.460 
+entry?
+
+01:23:05.460 --> 01:23:06.580 
+The answer is no.
+
+01:23:07.020 --> 01:23:13.489 
+Like as long as you have any consistent nomenclature to map the producer with the consumer, I don't
+
+01:23:13.489 --> 01:23:19.567 
+care what is the tag for this example, we have A tag of each entry, but you can literally put
+
+01:23:19.567 --> 01:23:25.580 
+anything over there as long as you have this, you know, producer consumer relationship obey.
+
+01:23:26.780 --> 01:23:28.580 
+So what can potentially become the critical part?
+
+01:23:28.580 --> 01:23:31.220 
+So this tag broadcast to value capture to instruction wake up.
+
+01:23:31.220 --> 01:23:33.740 
+So this is the broadcast wake up logic.
+
+01:23:33.740 --> 01:23:36.540 
+So that actually becomes the critical part of this out of order machine.
+
+01:23:36.740 --> 01:23:43.360 
+So that is why, you know, there has been numerous research over multiple decades of out of order
+
+01:23:43.360 --> 01:23:49.980 
+processor design that tries to, you know, do this this critical part to be as short as possible.
+
+01:23:49.980 --> 01:23:54.198 
+So like when we want to wake up this instruction, when can we can anticipate that, OK, this
+
+01:23:54.198 --> 01:23:56.980 
+instruction is going to get finished and so on and so forth.
+
+01:23:57.540 --> 01:23:59.620 
+OK, so, so that's what it is.
+
+01:23:59.820 --> 01:24:06.334 
+So now another funky or another, you know, good experience for you could be that if you start with,
+
+01:24:06.334 --> 01:24:12.651 
+if I, if I give you any snapshot and then this is I'm not going to cover in this lecture because
+
+01:24:12.651 --> 01:24:15.020 
+I'm, I'm really running out of time.
+
+01:24:15.300 --> 01:24:21.300 
+But if you if I give you the snapshot of any cycle for this, in this case, let's say the snapshot of
+
+01:24:21.300 --> 01:24:26.460 
+seven cycle, you can actually backtrack and then see that OK, where exactly this data?
+
+01:24:26.580 --> 01:24:30.420 
+Dependency graph is coming like which instruction is dependent on which ones?
+
+01:24:30.980 --> 01:24:36.930 
+You can build this data dependency graph and then come back with this sort of instruction in a
+
+01:24:36.930 --> 01:24:37.500 
+sequence.
+
+01:24:37.700 --> 01:24:39.300 
+And that's fascinating that you can do this.
+
+01:24:39.540 --> 01:24:45.979 
+So I would I would not go too much into detail of this, you know, reconstruction, but definitely
+
+01:24:45.979 --> 01:24:52.083 
+check out the the previous, let's say incarnation of this lectures video of this, you know,
+
+01:24:52.083 --> 01:24:52.620 
+lecture.
+
+01:24:52.980 --> 01:24:56.460 
+So we professor Muthu actually reconstructs this graph by hand.
+
+01:24:56.700 --> 01:24:58.100 
+So that might be useful also.
+
+01:24:58.460 --> 01:25:02.700 
+OK, so I'm I'm not yeah, unfortunately I'm not going to go into too much of detail.
+
+01:25:02.700 --> 01:25:07.410 
+But what exactly you go, go we are going to see is that basically you would see this getting
+
+01:25:07.410 --> 01:25:07.820 
+created.
+
+01:25:07.820 --> 01:25:07.980 
+Yes.
+
+01:25:07.980 --> 01:25:12.380 
+So what we just saw was Thomasulo's algorithm.
+
+01:25:12.380 --> 01:25:13.780 
+Yes, Thomasulo happening in real life.
+
+01:25:14.140 --> 01:25:15.740 
+Now if I, if I tell.
+
+01:25:15.940 --> 01:25:23.192 
+So what I'm saying now is that if I give you any snapshot of Tomasulo's in action like this, like
+
+01:25:23.192 --> 01:25:30.369 
+OK, this is the snapshot of the processor at cycle 7, you can actually backtrack and then create
+
+01:25:30.369 --> 01:25:31.940 
+the dependency graph.
+
+01:25:32.260 --> 01:25:36.460 
+So that's what this would look like and you can backtrack this thing.
+
+01:25:36.460 --> 01:25:38.300 
+And that's not Tomasulo's algorithm.
+
+01:25:38.580 --> 01:25:43.457 
+This is just for our understanding sake that OK, whether you understand the out of order execution
+
+01:25:43.457 --> 01:25:48.335 
+correctly or not, like which one has what dependence and then who produces that dependence and who
+
+01:25:48.335 --> 01:25:49.580 
+consumes that dependence.
+
+01:25:49.900 --> 01:25:50.300 
+That's it.
+
+01:25:50.300 --> 01:26:00.520 
+Yeah yes.
+
+01:26:00.520 --> 01:26:03.400 
+So I'm I'm coming back to to that one S right now.
+
+01:26:03.400 --> 01:26:04.800 
+What till what?
+
+01:26:04.800 --> 01:26:10.460 
+Whatever I have shown is basically you know for without precise exception.
+
+01:26:10.460 --> 01:26:16.300 
+So we don't have well like we have not included reorder buffer in this you know design.
+
+01:26:16.780 --> 01:26:21.060 
+But if you want to have precise exception then we need to also add the reorder buffer.
+
+01:26:21.380 --> 01:26:22.860 
+The logic is not that complex.
+
+01:26:22.860 --> 01:26:28.588 
+So it's I'm just going to go briefly into that design also, but essentially, if you have the reorder
+
+01:26:28.588 --> 01:26:34.260 
+buffer, then you would also have you know, the the one that you said that OK, checkpoint something.
+
+01:26:34.260 --> 01:26:39.323 
+And then if you go to, let's say handling interrupt or handling, let's say exception, you go there
+
+01:26:39.323 --> 01:26:41.700 
+and then come back and restore the checkpoint.
+
+01:26:41.700 --> 01:26:45.060 
+So we can do that with with the precise exception support.
+
+01:26:45.180 --> 01:26:50.580 
+Yes, OK, anything this might be actually useful.
+
+01:26:50.580 --> 01:26:55.978 
+So just you know, go and take a look at previous lectures videos so that you can also, you know, we
+
+01:26:55.978 --> 01:27:01.322 
+showed the top down, you can also go bottoms up like if I give you the snapshot of that state, you
+
+01:27:01.322 --> 01:27:02.740 
+can also build this graph.
+
+01:27:02.740 --> 01:27:03.660 
+And then that's fascinating.
+
+01:27:03.660 --> 01:27:06.060 
+I think I mean you can you can take a look at that.
+
+01:27:06.500 --> 01:27:06.780 
+OK.
+
+01:27:07.100 --> 01:27:11.673 
+So some other questions that we are we are not answering at this point is that when the reservation
+
+01:27:11.673 --> 01:27:13.060 
+station increase de allocated.
+
+01:27:13.060 --> 01:27:18.515 
+So ideally when your operation is done like your AD or multiplication is done, then you can simply
+
+01:27:18.515 --> 01:27:19.740 
+de allocate the entry.
+
+01:27:19.940 --> 01:27:23.872 
+But there are some providers that let's say if it is executing on the wrong part like meaning
+
+01:27:23.872 --> 01:27:25.860 
+speculatively executing and so on and so forth.
+
+01:27:25.860 --> 01:27:29.100 
+So that bit complicates the process.
+
+01:27:29.100 --> 01:27:33.060 
+But we are not going to go too much into detail of of those answers.
+
+01:27:33.060 --> 01:27:36.020 
+But this is just a question that you can ponder about like.
+
+01:27:36.580 --> 01:27:40.260 
+There are multiple other sorts of, you know, complexities that are involved like should the
+
+01:27:40.260 --> 01:27:43.820 
+reservation station need to be dedicated to each functional unit or it should be global?
+
+01:27:43.820 --> 01:27:45.660 
+Like these are just design questions, right?
+
+01:27:45.660 --> 01:27:48.580 
+So there are good sides and the bad sides of both the designs.
+
+01:27:48.580 --> 01:27:53.849 
+If you have centralized, if you have distributed, you know, if you have the centralized, then it's
+
+01:27:53.849 --> 01:27:56.860 
+becoming bigger, then you need a big boss to go through.
+
+01:27:57.060 --> 01:28:01.940 
+But if you make it distributed, then you can actually have like shorter wires to broadcast.
+
+01:28:02.140 --> 01:28:06.140 
+So that also tones down like that also reduces your power consumption.
+
+01:28:06.620 --> 01:28:10.540 
+This is your, you know, energy consumption and everything, right?
+
+01:28:10.540 --> 01:28:13.780 
+So those are multiple, you know, questions that we can ask.
+
+01:28:14.180 --> 01:28:19.295 
+Should the reservation station and the ROB both stores value and or there would be, you know,
+
+01:28:19.295 --> 01:28:20.340 
+centralised things.
+
+01:28:20.340 --> 01:28:23.620 
+So this and I'm going to, you know, go up a bit much into detail.
+
+01:28:23.620 --> 01:28:30.369 
+So, so, yeah, so and then the other thing that that we wanted to briefly touch up on before going
+
+01:28:30.369 --> 01:28:36.980 
+forward is what you ask, like if you have, let's say, precise exception support on this system.
+
+01:28:37.420 --> 01:28:38.020 
+So what happened?
+
+01:28:38.020 --> 01:28:40.660 
+So, so we started with this one.
+
+01:28:40.660 --> 01:28:44.100 
+So this is like add addition of four cycles, multiplication of 6 cycles.
+
+01:28:44.100 --> 01:28:47.380 
+And then we ended up using 20 cycles as I, you know, promised.
+
+01:28:47.700 --> 01:28:53.188 
+But then if you go for, let's say precise, like with precise exception support, then you would add
+
+01:28:53.188 --> 01:28:56.660 
+another, let's say, stage, which is the reorder buffer update.
+
+01:28:56.660 --> 01:29:01.483 
+But essentially it goes on the same way, but from the hardware structure side, like when the
+
+01:29:01.483 --> 01:29:04.420 
+hardware structure side, we can actually optimise a bit.
+
+01:29:04.420 --> 01:29:08.940 
+So that's what I'm, I'm going to, you know, show a briefly touch upon over here.
+
+01:29:09.460 --> 01:29:14.377 
+So the idea well out of the execution with precise instruction is that OK, you use a reorder buffer
+
+01:29:14.377 --> 01:29:19.145 
+just to simply simply reorder the instruction before committing them to the architectural States
+
+01:29:19.145 --> 01:29:19.940 
+and instruction.
+
+01:29:20.100 --> 01:29:24.020 
+They're going to update the RAT when it completes the execution.
+
+01:29:24.460 --> 01:29:24.900 
+So.
+
+01:29:25.380 --> 01:29:26.460 
+So there would be like 2.
+
+01:29:26.580 --> 01:29:31.700 
+Two different register files now, so one would be we would call the front end register file.
+
+01:29:31.740 --> 01:29:35.420 
+Another one we would call the, you know, architectural or the back end register file.
+
+01:29:35.860 --> 01:29:40.387 
+So the front end register file which we already showed that register file is what we showed it's
+
+01:29:40.387 --> 01:29:44.915 
+going to be called front end initiative file, meaning that you would update whenever you see the
+
+01:29:44.915 --> 01:29:46.660 
+broadcast, just update it over there.
+
+01:29:47.020 --> 01:29:51.563 
+You don't know whether this broadcast is happening or this instruction is getting executed
+
+01:29:51.563 --> 01:29:54.340 
+speculatively, non speculatively fine, you just update.
+
+01:29:54.940 --> 01:29:59.675 
+But then you would have another register file on this back end, which we call the back end register
+
+01:29:59.675 --> 01:30:04.220 
+file or the architectural register file, which is the one when the instruction finally commits.
+
+01:30:04.700 --> 01:30:08.980 
+So once you commit that gets into architectural checkpoint.
+
+01:30:08.980 --> 01:30:16.595 
+So that is let's say the view that you are giving to the programmer that this is happening correctly
+
+01:30:16.595 --> 01:30:20.860 
+1 by 1 SI am going to go into, you know bit more detail.
+
+01:30:20.860 --> 01:30:22.420 
+So we started with this.
+
+01:30:22.460 --> 01:30:26.897 
+So this is the register alias file, this is the reservation station with for the AD reservation
+
+01:30:26.897 --> 01:30:29.980 
+station with the multiplication, this is what we explained, right?
+
+01:30:29.980 --> 01:30:35.980 
+For the without precise exception, if we have precise exception, what we want to do, we added
+
+01:30:35.980 --> 01:30:41.980 
+another reorder buffer which is there to reorder the, you know, execution completions, right?
+
+01:30:42.060 --> 01:30:43.620 
+So that's what the reorder buffer is.
+
+01:30:43.940 --> 01:30:47.820 
+And then we also have another register file.
+
+01:30:47.820 --> 01:30:54.433 
+So this front end register file from the previous one, this architecturally this is exactly same you
+
+01:30:54.433 --> 01:31:00.716 
+would update the way that I just described, but this is a different 1 S This one is what we are
+
+01:31:00.716 --> 01:31:04.420 
+calling the back end of the architectural register file.
+
+01:31:04.420 --> 01:31:09.820 
+It means that it's never going to have anything invalid or in transit.
+
+01:31:10.460 --> 01:31:16.140 
+It's always going to have some value, which is I know that these values have been committed.
+
+01:31:16.740 --> 01:31:21.772 
+So this is only going to contain the value that your program has already completed and then
+
+01:31:21.772 --> 01:31:23.100 
+checkpointed over there.
+
+01:31:23.100 --> 01:31:28.440 
+So at at the end of the, you know, the commit stage of 1 instruction, that's the only place when
+
+01:31:28.440 --> 01:31:31.500 
+you're going to update this architecture register file.
+
+01:31:31.980 --> 01:31:37.714 
+Now if you have any, let's say the the beauty of this you know, design is that if you see any
+
+01:31:37.714 --> 01:31:43.633 
+exception getting raised somewhere in between this, you know, this would have some of those zero
+
+01:31:43.633 --> 01:31:49.060 
+values, the tags and all of these things would be flying over here at any point of time.
+
+01:31:49.060 --> 01:31:52.060 
+Let's say some instruction raise some exception, right?
+
+01:31:52.340 --> 01:31:53.260 
+So what would you do?
+
+01:31:53.420 --> 01:31:58.180 
+You know that OK, none of this you can trust go back to this one.
+
+01:31:58.380 --> 01:32:01.460 
+Just copy this value to this and restart the machine.
+
+01:32:02.340 --> 01:32:03.260 
+That's what you are going to do.
+
+01:32:04.020 --> 01:32:05.740 
+So you have one copy.
+
+01:32:06.300 --> 01:32:12.573 
+Once you know that OK, this reorder 1 instruction becomes the oldest one and you can commit this guy
+
+01:32:12.573 --> 01:32:15.460 
+that is only going to commit, commit this one.
+
+01:32:15.460 --> 01:32:21.207 
+So think of it this way, like you are doing so many stuffs, but then something is also getting
+
+01:32:21.207 --> 01:32:25.060 
+checkpointed at the end like, and that is the final checkpoint.
+
+01:32:25.060 --> 01:32:29.060 
+Like you, you know that that is the correct thing and you would never come back from that.
+
+01:32:29.220 --> 01:32:34.390 
+Only when if your program starts making something interrupt all, let's say exceptions and that
+
+01:32:34.390 --> 01:32:36.260 
+that's what the idea over here is.
+
+01:32:37.020 --> 01:32:39.940 
+And then yeah, if you add the reservation station on the same picture.
+
+01:32:39.940 --> 01:32:45.540 
+So this is the full blown, first time, full blown picture of what exactly is kind of similar to what
+
+01:32:45.540 --> 01:32:47.220 
+is going on inside your phone.
+
+01:32:47.900 --> 01:32:52.376 
+So you have your buffer, you have front end register file, you have architect register file, you
+
+01:32:52.376 --> 01:32:56.060 
+have reservation, you have reservation for all the, you know, functional units.
+
+01:32:56.900 --> 01:33:00.220 
+You can obviously optimise this even even further.
+
+01:33:00.340 --> 01:33:05.140 
+So I'm I'm just going to show you again, I like showing that camel.
+
+01:33:05.740 --> 01:33:09.460 
+So one thing that you can you can see just further optimization.
+
+01:33:09.460 --> 01:33:11.860 
+And then I'm going to, you know, close this thing.
+
+01:33:12.140 --> 01:33:17.708 
+So you can see that there are multiple, you know, phase where your value is getting replicated,
+
+01:33:17.708 --> 01:33:18.060 
+right?
+
+01:33:18.060 --> 01:33:21.780 
+So there is a value over here, there is a value in the reorder buffer.
+
+01:33:21.780 --> 01:33:23.700 
+There is a value in the front end register file.
+
+01:33:23.700 --> 01:33:26.420 
+There is also value in the, you know, architecture register file.
+
+01:33:26.420 --> 01:33:28.740 
+Now, if you ask yourself the question, what is the value?
+
+01:33:28.980 --> 01:33:30.340 
+Like what is the size of a value?
+
+01:33:30.380 --> 01:33:35.020 
+If you have a 64 bit machine, your size of a value is 64 bits, right?
+
+01:33:35.780 --> 01:33:40.932 
+Now what you can do like your programming mind would say that OK, instead of storing the value, just
+
+01:33:40.932 --> 01:33:42.220 
+store the pointer, right?
+
+01:33:42.500 --> 01:33:46.660 
+If your size of the pointer is smaller than your size of the value, then you would save.
+
+01:33:47.420 --> 01:33:48.380 
+So what would you do?
+
+01:33:48.580 --> 01:33:52.500 
+The obvious choice is that, OK, keep the entirety of the value in one file.
+
+01:33:52.660 --> 01:33:54.340 
+That's what we call the physical register file.
+
+01:33:54.940 --> 01:33:59.308 
+Now this physical register file, you are just simply going, everybody is going to just point to
+
+01:33:59.308 --> 01:33:59.860 
+this, right?
+
+01:34:00.260 --> 01:34:06.219 
+So your front end register is now instead of storing the value, it's just going to store the
+
+01:34:06.219 --> 01:34:07.580 
+pointers to this guy.
+
+01:34:08.180 --> 01:34:12.700 
+Similarly, your reorder buffer instead of storing the entire value is going to store the pointer.
+
+01:34:13.100 --> 01:34:16.709 
+Similarly, your architectural list of file instead of storing the value is going to store the
+
+01:34:16.709 --> 01:34:17.020 
+pointer.
+
+01:34:17.340 --> 01:34:18.460 
+The what is the benefit?
+
+01:34:18.500 --> 01:34:25.396 
+The benefit that I'm trying to, you know, convince this to you is that if you're register, you know,
+
+01:34:25.396 --> 01:34:26.500 
+with the 64 bit.
+
+01:34:27.780 --> 01:34:33.443 
+This the number of physical registers, let's say you have 1000 registers, maybe 2000 registers, how
+
+01:34:33.443 --> 01:34:38.020 
+many bits you need for representing 2000 registers you need only 12 bits, right?
+
+01:34:38.260 --> 01:34:41.460 
+So 12 bits is much lesser than storing the entire 64 bits.
+
+01:34:41.860 --> 01:34:48.777 
+So that's what we are doing over here that you just simply store the pointers and this is somewhat
+
+01:34:48.777 --> 01:34:52.660 
+that you actually are going to see in the real systems.
+
+01:34:52.660 --> 01:34:56.860 
+So this is the version of the pipelines that you're going to see in the real system.
+
+01:34:57.780 --> 01:35:02.700 
+OK, So yeah, I think we can, we would close this over here.
+
+01:35:02.700 --> 01:35:08.420 
+Maybe I have some few slides left on this, this, you know, lecture.
+
+01:35:08.420 --> 01:35:13.559 
+Maybe we can just complete this tomorrow and then tomorrow we would start from this out of order and
+
+01:35:13.559 --> 01:35:17.980 
+then we would see that OK, how we can push it even further with super skill and stuff.
+
+01:35:18.660 --> 01:35:20.860 
+OK, so have a good day.
+

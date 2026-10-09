@@ -1,0 +1,4652 @@
+WEBVTT
+
+00:00:00.614 --> 00:00:01.934 
+OK, let's get started.
+
+00:00:02.414 --> 00:00:05.174 
+We have very sparse attendance today.
+
+00:00:05.454 --> 00:00:10.134 
+Is there something going on Friday?
+
+00:00:10.134 --> 00:00:10.574 
+Yes.
+
+00:00:11.374 --> 00:00:13.374 
+But still sparser than normal Friday.
+
+00:00:14.854 --> 00:00:18.134 
+Nice weather maybe.
+
+00:00:18.134 --> 00:00:18.374 
+Yeah.
+
+00:00:18.974 --> 00:00:19.454 
+OK.
+
+00:00:20.734 --> 00:00:24.374 
+Maybe we should ask good questions about VLIW and systolic carriers in the exam.
+
+00:00:26.094 --> 00:00:26.734 
+I'm just kidding.
+
+00:00:27.214 --> 00:00:33.917 
+There could be questions, of course, as if you look at the homeworks, these are topics that are
+
+00:00:33.917 --> 00:00:39.774 
+actually quite exciting to me, some very fundamental topics on execution paradigms.
+
+00:00:39.774 --> 00:00:42.014 
+And we're going to cover two of them today.
+
+00:00:42.374 --> 00:00:45.294 
+We're going to cover more next week, SIMD and GPUs.
+
+00:00:46.174 --> 00:00:46.814 
+It's going to be fun.
+
+00:00:47.214 --> 00:00:50.774 
+And these topics are really affected how we build architectures.
+
+00:00:51.294 --> 00:00:59.054 
+I'll give you examples of that, but basically we're done with all of this on the slide so far.
+
+00:00:59.134 --> 00:01:04.551 
+We covered a lot of ground micro architecture, fundamental pipelining, precise exceptions, out of
+
+00:01:04.551 --> 00:01:08.014 
+order execution, super scaler and branch prediction yesterday.
+
+00:01:08.134 --> 00:01:15.446 
+Right now we're going to jump into more ways of extracting concurrency from programs and also
+
+00:01:15.446 --> 00:01:23.230 
+thinking about different ways of expressing programs such that we can get better concurrency out of
+
+00:01:23.230 --> 00:01:24.174 
+them, right?
+
+00:01:24.174 --> 00:01:28.878 
+We've seen some of these already, like we've talked about pipelining, fine grain, multi threading,
+
+00:01:28.878 --> 00:01:31.134 
+out of order execution, data flow, superscaler.
+
+00:01:31.134 --> 00:01:37.214 
+They're all paradigms that can execute multiple instructions, right concurrently.
+
+00:01:38.094 --> 00:01:39.414 
+Pipelining is the most basic one.
+
+00:01:39.414 --> 00:01:44.716 
+Perhaps right now we're going to look at different paradigms where we can also execute multiple
+
+00:01:44.716 --> 00:01:49.014 
+instructions concurrently and they all have their advanced and disadvantaged.
+
+00:01:49.014 --> 00:01:51.494 
+It's important to understand the trade-offs of all of these techniques.
+
+00:01:51.494 --> 00:01:55.174 
+And you can of course combine these different techniques together also, right?
+
+00:01:55.374 --> 00:02:00.761 
+You combine pipelining and fine grained multi threading for example, and out of order execution and
+
+00:02:00.761 --> 00:02:01.414 
+superscaler.
+
+00:02:01.814 --> 00:02:06.660 
+So we can combine a lot of these together to get even higher performance than one single technique
+
+00:02:06.660 --> 00:02:07.254 
+can provide.
+
+00:02:08.334 --> 00:02:11.574 
+So these are the 3-4 remaining things that we're going to cover today.
+
+00:02:11.574 --> 00:02:12.894 
+I'm going to start with VLIW.
+
+00:02:12.894 --> 00:02:15.454 
+Probably first half of the lecture will be dedicated to that.
+
+00:02:15.734 --> 00:02:19.814 
+How many people heard about VLIW before very long instruction Word.
+
+00:02:20.774 --> 00:02:21.534 
+OK, that's good.
+
+00:02:21.814 --> 00:02:22.934 
+Hopefully you're going to learn something.
+
+00:02:22.934 --> 00:02:25.574 
+And then we're going to talk about systolic erase.
+
+00:02:25.614 --> 00:02:28.214 
+How many people learned about heard about Systolic erase?
+
+00:02:28.774 --> 00:02:29.214 
+No one.
+
+00:02:29.574 --> 00:02:34.644 
+OK, some people, maybe this is what a lot of machine learning accelerators are made of, systolic
+
+00:02:34.644 --> 00:02:35.014 
+arrays.
+
+00:02:35.254 --> 00:02:38.774 
+They're either GPUs or systolic arrays or some combination of those.
+
+00:02:41.014 --> 00:02:42.334 
+Hopefully you've heard of GPUs.
+
+00:02:43.174 --> 00:02:44.494 
+How many people heard of GPUs?
+
+00:02:45.134 --> 00:02:46.414 
+OK, that's expected.
+
+00:02:46.414 --> 00:02:49.694 
+You know, that's why NVIDIA is making trillions of dollars these days.
+
+00:02:51.294 --> 00:02:53.974 
+Well, systolic arrays are actually a lot in a lot of places.
+
+00:02:54.174 --> 00:02:58.261 
+Google, for example, in their tensor processing unit, they employ systolic arrays, but they're not
+
+00:02:58.261 --> 00:02:59.054 
+open to the public.
+
+00:02:59.054 --> 00:03:01.734 
+They use that in their own infrastructure today.
+
+00:03:02.374 --> 00:03:04.374 
+OK, so let's start.
+
+00:03:04.414 --> 00:03:09.897 
+So superscalar execution we've covered last week and the idea was to fetch, decode, execute and
+
+00:03:09.897 --> 00:03:13.014 
+finish, retire multiple instructions per cycle, right?
+
+00:03:13.454 --> 00:03:18.330 
+And white superscalar means that you have N instructions per cycle that you fetch, decode, execute,
+
+00:03:18.330 --> 00:03:18.774 
+etcetera.
+
+00:03:19.574 --> 00:03:22.614 
+And you need to add the hardware resources for doing so clearly.
+
+00:03:22.894 --> 00:03:27.501 
+So we're going to have a similar type of architecture here, but in this case, in superscalar
+
+00:03:27.501 --> 00:03:32.109 
+execution, we've also seen that hardware performs A dependency checking between concurrently
+
+00:03:32.109 --> 00:03:35.014 
+fetched instructions and also in the rest of the pipeline.
+
+00:03:35.374 --> 00:03:38.814 
+So there's dependency checking logic, which is a little bit complicated.
+
+00:03:38.854 --> 00:03:41.734 
+We talked about that when we talked about superscalar execution last week.
+
+00:03:42.614 --> 00:03:43.494 
+Essentially this.
+
+00:03:43.494 --> 00:03:45.094 
+These are the slides that we have used.
+
+00:03:45.094 --> 00:03:48.534 
+Dependences make it tricky to dispatch multiple instructions in the same cycle.
+
+00:03:48.534 --> 00:03:51.774 
+So we need dependence detection between concurrently fetched instructions.
+
+00:03:52.134 --> 00:03:59.077 
+So if you're fetching, for example, 16 instructions every cycle, you need to make sure the hardware,
+
+00:03:59.077 --> 00:04:05.534 
+there's hardware that checks which instructions in those sixteen are dependent on each other.
+
+00:04:05.534 --> 00:04:08.774 
+Like there's some older instructions, there's some younger instructions.
+
+00:04:09.014 --> 00:04:14.828 
+Every younger instruction in the concurrently fetched set of instructions needs to check whether
+
+00:04:14.828 --> 00:04:17.494 
+it's dependent on the previous instructions.
+
+00:04:17.494 --> 00:04:19.534 
+So this becomes quite complicated actually.
+
+00:04:19.894 --> 00:04:25.913 
+You have a dependency, dependency checking tree to be able to do that and it becomes expensive to do
+
+00:04:25.913 --> 00:04:26.094 
+so.
+
+00:04:26.694 --> 00:04:27.654 
+So this is hardware.
+
+00:04:27.894 --> 00:04:30.934 
+If you want to do this in hardware, you need to build the hardware to do that.
+
+00:04:30.934 --> 00:04:32.934 
+And existing machines actually do this.
+
+00:04:33.414 --> 00:04:38.774 
+They don't have 16 white superscaler, They may have 8 white superscaler, but it comes at a cost.
+
+00:04:40.454 --> 00:04:42.894 
+And we've discussed the superscaler performance example.
+
+00:04:42.894 --> 00:04:48.637 
+If you remember if you have actually these instructions, ideal IPC is 2 if you have a two way
+
+00:04:48.637 --> 00:04:50.614 
+superscalar because somehow you.
+
+00:04:50.814 --> 00:04:54.934 
+Able to schedule independent instructions in the same cycle.
+
+00:04:55.334 --> 00:04:58.014 
+OK, you can issue 6 instructions 3 cycles.
+
+00:04:58.574 --> 00:05:04.744 
+But if you have actually some dependencies like this one over here, the ad is depend on load and the
+
+00:05:04.744 --> 00:05:10.853 
+code is written this way, then you cannot really send the ad to the dispatch chant at the same time
+
+00:05:10.853 --> 00:05:12.334 
+you're sending the load.
+
+00:05:12.374 --> 00:05:19.818 
+As a result, you reduce your concurrency, reduces you can your, your IPC becomes 1.2 as opposed to
+
+00:05:19.818 --> 00:05:21.414 
+two over here, right.
+
+00:05:21.774 --> 00:05:26.214 
+So you remember hopefully a lot of these stuff we discussed, if not go back and study.
+
+00:05:26.694 --> 00:05:30.454 
+And the basic issue is you need to ensure that you can check the dependencies.
+
+00:05:30.454 --> 00:05:33.974 
+And we also discussed can you reorder the instructions to get IPC back to two.
+
+00:05:34.414 --> 00:05:35.534 
+And the answer was yes.
+
+00:05:35.854 --> 00:05:41.398 
+If you have an intelligent programmer or intelligent compiler, it can figure out which instructions
+
+00:05:41.398 --> 00:05:46.214 
+are independent and put them together such that they can be fetched in the same cycle.
+
+00:05:46.574 --> 00:05:47.894 
+As much as possible, of course.
+
+00:05:48.254 --> 00:05:53.395 
+OK, this may or may not be possible depending on the dependencies that you have, depending on the
+
+00:05:53.395 --> 00:05:58.271 
+branches you have, depending on how the code works, depending on whether the compiler or the
+
+00:05:58.271 --> 00:06:00.974 
+programmer can analyse the dependencies accurately.
+
+00:06:01.734 --> 00:06:04.014 
+Because memory dependencies may be hard to analyse, right?
+
+00:06:04.014 --> 00:06:09.783 
+Because memory instructions compute their addresses using registers, and you may not exactly know at
+
+00:06:09.783 --> 00:06:13.014 
+compile time which address MME instruction is accessing.
+
+00:06:13.534 --> 00:06:17.669 
+For example, if you're doing pointer chasing in a linked list, you don't know those address that
+
+00:06:17.669 --> 00:06:18.574 
+compile time usually.
+
+00:06:19.534 --> 00:06:24.863 
+So there are a lot of things that make it harder to schedule instructions over here we're going to
+
+00:06:24.863 --> 00:06:25.734 
+talk about this.
+
+00:06:25.734 --> 00:06:27.854 
+That's why I'm talking about all of this right now.
+
+00:06:28.494 --> 00:06:30.014 
+So that was background.
+
+00:06:30.014 --> 00:06:34.574 
+Basically, you've seen superscalar execution, assuming it assumes pipelining, of course.
+
+00:06:34.574 --> 00:06:36.614 
+So we built up to superscalar execution.
+
+00:06:37.294 --> 00:06:40.054 
+So one of the issues with superscalar execution is it's complicated.
+
+00:06:40.254 --> 00:06:42.894 
+It makes the hardware complicated because hardware does all the work.
+
+00:06:43.294 --> 00:06:48.678 
+Of course, if your software is not good enough, maybe hardware doesn't get high performance because
+
+00:06:48.678 --> 00:06:50.854 
+you need to wait for these dependencies.
+
+00:06:50.854 --> 00:06:52.814 
+But hardware does all the dependency checking.
+
+00:06:53.894 --> 00:07:01.138 
+So VLIW is a beautiful paradigm and it's called very long instruction word and I'm going to explain
+
+00:07:01.138 --> 00:07:03.334 
+it in contrast to Superscalar.
+
+00:07:03.774 --> 00:07:05.214 
+That's why I talked about Superscalar.
+
+00:07:05.214 --> 00:07:12.419 
+So concept wise, Superscalar says I have hardware that fetches multiple instructions concurrently
+
+00:07:12.419 --> 00:07:15.094 
+and checks dependences between them.
+
+00:07:16.134 --> 00:07:18.414 
+When I say fetch, it's fetch, decode, execute, etcetera.
+
+00:07:18.414 --> 00:07:22.839 
+You need to check the dependences in hardware, whereas very long instruction word architectures
+
+00:07:22.839 --> 00:07:26.054 
+divide the work between hardware and software completely differently.
+
+00:07:26.774 --> 00:07:32.958 
+Basically, in VLIW, software or the compiler packs independent instructions in a larger instruction
+
+00:07:32.958 --> 00:07:35.894 
+bundle to be fetched and executed concurrently.
+
+00:07:36.414 --> 00:07:41.307 
+So in a sense, software does the hard work if it can and hardware fetches and executes the
+
+00:07:41.307 --> 00:07:45.494 
+instruction in the bundle concurrently without doing any dependence checking.
+
+00:07:45.774 --> 00:07:50.454 
+It basically trusts the compiler because compiler did all the dependence analysis.
+
+00:07:51.574 --> 00:07:51.974 
+OK.
+
+00:07:52.454 --> 00:07:57.323 
+So the big advantage over here, we'll see some more advantages later on is there is no need for
+
+00:07:57.323 --> 00:08:02.245 
+hardware dependence checking or dependency checking between concurrently fetched instruction and
+
+00:08:02.245 --> 00:08:03.014 
+the VLIW model.
+
+00:08:03.734 --> 00:08:05.694 
+OK, that's the big upside.
+
+00:08:06.014 --> 00:08:11.374 
+And you'll see this later on by people who have introduced this concept.
+
+00:08:11.374 --> 00:08:14.774 
+But the the key idea is you have simple hardware, complex compiler.
+
+00:08:15.494 --> 00:08:19.417 
+The benefit is if you have simple hardware, it could be hopefully fast, it could be clocked at a
+
+00:08:19.417 --> 00:08:23.014 
+much higher frequency because you don't have this complicated dependence checking logic.
+
+00:08:23.174 --> 00:08:23.854 
+For example.
+
+00:08:24.934 --> 00:08:30.534 
+Compiler hopefully can be very smart and analyse the code really well, but we will run into issues
+
+00:08:30.534 --> 00:08:34.134 
+later on about the compiler and it can extract the concurrency.
+
+00:08:34.574 --> 00:08:35.614 
+So that's the basic idea, yes.
+
+00:08:35.654 --> 00:08:45.269 
+Wouldn't this be extremely vulnerable to certain like security loss like because any malicious
+
+00:08:45.269 --> 00:08:55.294 
+compiler could just say no, OK, I'll pack this for you, but it's actually 6 concurrent operations.
+
+00:08:55.294 --> 00:08:55.534 
+Yeah, yeah.
+
+00:08:55.534 --> 00:08:57.614 
+I mean, we're we're assuming compiler is not malicious.
+
+00:08:57.614 --> 00:08:59.534 
+So security is out of scope here.
+
+00:08:59.534 --> 00:09:02.094 
+But if you have a malicious compiler, then you have bigger problems perhaps.
+
+00:09:03.294 --> 00:09:07.922 
+And I don't think any architecture can tolerate the malicious compiler today as much because you
+
+00:09:07.922 --> 00:09:12.214 
+need, you're not, none of these architectures that we design are secure by design, right?
+
+00:09:12.534 --> 00:09:14.574 
+They're not trying to protect against some malicious code.
+
+00:09:15.494 --> 00:09:17.294 
+OK, let's keep security out of the picture for now.
+
+00:09:17.294 --> 00:09:17.894 
+But it's good.
+
+00:09:18.254 --> 00:09:19.214 
+It's good that you're thinking.
+
+00:09:20.894 --> 00:09:23.174 
+OK, so OK, this is the concept.
+
+00:09:23.534 --> 00:09:26.894 
+And then later I'm going to introduce SIMD with respect to the LIW.
+
+00:09:26.894 --> 00:09:31.254 
+So remember this picture I'm going to show you later on also, Basically, we have a single program
+
+00:09:31.254 --> 00:09:31.614 
+counter.
+
+00:09:32.214 --> 00:09:37.910 
+And this program counter specifies, in this particular case, 4 instructions that are concurrently
+
+00:09:37.910 --> 00:09:40.494 
+executed, that can be concurrently executed.
+
+00:09:41.094 --> 00:09:46.602 
+And these instructions get fetched concurrently in the instruction bundle and they get directly
+
+00:09:46.602 --> 00:09:48.574 
+routed to the processing elements.
+
+00:09:48.574 --> 00:09:50.774 
+Compiler actually packs them nicely such that.
+
+00:09:51.134 --> 00:09:53.494 
+That the processing element that can execute the add.
+
+00:09:53.614 --> 00:09:58.888 
+The add instruction is placed in the location where it can be directly routed to the processing
+
+00:09:58.888 --> 00:10:04.217 
+element immediately, so that you don't need to have a complicated interconnect to do the routing
+
+00:10:04.217 --> 00:10:06.494 
+from from this location to this location.
+
+00:10:06.494 --> 00:10:11.385 
+For example, if if none of these processing elements have multiply instructions, only this one is
+
+00:10:11.385 --> 00:10:16.226 
+multiply instruction, the compiler packs the instructions such that multiply appears here and it
+
+00:10:16.226 --> 00:10:19.454 
+gets directly sent to the processing element after it's fetched.
+
+00:10:20.854 --> 00:10:22.254 
+This is not the case in superscalar.
+
+00:10:22.254 --> 00:10:27.796 
+By the way, if you have actually some mechanism, we didn't discuss this, but if you have actually
+
+00:10:27.796 --> 00:10:33.454 
+some number of instructions that you're fetching and if multiply somehow appears to be around here,
+
+00:10:33.454 --> 00:10:36.254 
+you need to route it to the right execution unit.
+
+00:10:36.334 --> 00:10:37.934 
+Whereas here you can simplify the hardware.
+
+00:10:38.254 --> 00:10:43.508 
+But the key concept is a single program counter specifies multiple operations which is packed in an
+
+00:10:43.508 --> 00:10:46.374 
+instruction bundle and they get executed concurrently.
+
+00:10:46.374 --> 00:10:49.334 
+And the assumption is that they're independent of each other.
+
+00:10:49.774 --> 00:10:50.014 
+OK.
+
+00:10:50.414 --> 00:10:54.912 
+And this was introduced in one of these papers called this paper with a beautiful paper, actually
+
+00:10:54.912 --> 00:10:56.814 
+very long instruction word architectures.
+
+00:10:56.814 --> 00:11:01.734 
+And the Eli 512 Eli is enormously long word instruction for that paper.
+
+00:11:01.734 --> 00:11:03.814 
+So it's 512 bits in that particular case.
+
+00:11:04.934 --> 00:11:07.854 
+OK, so let's go into it a little bit more detail.
+
+00:11:08.534 --> 00:11:11.774 
+Essentially, you have these very long instruction words.
+
+00:11:12.374 --> 00:11:16.254 
+It consists of multiple independent instructions packed together by the compiler.
+
+00:11:16.294 --> 00:11:20.894 
+As we said, these packed instructions can be completely unrelated to each other.
+
+00:11:20.934 --> 00:11:24.614 
+One is a multiply, 1 is a divide, 1 is an ad, one is an XOR.
+
+00:11:24.614 --> 00:11:29.897 
+We're going to contrast this with SIMD and vector processors soon, because SIMD and vector
+
+00:11:29.897 --> 00:11:33.654 
+processors do something like this with a single program counter.
+
+00:11:33.654 --> 00:11:36.734 
+They encode many operations, but all operations are exactly the same.
+
+00:11:37.494 --> 00:11:40.814 
+So you can encode thousands of ads, but all ads are doing the same.
+
+00:11:41.174 --> 00:11:42.414 
+Everything is an ad, basically.
+
+00:11:42.534 --> 00:11:43.654 
+Here you're more powerful.
+
+00:11:44.054 --> 00:11:47.294 
+You have different types of operations encoded in the same instruction bundle.
+
+00:11:47.854 --> 00:11:49.774 
+But wait for SMD vector GPUs.
+
+00:11:50.614 --> 00:11:53.814 
+And the key idea is to the burdens on the compiler.
+
+00:11:53.814 --> 00:12:00.488 
+Compiler needs to find the independent instructions and statically at compile time schedule them
+
+00:12:00.488 --> 00:12:04.174 
+into packs or bundles into a single VLIW instruction.
+
+00:12:05.054 --> 00:12:07.534 
+So what are the traditional characteristics of VLIW?
+
+00:12:08.534 --> 00:12:12.534 
+Essentially, we have multiple instruction fetch and execute multiple functional units.
+
+00:12:12.534 --> 00:12:15.454 
+Of course, you need all of that hardware to be able to do that, right?
+
+00:12:16.054 --> 00:12:18.214 
+All instructions in a bundle are executed in lock step.
+
+00:12:18.454 --> 00:12:19.414 
+This is very important.
+
+00:12:19.854 --> 00:12:25.043 
+The compiler packs the instructions and tries to make sure that all instructions have equal
+
+00:12:25.043 --> 00:12:25.614 
+latencies.
+
+00:12:25.614 --> 00:12:30.614 
+But if one instruction takes longer, the other instructions in the same bundle need to wait.
+
+00:12:31.254 --> 00:12:34.454 
+OK, so the reason is you don't want to have dependency checking.
+
+00:12:34.454 --> 00:12:38.921 
+The compiler handles all of the dependency checking inside the pipeline right across instructions
+
+00:12:38.921 --> 00:12:42.054 
+that are fetched concurrently as well as across the pipeline stages.
+
+00:12:42.694 --> 00:12:43.414 
+Does that make sense?
+
+00:12:44.014 --> 00:12:46.054 
+So we want to get rid of dependency checking hardware.
+
+00:12:46.054 --> 00:12:47.694 
+That's the philosophy over here.
+
+00:12:48.494 --> 00:12:52.197 
+But if you get rid of dependency checking hardware, you need to make sure you're scheduling
+
+00:12:52.197 --> 00:12:53.174 
+instructions statically.
+
+00:12:53.654 --> 00:12:57.796 
+And if one instruction for some reason is taking 7 cycles, another instruction is taking one cycle,
+
+00:12:57.796 --> 00:12:59.094 
+and they're in the same bundle.
+
+00:13:00.694 --> 00:13:02.214 
+Unfortunately, you cannot progress.
+
+00:13:02.254 --> 00:13:08.534 
+This is the at least the purest view of VLIW.
+
+00:13:08.654 --> 00:13:11.574 
+Later architectures broke this, but they're not pure VLIW.
+
+00:13:12.294 --> 00:13:17.768 
+OK Instructions also need to be in a bundle, need to be statically aligned to be directly supplied
+
+00:13:17.768 --> 00:13:18.774 
+into the function.
+
+00:13:18.774 --> 00:13:20.294 
+This is what I was explaining earlier.
+
+00:13:20.494 --> 00:13:27.610 
+You have locations instruction locations 01234 and if you have a multiplier in lane, let's say 1,
+
+00:13:27.610 --> 00:13:34.286 
+you need to put the multiply instruction to the to the slot 1, so that goes directly to the
+
+00:13:34.286 --> 00:13:35.094 
+multiplier.
+
+00:13:35.614 --> 00:13:35.894 
+Again.
+
+00:13:35.894 --> 00:13:41.855 
+The goal is to reduce the hardware cost so that you don't have complicated interconnect to route
+
+00:13:41.855 --> 00:13:44.774 
+instructions from one slot to another location.
+
+00:13:44.774 --> 00:13:49.134 
+So these instructions also can't see variable length.
+
+00:13:49.134 --> 00:13:50.374 
+That's that's independent, right?
+
+00:13:50.374 --> 00:13:54.071 
+They could be variable length, they could be fixed length, but in real IW architectures, it's
+
+00:13:54.071 --> 00:13:56.934 
+usually fixed length because that's that goes for the philosophy, right?
+
+00:13:57.294 --> 00:13:59.774 
+The philosophy is simple hardware, complex compiler.
+
+00:14:00.854 --> 00:14:08.768 
+OK, OK, So this is going to be very similar to what you have seen actually in the slides for super
+
+00:14:08.768 --> 00:14:13.614 
+Scaler, except we're going to pack instruction into bundles.
+
+00:14:13.614 --> 00:14:18.094 
+So assume that this is the VLIW program that the compiler generated.
+
+00:14:18.254 --> 00:14:19.134 
+This is bundle one.
+
+00:14:19.214 --> 00:14:20.854 
+This is A2 wide VLIW engine.
+
+00:14:20.974 --> 00:14:23.334 
+You're fetching 2 instructions per cycle.
+
+00:14:23.774 --> 00:14:24.654 
+This is bundle 2.
+
+00:14:25.134 --> 00:14:25.934 
+This is bundle 3.
+
+00:14:26.054 --> 00:14:29.814 
+And the compiler ensures that there is no dependence between these instructions, right?
+
+00:14:30.374 --> 00:14:34.831 
+And they get executed essentially concurrently in a pipeline that kind of looks like a super scalar
+
+00:14:34.831 --> 00:14:39.063 
+pipeline, because you need to have multiple functional units, multiple pipeline, multiple data
+
+00:14:39.063 --> 00:14:39.334 
+paths.
+
+00:14:39.534 --> 00:14:41.054 
+Except you don't have dependency checking.
+
+00:14:42.174 --> 00:14:42.894 
+Sounds good, right?
+
+00:14:44.414 --> 00:14:47.854 
+OK, and in this case, actual IPC is 2.
+
+00:14:48.894 --> 00:14:50.774 
+Now the downside is the compiler.
+
+00:14:50.814 --> 00:14:53.614 
+It needs to be able to find instructions that are independent, right?
+
+00:14:53.854 --> 00:14:59.181 
+If it doesn't find an instruction that's independent to be placed in a bundle, it it plays a no op
+
+00:14:59.181 --> 00:15:00.214 
+no operation there.
+
+00:15:00.414 --> 00:15:03.854 
+So you waste potential concurrency because of that.
+
+00:15:04.414 --> 00:15:04.654 
+OK.
+
+00:15:04.654 --> 00:15:07.654 
+And this is going to be an issue in a lot of VLIW machines.
+
+00:15:07.894 --> 00:15:13.571 
+With two instructions per cycle, it's not bad, but if you're trying to build 32 instructions per
+
+00:15:13.571 --> 00:15:19.189 
+cycle concurrently, there, there, the burden on the compiler becomes much higher and it becomes
+
+00:15:19.189 --> 00:15:24.334 
+very difficult for the compiler find 32 independent instructions to issue concurrently.
+
+00:15:24.654 --> 00:15:27.254 
+That's why people have developed a lot of compilation techniques.
+
+00:15:27.254 --> 00:15:33.120 
+So one of the huge benefits of this BLIW architecture is it enabled a lot of innovation, the
+
+00:15:33.120 --> 00:15:38.094 
+compiler domain, because it's put a lot of pressure on the compilation system.
+
+00:15:38.454 --> 00:15:42.414 
+And as a result, people developed a lot of interesting ideas in compilation, as we will see.
+
+00:15:43.454 --> 00:15:47.549 
+OK, if you haven't taken a compiler course, I would definitely recommend taking compiler courses if
+
+00:15:47.549 --> 00:15:50.734 
+you're interested in computer architecture because these are tightly related.
+
+00:15:51.134 --> 00:15:53.134 
+OK, so let's talk about this lockstep execution.
+
+00:15:53.174 --> 00:15:54.734 
+Lockstep means all or not.
+
+00:15:54.734 --> 00:16:01.152 
+Essentially, if any operation in a VLIW instruction stalls or takes longer, all concurrent
+
+00:16:01.152 --> 00:16:03.934 
+operations stall or take longer, right?
+
+00:16:04.494 --> 00:16:06.454 
+And this happens especially in memory operations.
+
+00:16:06.454 --> 00:16:12.120 
+Unfortunately, if you get a long latency memory operations because you may have a cache miss as we
+
+00:16:12.120 --> 00:16:17.843 
+will discuss in future lectures, then one of the load instructions stalls, meaning it's waiting for
+
+00:16:17.843 --> 00:16:19.694 
+memory to respond with the data.
+
+00:16:20.134 --> 00:16:24.240 
+All of the other independent instructions they may have completed already or they could complete
+
+00:16:24.240 --> 00:16:26.294 
+potentially, but they have to wait for the load.
+
+00:16:26.494 --> 00:16:30.174 
+And this is one of the big downsides of lockstep VLIW.
+
+00:16:30.894 --> 00:16:34.414 
+Memory operations are always the biggest disaster in systems.
+
+00:16:34.654 --> 00:16:36.534 
+That's why memory is such a big, big bottleneck.
+
+00:16:36.534 --> 00:16:38.454 
+But here it's similar.
+
+00:16:39.894 --> 00:16:43.494 
+Now this contrast is with for example a system with out of order execution, right?
+
+00:16:43.494 --> 00:16:48.734 
+If you have out of order execution, then you can actually find independent instructions.
+
+00:16:48.774 --> 00:16:53.124 
+Normally VLIW philosophy goes against out of order execution because out of order execution is
+
+00:16:53.124 --> 00:16:55.254 
+complicating the machine significantly, right?
+
+00:16:55.254 --> 00:17:01.614 
+Whereas VLIW out of order execution happens or is supplied by the compiler, right?
+
+00:17:01.614 --> 00:17:05.654 
+If you think about it right, the compiler is really reordering instructions itself.
+
+00:17:05.654 --> 00:17:10.849 
+The problem is memory operations are not predictable enough which, which which which load
+
+00:17:10.849 --> 00:17:12.134 
+instruction will miss.
+
+00:17:12.134 --> 00:17:14.574 
+The cache is not easily predictable by the compiler.
+
+00:17:15.054 --> 00:17:17.294 
+As a result you have trouble with memory operations.
+
+00:17:17.334 --> 00:17:21.454 
+Right when you get to a cache miss, you stall and the all of the bundle stalls.
+
+00:17:22.374 --> 00:17:22.654 
+OK.
+
+00:17:22.694 --> 00:17:29.546 
+So in a truly VLIW machine which is really purists VLIW machine, the compiler handles all dependence
+
+00:17:29.546 --> 00:17:30.574 
+related stalls.
+
+00:17:31.534 --> 00:17:33.894 
+Hardware does not perform any dependency checking.
+
+00:17:35.294 --> 00:17:40.010 
+And the problem, if you actually start with this, the variable latency becomes an immediate problem,
+
+00:17:40.010 --> 00:17:40.294 
+right?
+
+00:17:40.294 --> 00:17:42.174 
+How do you actually handle variable latency operations?
+
+00:17:42.174 --> 00:17:42.774 
+Memory stalls.
+
+00:17:42.774 --> 00:17:49.854 
+So a truly real IW machine, it's not really easily realisable because of memory problems.
+
+00:17:49.854 --> 00:17:54.814 
+Basically if you have variable latency operations or memory stalls, you need to stall in hardware.
+
+00:17:54.894 --> 00:18:00.638 
+Essentially, there is no other way somebody because you because that operation is really dependent
+
+00:18:00.638 --> 00:18:00.814 
+on.
+
+00:18:01.294 --> 00:18:03.534 
+A hardware signal and the state of the hardware, right?
+
+00:18:03.534 --> 00:18:05.814 
+The compiler cannot really anticipate it perfectly.
+
+00:18:05.814 --> 00:18:07.934 
+At least it can profile the code.
+
+00:18:07.934 --> 00:18:13.046 
+It can say, OK, this load instruction is likely going to be a cache miss, and it's going to schedule
+
+00:18:13.046 --> 00:18:15.654 
+the instruction assuming a cache miss that latency.
+
+00:18:16.254 --> 00:18:19.454 
+But it doesn't know the future when the code executes.
+
+00:18:19.454 --> 00:18:25.797 
+OK, OK, so this is as you can see, people have written papers about it, parallel processing, a smart
+
+00:18:25.797 --> 00:18:27.574 
+compiler and a dumb machine.
+
+00:18:28.134 --> 00:18:29.854 
+And there's a good reason for the dumb machine.
+
+00:18:30.614 --> 00:18:31.574 
+That was the philosophy.
+
+00:18:31.574 --> 00:18:33.134 
+As you can see, there are nice papers.
+
+00:18:33.654 --> 00:18:36.254 
+So philosophy of LIW is actually very similar to risk.
+
+00:18:36.254 --> 00:18:43.054 
+I will give you some history also over here in 1970s, for example, there was this moment for making
+
+00:18:43.054 --> 00:18:45.734 
+hardware simple, as simple as possible.
+
+00:18:46.294 --> 00:18:48.974 
+The reason is it was not easy to design hardware at the time.
+
+00:18:48.974 --> 00:18:53.414 
+Today we're in a very different world, 2020, five, 2026, two thousand 30s.
+
+00:18:53.654 --> 00:18:55.134 
+Hardware is a lot easier to design.
+
+00:18:55.134 --> 00:19:00.254 
+We can put a lot of things on a machine, Trillions of transistors.
+
+00:19:00.574 --> 00:19:03.014 
+That was not the case in 1960s seventies, right?
+
+00:19:03.134 --> 00:19:05.294 
+So hardware is expensive, hard to design.
+
+00:19:05.654 --> 00:19:08.614 
+So people said we want to keep it as simple as possible.
+
+00:19:09.054 --> 00:19:12.294 
+John **** for example, was a touring award winner at IBM.
+
+00:19:13.014 --> 00:19:17.294 
+They designed the IBM eight of our mini computer and their philosophy was very similar to VIW.
+
+00:19:17.334 --> 00:19:24.865 
+We want simple instructions, simple hardware and compiler does the hard work to translate high level
+
+00:19:24.865 --> 00:19:26.974 
+code to simple instructions.
+
+00:19:27.294 --> 00:19:29.134 
+I'm going to go back to the picture that I showed you earlier.
+
+00:19:29.454 --> 00:19:33.840 
+And in fact, they actually pushed it so hard that even they want to design compilers where the
+
+00:19:33.840 --> 00:19:35.894 
+compiler directly generates control signals.
+
+00:19:36.694 --> 00:19:41.128 
+It knows every the guts of the hardware and it generates the control signals such that the compiler
+
+00:19:41.128 --> 00:19:43.054 
+has complete control of the machine, right?
+
+00:19:43.614 --> 00:19:45.014 
+That's not the case in today's machines.
+
+00:19:45.014 --> 00:19:46.414 
+Today we compile into instructions.
+
+00:19:46.414 --> 00:19:50.774 
+For example, in Fpgas you may actually compile into some other substrate.
+
+00:19:50.854 --> 00:19:52.014 
+As you do in your labs.
+
+00:19:52.014 --> 00:19:53.454 
+But control signals?
+
+00:19:53.494 --> 00:19:55.454 
+Compiler has no idea in today's machines.
+
+00:19:55.454 --> 00:20:01.838 
+But they push the boundary by being extreme and compiler reorders simple instructions for high
+
+00:20:01.838 --> 00:20:02.654 
+performance.
+
+00:20:03.094 --> 00:20:04.574 
+And in the end, hardware does little.
+
+00:20:05.134 --> 00:20:07.654 
+Little translation, little decoding, very simple.
+
+00:20:08.174 --> 00:20:11.338 
+If the compiler generates the control signal, hardware doesn't even generate the control signals,
+
+00:20:11.338 --> 00:20:11.534 
+right.
+
+00:20:11.534 --> 00:20:13.614 
+Remember our machines earlier?
+
+00:20:14.654 --> 00:20:18.094 
+OK, so in VLIW the basic difference is the philosophy is the same.
+
+00:20:18.214 --> 00:20:23.438 
+Essentially the basic difference is compiled as the hard work to find instruction level parallels
+
+00:20:23.438 --> 00:20:27.694 
+which instructions can be executed concurrently in the same clock cycle, right?
+
+00:20:27.814 --> 00:20:33.320 
+Hardware again still stays as simple as possible and it executes each instruction in a bundle in
+
+00:20:33.320 --> 00:20:33.894 
+lock step.
+
+00:20:35.294 --> 00:20:36.054 
+Does that make sense?
+
+00:20:36.134 --> 00:20:40.334 
+So the philosophy is very different from what we have seen in out of order execution for example.
+
+00:20:40.534 --> 00:20:45.668 
+And this is really important in the end, because if you will lose some of the upsides of auto board
+
+00:20:45.668 --> 00:20:50.594 
+execution, which is the latency tolerance because compiler will not be able to do everything we
+
+00:20:50.594 --> 00:20:50.854 
+want.
+
+00:20:50.854 --> 00:20:54.934 
+Yes, sounds like the big semantic.
+
+00:20:57.734 --> 00:21:04.454 
+Yeah, yes, yes, we're going to get back to that.
+
+00:21:04.454 --> 00:21:07.254 
+Actually we're going to, I'm going to show you the semantic gap pictures later.
+
+00:21:09.454 --> 00:21:10.334 
+Yeah, it's very low.
+
+00:21:10.334 --> 00:21:13.134 
+Basically, it's very close to hardware control signals.
+
+00:21:13.254 --> 00:21:20.054 
+Yes, especially in the first one John Cox machine, it's really at the level of at the very bottom.
+
+00:21:20.054 --> 00:21:22.654 
+You can get with VLIWL bit higher.
+
+00:21:23.414 --> 00:21:28.894 
+But the the the big work is done by the software and the hardware is in is doing very little.
+
+00:21:30.494 --> 00:21:32.414 
+OK, so simple.
+
+00:21:32.414 --> 00:21:35.774 
+Why do you want hardware simple because it's higher, it can be higher frequency, right.
+
+00:21:36.054 --> 00:21:38.054 
+And you've seen for example, an out of order execution.
+
+00:21:38.054 --> 00:21:42.391 
+It may be difficult to design because we have all these loops, we have all the branch prediction
+
+00:21:42.391 --> 00:21:42.934 
+issues also.
+
+00:21:43.214 --> 00:21:47.014 
+We'll still run into branch prediction, but the compiler can actually handle some of the branch
+
+00:21:47.014 --> 00:21:49.254 
+prediction if you can, if it can profile the code right.
+
+00:21:49.774 --> 00:21:57.374 
+Remember, the compiler can lay out the code such that the likely path is always executed right.
+
+00:21:58.054 --> 00:21:59.014 
+This is easier to design.
+
+00:21:59.014 --> 00:21:59.894 
+It could be low power.
+
+00:22:00.014 --> 00:22:02.134 
+And these are all the benefits of LIW actually.
+
+00:22:02.814 --> 00:22:06.174 
+OK, this is from Josh Fisher's paper from 1983.
+
+00:22:06.694 --> 00:22:07.454 
+I guess I will not.
+
+00:22:07.574 --> 00:22:08.334 
+I will read it.
+
+00:22:08.974 --> 00:22:13.094 
+The important part is each long instruction consists of many tightly coupled independent operations.
+
+00:22:13.094 --> 00:22:18.246 
+We've said this, each operation requires a small statically predictable numbers of cycles to
+
+00:22:18.246 --> 00:22:18.694 
+execute.
+
+00:22:18.694 --> 00:22:19.614 
+This is really important.
+
+00:22:20.374 --> 00:22:23.494 
+Small number of cycles and statically predictable number of cycles.
+
+00:22:23.774 --> 00:22:25.574 
+Statically predictable is very difficult.
+
+00:22:26.374 --> 00:22:29.814 
+Small is possible but depends on the instruction of course.
+
+00:22:29.814 --> 00:22:34.440 
+But now once you get to memory instructions, you may not be able to predict them and the latencies
+
+00:22:34.440 --> 00:22:35.054 
+may be large.
+
+00:22:35.254 --> 00:22:38.854 
+So dealing with memory is a difficult thing in VLIW machines.
+
+00:22:40.334 --> 00:22:42.934 
+I'm going to skip this but you can read it later.
+
+00:22:43.654 --> 00:22:46.494 
+So commercially VLIW machines have been built.
+
+00:22:47.214 --> 00:22:51.054 
+There were start-ups by Josh Fisher and Barbara 2 proponents in this area.
+
+00:22:51.054 --> 00:22:54.774 
+You can see some examples, some of them were seven whites, 28 whites.
+
+00:22:54.774 --> 00:23:00.654 
+So these are actually some of the very big machines that were built in the 1980s, early 1990s.
+
+00:23:00.854 --> 00:23:07.287 
+No machine today has 20 white, 228 white in, in terms of number of instructions that that it can
+
+00:23:07.287 --> 00:23:11.174 
+process in a single cycle because it's expensive to do it.
+
+00:23:11.174 --> 00:23:12.334 
+But these folks built it.
+
+00:23:12.934 --> 00:23:14.854 
+It was expensive, but it was actually built.
+
+00:23:15.014 --> 00:23:16.454 
+The hardware was not as expensive.
+
+00:23:16.454 --> 00:23:23.132 
+The software was the more expensive part, transmitter Cruzo for example, that X86 binary translate
+
+00:23:23.132 --> 00:23:23.814 
+into VLIW.
+
+00:23:24.054 --> 00:23:29.435 
+I'll discuss that also where where VLIW was most successful was embedded systems where you can
+
+00:23:29.435 --> 00:23:35.103 
+analyse the code, the code is relatively simple and the compiler can analyse the code statically in
+
+00:23:35.103 --> 00:23:36.134 
+a much easier way.
+
+00:23:36.134 --> 00:23:41.214 
+And in a many of these systems, the the code is not huge, it's small.
+
+00:23:41.694 --> 00:23:46.094 
+They're dealing with some sort of, let's say, cyber physical infrastructure.
+
+00:23:46.094 --> 00:23:51.369 
+They're not dealing with very huge data sets, for example, and you can more easily statically
+
+00:23:51.369 --> 00:23:52.334 
+analyse the code.
+
+00:23:52.334 --> 00:23:56.134 
+In fact, some of them are designed such that you don't get that much cache misses.
+
+00:23:56.134 --> 00:24:01.892 
+For example, in some of these machines, they are now not even caches, not true for the very advanced
+
+00:24:01.892 --> 00:24:04.254 
+ones, but some of the less advanced ones.
+
+00:24:04.454 --> 00:24:10.781 
+So in that market, VLIW became very successful and it enabled a lot of innovation and compilation,
+
+00:24:10.781 --> 00:24:11.814 
+large companies.
+
+00:24:11.854 --> 00:24:18.554 
+This is an area where VLIW was not as successful, although AMD, for example, had some VLIW
+
+00:24:18.554 --> 00:24:19.894 
+processors inside.
+
+00:24:19.894 --> 00:24:22.854 
+I will discuss that later on, maybe after this Istolica Ray's lecture.
+
+00:24:23.214 --> 00:24:26.854 
+So Intel experimented with VLIW in an interesting way.
+
+00:24:27.134 --> 00:24:31.974 
+How many people know about IA 64, Itanium, Itanium.
+
+00:24:31.974 --> 00:24:36.334 
+No one, OK, because everybody's young and you don't, you have not.
+
+00:24:36.654 --> 00:24:37.814 
+This is not been successful.
+
+00:24:37.894 --> 00:24:39.694 
+Everybody knows about Pentium, but not Itanium.
+
+00:24:40.094 --> 00:24:48.960 
+So this is an this Intel for in the in the 1990s, late 1990s, people were trying to move from 32 bit
+
+00:24:48.960 --> 00:24:50.734 
+architectures to 64.
+
+00:24:50.814 --> 00:24:53.174 
+Bit architecture, that's the length of the word, right?
+
+00:24:54.414 --> 00:25:00.174 
+And Intel had a 32 bit ISA X86, AMD was using the same ISA X86 also.
+
+00:25:00.734 --> 00:25:04.454 
+And the key question became how do we translate?
+
+00:25:04.534 --> 00:25:08.334 
+How do you transition to a 32 bit, 64 bit architecture?
+
+00:25:08.974 --> 00:25:13.214 
+Because if you transition to a 64 bit architecture, you need to change the a lot of instructions.
+
+00:25:13.894 --> 00:25:22.085 
+One way of changing a lot of instructions is go and patch the existing ISA and add a 64 bit mode to
+
+00:25:22.085 --> 00:25:22.334 
+it.
+
+00:25:22.934 --> 00:25:25.014 
+That's a more traditional way of doing things.
+
+00:25:25.534 --> 00:25:28.534 
+AMD did that, so they came up with X8664.
+
+00:25:28.934 --> 00:25:30.334 
+Intel wanted to be bold.
+
+00:25:30.574 --> 00:25:35.907 
+They thought there was an opportunity to actually completely redo the architecture, which is
+
+00:25:35.907 --> 00:25:39.734 
+actually a bold, bold thing to do at that time for a huge company.
+
+00:25:39.734 --> 00:25:41.894 
+It's also a lot of risking for a huge company like that.
+
+00:25:42.094 --> 00:25:45.134 
+So they said, OK, we're not going to do that.
+
+00:25:45.134 --> 00:25:49.516 
+We're not going to change every instruction such that you go to 64, but we're going to change the
+
+00:25:49.516 --> 00:25:50.014 
+entire ISA.
+
+00:25:50.734 --> 00:25:55.857 
+We're going to move to a new instruction set architecture, and we're going to call it IA 64, Intel
+
+00:25:55.857 --> 00:25:56.694 
+Architecture 64.
+
+00:25:56.974 --> 00:26:02.675 
+And this is a VLIW type of architecture because they believe that they could simplify a lot of the
+
+00:26:02.675 --> 00:26:04.014 
+hardware that they had.
+
+00:26:04.974 --> 00:26:09.303 
+And they said for the legacy code, like we have a lot of legacy X86 code, we're going to do dynamic
+
+00:26:09.303 --> 00:26:10.134 
+binary translation.
+
+00:26:10.134 --> 00:26:14.654 
+We're going to translate X86 architecture to IA 64 instructions.
+
+00:26:15.094 --> 00:26:16.534 
+OK, so they had a story over there.
+
+00:26:16.974 --> 00:26:22.974 
+So IA 64 was designed to be actually the general purpose ISA that would hopefully replace X86.
+
+00:26:23.774 --> 00:26:28.509 
+It was not fully VLIW, but based on VLIW principles, and they called it explicitly parallel
+
+00:26:28.509 --> 00:26:29.654 
+instruction computing.
+
+00:26:30.294 --> 00:26:36.161 
+The basic idea is you have instruction bundles, but the compiler, if it cannot find instructions
+
+00:26:36.161 --> 00:26:42.151 
+that are completely concurrently executable, it basically identifies which instructions are depend
+
+00:26:42.151 --> 00:26:43.374 
+on which other ones.
+
+00:26:44.414 --> 00:26:51.093 
+OK, so this violates some VLIW principles, but at least it encodes this instruction is depend on
+
+00:26:51.093 --> 00:26:52.694 
+this other instruction.
+
+00:26:52.934 --> 00:26:54.614 
+So the hardware can become simpler, right?
+
+00:26:54.614 --> 00:26:56.454 
+Hardware doesn't need to discover that information.
+
+00:26:56.854 --> 00:26:59.974 
+Compiler knows that information because it looks at the registers, right?
+
+00:27:01.134 --> 00:27:06.316 
+OK, And a few bits in the instruction format specify explicitly which instruction the bundle are
+
+00:27:06.316 --> 00:27:07.774 
+depend on which other ones.
+
+00:27:08.374 --> 00:27:13.450 
+So Long story short, this was this actually caused a lot of again compiler development and also
+
+00:27:13.450 --> 00:27:15.054 
+hardware development at Intel.
+
+00:27:15.654 --> 00:27:20.774 
+They designed multiple generations of these Itanium Intel IA 64 architectures.
+
+00:27:21.374 --> 00:27:27.388 
+Unfortunately, it was very difficult to change the software stack, meaning it's very it was very
+
+00:27:27.388 --> 00:27:28.454 
+difficult to get.
+
+00:27:28.974 --> 00:27:30.054 
+There are two issues, I think.
+
+00:27:30.054 --> 00:27:35.654 
+1 is it was very difficult to move a lot of the software to this new ISA.
+
+00:27:35.854 --> 00:27:37.614 
+Remember this is ISA, we're changing the ISA.
+
+00:27:37.614 --> 00:27:43.583 
+So new software or old software needs to move to new one or old software needs to execute really,
+
+00:27:43.583 --> 00:27:47.214 
+really efficiently using this binary translation mechanism.
+
+00:27:47.534 --> 00:27:50.494 
+Unfortunately, they were not successful in the binary translation mechanism, I think.
+
+00:27:51.094 --> 00:27:57.294 
+So they couldn't get the benefits of the new hardware and it was difficult to adopt the new ISA.
+
+00:27:57.454 --> 00:28:04.219 
+And combined with this, there was this competitor who actually did the easier to do thing, which is
+
+00:28:04.219 --> 00:28:07.294 
+slightly changed the existing ISA to 64 bits.
+
+00:28:07.414 --> 00:28:12.614 
+So a lot of people adopted X8664AS opposed to adopting the completely different ISA.
+
+00:28:13.614 --> 00:28:15.894 
+So that's why you're using X8664 right now.
+
+00:28:15.894 --> 00:28:21.864 
+Eventually Intel had to switch to X8664 also and they stopped developing itiniums I think in maybe
+
+00:28:21.864 --> 00:28:27.774 
+5-10 years ago, I don't know the exact time, but I don't think these are being developed anymore.
+
+00:28:28.254 --> 00:28:30.134 
+If you find them, it's it's good machines.
+
+00:28:30.134 --> 00:28:36.780 
+I've used them and they're interesting for sure, but you can see this is an example of even a
+
+00:28:36.780 --> 00:28:40.854 
+dominant company not being able to change the ISA easily.
+
+00:28:40.854 --> 00:28:43.174 
+This is the Intel ISA, right, X86 we're talking about.
+
+00:28:43.174 --> 00:28:49.308 
+They wanted to change their own ISA, but they were not able to do it because there was a maybe
+
+00:28:49.308 --> 00:28:50.614 
+easier way to do it.
+
+00:28:51.334 --> 00:28:54.454 
+OK, but this was a VLIWISA, which is really interesting also.
+
+00:28:54.654 --> 00:28:55.934 
+OK, So what are the trade-offs?
+
+00:28:56.814 --> 00:29:01.522 
+I think we've already covered actually a lot of things in VLIW, the huge advantages you have simple
+
+00:29:01.522 --> 00:29:05.374 
+hardware, no need for dynamic scheduling, no need for dependency checking, right?
+
+00:29:06.334 --> 00:29:10.742 
+Everything we discussed goes away basically kind of not go kind of, but you don't need to have auto
+
+00:29:10.742 --> 00:29:13.414 
+order execution, You don't need to have dependence checking.
+
+00:29:14.054 --> 00:29:18.722 
+I think we've already said this, more simple hardware again, no renaming, for example, and no need
+
+00:29:18.722 --> 00:29:23.248 
+for instruction alignment or distribution after fetch to different functional units because the
+
+00:29:23.248 --> 00:29:26.774 
+compiler also knows how the machine looks like and schedules instructions.
+
+00:29:26.774 --> 00:29:30.614 
+Simple hardware basically disadvantages compiler.
+
+00:29:30.614 --> 00:29:32.054 
+Basically compiler is now complex.
+
+00:29:32.054 --> 00:29:34.654 
+It needs to find N independent operations per cycle.
+
+00:29:35.014 --> 00:29:40.331 
+If you're really aggressive with N if you want to do 128 operations per cycle, it's very difficult
+
+00:29:40.331 --> 00:29:41.254 
+for the compiler.
+
+00:29:41.614 --> 00:29:45.854 
+And if the compiler cannot find this, it inserts no OPS, no operations.
+
+00:29:45.854 --> 00:29:47.574 
+Basically in a VLIW instructor a bubble.
+
+00:29:47.574 --> 00:29:50.734 
+Basically that's compilers way of inserting a bubble into the.
+
+00:29:50.814 --> 00:29:51.174 
+Pipeline.
+
+00:29:52.254 --> 00:29:54.814 
+So this leads to loss of parallelism.
+
+00:29:54.814 --> 00:29:58.956 
+Clearly you have this machine that's very capable, but you're using only 10 instructions per cycle
+
+00:29:58.956 --> 00:30:00.774 
+as opposed to under 28, for example, right?
+
+00:30:01.334 --> 00:30:05.614 
+This also leads to a code size increase because you need to encode these no OPS somehow, right?
+
+00:30:06.334 --> 00:30:10.934 
+Now people have developed ways of encoding these no OPS such that you can compress these no OPS.
+
+00:30:11.334 --> 00:30:15.454 
+So it's not a huge deal, but it still complicates the machine a little bit because the encoding.
+
+00:30:15.694 --> 00:30:22.595 
+Now you need to deal with compressed encodings to ensure that you know where the no OPS are, right,
+
+00:30:22.595 --> 00:30:25.454 
+a bigger, well, not bigger, I should say.
+
+00:30:25.654 --> 00:30:27.254 
+Similarly big disadvantages.
+
+00:30:27.254 --> 00:30:32.542 
+You need to recompile often when, when the machine, when the underlying hardware changes, when you
+
+00:30:32.542 --> 00:30:37.291 
+change the execution with for example with new generation, when you, when you change the
+
+00:30:37.291 --> 00:30:39.774 
+instruction latencies or the functional units.
+
+00:30:40.294 --> 00:30:46.950 
+This is not the case with approach, with approaches that are purely hardware based like superscalar
+
+00:30:46.950 --> 00:30:48.094 
+execution, right?
+
+00:30:48.254 --> 00:30:51.214 
+Dependencies are determined by hardware.
+
+00:30:51.294 --> 00:30:56.574 
+So you design the hardware together with the new functional units etcetera, right.
+
+00:30:58.254 --> 00:30:59.854 
+And the last one is lock step execution.
+
+00:30:59.854 --> 00:31:01.654 
+It's cause independent operations to stall.
+
+00:31:01.654 --> 00:31:05.174 
+No instruction can progress until the longest latency instruction can complete.
+
+00:31:05.494 --> 00:31:08.454 
+And this cause issues with variable latency operations as we discussed.
+
+00:31:09.854 --> 00:31:10.894 
+OK, so summary.
+
+00:31:11.494 --> 00:31:15.809 
+I'm going to talk about some of the compilation after we finish the summary because that's really
+
+00:31:15.809 --> 00:31:16.254 
+important.
+
+00:31:16.254 --> 00:31:21.534 
+I think VLIW simplifies the hardware but requires complex compiler techniques solely.
+
+00:31:21.534 --> 00:31:25.654 
+Compiler approach of VLIW has several downsides that reduce performance.
+
+00:31:25.814 --> 00:31:28.574 
+No tolerance for variable or long latency operations.
+
+00:31:28.574 --> 00:31:30.734 
+Too many no OPS, not enough parallelism.
+
+00:31:31.254 --> 00:31:33.774 
+Static schedule is intimately tied to the micro architecture.
+
+00:31:33.934 --> 00:31:39.013 
+Code optimised for one generation performs poorly for next, because you need to recompile to take
+
+00:31:39.013 --> 00:31:39.694 
+advantage of.
+
+00:31:40.334 --> 00:31:43.254 
+Maybe not, maybe it doesn't even perform correctly.
+
+00:31:43.254 --> 00:31:43.454 
+Right?
+
+00:31:43.454 --> 00:31:47.933 
+Because if the machine has changed significantly, the compiler needs to recalculate when it can
+
+00:31:47.933 --> 00:31:49.254 
+schedule which instructions.
+
+00:31:49.774 --> 00:31:53.654 
+So code compiler one generation may not even work for the next generation.
+
+00:31:54.014 --> 00:31:58.844 
+And if it works because people design things a little bit more carefully, it doesn't perform very
+
+00:31:58.844 --> 00:31:59.094 
+well.
+
+00:32:00.454 --> 00:32:05.930 
+OK, The huge advantage of VLIW has been on the software domain essentially people that will opt a
+
+00:32:05.930 --> 00:32:11.351 
+lot of compiler optimizations to find N operations per cycle and find more than N operations per
+
+00:32:11.351 --> 00:32:15.134 
+cycle because you need to actually schedule for the entire machine.
+
+00:32:15.654 --> 00:32:21.694 
+And this is these optimizations are essentially employed in all optimising compilers we have today.
+
+00:32:21.814 --> 00:32:23.854 
+GCC has many, many of these optimizations.
+
+00:32:23.854 --> 00:32:28.501 
+For example, any company's compiler has many, many of these optimizations for super scaler
+
+00:32:28.501 --> 00:32:29.534 
+compilation as well.
+
+00:32:30.174 --> 00:32:33.974 
+So what people are developed for VLIW was applicable for super scaler compilation.
+
+00:32:33.974 --> 00:32:35.574 
+It improved super scaler performance.
+
+00:32:35.934 --> 00:32:40.718 
+Because remember super scaler, if you don't have nice alignment in the code, you may have stalls,
+
+00:32:40.718 --> 00:32:41.014 
+right?
+
+00:32:42.534 --> 00:32:47.031 
+If you have a VLIW compiler and the compiler has figured out instructions that are independent of
+
+00:32:47.031 --> 00:32:49.814 
+each other, it it executes nicely on a super scaler machine.
+
+00:32:49.814 --> 00:32:55.266 
+Also there's another reason why VLIW could not be as successful because the competition is super
+
+00:32:55.266 --> 00:33:00.094 
+scaler and the compiler optimizations that you create for VLIW works for superscaler.
+
+00:33:00.094 --> 00:33:02.294 
+Also very interesting to think about.
+
+00:33:03.094 --> 00:33:09.694 
+OK, VLIW has been very successful in specialised domains like embedded markets, DSPS and GPUs.
+
+00:33:09.694 --> 00:33:16.414 
+For example, early AMDGPUS at VLIW operations ATIGPUS actually before AMD bought ATI.
+
+00:33:17.414 --> 00:33:21.054 
+And it has been successful when parallelism is easier to find by the compiler.
+
+00:33:21.054 --> 00:33:26.902 
+And clear graphics is 1 area where a compiler can find parallelism easily because you're dealing
+
+00:33:26.902 --> 00:33:28.974 
+with millions of pixels at a time.
+
+00:33:29.414 --> 00:33:32.974 
+And GPUs have employed a digital signal processors and embedded markets.
+
+00:33:32.974 --> 00:33:38.817 
+Because of the simplicity of the code and the predictability requirements of the code, it was easier
+
+00:33:38.817 --> 00:33:40.454 
+to compile in those domains.
+
+00:33:41.454 --> 00:33:44.134 
+Let me give you some examples of this compiler optimizations.
+
+00:33:44.134 --> 00:33:49.254 
+This is a trace scheduling work from again the VLIW paper.
+
+00:33:49.974 --> 00:33:54.494 
+If you look at this picture over here, this is a control flow graph.
+
+00:33:55.014 --> 00:33:59.997 
+This is a basic block, some instructions and then a branch, and then another basic block, another
+
+00:33:59.997 --> 00:34:00.614 
+basic block.
+
+00:34:00.614 --> 00:34:03.854 
+Each basic block is a sequence of code that's terminated by a branch.
+
+00:34:03.854 --> 00:34:06.814 
+Basically, you can see that there are branches and it's a complex piece of code.
+
+00:34:07.534 --> 00:34:11.014 
+When you execute this, you can go through any of the branches.
+
+00:34:11.014 --> 00:34:18.013 
+Right now, the idea of many compiler optimizations that's targeted for VLIW and Superscalar then
+
+00:34:18.013 --> 00:34:22.534 
+also in general actually is to identify hot paths in the code.
+
+00:34:23.014 --> 00:34:30.694 
+You profile the code somehow in hardware or software, you basically figure out which path is hot.
+
+00:34:30.774 --> 00:34:33.254 
+For example, this branch is 99% going this way.
+
+00:34:33.574 --> 00:34:38.227 
+This branch is 99% going this way, this branch is 99% going this way, this branch is 100% going this
+
+00:34:38.227 --> 00:34:38.414 
+way.
+
+00:34:38.534 --> 00:34:44.166 
+Based on either profiling information, usually profiling information and you create a trace of the
+
+00:34:44.166 --> 00:34:44.454 
+code.
+
+00:34:44.854 --> 00:34:47.294 
+These are the basic blocks that I execute frequently.
+
+00:34:47.574 --> 00:34:50.774 
+And this is the trace of basic blocks that I execute frequently the software.
+
+00:34:50.814 --> 00:34:52.574 
+Where optimiser can do that easily.
+
+00:34:53.294 --> 00:34:55.734 
+Ideally that 99% is much higher, of course, right?
+
+00:34:56.094 --> 00:35:03.361 
+And what the compiler does is it basically creates a block together and assumes that this is going
+
+00:35:03.361 --> 00:35:05.734 
+to be executed like this, right?
+
+00:35:06.374 --> 00:35:10.454 
+Now, that assumption enables it to move instructions inside that trace.
+
+00:35:10.454 --> 00:35:14.614 
+So with a basic block, you're operating with only for 10 instructions, let's say.
+
+00:35:15.254 --> 00:35:19.734 
+Assuming that this trace contains, let's say 100 basic blocks, you're looking at 1000 instructions.
+
+00:35:20.254 --> 00:35:22.494 
+So you can optimise across 1000 instructions.
+
+00:35:22.494 --> 00:35:26.821 
+You can find which ones can be executed in parallel, for example, much more easily by looking at a
+
+00:35:26.821 --> 00:35:28.014 
+larger set of instructions.
+
+00:35:28.534 --> 00:35:29.214 
+Makes sense, right?
+
+00:35:29.934 --> 00:35:31.654 
+Essentially, you can find which ones can be parallel.
+
+00:35:32.014 --> 00:35:38.534 
+Now the issue is if you're wrong, meaning if the trace is not executed completely.
+
+00:35:38.534 --> 00:35:43.369 
+If you get out of that, for example, in because you can be wrong, you're, you're assuming that the
+
+00:35:43.369 --> 00:35:47.957 
+trace will be executed, the branches will be taken the way that you think they're going to be
+
+00:35:47.957 --> 00:35:48.254 
+taken.
+
+00:35:48.694 --> 00:35:53.832 
+If that's not the case in real execution, you're, you're because in real execution you're executing
+
+00:35:53.832 --> 00:35:55.494 
+those branches and the branches.
+
+00:35:55.494 --> 00:35:57.614 
+You should really have gone this way, right?
+
+00:35:58.254 --> 00:36:03.835 
+Then you need to actually add some patch up code and the compilers add these patch up code to ensure
+
+00:36:03.835 --> 00:36:07.854 
+that when you exit, you undo the things that you are not supposed to do.
+
+00:36:07.854 --> 00:36:11.254 
+If you, if you went that way, hopefully that makes sense, right?
+
+00:36:11.894 --> 00:36:17.828 
+If your assumption is not correct, you undo the things that you were not supposed to do given the
+
+00:36:17.828 --> 00:36:19.174 
+path you're executing.
+
+00:36:19.454 --> 00:36:21.014 
+OK, so that's the idea.
+
+00:36:21.094 --> 00:36:21.734 
+That's the.
+
+00:36:21.854 --> 00:36:24.814 
+This is essentially how all optimising compilers work.
+
+00:36:25.094 --> 00:36:30.272 
+They build these traces and assume that this execution will happen because of the profiling that
+
+00:36:30.272 --> 00:36:30.974 
+they've done.
+
+00:36:31.334 --> 00:36:38.275 
+And if at runtime that's not correct, you you compiler has added additional code that undoes the
+
+00:36:38.275 --> 00:36:38.854 
+effects.
+
+00:36:39.694 --> 00:36:43.414 
+So this way you can actually get very high parallelism within that trace.
+
+00:36:43.494 --> 00:36:48.054 
+Of course, if you're wrong, then you get performance penalty and your code size also increases.
+
+00:36:48.694 --> 00:36:50.614 
+So this is where the profile represents.
+
+00:36:50.614 --> 00:36:51.854 
+This is really, really important.
+
+00:36:51.854 --> 00:36:55.534 
+Again, the compiler is doing some optimizations without knowing runtime knowledge.
+
+00:36:55.534 --> 00:36:57.454 
+So it's relying on profiling.
+
+00:36:57.774 --> 00:37:02.487 
+If the profiling is not accurate or if it doesn't match, if it's not representative of what happens
+
+00:37:02.487 --> 00:37:05.534 
+at runtime, the compiler's optimizations may not work very well.
+
+00:37:05.974 --> 00:37:08.094 
+OK, people have tried to reduce that dependence.
+
+00:37:08.454 --> 00:37:09.254 
+So let's trace.
+
+00:37:09.654 --> 00:37:12.494 
+And this is a recommended paper, of course from Josh Fisher.
+
+00:37:13.254 --> 00:37:15.934 
+And remember, compiler can also do basic block reordering.
+
+00:37:17.014 --> 00:37:20.014 
+We've discussed this to improve branch prediction accuracy.
+
+00:37:20.534 --> 00:37:21.294 
+And that's the idea.
+
+00:37:21.294 --> 00:37:23.454 
+Basically traces are actually trying to do that.
+
+00:37:23.654 --> 00:37:27.761 
+It's really, you're really trying to do basic block reordering, except you're doing it in a much
+
+00:37:27.761 --> 00:37:28.574 
+bigger scale scale.
+
+00:37:29.574 --> 00:37:31.494 
+So people have developed other mechanisms.
+
+00:37:31.494 --> 00:37:33.974 
+I'll I'll talk about a couple of these and then I'll point you to a lecture.
+
+00:37:33.974 --> 00:37:36.014 
+But you can do better than traces.
+
+00:37:36.134 --> 00:37:43.483 
+This is Seminole paper that was published in 1993 by Wen Mei Hu's group, and the idea is to build a
+
+00:37:43.483 --> 00:37:44.374 
+super block.
+
+00:37:45.254 --> 00:37:46.814 
+It's an interesting name, but it's a super block.
+
+00:37:46.814 --> 00:37:51.787 
+Super block is you combine frequently executed basic blocks such that they form a single entry,
+
+00:37:51.787 --> 00:37:53.254 
+multiple exit, larger block.
+
+00:37:53.694 --> 00:37:58.895 
+Trace turns out to be multiple entry, multiple exit, and this actually hinders some of the compiler
+
+00:37:58.895 --> 00:37:59.894 
+optimizations here.
+
+00:37:59.894 --> 00:38:00.694 
+The idea is.
+
+00:38:01.334 --> 00:38:03.374 
+Have a single entry Multiplex at larger block.
+
+00:38:03.374 --> 00:38:04.534 
+Let's take a look at what it is.
+
+00:38:04.734 --> 00:38:07.694 
+So this reduces branch mispredictions because you actually lay out the code.
+
+00:38:08.054 --> 00:38:11.774 
+It enables aggressive compiler optimizations and code reordering within the Super block.
+
+00:38:11.774 --> 00:38:15.614 
+The downside is similar to traces, it leads to increased code size.
+
+00:38:15.694 --> 00:38:20.574 
+It requires recompilation when you actually when when something changes.
+
+00:38:20.574 --> 00:38:21.814 
+It's also profile dependent.
+
+00:38:21.934 --> 00:38:25.809 
+We've already discussed a lot of these, so let's take a look at how these super blocks form and what
+
+00:38:25.809 --> 00:38:26.934 
+kind of benefit you will get.
+
+00:38:26.934 --> 00:38:31.912 
+I'll give you a very simple code example that shows you a benefit, but there are other benefits
+
+00:38:31.912 --> 00:38:32.174 
+also.
+
+00:38:32.854 --> 00:38:38.374 
+So you can see that this is a BCDEFR basic blocks, Y is the entry, Z is the exit.
+
+00:38:38.374 --> 00:38:39.854 
+And there's a loop over here, right?
+
+00:38:39.894 --> 00:38:44.774 
+And these are the frequencies of the branches that are taken over here, I guess.
+
+00:38:44.774 --> 00:38:46.054 
+These are not frequencies.
+
+00:38:46.054 --> 00:38:48.654 
+These are exact executions, right?
+
+00:38:49.774 --> 00:38:52.214 
+So you have 100 iterations and one of them goes this way.
+
+00:38:52.214 --> 00:38:53.734 
+None of them goes this way, for example.
+
+00:38:54.614 --> 00:38:56.454 
+OK, so this is the frequently executed path.
+
+00:38:56.734 --> 00:38:59.614 
+You can figure that out over here.
+
+00:38:59.934 --> 00:39:00.934 
+You form a trace.
+
+00:39:01.534 --> 00:39:04.534 
+So this thing is a trace because it has multiple entries.
+
+00:39:04.934 --> 00:39:06.334 
+So this is 1 entry over here.
+
+00:39:06.334 --> 00:39:08.574 
+This is 1 entry and multiple exits.
+
+00:39:08.694 --> 00:39:10.134 
+This is 1 exit from the trace.
+
+00:39:10.374 --> 00:39:12.254 
+This is another exit from the trace.
+
+00:39:12.454 --> 00:39:14.054 
+There's also another entry into the trace.
+
+00:39:14.414 --> 00:39:22.632 
+OK, so with super block, people said that oh, this entry is not good because I cannot freely reorder
+
+00:39:22.632 --> 00:39:24.934 
+operations over here, right?
+
+00:39:25.374 --> 00:39:28.294 
+So we're going to remove these entries into the trace.
+
+00:39:29.894 --> 00:39:30.934 
+Hopefully that makes sense, right?
+
+00:39:31.894 --> 00:39:37.454 
+Meaning we don't want, we don't want a code path entering from the side of a trace.
+
+00:39:37.894 --> 00:39:40.134 
+OK, so let me give you the example.
+
+00:39:40.134 --> 00:39:40.894 
+This is what we will do.
+
+00:39:40.894 --> 00:39:45.340 
+Basically, we'll duplicate the tail, duplicate some basic blocks after a side entrance to eliminate
+
+00:39:45.340 --> 00:39:46.014 
+side entrances.
+
+00:39:46.014 --> 00:39:48.494 
+So these are side entrances into the trace.
+
+00:39:48.974 --> 00:39:50.654 
+This is the tail of the trace.
+
+00:39:50.814 --> 00:39:51.134 
+You will.
+
+00:39:51.374 --> 00:39:57.285 
+We're going to duplicate that tail over here and also over here such that when you exit the trace,
+
+00:39:57.285 --> 00:39:58.974 
+you will not re enter again.
+
+00:39:59.454 --> 00:40:03.974 
+You will join at the bottom over here and that's what we did over here.
+
+00:40:03.974 --> 00:40:05.574 
+F bar for example, F is a tail.
+
+00:40:06.014 --> 00:40:08.814 
+These two side entrances were entering at F.
+
+00:40:10.334 --> 00:40:16.094 
+Now they are not entering at F because we duplicate F There's F prime, and this basic block goes
+
+00:40:16.094 --> 00:40:17.294 
+directly to F prime.
+
+00:40:17.294 --> 00:40:21.734 
+This basic block also goes directly to F prime, which eventually goes here or here.
+
+00:40:22.614 --> 00:40:26.614 
+Hopefully this gives you an idea of how to do code optimizations.
+
+00:40:27.014 --> 00:40:34.334 
+Now what we've gotten is this is a single entry, multiple exit block, big block.
+
+00:40:35.214 --> 00:40:37.134 
+And that's the definition of a super block basically.
+
+00:40:37.414 --> 00:40:43.896 
+And it turns out you can do more aggressive optimizations because you don't have these other paths,
+
+00:40:43.896 --> 00:40:47.694 
+other code paths entering this larger block at some point.
+
+00:40:48.894 --> 00:40:52.734 
+OK, now let's take a look at a very, very simple code optimization example.
+
+00:40:52.734 --> 00:40:56.014 
+This is my one of my favourite examples because it's only three instructions.
+
+00:40:56.054 --> 00:41:00.088 
+I'm ignoring the branches, of course, get rid of the branches because they make the code ugly over
+
+00:41:00.088 --> 00:41:00.294 
+here.
+
+00:41:00.574 --> 00:41:03.454 
+But assume that there's a branch right after here.
+
+00:41:04.214 --> 00:41:05.574 
+So this is OP A.
+
+00:41:06.654 --> 00:41:07.974 
+It's a multiply instruction.
+
+00:41:08.334 --> 00:41:09.574 
+There's an add instruction.
+
+00:41:10.014 --> 00:41:11.214 
+This is a multiply instruction.
+
+00:41:11.294 --> 00:41:17.266 
+99% of the time this branch goes this way such that you do multiply another multiply 1% of the time
+
+00:41:17.266 --> 00:41:18.654 
+you go this way, right?
+
+00:41:19.254 --> 00:41:25.454 
+Now the interesting thing in this original code is 1% of the time you revise R2, right?
+
+00:41:26.254 --> 00:41:31.454 
+99% of the time these two multiplies are computing the same thing, right?
+
+00:41:32.094 --> 00:41:38.312 
+The problem is if you leave the code this way, you cannot do any optimization because 1% of the time
+
+00:41:38.312 --> 00:41:39.494 
+this R2 may change.
+
+00:41:40.734 --> 00:41:47.889 
+Now if you turn this into a super block, meaning figure out that these two things, this is the
+
+00:41:47.889 --> 00:41:55.273 
+frequently executed path and create a single entry, sorry, multiple entry, single exit block over
+
+00:41:55.273 --> 00:42:00.374 
+here, which is super block, but we don't see the entries over here.
+
+00:42:00.534 --> 00:42:06.170 
+So there's also a trace in this particular case, but basically what what actually, this is not a
+
+00:42:06.170 --> 00:42:06.934 
+trace, sorry.
+
+00:42:07.014 --> 00:42:10.094 
+This is a super block because we're going to do tail duplication.
+
+00:42:11.134 --> 00:42:12.454 
+This is our super block, right?
+
+00:42:13.014 --> 00:42:15.294 
+You have, this is a frequently executed path.
+
+00:42:17.174 --> 00:42:22.534 
+And to make it a super block, you have this exit 1% of the time you go to op B.
+
+00:42:23.174 --> 00:42:28.734 
+But you don't want to enter back over here to op C We actually duplicate op C over here again.
+
+00:42:29.014 --> 00:42:35.352 
+So if you execute this one and with a branch, you go here, you execute the AD and you execute the
+
+00:42:35.352 --> 00:42:37.574 
+multiply, a copy of this multiply.
+
+00:42:38.814 --> 00:42:47.174 
+Now what we've done is we've freed this particular super block from the side side entry over here.
+
+00:42:48.214 --> 00:42:53.310 
+Now what we can do is we can optimize the Super block and one optimization that you may guess is
+
+00:42:53.310 --> 00:42:53.894 
+this right?
+
+00:42:55.054 --> 00:43:00.254 
+What's the the first multiply is multiplying R2 and three putting in R1.
+
+00:43:00.374 --> 00:43:02.174 
+The second multiply is putting into R3.
+
+00:43:02.574 --> 00:43:04.734 
+The first multiply does the multiplication.
+
+00:43:05.254 --> 00:43:07.174 
+The second multiply gets turned into a move.
+
+00:43:07.534 --> 00:43:08.774 
+So you don't need to do a multiply.
+
+00:43:08.774 --> 00:43:09.974 
+That's called strength reduction.
+
+00:43:10.854 --> 00:43:12.294 
+In compilation.
+
+00:43:12.694 --> 00:43:20.322 
+You basically figure out the common sub sub expressions R 2 * 3 and eliminate some of them and
+
+00:43:20.322 --> 00:43:23.974 
+reduce the strength of the operations, right?
+
+00:43:24.854 --> 00:43:25.494 
+So it's beautiful.
+
+00:43:25.494 --> 00:43:29.294 
+I think because with only three instructions, you see the benefit of a super block.
+
+00:43:29.574 --> 00:43:38.342 
+And this what is enabled us to do this is really duplication of the C If op C was not duplicated, we
+
+00:43:38.342 --> 00:43:40.534 
+were not able to do this.
+
+00:43:40.814 --> 00:43:45.426 
+So even if you do this as a trace, because there's a side entry, you will not be able to optimise
+
+00:43:45.426 --> 00:43:45.854 
+the code.
+
+00:43:45.854 --> 00:43:51.693 
+The fact that the realisation is that getting rid of those side entrances enable you to do more
+
+00:43:51.693 --> 00:43:53.414 
+optimization is fascinating.
+
+00:43:53.734 --> 00:43:55.534 
+And that's the paper that introduced this technique.
+
+00:43:55.534 --> 00:43:58.454 
+And again, it's used in essentially all optimising compilers today.
+
+00:43:59.054 --> 00:44:05.074 
+People have improved it and there's another paper that talks about essentially how to do compilation
+
+00:44:05.074 --> 00:44:10.734 
+for these multiple instruction issue processors, not just VLIW but also superscalar execution.
+
+00:44:11.934 --> 00:44:17.030 
+Later works actually used predicate execution, which we're not going to get into, to make this even
+
+00:44:17.030 --> 00:44:17.494 
+stronger.
+
+00:44:17.574 --> 00:44:23.127 
+So you can actually make enable even more aggressive optimizations if you get rid of some of the
+
+00:44:23.127 --> 00:44:24.574 
+hard to predict branches.
+
+00:44:24.934 --> 00:44:30.388 
+And one way of getting hard to eliminating hard to predict branches in compilation time is to by
+
+00:44:30.388 --> 00:44:35.843 
+converting control flow dependence into data flow dependences, which is what predicate execution
+
+00:44:35.843 --> 00:44:36.014 
+is.
+
+00:44:36.094 --> 00:44:38.534 
+We're not going to talk about that, unfortunately, we don't have time.
+
+00:44:38.774 --> 00:44:45.347 
+But if you're interested, you can also look at that because the big, big criticism is what if
+
+00:44:45.347 --> 00:44:49.094 
+branches are not like 99 to one, but 50 to 50, right?
+
+00:44:50.414 --> 00:44:50.694 
+OK.
+
+00:44:52.094 --> 00:44:54.654 
+OK, so I'm going to skip some of the VLIW compilers.
+
+00:44:54.654 --> 00:44:56.134 
+These are actually very complicated compilers.
+
+00:44:56.134 --> 00:45:00.710 
+These are some of the original compilers in 1980s, but they need to do a lot of interesting things
+
+00:45:00.710 --> 00:45:04.494 
+like memory bank disambiguation, figure out which instructions go to which banks.
+
+00:45:04.894 --> 00:45:09.872 
+We're going to see this actually in SIMD machines later on, but I'll leave you with the lectures on
+
+00:45:09.872 --> 00:45:13.494 
+static instruction scheduling if you're interested in looking into that.
+
+00:45:14.254 --> 00:45:18.902 
+Let me talk a little bit about the ISA translation, and then we're going to finish this first part
+
+00:45:18.902 --> 00:45:19.614 
+of the lecture.
+
+00:45:19.614 --> 00:45:21.414 
+So remember we talked about ISA translation.
+
+00:45:21.414 --> 00:45:25.174 
+We said there could be a virtual ISA that you can translate into an implementation.
+
+00:45:25.174 --> 00:45:29.574 
+ISA, complex instructions to simple instructions, and essentially all processors do that today.
+
+00:45:30.014 --> 00:45:32.054 
+Scalar ISA to a VLIWISA.
+
+00:45:33.214 --> 00:45:38.134 
+Intel, for example, translates instructions to micro operations.
+
+00:45:38.454 --> 00:45:45.788 
+Let me talk about transmitter because this was also a very interesting effort to make very
+
+00:45:45.788 --> 00:45:51.574 
+competitive X86 processors that could again compete with Intel and AMD.
+
+00:45:51.854 --> 00:45:52.254 
+It didn't.
+
+00:45:52.414 --> 00:45:55.374 
+It didn't succeed, but their idea was very interesting.
+
+00:45:55.454 --> 00:45:59.694 
+The idea was to actually have an X86 software stack.
+
+00:45:59.814 --> 00:46:05.782 
+Oh, sorry, operating system applications, everything is written in X86 and they had this code
+
+00:46:05.782 --> 00:46:12.135 
+morphing software, essentially a binary translator and code optimization mechanism that's converted
+
+00:46:12.135 --> 00:46:14.574 
+everything into a proprietary VLIWISA.
+
+00:46:14.774 --> 00:46:16.374 
+They did build processors with this.
+
+00:46:16.374 --> 00:46:20.651 
+They were quite energy efficient, but they were not, unfortunately, they were not as high
+
+00:46:20.651 --> 00:46:23.054 
+performance as hardware exclusive implementations.
+
+00:46:23.694 --> 00:46:27.414 
+So you can see that they were really trying to change the semantic gap trade-offs, right?
+
+00:46:27.534 --> 00:46:32.174 
+You have high level language and ISAX A6 ISA was high.
+
+00:46:32.494 --> 00:46:34.494 
+They wanted to actually have AISA that's lower.
+
+00:46:34.494 --> 00:46:39.480 
+So they had the binary binary translator as we have discussed in the past, but this was Transmeta's
+
+00:46:39.480 --> 00:46:39.934 
+approach.
+
+00:46:40.414 --> 00:46:44.214 
+You have X86, which is a pretty high level ISA, you small semantic gap.
+
+00:46:44.614 --> 00:46:50.018 
+And they add a software translator with a lot of hardware support actually which translated X86 to
+
+00:46:50.018 --> 00:46:50.294 
+VLIW.
+
+00:46:50.294 --> 00:46:54.124 
+It did a lot of code optimizations, all of the Super block optimizations, hyper block optimizations,
+
+00:46:54.124 --> 00:46:54.814 
+they actually did.
+
+00:46:55.334 --> 00:46:59.614 
+Even then they were not able to beat in performance and X86 implementation.
+
+00:47:00.094 --> 00:47:03.054 
+Maybe over time they could, but they didn't have enough time, let's say.
+
+00:47:04.014 --> 00:47:09.014 
+OK, so the binary translator that we have in these machines actually do essentially the same thing.
+
+00:47:09.774 --> 00:47:15.898 
+What they do is if you're in the mode of executing X86 code, they compile it into ARM and they do
+
+00:47:15.898 --> 00:47:21.454 
+actually a lot of dynamic code optimization along with having hardware support to do so.
+
+00:47:21.974 --> 00:47:23.614 
+And these things have improved a lot.
+
+00:47:24.054 --> 00:47:27.134 
+And if you actually use them, they're actually not bad if you think about it.
+
+00:47:28.054 --> 00:47:28.334 
+OK.
+
+00:47:28.334 --> 00:47:33.794 
+So they're essentially a lot of companies today use these compilation approaches both either
+
+00:47:33.794 --> 00:47:39.254 
+statically or dynamically, but dynamic optimization is becoming better and better over time.
+
+00:47:39.254 --> 00:47:41.054 
+It was used in a media demo as we discussed.
+
+00:47:41.054 --> 00:47:46.746 
+Also, maybe I will finish with saying this like Co designing a hardware processor with a DCODCADCO
+
+00:47:46.746 --> 00:47:52.091 
+is dynamic code optimization software system creates both additional validation exposure and
+
+00:47:52.091 --> 00:47:52.614 
+benefits.
+
+00:47:52.854 --> 00:47:57.169 
+The DCO system can be upgraded in the field to address functionality, performance or security
+
+00:47:57.169 --> 00:47:57.494 
+issues.
+
+00:47:57.814 --> 00:48:01.254 
+So this may be actually a Morse scalable way of improving performance.
+
+00:48:01.414 --> 00:48:04.574 
+So we cover more of these on some other lectures, but I'm not going to talk about it.
+
+00:48:05.374 --> 00:48:06.294 
+You can look at it online.
+
+00:48:06.814 --> 00:48:15.054 
+Let's take a break right now, OK, until 1515, and we'll talk about systolic arrays afterwards.
+
+00:48:18.298 --> 00:48:20.498 
+OK, I think we can get started.
+
+00:48:23.418 --> 00:48:28.175 
+So now we're going to switch gears and talk about a different kind of execution model, which is
+
+00:48:28.175 --> 00:48:29.578 
+systolic area architectures.
+
+00:48:32.138 --> 00:48:36.178 
+Actually, let me cover some things before we get into systolic arrays.
+
+00:48:36.178 --> 00:48:39.978 
+Some of you, several of you asked us about research opportunities.
+
+00:48:40.298 --> 00:48:45.492 
+Now that you know a lot about architecture, maybe you may be interested, but if you're interested in
+
+00:48:45.492 --> 00:48:50.480 
+doing research in this area and with us, I would suggest taking the seminar course that we offer
+
+00:48:50.480 --> 00:48:54.688 
+and the computer architecture course, not the semester, of course, next semester.
+
+00:48:55.288 --> 00:48:56.608 
+And you can do readings at a time.
+
+00:48:56.608 --> 00:48:57.688 
+So basically talk with us.
+
+00:48:58.288 --> 00:49:02.389 
+There are many exciting projects and research positions that and I like involving undergraduates in
+
+00:49:02.389 --> 00:49:02.928 
+our research.
+
+00:49:02.928 --> 00:49:07.928 
+Some of them actually have been part of the Row Hammer paper originally at CMU.
+
+00:49:08.408 --> 00:49:12.558 
+And we have a lot of undergraduates who are smart, I think, except I'm not sure if they're all for
+
+00:49:12.558 --> 00:49:15.608 
+the opportunity to do research when they're doing undergraduate degrees.
+
+00:49:16.168 --> 00:49:21.519 
+So we do a lot of work on a lot of things, essentially all of the topics that you've seen so far,
+
+00:49:21.519 --> 00:49:26.926 
+but also more forward-looking things that we didn't discuss, like new memory, storage, computation
+
+00:49:26.926 --> 00:49:32.057 
+and communication architectures, new paradigms like in memory computing and a lot of hardware
+
+00:49:32.057 --> 00:49:36.968 
+security, safety, reliability, predictability issues, making hardware better essentially.
+
+00:49:37.368 --> 00:49:42.248 
+And all types of architectures like GPUSTPUSFPGASPIM, heterogeneous systems.
+
+00:49:42.528 --> 00:49:48.054 
+We're going to cover GPUs and TPUSTPUS today, GPUs next week, and a lot of interesting interactions
+
+00:49:48.054 --> 00:49:50.008 
+that we have today in architecture.
+
+00:49:51.208 --> 00:49:57.002 
+And we also have a lot of opportunity for designing architectures for specialised systems like
+
+00:49:57.002 --> 00:50:00.208 
+health genomics, machine learning, of course, right.
+
+00:50:00.528 --> 00:50:02.488 
+So there's a list of thesis available online.
+
+00:50:02.688 --> 00:50:07.458 
+This is not easy to update because research moves very fast and we don't have time to really update
+
+00:50:07.458 --> 00:50:12.228 
+everything and we don't want to necessarily put everything online when we're doing the research for
+
+00:50:12.228 --> 00:50:13.288 
+obvious reasons maybe.
+
+00:50:13.608 --> 00:50:15.648 
+So if you're interested, talk to us.
+
+00:50:15.928 --> 00:50:17.368 
+And this is a seminar course.
+
+00:50:17.808 --> 00:50:22.871 
+I will not discuss this in detail, but this is essentially seminar courses you need to take at some
+
+00:50:22.871 --> 00:50:27.168 
+point and we have a rigorous seminar on essentially topics in computer architecture.
+
+00:50:27.688 --> 00:50:30.888 
+There are critical paper presentations to use and discussions.
+
+00:50:31.568 --> 00:50:35.208 
+So we emphasize critical thinking and brainstorming in the seminar course.
+
+00:50:35.288 --> 00:50:36.248 
+We can take a look at it.
+
+00:50:36.728 --> 00:50:38.128 
+These are some of our other courses.
+
+00:50:38.128 --> 00:50:43.613 
+So if you're also interested, there's an advanced computer architecture course that comes next after
+
+00:50:43.613 --> 00:50:43.888 
+this.
+
+00:50:44.248 --> 00:50:47.728 
+I'd recommend that and you can find a lot of information on it online.
+
+00:50:47.728 --> 00:50:53.928 
+This is the fall 2024 iteration, but there's also a fall 2025 that I didn't have the slide for.
+
+00:50:56.288 --> 00:50:59.528 
+No, no, this is, I call it advanced over here, but it's the same basically.
+
+00:50:59.728 --> 00:51:01.088 
+Yeah, it's the same course.
+
+00:51:03.528 --> 00:51:08.843 
+There's no, no, there's no course after this, unfortunately, because we don't have the, let's say,
+
+00:51:08.843 --> 00:51:10.688 
+bandwidth to provide more courses.
+
+00:51:11.608 --> 00:51:14.288 
+Advanced comes that'll be research after this point.
+
+00:51:15.048 --> 00:51:17.168 
+Even this course has a lot of research in it.
+
+00:51:18.768 --> 00:51:21.448 
+OK, so you can find a lot of information on our websites.
+
+00:51:21.848 --> 00:51:24.128 
+You've seen some of these slides before, so I'm going to skip them.
+
+00:51:24.128 --> 00:51:29.488 
+But there's a lot of newsletters, so you can figure out what we do beyond the lectures, of course.
+
+00:51:29.488 --> 00:51:34.328 
+And this is the latest newsletter where we discuss a bunch of updates.
+
+00:51:34.328 --> 00:51:38.193 
+Each newsletter is different because that describes what happened in the last year or last six
+
+00:51:38.193 --> 00:51:38.728 
+months or so.
+
+00:51:39.088 --> 00:51:41.368 
+And you can find information about our group online also.
+
+00:51:41.768 --> 00:51:44.048 
+And these are the PHDM post doc alumni.
+
+00:51:44.048 --> 00:51:49.208 
+We have 26 PhD alumni right now, 27th, 1:00 will be defending next month.
+
+00:51:49.928 --> 00:51:50.808 
+Konstantinos.
+
+00:51:50.848 --> 00:51:54.888 
+Maybe he'll give a virtual memory lecture at some point during his defence.
+
+00:51:56.008 --> 00:51:56.288 
+Yeah.
+
+00:51:56.288 --> 00:51:58.328 
+So you can also find information about them online.
+
+00:51:59.328 --> 00:52:02.248 
+If you're an ETH student, you don't need to apply, you can just talk to us.
+
+00:52:02.568 --> 00:52:05.888 
+But if you're online and you're not an ETH, you got to apply.
+
+00:52:07.248 --> 00:52:10.248 
+OK, so that was kind of a short summary of things.
+
+00:52:10.688 --> 00:52:12.608 
+If you have questions, definitely ask us.
+
+00:52:12.808 --> 00:52:13.448 
+Talk to us.
+
+00:52:13.688 --> 00:52:14.928 
+We can, we're happy to talk.
+
+00:52:15.768 --> 00:52:21.326 
+I really strongly believe in like in a university environment, you should be doing a lot of things
+
+00:52:21.326 --> 00:52:22.688 
+as a university student.
+
+00:52:23.048 --> 00:52:27.727 
+But one of the things that you should consider doing is doing cutting edge research because a lot of
+
+00:52:27.727 --> 00:52:32.359 
+people here are doing cutting edge research and you may not know this or you may not have access to
+
+00:52:32.359 --> 00:52:35.448 
+it, but here's your opportunity if you're interested in this area.
+
+00:52:36.968 --> 00:52:39.408 
+OK, so now let's jump into systolic arrays.
+
+00:52:39.408 --> 00:52:42.488 
+This is a fascinating topic and I love this idea.
+
+00:52:43.008 --> 00:52:50.499 
+And this idea became popular finally, let's say in 2015, 1617, when Google adopted it for their
+
+00:52:50.499 --> 00:52:56.808 
+tensor processing units, which is essentially the machine learning accelerators.
+
+00:52:58.528 --> 00:53:03.175 
+But I was teaching this idea for many years when I was at Carnegie Mellon, when it was not popular
+
+00:53:03.175 --> 00:53:04.408 
+and people were asking me.
+
+00:53:04.488 --> 00:53:05.608 
+Me, why are you teaching this right?
+
+00:53:05.608 --> 00:53:06.608 
+Nobody uses this stuff.
+
+00:53:07.248 --> 00:53:10.288 
+And I told I was always saying them, This is such a fundamental idea.
+
+00:53:10.848 --> 00:53:11.928 
+It should be used.
+
+00:53:12.488 --> 00:53:13.768 
+And I don't care if it's not used.
+
+00:53:13.768 --> 00:53:16.968 
+It will inspire someone at some point and it'll be used at some point.
+
+00:53:16.968 --> 00:53:20.368 
+And I'm really happy that my answer was on target, let's say.
+
+00:53:20.768 --> 00:53:25.237 
+So I can find lectures from me from 2011, Twelve talking about systolic race, for example, when
+
+00:53:25.237 --> 00:53:27.448 
+nobody was talking about systolic race as much.
+
+00:53:27.648 --> 00:53:34.450 
+So it's good to like understand how fundamental some ideas are, and it's good to really discuss
+
+00:53:34.450 --> 00:53:34.808 
+them.
+
+00:53:34.808 --> 00:53:37.968 
+I think even though nobody uses those ideas, I think that's really important.
+
+00:53:39.128 --> 00:53:44.123 
+And of course, there were better ideas and better ideas, new ideas, by definition, nobody uses them
+
+00:53:44.123 --> 00:53:45.688 
+because it's a new idea, right?
+
+00:53:46.088 --> 00:53:48.248 
+That's how progress happens in the end.
+
+00:53:48.928 --> 00:53:50.288 
+OK, so these are readings.
+
+00:53:50.648 --> 00:53:54.288 
+This I, I recommend, I say required, but there's no required readings.
+
+00:53:54.288 --> 00:53:58.992 
+But I recommend the Systolic architectures paper from HT Cong, who is essentially one of the
+
+00:53:58.992 --> 00:54:00.168 
+inventors of this idea.
+
+00:54:00.168 --> 00:54:01.528 
+It's not the first paper on the topic.
+
+00:54:01.528 --> 00:54:03.928 
+First papers are in the 1970s, but that's a very nice summary.
+
+00:54:04.488 --> 00:54:09.639 
+And there's also papers from Google basically that talk about how they use systolic arrays in their
+
+00:54:09.639 --> 00:54:10.888 
+tensor processing units.
+
+00:54:10.888 --> 00:54:13.488 
+We're going to talk a little bit about that for next week.
+
+00:54:13.488 --> 00:54:16.048 
+We're going to cover GPUs and SIMD architectures.
+
+00:54:16.048 --> 00:54:18.328 
+So there's some papers over here also.
+
+00:54:19.168 --> 00:54:20.688 
+OK, let's talk about systolic arrays.
+
+00:54:20.888 --> 00:54:24.688 
+So essentially, you've seen this picture before.
+
+00:54:25.128 --> 00:54:28.408 
+We've always talked about general purpose versus special purpose, right?
+
+00:54:28.408 --> 00:54:30.408 
+VLIW is a very general purpose, for example.
+
+00:54:30.408 --> 00:54:35.242 
+A lot of things that we discussed have been general purpose architectures and there's a clear trade
+
+00:54:35.242 --> 00:54:37.928 
+off between general purpose and special purpose, right?
+
+00:54:37.928 --> 00:54:39.368 
+General purpose is very flexible.
+
+00:54:39.568 --> 00:54:44.237 
+Unfortunately, it doesn't get the best performance and efficiency, but it's also easy to program and
+
+00:54:44.237 --> 00:54:48.627 
+use, whereas special purpose is very efficient and high performance it, but it may not be very
+
+00:54:48.627 --> 00:54:49.048 
+flexible.
+
+00:54:49.848 --> 00:54:52.528 
+So we're going to look at special purpose systems with systolic arrays.
+
+00:54:52.728 --> 00:54:55.168 
+They're not going to be a general purpose paradigm.
+
+00:54:56.408 --> 00:55:00.088 
+Essentially it was designed, systolic arrays were designed for specialized accelerators.
+
+00:55:00.688 --> 00:55:02.208 
+They comprise an execution model.
+
+00:55:02.488 --> 00:55:06.088 
+They're bigger than an architecture human right.
+
+00:55:06.648 --> 00:55:11.408 
+They implement what is called systolic computation and this will become more clear as we discuss.
+
+00:55:11.808 --> 00:55:16.339 
+This is different from von Neumann, different from data flow and different from other things that
+
+00:55:16.339 --> 00:55:17.928 
+we're going to examine in the end.
+
+00:55:19.008 --> 00:55:22.852 
+And they are initially designed as special purpose accelerators and they're still special purpose
+
+00:55:22.852 --> 00:55:23.368 
+accelerators.
+
+00:55:23.448 --> 00:55:28.578 
+I think initially they were designed for convolution computation, filtering, pattern matching,
+
+00:55:28.578 --> 00:55:33.381 
+matrix spectrum computations over time in image and vision processing, especially signal
+
+00:55:33.381 --> 00:55:35.128 
+processing, pattern recognition.
+
+00:55:35.528 --> 00:55:38.688 
+This is we're talking about 1970s, eighties, 90s robotics, for example.
+
+00:55:38.688 --> 00:55:45.891 
+There was a lot of vision and they needed specialised processors for essentially, especially for the
+
+00:55:45.891 --> 00:55:52.663 
+research that they're doing with robots so that you can actually very efficiently do vision on
+
+00:55:52.663 --> 00:55:53.168 
+robots.
+
+00:55:53.608 --> 00:55:58.968 
+But what really put systolic arrays on the map is clearly machine learning today.
+
+00:55:58.968 --> 00:56:04.503 
+So it was not, people didn't think about it in 1970s clearly, but people figured out that systolic
+
+00:56:04.503 --> 00:56:09.248 
+computation is very good for computing machine learning as well as I said over here.
+
+00:56:10.008 --> 00:56:15.832 
+So these are specialised machine learning accelerators are either systolic arrays, many of them are
+
+00:56:15.832 --> 00:56:21.128 
+systolic arrays or SIMD architectures as we will see, which is really GPU type of systems.
+
+00:56:22.568 --> 00:56:28.168 
+So the systolic computation model, even though it's specialised execution model can be generalised
+
+00:56:28.168 --> 00:56:30.568 
+and I'm going to talk about that later on.
+
+00:56:31.928 --> 00:56:37.046 
+This is not necessarily the hardware type of execution model, but it's more like the thinking of how
+
+00:56:37.046 --> 00:56:37.968 
+to do computation.
+
+00:56:38.008 --> 00:56:43.245 
+So systolic computation is actually something that we do at the higher levels of the stack also as
+
+00:56:43.245 --> 00:56:44.368 
+we will see later on.
+
+00:56:45.848 --> 00:56:47.968 
+OK, so basically what is the motivation?
+
+00:56:47.968 --> 00:56:51.688 
+The motivation was to design an accelerator that has simple and regular design.
+
+00:56:51.928 --> 00:56:55.608 
+So in that sense, it shares similarity a lot with VLIW.
+
+00:56:55.608 --> 00:57:00.117 
+For example, we want simple regular designs, nothing complicated so that we can have low cost
+
+00:57:00.117 --> 00:57:02.008 
+hardware and efficient hardware, right?
+
+00:57:03.048 --> 00:57:05.168 
+We want high concurrency, high performance.
+
+00:57:05.208 --> 00:57:07.768 
+Again, similar goal as VLIW.
+
+00:57:09.128 --> 00:57:13.445 
+And one thing that VLIW doesn't consider as much because it's a more general purpose model, is we
+
+00:57:13.445 --> 00:57:15.448 
+want to balance computation and IO bandwidth.
+
+00:57:15.768 --> 00:57:18.328 
+And this will become more clear in a little bit.
+
+00:57:19.368 --> 00:57:22.768 
+Basically the idea is to replace a single processing element.
+
+00:57:23.048 --> 00:57:26.048 
+Processing element can be as complex or as simple as possible.
+
+00:57:26.048 --> 00:57:30.809 
+We're going to start simple soon with a regular array of processing elements and we're going to
+
+00:57:30.809 --> 00:57:34.168 
+carefully orchestrate flow of data between the processing elements.
+
+00:57:34.248 --> 00:57:40.378 
+This also become more clear as I show you pictures such that you read from memory, input it to one
+
+00:57:40.378 --> 00:57:46.071 
+processing element and pass it from processing element and processing element such that the
+
+00:57:46.071 --> 00:57:52.264 
+processing elements collectively perform a piece of transform a piece of data before outputting the
+
+00:57:52.264 --> 00:57:53.328 
+result to memory.
+
+00:57:53.608 --> 00:57:53.768 
+Right.
+
+00:57:54.568 --> 00:58:01.039 
+OK, so the benefit is you maximize computation down on a single piece of data that you read from
+
+00:58:01.039 --> 00:58:04.208 
+memory with a lot of computation that you have.
+
+00:58:04.488 --> 00:58:07.448 
+Capability that you have in many processing elements.
+
+00:58:08.088 --> 00:58:09.528 
+OK, let's take a look at it pictorial.
+
+00:58:10.288 --> 00:58:11.408 
+The idea is very simple.
+
+00:58:11.528 --> 00:58:16.636 
+Basically, let's assume that you have some processing element that's doing some computation, special
+
+00:58:16.636 --> 00:58:19.088 
+purpose let's say, and it's connected to memory.
+
+00:58:19.728 --> 00:58:23.848 
+You read data, do the processing, write, write the output to memory.
+
+00:58:24.568 --> 00:58:28.688 
+And in this particular picture you have 5 million operations per second at most, right?
+
+00:58:29.128 --> 00:58:33.504 
+But if you actually chain the processing elements again, they could be specialized processing
+
+00:58:33.504 --> 00:58:33.928 
+elements.
+
+00:58:34.688 --> 00:58:39.348 
+You basically read from memory once, and the first processing elements does something to the data,
+
+00:58:39.348 --> 00:58:40.728 
+passes it on to the next one.
+
+00:58:41.168 --> 00:58:44.288 
+While you're doing that, you're reading from the memory the second element.
+
+00:58:44.968 --> 00:58:46.928 
+So it can be feeding data over here.
+
+00:58:46.928 --> 00:58:51.801 
+But the first processing first, first data element that you need goes through 6 processing elements
+
+00:58:51.801 --> 00:58:56.528 
+over here and eventually gets transformed and output to memory and maybe read back again, right?
+
+00:58:57.088 --> 00:58:58.008 
+That's the idea here.
+
+00:58:58.008 --> 00:59:03.868 
+Basically, you're really doing many operations because you're using the same data element by
+
+00:59:03.868 --> 00:59:04.888 
+transforming it.
+
+00:59:05.448 --> 00:59:07.968 
+So if you think about it, this is, there's nothing specialised about it.
+
+00:59:07.968 --> 00:59:11.248 
+This is actually a very general purpose and we're going to make it more general purpose.
+
+00:59:11.528 --> 00:59:18.157 
+Specialisation comes in how you design the processing element in the end, OK, the processing
+
+00:59:18.157 --> 00:59:21.328 
+elements can be full processors also, right?
+
+00:59:21.648 --> 00:59:24.488 
+But we're going to make it much more specialised, yes.
+
+00:59:31.008 --> 00:59:31.248 
+Yeah.
+
+00:59:32.368 --> 00:59:35.168 
+So it can, it can be synchronised with the clock, yes.
+
+00:59:36.408 --> 00:59:39.608 
+So there could be different designs, but the assumption is that processing elements are separate.
+
+00:59:39.608 --> 00:59:43.568 
+Then you have a clock cycle, you move between processing element to elements.
+
+00:59:46.048 --> 00:59:48.048 
+OK, so that's the basic idea.
+
+00:59:48.088 --> 00:59:49.368 
+And why is it called systolic?
+
+00:59:49.368 --> 00:59:54.301 
+Because you can think of memory as the heart and the data as the blood, and you're really pumping
+
+00:59:54.301 --> 00:59:56.488 
+blood into the cells from the heart, right?
+
+00:59:56.528 --> 00:59:58.128 
+Processing elements are the cells, right?
+
+00:59:59.208 --> 01:00:03.653 
+And this processing elements doesn't need to be single linear, it could be multi dimensional as we
+
+01:00:03.653 --> 01:00:04.288 
+will see soon.
+
+01:00:05.248 --> 01:00:07.648 
+So our memory pulses data through the processing elements, right?
+
+01:00:09.088 --> 01:00:11.488 
+Essentially the idea is to in another.
+
+01:00:11.568 --> 01:00:15.528 
+In some other words, data flows from the computer memory in a rhythmic fashion.
+
+01:00:15.888 --> 01:00:21.043 
+Maybe every cycle you pump data right passing through many processing elements before it returns to
+
+01:00:21.043 --> 01:00:21.408 
+memory.
+
+01:00:21.728 --> 01:00:26.593 
+So every cycle you move data from memory and from one processing element to another processing
+
+01:00:26.593 --> 01:00:27.008 
+element.
+
+01:00:28.448 --> 01:00:32.448 
+OK, so it's similar to blood flow as we discussed from heart to many cells to heart.
+
+01:00:32.608 --> 01:00:36.368 
+Again, different cells cross the blood, many veins operate simultaneously.
+
+01:00:36.368 --> 01:00:43.528 
+It can be many dimensional kind of there's some analogy here to how how we operate, I guess, right.
+
+01:00:44.768 --> 01:00:47.248 
+OK, so why like why did they design it?
+
+01:00:47.248 --> 01:00:51.710 
+We've also, we've also discussed it, but we want simple regular design, high concurrency and
+
+01:00:51.710 --> 01:00:53.408 
+balanced computation, IO bandwidth.
+
+01:00:56.048 --> 01:01:00.272 
+I think I've already said a lot of this over here, but you can say, OK, this looks like a pipeline,
+
+01:01:00.272 --> 01:01:00.528 
+right?
+
+01:01:01.048 --> 01:01:06.804 
+And that's true, actually, it kind of looks like a pipeline, except these are individual processing
+
+01:01:06.804 --> 01:01:07.328 
+elements.
+
+01:01:07.328 --> 01:01:10.008 
+We're not talking about instructions over here in pipelining.
+
+01:01:10.408 --> 01:01:12.408 
+We do this with instructions, right?
+
+01:01:12.528 --> 01:01:16.528 
+We take an instruction and instruction goes to fetch, decode, execute, etcetera.
+
+01:01:16.528 --> 01:01:21.848 
+All of those stages, the stages are very specialised for instruction processing, right?
+
+01:01:22.288 --> 01:01:23.368 
+We're not talking about instructions.
+
+01:01:23.368 --> 01:01:27.128 
+Each processing element may be executing different instructions over here, right?
+
+01:01:28.688 --> 01:01:32.048 
+Also array structure can be non linear and multi dimensional.
+
+01:01:32.048 --> 01:01:35.888 
+So I'm showing you here a linear array which may look like a pipeline.
+
+01:01:36.368 --> 01:01:41.488 
+But imagine multi dimensional 3 dimensional things, two-dimensional things, 5 dimensional things.
+
+01:01:41.488 --> 01:01:42.768 
+Potentially we will see some.
+
+01:01:44.408 --> 01:01:50.051 
+Certainly the systolic arrays that are used in TPU today are two-dimensional because they do matrix
+
+01:01:50.051 --> 01:01:51.648 
+computations as we will see.
+
+01:01:51.968 --> 01:01:53.768 
+We'll see a very small example of that also.
+
+01:01:54.648 --> 01:01:57.048 
+And the connections can be multidirectional and different speeds.
+
+01:01:57.048 --> 01:02:01.848 
+So you may actually connect potentially if it's just two-dimensional.
+
+01:02:01.848 --> 01:02:06.768 
+For example, you may connect from this PE to this other PE in diagonal over here, right?
+
+01:02:07.208 --> 01:02:10.488 
+We don't show that over here, but it's essentially it's not a pipeline.
+
+01:02:10.648 --> 01:02:14.528 
+In the end, the pipeline is very specialised for instruction processing.
+
+01:02:14.728 --> 01:02:21.808 
+It has some similarities to a pipeline, but this is really more general computation paradigm, OK.
+
+01:02:21.848 --> 01:02:25.928 
+And also very differently from pipeline, because these are processing elements.
+
+01:02:25.928 --> 01:02:31.138 
+Each processing element can have local memory inside and can execute some kernel rather than a piece
+
+01:02:31.138 --> 01:02:32.128 
+of the instruction.
+
+01:02:32.808 --> 01:02:35.328 
+This is more general paradigm as we will see later on.
+
+01:02:35.888 --> 01:02:40.808 
+It's not used in Tpus for example, because they don't need that flexibility.
+
+01:02:40.848 --> 01:02:46.008 
+But if you want to generalise this to larger computations, you can add more memory.
+
+01:02:46.168 --> 01:02:50.426 
+And that's what they did actually when the when HT Cong was designing these four vision processors,
+
+01:02:50.426 --> 01:02:54.168 
+for example, they had little memory that they added to each of the processing elements.
+
+01:02:55.128 --> 01:03:00.168 
+OK, let's talk about some example computations because this is best understood with examples.
+
+01:03:00.288 --> 01:03:04.448 
+I think convolution is actually a very good computation that people.
+
+01:03:05.248 --> 01:03:07.088 
+Wanted to accelerate for many reasons.
+
+01:03:07.248 --> 01:03:11.912 
+More recently for machine learning neural networks because convolutional neural networks, but it's
+
+01:03:11.912 --> 01:03:16.339 
+used in filtering, pattern matching, correlation, polynomial evaluation, a lot of statistical
+
+01:03:16.339 --> 01:03:16.768 
+analysis.
+
+01:03:16.768 --> 01:03:22.108 
+Basically in the end machine learning is statistical analysis also, but people were doing
+
+01:03:22.108 --> 01:03:26.128 
+statistical analysis using convolution long before neural networks.
+
+01:03:26.248 --> 01:03:31.367 
+Also, many image processing tasks were using this actually convolution, and with machine learning
+
+01:03:31.367 --> 01:03:33.848 
+you can you have a lot of convolutional layers.
+
+01:03:33.848 --> 01:03:34.688 
+So what is convolution?
+
+01:03:34.688 --> 01:03:37.208 
+Convolution is a specific operation that you do.
+
+01:03:37.568 --> 01:03:44.007 
+You may have seen this in have you seen convolutions before, maybe in machine learning or some other
+
+01:03:44.007 --> 01:03:46.648 
+statistics, Or maybe you haven't seen it.
+
+01:03:46.648 --> 01:03:47.088 
+That's fine.
+
+01:03:47.408 --> 01:03:52.485 
+Anyway, you don't need to worry too much about it, but it's basically a special specific way of
+
+01:03:52.485 --> 01:03:53.448 
+doing computation.
+
+01:03:53.448 --> 01:04:00.441 
+Given a sequence of weights and an input sequence, you compute a result sequence Y that looks like
+
+01:04:00.441 --> 01:04:02.368 
+this W1X I W2XI plus one...
+
+01:04:02.448 --> 01:04:02.768 
+OK.
+
+01:04:03.528 --> 01:04:06.048 
+So we're going to compute this efficiently.
+
+01:04:08.328 --> 01:04:11.888 
+And in machine learning, people actually have a lot of convolutional layers.
+
+01:04:11.888 --> 01:04:17.696 
+For example, when you if you want to do a digit or a handwriting recognition, you basically do
+
+01:04:17.696 --> 01:04:23.257 
+convolutions on pieces of an image and then you're sampling, do more convolutions, do more
+
+01:04:23.257 --> 01:04:29.251 
+sampling, do more convolutions, and eventually guess with some probability what is the digit that
+
+01:04:29.251 --> 01:04:29.808 
+you have.
+
+01:04:29.848 --> 01:04:35.074 
+Again, if you're interested in this, you can take machine learning classes, but essentially in the
+
+01:04:35.074 --> 01:04:40.194 
+end it's a lot of statistical analysis based on this sort of filtering and pattern matching that
+
+01:04:40.194 --> 01:04:40.568 
+you do.
+
+01:04:41.408 --> 01:04:43.688 
+OK, this is an example of how convolution operates.
+
+01:04:43.688 --> 01:04:48.912 
+If you want to do 2 dimensional convolution input feature map, let's say an image and you sub
+
+01:04:48.912 --> 01:04:51.328 
+sample, you generate an output feature map.
+
+01:04:51.728 --> 01:04:57.574 
+You essentially have a kernel which passes over different parts of the input feature map and
+
+01:04:57.574 --> 01:04:59.608 
+computes the output feature map.
+
+01:04:59.848 --> 01:05:01.648 
+That's basically the operation that you're doing.
+
+01:05:02.128 --> 01:05:07.509 
+It could be done for other image processing tasks like not just convolution, but convolution is
+
+01:05:07.509 --> 01:05:09.888 
+interesting for many reasons today, right?
+
+01:05:10.408 --> 01:05:12.528 
+So you can, you can see what this this is doing, right?
+
+01:05:12.528 --> 01:05:20.254 
+You have a kernel that's three by three, and then it's operating on every single 9 by 9, no three by
+
+01:05:20.254 --> 01:05:24.968 
+three or 999 locations and it's creating an output over here.
+
+01:05:25.288 --> 01:05:28.088 
+And maybe a better one is, is something that I found on the web.
+
+01:05:28.568 --> 01:05:34.914 
+It's doing this essentially you have some input layer and then you have some convolutional kernel
+
+01:05:34.914 --> 01:05:37.728 
+and you basically these are called weights.
+
+01:05:37.728 --> 01:05:42.690 
+Also, you're basically multiplying the inputs with the weights to generate an output layer, and then
+
+01:05:42.690 --> 01:05:44.328 
+you may operate on that later on.
+
+01:05:45.048 --> 01:05:49.848 
+OK, So if you're really interested in this, there's a nice demo that Yan Le Kun has on his website.
+
+01:05:50.048 --> 01:05:53.088 
+This is one of the earlier convolutional neural networks.
+
+01:05:53.248 --> 01:05:59.199 
+We're talking about, again, 1980s, maybe late 1980s, early 1990s, where they have this demonstration
+
+01:05:59.199 --> 01:06:03.008 
+of Lynette, which is essentially A convolutional neural network.
+
+01:06:03.168 --> 01:06:04.488 
+And you can see how it works.
+
+01:06:04.968 --> 01:06:09.088 
+OK, Basically, in the end, what we're doing is we're doing some sort of computation, right?
+
+01:06:09.248 --> 01:06:13.928 
+Multiply, accumulate 2 operations, Multiply and add.
+
+01:06:14.688 --> 01:06:17.608 
+Accumulate maybe to wordy multiplying that.
+
+01:06:17.968 --> 01:06:18.688 
+That's what we're doing.
+
+01:06:19.328 --> 01:06:20.248 
+You can do this.
+
+01:06:21.528 --> 01:06:22.928 
+OK, I'm going to go back over here.
+
+01:06:23.488 --> 01:06:26.608 
+You can do this using this thing.
+
+01:06:28.008 --> 01:06:32.608 
+You can do this using matrix multiplication also.
+
+01:06:33.728 --> 01:06:40.484 
+Basically, assume that you have input features that look like this and you have some convolution
+
+01:06:40.484 --> 01:06:41.048 
+filters.
+
+01:06:41.048 --> 01:06:44.088 
+You have different weights essentially that you're multiplying the input features with.
+
+01:06:44.848 --> 01:06:51.213 
+And if you actually go and do the calculations, you will see that this element is calculated by
+
+01:06:51.213 --> 01:06:55.368 
+multiplying this and this and this and this and this and this.
+
+01:06:55.848 --> 01:07:02.376 
+So you basically get one element by doing convolution over this, this, this as input, and these are
+
+01:07:02.376 --> 01:07:03.168 
+the weights.
+
+01:07:03.488 --> 01:07:10.617 
+OK, And you can verify that yourself, but you can also express the convolution filters as a matrix
+
+01:07:10.617 --> 01:07:15.928 
+and the input features as a matrix and do a matrix multiplication, right?
+
+01:07:16.808 --> 01:07:19.728 
+So here I just laid out the data a little bit differently.
+
+01:07:20.088 --> 01:07:26.438 
+These are the green parts over here, which are essentially these three small matrices laid out as a
+
+01:07:26.438 --> 01:07:26.888 
+vector.
+
+01:07:27.648 --> 01:07:33.729 
+And these are the these parts over here, which is essentially pieces of these three laid out as a
+
+01:07:33.729 --> 01:07:34.168 
+vector.
+
+01:07:35.128 --> 01:07:39.168 
+And these blue ones are also over here.
+
+01:07:39.168 --> 01:07:41.248 
+And different parts of these three are over here.
+
+01:07:41.248 --> 01:07:44.048 
+Essentially, I've created two different matrices over here.
+
+01:07:44.768 --> 01:07:49.088 
+And I do matrix matrix multiplication.
+
+01:07:49.488 --> 01:07:54.608 
+And multiplying this vector by this vector gives me this value over here.
+
+01:07:54.848 --> 01:07:59.328 
+OK, so basically I've translated convolution into a matrix multiplication.
+
+01:07:59.648 --> 01:08:04.368 
+And This is why convolutional neural networks are very nicely acceleratable using GPUs.
+
+01:08:04.488 --> 01:08:09.855 
+Because GPUs are very good at executing this matrix multiplication, as we will see next week in the
+
+01:08:09.855 --> 01:08:11.048 
+GPU and SIMD lectures.
+
+01:08:11.048 --> 01:08:14.368 
+OK, so you can actually execute the systolic.
+
+01:08:14.968 --> 01:08:16.528 
+No, I'm sorry, not systolic.
+
+01:08:16.528 --> 01:08:17.168 
+Forget about that.
+
+01:08:17.168 --> 01:08:23.544 
+You can actually execute this convolution computation by turning them into matrices, turning the
+
+01:08:23.544 --> 01:08:28.128 
+filters and input features into matrices and executing them on a GPU.
+
+01:08:28.888 --> 01:08:32.808 
+Or you can build what we're going to build systolic hardware essentially.
+
+01:08:33.488 --> 01:08:38.089 
+OK, but I will be first tell you a story about this since we talked about bachelor students doing
+
+01:08:38.089 --> 01:08:38.848 
+research, right.
+
+01:08:40.368 --> 01:08:45.874 
+Some of these things actually happened because people talked about GP us at the University of
+
+01:08:45.874 --> 01:08:51.441 
+Toronto, especially some professors, forward-looking professors were teaching GPU classes like
+
+01:08:51.441 --> 01:08:53.928 
+programming massively parallel processors.
+
+01:08:53.928 --> 01:09:00.572 
+This is the same Wen Mei who who also did the impact compiler, by the way, and some of Jeff Hinton's
+
+01:09:00.572 --> 01:09:01.768 
+graduate students.
+
+01:09:01.768 --> 01:09:07.028 
+Jeff Hinton probably, you know, is a touring award winner who did a lot of work on neural networks
+
+01:09:07.028 --> 01:09:08.048 
+and took the class.
+
+01:09:08.168 --> 01:09:12.689 
+And they basically identified an opportunity saying that, oh, I can actually accelerate the neural
+
+01:09:12.689 --> 01:09:15.688 
+networks I'm working on using the what I learned from this class.
+
+01:09:16.568 --> 01:09:20.488 
+And they went and wrote this paper, which is actually a very famous paper right now.
+
+01:09:21.208 --> 01:09:23.608 
+Probably it's one of the most reference papers in the world today.
+
+01:09:24.728 --> 01:09:31.532 
+Essentially, they developed what they called Alexnet that could identify images with much higher
+
+01:09:31.532 --> 01:09:38.336 
+accuracy than the state-of-the-art at the time using convolutional neural networks, and they did
+
+01:09:38.336 --> 01:09:42.448 
+the training on a GPU that they had access to at the time.
+
+01:09:42.448 --> 01:09:43.968 
+We're talking about 2000 tens right now.
+
+01:09:44.008 --> 01:09:49.811 
+Now, people have scaled this up to much larger things and over time, people, including Google, for
+
+01:09:49.811 --> 01:09:55.438 
+example, increase the size of these neural networks, increase the size of the hardware to train
+
+01:09:55.438 --> 01:09:56.208 
+these things.
+
+01:09:56.728 --> 01:10:02.808 
+And for example, the convolutional neural networks, the network players increased over time.
+
+01:10:02.808 --> 01:10:09.346 
+As you can see over here, other people also came to the game and they basically eventually surpassed
+
+01:10:09.346 --> 01:10:13.008 
+human level accuracy using these neural networks, right?
+
+01:10:13.208 --> 01:10:15.408 
+We're talk again, we're talking about 2016 or so.
+
+01:10:15.768 --> 01:10:20.118 
+This was the first convolutional neural network, which is Alex Net, which was developed by those
+
+01:10:20.118 --> 01:10:21.568 
+students who took the GPU class.
+
+01:10:22.168 --> 01:10:25.168 
+And later, this is the human level accuracy.
+
+01:10:25.888 --> 01:10:28.088 
+And today we're better than human level accuracy, I think.
+
+01:10:29.608 --> 01:10:32.128 
+OK, Anyway, these are convolutional neural networks.
+
+01:10:32.128 --> 01:10:35.048 
+So there are applications of this as you can see beyond filtering.
+
+01:10:35.168 --> 01:10:38.008 
+But it in the end it boils down to this equation, right?
+
+01:10:39.008 --> 01:10:40.488 
+OK, so this is the hardware.
+
+01:10:40.848 --> 01:10:41.848 
+So GPU hardware.
+
+01:10:41.888 --> 01:10:43.648 
+Wait, we're going to talk about that next week.
+
+01:10:44.248 --> 01:10:45.768 
+What about systolic hardware, right?
+
+01:10:46.008 --> 01:10:46.808 
+How does it work?
+
+01:10:47.328 --> 01:10:50.888 
+It's much more specialised than the GP hardware that we will see.
+
+01:10:51.568 --> 01:10:52.528 
+It's essentially this.
+
+01:10:52.888 --> 01:10:56.128 
+This is very specialised for convolutional neural net convolution computation.
+
+01:10:57.088 --> 01:11:00.008 
+And the idea is you have these processing elements.
+
+01:11:00.168 --> 01:11:03.808 
+You can see this processing element, this processing element, this processing element.
+
+01:11:04.408 --> 01:11:10.846 
+They're put together in a linear fashion with connections going from left to right and then right to
+
+01:11:10.846 --> 01:11:11.168 
+left.
+
+01:11:12.128 --> 01:11:17.073 
+And the idea is you supply the data at appropriate times such that these processing elements perform
+
+01:11:17.073 --> 01:11:20.288 
+some operation on the data and pass the data to the next element.
+
+01:11:21.328 --> 01:11:24.808 
+And each processing element contains a weight.
+
+01:11:25.408 --> 01:11:26.648 
+And this weight is stationary.
+
+01:11:26.648 --> 01:11:29.728 
+In this particular case, only one weight per processing element.
+
+01:11:30.888 --> 01:11:38.128 
+And you have the input coming from the left, which is Y in and Y outgoing this way.
+
+01:11:38.648 --> 01:11:41.168 
+And you have the, sorry, Y is output.
+
+01:11:43.008 --> 01:11:44.488 
+So OK, you have the input coming from the left.
+
+01:11:44.488 --> 01:11:48.688 
+I was right, actually, this is the X input and then X output going this way.
+
+01:11:49.168 --> 01:11:55.788 
+And then you have the output, which is the Y that you're trying to compute going in from here and
+
+01:11:55.788 --> 01:11:57.768 
+getting output from the left.
+
+01:11:58.088 --> 01:11:59.928 
+And what the processing element does is very simple.
+
+01:11:59.928 --> 01:12:00.888 
+It's very specialised.
+
+01:12:01.528 --> 01:12:06.128 
+It basically takes X in and passes it to X out in one clock cycle.
+
+01:12:06.728 --> 01:12:12.978 
+Basically it doesn't modify X when it passes it to the next element because the next element is
+
+01:12:12.978 --> 01:12:18.768 
+going to need it for some other computation and Y out is computed as Y in plus W * X in.
+
+01:12:19.488 --> 01:12:21.288 
+That's the computation you do multiply and accumulate.
+
+01:12:21.288 --> 01:12:21.968 
+Basically right.
+
+01:12:22.888 --> 01:12:28.808 
+You multiply the weight with the input coming from the right and pass it on to the left.
+
+01:12:31.248 --> 01:12:32.488 
+Mate, I missed something.
+
+01:12:32.568 --> 01:12:38.467 
+No, you multiply the weight with the input coming from the left, add it to the input coming from the
+
+01:12:38.467 --> 01:12:40.768 
+right, and pass the result to the left.
+
+01:12:40.848 --> 01:12:43.008 
+Multiply and accumulate and pass to the left, right.
+
+01:12:43.248 --> 01:12:44.648 
+That's, that's the specialization.
+
+01:12:45.168 --> 01:12:47.568 
+Now you can convince yourself that this works.
+
+01:12:47.968 --> 01:12:52.949 
+So what this first element, assuming you supply Y one over here and X1 over here, these need to
+
+01:12:52.949 --> 01:12:54.208 
+arrive at the same time.
+
+01:12:54.728 --> 01:12:56.168 
+That's the difficult part.
+
+01:12:56.368 --> 01:12:58.528 
+Not difficult, but that's the systolic part.
+
+01:12:58.768 --> 01:13:03.443 
+Computation inputs need to arrive at the processing element at the same time what this processing
+
+01:13:03.443 --> 01:13:04.408 
+element computes is.
+
+01:13:06.168 --> 01:13:10.608 
+This output will be X1 W 1 + y one.
+
+01:13:12.608 --> 01:13:19.408 
+OK, so Y one is equal to X1 W 1 because this is initially 0 and then Y one is passed over here.
+
+01:13:20.848 --> 01:13:24.008 
+X2 arrives when Y one comes over here.
+
+01:13:24.688 --> 01:13:28.968 
+So Y one is X1 W 1 when it is over here, right?
+
+01:13:30.288 --> 01:13:33.888 
+You add to it X2 times W2 and pass it over here.
+
+01:13:34.808 --> 01:13:36.288 
+So this Y one goes here.
+
+01:13:36.608 --> 01:13:40.208 
+It's it's become Y1XW1X1 plus W2X2.
+
+01:13:40.688 --> 01:13:52.448 
+And at that point X3 arise over here and Y1 becomes X3 W 3 plus what it was Y1X1 W 1X1 plus W3X2.
+
+01:13:52.688 --> 01:13:54.968 
+OK, that's what we're computing basically, right?
+
+01:13:55.688 --> 01:14:03.066 
+And you can also convince yourself that the others Y2 you need to supply Y2 at the right time such
+
+01:14:03.066 --> 01:14:07.208 
+that you get W 1 X2 over here when Y 2 comes over here.
+
+01:14:07.888 --> 01:14:14.128 
+And when it goes over here, you'll get I guess W2 and X3 should come over here.
+
+01:14:14.408 --> 01:14:18.208 
+So basically by supplying the data at the right time, you can do this computation.
+
+01:14:18.208 --> 01:14:18.808 
+OK, yes.
+
+01:14:18.808 --> 01:14:19.448 
+What does it mean?
+
+01:14:19.448 --> 01:14:24.408 
+X in goes to X out.
+
+01:14:24.408 --> 01:14:25.968 
+So X in goes to X out mean.
+
+01:14:26.208 --> 01:14:28.168 
+So this is the output.
+
+01:14:28.408 --> 01:14:29.688 
+This is the input.
+
+01:14:29.808 --> 01:14:33.208 
+You basically pass whatever value you receive to the to the right.
+
+01:14:33.608 --> 01:14:34.008 
+That's it.
+
+01:14:41.128 --> 01:14:42.048 
+Not the same X.
+
+01:14:42.408 --> 01:14:46.328 
+You basically pump it in from some location over here.
+
+01:14:48.368 --> 01:14:53.511 
+One cycle, you supply X1 that goes to the next element, that goes to the next element, that goes
+
+01:14:53.511 --> 01:14:54.208 
+next element.
+
+01:14:54.208 --> 01:14:57.448 
+In the next cycle you supply X2 that goes to the next element, X2 the next element.
+
+01:14:57.448 --> 01:15:00.408 
+So you're basically pipelining the supply of data, right?
+
+01:15:00.488 --> 01:15:01.408 
+You're pumping data.
+
+01:15:02.288 --> 01:15:10.328 
+OK, so cycle by cycle, each element receives the data that it needs.
+
+01:15:10.848 --> 01:15:11.848 
+But this is very specialised.
+
+01:15:11.848 --> 01:15:13.768 
+We don't have a program, as you can see, right?
+
+01:15:14.248 --> 01:15:19.604 
+We just have hardware that does multiply and accumulate and some interconnection, and you can
+
+01:15:19.604 --> 01:15:24.328 
+convince yourself that this computes the right thing it does and it's convolution.
+
+01:15:24.328 --> 01:15:24.688 
+Basically.
+
+01:15:24.768 --> 01:15:27.328 
+This is the simplest that you can get for convolution.
+
+01:15:27.328 --> 01:15:31.688 
+There's no reason to have instructions to do this right if all you're doing is convolution.
+
+01:15:32.248 --> 01:15:34.328 
+This is the essence of specialisation.
+
+01:15:34.408 --> 01:15:37.888 
+If you're doing something else, good luck doing this with this, doing it with this.
+
+01:15:38.088 --> 01:15:41.888 
+That's a specialised architecture for you, so it's beautiful.
+
+01:15:41.888 --> 01:15:42.688 
+There is more.
+
+01:15:43.128 --> 01:15:44.488 
+Basically, you can design these things.
+
+01:15:44.488 --> 01:15:48.208 
+I'm not going to go into exactly how you design, but you need to design A multiply and accumulate.
+
+01:15:48.888 --> 01:15:55.430 
+And if you actually do implement adder and multiplier separately as opposed to like this, you can
+
+01:15:55.430 --> 01:16:01.568 
+overlap, edit, min multiplication execution and you can actually optimise this thing a lot.
+
+01:16:01.568 --> 01:16:03.528 
+Basically you can read the paper for that.
+
+01:16:04.048 --> 01:16:08.328 
+But the key essence is these are specialised architectures that do specialised computation.
+
+01:16:08.768 --> 01:16:10.168 
+You can implement them in different ways.
+
+01:16:10.688 --> 01:16:17.115 
+So the key over here was really to carefully orchestrate when data elements arrive or are input into
+
+01:16:17.115 --> 01:16:21.808 
+this data array, right into I shouldn't call data arrays into the arrays.
+
+01:16:22.328 --> 01:16:24.968 
+Array is really computation and data together, right?
+
+01:16:25.248 --> 01:16:27.208 
+Because weights are there in each part.
+
+01:16:27.928 --> 01:16:30.248 
+And when you buffer the output, that's also important.
+
+01:16:30.248 --> 01:16:33.128 
+You need to, you need to decide when do you capture each Y, for example.
+
+01:16:33.728 --> 01:16:36.928 
+That's very specific on the computation you're trying to do.
+
+01:16:38.128 --> 01:16:41.728 
+So this gets more involved when array dimensionality increases.
+
+01:16:42.568 --> 01:16:47.606 
+We will see an example of that later on, and you will see some examples in your optional homework
+
+01:16:47.606 --> 01:16:52.592 
+and during the discussion sessions when the processing elements are less predictable in terms of
+
+01:16:52.592 --> 01:16:53.008 
+latency.
+
+01:16:53.248 --> 01:16:56.088 
+If you need to access memory, for example, that's more general.
+
+01:16:56.088 --> 01:17:00.377 
+Of course, people don't use that right now, but if you want to generalize this model, it becomes
+
+01:17:00.377 --> 01:17:01.048 
+more difficult.
+
+01:17:02.008 --> 01:17:04.048 
+Now let's take a look at matrix multiplication.
+
+01:17:04.288 --> 01:17:06.408 
+We saw a convolution matrix multiplication.
+
+01:17:06.408 --> 01:17:09.728 
+I'm going to give you an example, but I'll let you study it a little bit more.
+
+01:17:10.208 --> 01:17:12.608 
+Essentially, matrix multiplication is very simple.
+
+01:17:12.648 --> 01:17:14.488 
+This is a three by three matrix C.
+
+01:17:15.008 --> 01:17:20.168 
+It's is computed by multiplying 3 by 3 matrices A&B.
+
+01:17:20.168 --> 01:17:27.513 
+As you can see, right, we're going to build a systolic array where each processing element is like
+
+01:17:27.513 --> 01:17:27.888 
+this.
+
+01:17:27.888 --> 01:17:32.532 
+It's going to be a 2 dimensional historic array and we're going to keep the final result in the
+
+01:17:32.532 --> 01:17:34.488 
+accumulators of each processing element.
+
+01:17:36.128 --> 01:17:39.488 
+So this is the systolic array processing element we have.
+
+01:17:39.768 --> 01:17:46.128 
+So this is the P output, this is the Q output, this is the M input, this is the N input.
+
+01:17:46.568 --> 01:17:48.728 
+R is the accumulator that you have insight.
+
+01:17:48.728 --> 01:17:52.688 
+So in this particular case, it's not a weight, but it's something that you can update.
+
+01:17:53.048 --> 01:17:56.088 
+In the earlier case, it was a stationary static weight, right?
+
+01:17:56.808 --> 01:17:57.528 
+So what do we do?
+
+01:17:57.528 --> 01:18:03.688 
+Basically, if we receive these inputs, P directly gets M.
+
+01:18:04.488 --> 01:18:11.075 
+Meaning M gets passed to P in one clock cycle, Q directly gets NN gets passed to Q in one clock
+
+01:18:11.075 --> 01:18:17.940 
+cycle, It will be connected to the next element, and R gets updated by adding what's inside here to
+
+01:18:17.940 --> 01:18:20.368 
+M types N, Multiply and accumulate.
+
+01:18:20.368 --> 01:18:27.299 
+Basically, we're going to multiply MNN and accumulate it in R Now, if you want to do a three by
+
+01:18:27.299 --> 01:18:34.011 
+three matrix multiplication, you need to implement nine of these three by three, essentially
+
+01:18:34.011 --> 01:18:37.368 
+processing elements that each do exactly this.
+
+01:18:37.368 --> 01:18:42.168 
+And you need to supply the data, meaning supply the input matrices appropriately.
+
+01:18:43.168 --> 01:18:48.808 
+In cycle 0, for example, we supply B00 over here, a 00 over here.
+
+01:18:49.448 --> 01:18:51.208 
+We supply zero over here.
+
+01:18:51.808 --> 01:18:55.688 
+We supply zero over here because nothing has arrived from here yet, right?
+
+01:18:56.848 --> 01:19:03.248 
+In cycle one, we supply B10 from here, A-01 from here.
+
+01:19:04.088 --> 01:19:11.168 
+And I can guess why that is the case because we're multiplying a 00, this vector with this vector.
+
+01:19:11.968 --> 01:19:13.928 
+That's what we would like to do over here.
+
+01:19:14.088 --> 01:19:21.060 
+This particular C00 will be computed over here while I'm getting ahead of myself, but essentially,
+
+01:19:21.060 --> 01:19:27.891 
+see we want to compute C00 over here, the result to be over here, C-01 to be over here, C02 over
+
+01:19:27.891 --> 01:19:29.528 
+here, C10 here, C11C12.
+
+01:19:29.968 --> 01:19:40.232 
+If you want to compute C00 over here, C00 is a 00 times B00 plus A-01 times B10 plus A-02 times B20,
+
+01:19:40.232 --> 01:19:40.848 
+right?
+
+01:19:40.848 --> 01:19:42.368 
+So you need to supply all of those.
+
+01:19:43.008 --> 01:19:46.968 
+And this needs to happen over multiple cycles, 3 cycles specifically.
+
+01:19:47.968 --> 01:19:50.448 
+So when B00 comes here, a 00 comes here.
+
+01:19:50.568 --> 01:19:58.608 
+In the next cycle, a 00 moves over here, B00 moves over here, B10 comes here, a 01 comes here.
+
+01:19:59.248 --> 01:20:01.768 
+Well, I should say a 01 comes here, B010 comes here.
+
+01:20:01.768 --> 01:20:03.088 
+They come at concurrently, of course.
+
+01:20:03.568 --> 01:20:07.648 
+And then in the first cycle, you would have computed a 00 times B00 over here.
+
+01:20:07.728 --> 01:20:13.528 
+In the next cycle, you accumulate by adding a 01 times B10 over there.
+
+01:20:13.528 --> 01:20:14.968 
+That's exactly what we want, right?
+
+01:20:15.528 --> 01:20:20.928 
+And the next cycle we accumulate even more by adding a 02 times B20 over here.
+
+01:20:21.208 --> 01:20:24.928 
+And in the end, you get C00 over there, right?
+
+01:20:24.928 --> 01:20:25.568 
+That's the idea.
+
+01:20:25.928 --> 01:20:31.818 
+And you can convince yourself that the data moves appropriately to the other parts of the array such
+
+01:20:31.818 --> 01:20:37.590 
+that you do all of the appropriate computations and eventually the last value that's computed gets
+
+01:20:37.590 --> 01:20:39.888 
+computed in this bottom processing out.
+
+01:20:41.008 --> 01:20:41.808 
+Sounds beautiful, right?
+
+01:20:43.128 --> 01:20:44.608 
+We didn't add any instruction.
+
+01:20:44.808 --> 01:20:46.368 
+This is not a general purpose processor.
+
+01:20:47.408 --> 01:20:53.568 
+We just added multiply and accumulate units and some interconnect very high density computation.
+
+01:20:53.808 --> 01:20:58.088 
+And this is exactly why systolic arrays are used for matrix multiplication today.
+
+01:20:59.088 --> 01:21:00.608 
+OK, so there's more.
+
+01:21:00.688 --> 01:21:04.728 
+These are actually when people envision this, they envision even more things.
+
+01:21:04.968 --> 01:21:09.292 
+Again, I don't want to go over this in detail, but you can have many different types of systolic
+
+01:21:09.292 --> 01:21:09.608 
+arrays.
+
+01:21:12.408 --> 01:21:16.105 
+For example, 2 dimensional convolution can be performed by A1 dimensional systolic array or A2
+
+01:21:16.105 --> 01:21:17.168 
+dimensional systolic array.
+
+01:21:17.168 --> 01:21:19.328 
+You can read the paper, it's a beautiful paper.
+
+01:21:20.288 --> 01:21:21.448 
+I will mention some other things.
+
+01:21:21.448 --> 01:21:23.048 
+It could be much more specialised.
+
+01:21:23.128 --> 01:21:25.488 
+This is again from the same paper from HD Cong.
+
+01:21:25.808 --> 01:21:29.368 
+Systolic arrays can be chained together to form powerful systems.
+
+01:21:29.728 --> 01:21:34.365 
+For example, this particular systolic array is capable of producing on the fly least squares fit to
+
+01:21:34.365 --> 01:21:36.848 
+all the data that has arrived up to any given moment.
+
+01:21:37.648 --> 01:21:39.248 
+This is basically before machine learning.
+
+01:21:39.248 --> 01:21:43.105 
+They're doing a lot of machine learning and statistical approximation using specialised hardware, as
+
+01:21:43.105 --> 01:21:43.568 
+you can see.
+
+01:21:44.608 --> 01:21:50.968 
+Again, I will not go into this in detail, but for example, there is a systolic array for orthogonal
+
+01:21:50.968 --> 01:21:52.768 
+triangularisation over here.
+
+01:21:52.768 --> 01:21:54.368 
+And again, supply of the data matters.
+
+01:21:54.368 --> 01:21:56.328 
+When do different data elements arrive?
+
+01:21:56.368 --> 01:22:01.088 
+When X11 arrives here, Nothing else should have arrived in any other place.
+
+01:22:01.088 --> 01:22:04.928 
+You can see that there's some delay in when Y1 arrives over here, right?
+
+01:22:04.968 --> 01:22:09.868 
+And then there's some delay buffers, delay elements that they add over here so that they can do
+
+01:22:09.868 --> 01:22:10.488 
+other stuff.
+
+01:22:10.648 --> 01:22:13.448 
+And they say systolic array for solving triangular systems.
+
+01:22:13.728 --> 01:22:18.618 
+So it can be as specialised as it gets without having any general purpose instructions or
+
+01:22:18.618 --> 01:22:19.608 
+whatsoever, right?
+
+01:22:21.168 --> 01:22:23.968 
+OK, so that's kind of what where we are.
+
+01:22:23.968 --> 01:22:25.808 
+I'm going to talk about some TP us.
+
+01:22:25.808 --> 01:22:31.408 
+But before we go into that, let's talk about advance and disadvantages and the advantages.
+
+01:22:32.208 --> 01:22:38.328 
+And the reason that I really like teaching this sort of approach is this is very principled, right?
+
+01:22:38.728 --> 01:22:41.448 
+You have a principle, you know exactly what you want to do.
+
+01:22:41.528 --> 01:22:46.009 
+You efficiently want to make use of limited memory bandwidth and you want to balance computation and
+
+01:22:46.009 --> 01:22:47.488 
+IO bandwidth availability, right?
+
+01:22:47.968 --> 01:22:51.808 
+And to using that principle, you want to design A specialized architecture.
+
+01:22:52.328 --> 01:22:57.488 
+So specialized is also an advantage computation, if the computation fits the PE organization and
+
+01:22:57.488 --> 01:23:02.648 
+functions which you design the design for the computation, you become very efficient in the end.
+
+01:23:03.488 --> 01:23:04.408 
+So if you're a special.
+
+01:23:04.888 --> 01:23:08.952 
+You can improve efficiency, you can have a simple design, you can have high concurrency and
+
+01:23:08.952 --> 01:23:09.488 
+performance.
+
+01:23:10.248 --> 01:23:15.433 
+But you need to know what you're executing very well and it's always good to do more with less
+
+01:23:15.433 --> 01:23:17.088 
+memory bandwidth requirements.
+
+01:23:17.088 --> 01:23:17.288 
+Right?
+
+01:23:17.728 --> 01:23:20.208 
+Downside is very specialised, basically right?
+
+01:23:20.888 --> 01:23:28.052 
+So specialised works both ways, meaning if your computation doesn't quite fit this thing, it's kind
+
+01:23:28.052 --> 01:23:28.848 
+of useless.
+
+01:23:30.488 --> 01:23:34.888 
+So not generally applicable because computation needs to fit the P functions and organization.
+
+01:23:35.528 --> 01:23:38.968 
+That's why people wanted to do more programmability in systolic arrays.
+
+01:23:39.408 --> 01:23:43.999 
+If you want to be a little bit more general purpose while also keeping specialization as much as
+
+01:23:43.999 --> 01:23:48.686 
+possible, you can modify the systolic arrays such that you can store multiple weights for example,
+
+01:23:48.686 --> 01:23:53.326 
+and you can choose which weight to use as opposed to having a single weight, so a small amount of
+
+01:23:53.326 --> 01:23:55.048 
+memory to store weights for example.
+
+01:23:55.488 --> 01:23:57.008 
+You can select the weights on the fly.
+
+01:23:57.328 --> 01:24:02.057 
+This eases implementation in the old days, adaptive filtering, this could be the implementation of
+
+01:24:02.057 --> 01:24:04.808 
+different neural networks that are computed today, right?
+
+01:24:05.688 --> 01:24:11.194 
+If you take this further now, it becomes a more general purpose model, systolic model, which is each
+
+01:24:11.194 --> 01:24:16.535 
+processing element can have its own data and instruction memory and data memory can store partial
+
+01:24:16.535 --> 01:24:18.408 
+or temporary results or constants.
+
+01:24:19.088 --> 01:24:23.290 
+And this leads to stream processing and pipeline parallelism or more generally what I call stage
+
+01:24:23.290 --> 01:24:23.728 
+execution.
+
+01:24:24.008 --> 01:24:25.888 
+So let's take a look at that a little bit also.
+
+01:24:26.448 --> 01:24:28.888 
+So we're back to general purpose.
+
+01:24:29.088 --> 01:24:30.688 
+You have a code that looks like this.
+
+01:24:31.168 --> 01:24:37.004 
+You divide the code into stages, stage A, stage B, stage C, and for some reason you partition the
+
+01:24:37.004 --> 01:24:38.328 
+code into these three.
+
+01:24:38.328 --> 01:24:43.408 
+In this loop, you may, for example, have a that does something special.
+
+01:24:44.168 --> 01:24:48.484 
+You may, it may be operating on the same data, B doing something different, C doing something
+
+01:24:48.484 --> 01:24:52.568 
+different, and they may be operating on different types of data, different sets of data.
+
+01:24:53.168 --> 01:24:58.456 
+And you may decide to execute all A's or all instances of A in a specialised or not specialised
+
+01:24:58.456 --> 01:25:03.968 
+processor or instance of B in some other processor or instance of C in some other processor, right?
+
+01:25:04.248 --> 01:25:09.091 
+This is already done actually in what's called pipelined parallelism pipeline parallel programs and
+
+01:25:09.091 --> 01:25:10.168 
+they operate this way.
+
+01:25:10.848 --> 01:25:16.267 
+You could specialised this processor for A's, this processor for B's, this processor for C's
+
+01:25:16.267 --> 01:25:17.328 
+potentially Great.
+
+01:25:18.768 --> 01:25:25.449 
+So essentially the idea is you divide loop iterations into code segments called stages and threads
+
+01:25:25.449 --> 01:25:27.768 
+execute stages on different cores.
+
+01:25:28.048 --> 01:25:34.208 
+Cores could be specialized for these stages and essentially you communicate between the cores.
+
+01:25:34.888 --> 01:25:40.541 
+So this looks very much like a systolic array, except it's not a systolic array in the specialized
+
+01:25:40.541 --> 01:25:40.888 
+sense.
+
+01:25:40.888 --> 01:25:43.248 
+It's really, it could be general purpose cores also, right?
+
+01:25:43.528 --> 01:25:47.168 
+It's systolic computation that we're doing basically OK.
+
+01:25:48.328 --> 01:25:53.911 
+So this is an example over here you have file compression and you divide the file compression into
+
+01:25:53.911 --> 01:25:58.981 
+different stages and you may be executing in different, let's say specialised hardware or
+
+01:25:58.981 --> 01:25:59.608 
+processors.
+
+01:26:00.048 --> 01:26:02.048 
+I will not go through this because we don't have a lot of time.
+
+01:26:02.048 --> 01:26:07.626 
+But so the advantage of this is really you get more efficiency from the system, especially if you
+
+01:26:07.626 --> 01:26:11.768 
+can make it special purpose, but you also get a lot of parallels, right?
+
+01:26:12.288 --> 01:26:17.474 
+And if you design the system well, you can make multiple use of each data item, you can reduce the
+
+01:26:17.474 --> 01:26:20.808 
+need for fetching, re fetching, better use of memory bandwidth.
+
+01:26:21.008 --> 01:26:25.397 
+So if you don't do that, if you don't have this array level structure, you go to memory every time
+
+01:26:25.397 --> 01:26:26.248 
+potentially, right.
+
+01:26:27.208 --> 01:26:28.448 
+So you get high concurrency.
+
+01:26:28.488 --> 01:26:32.128 
+That's one of the benefits of the systolic generalized systolic computation model as well.
+
+01:26:32.648 --> 01:26:35.928 
+And you have a regular design, easier to implement this advantage.
+
+01:26:35.928 --> 01:26:41.048 
+Again, if you're irregular, you cannot exploit irregular parallelism unfortunately, right?
+
+01:26:41.208 --> 01:26:43.608 
+This is where data flow really shines, right?
+
+01:26:43.728 --> 01:26:47.648 
+That's why you need to think about which model is good for what kind of computation.
+
+01:26:47.648 --> 01:26:52.448 
+Matrix multiplication is not irregular, it's very regular.
+
+01:26:53.048 --> 01:26:58.762 
+So you don't need a data flow engine potentially or a general purpose out of order execution machine
+
+01:26:58.762 --> 01:27:00.648 
+to execute matrix multiplication.
+
+01:27:01.048 --> 01:27:02.968 
+A systolic array would do very nicely there.
+
+01:27:03.928 --> 01:27:06.328 
+OK, but special purpose is not generally applicable.
+
+01:27:06.448 --> 01:27:11.464 
+Basically, if you want to make it more general purpose, you need to generalize like we have done,
+
+01:27:11.464 --> 01:27:14.568 
+and you need to add programmer support and software support.
+
+01:27:15.248 --> 01:27:19.368 
+And also it's difficult to program if the program problem doesn't fit well.
+
+01:27:19.648 --> 01:27:22.328 
+Maybe impossible to program actually if it's too specialized.
+
+01:27:22.328 --> 01:27:24.688 
+So let me give you a little bit of history.
+
+01:27:24.688 --> 01:27:30.230 
+Also, the HT Kong, he invented this idea in 1970s and when he was a professor at Carnegie Mellon,
+
+01:27:30.230 --> 01:27:31.488 
+where I used to be at.
+
+01:27:32.048 --> 01:27:36.688 
+It's great to have these great people who have done great things at places you have worked at.
+
+01:27:37.008 --> 01:27:40.848 
+But basically he actually went and designed systolic arrays.
+
+01:27:41.368 --> 01:27:43.888 
+That's called the Warp computer at CMU.
+
+01:27:45.048 --> 01:27:49.808 
+They designed a linear allay of 10 cells and each cell was 10 megaflops.
+
+01:27:49.968 --> 01:27:53.568 
+That's laughable today, but we're talking about 1980s, right?
+
+01:27:54.128 --> 01:27:55.928 
+It's actually a general purpose source machine.
+
+01:27:56.088 --> 01:28:00.797 
+It's an accelerator just like a GPU is today and they had their own high level language and
+
+01:28:00.797 --> 01:28:04.368 
+optimizing compiler to program the systolic array just like what you.
+
+01:28:04.488 --> 01:28:06.888 
+To do again for a GPU today, right?
+
+01:28:07.208 --> 01:28:11.248 
+And this was used to extensively accelerate vision and robotics tasks.
+
+01:28:11.488 --> 01:28:12.448 
+And this is what it looked like.
+
+01:28:12.448 --> 01:28:14.128 
+This is their picture.
+
+01:28:14.368 --> 01:28:17.048 
+You have a host machine and then you have an accelerator.
+
+01:28:17.248 --> 01:28:19.408 
+And these are the processing element cells.
+
+01:28:20.248 --> 01:28:21.928 
+And each accelerator looked like this.
+
+01:28:21.968 --> 01:28:27.091 
+I will not go into this in detail clearly, but it was relatively specialized, but also general
+
+01:28:27.091 --> 01:28:27.528 
+purpose.
+
+01:28:27.528 --> 01:28:33.474 
+So there was a memory, there was some input queues, X&Y queues, there were some address registers,
+
+01:28:33.474 --> 01:28:38.328 
+multiplication, some more memory for weights, etcetera, address generation unit.
+
+01:28:38.328 --> 01:28:42.168 
+So it's more specialised than the much more general purpose system that we have seen.
+
+01:28:42.168 --> 01:28:46.875 
+And the goal was to do actually these robotics and vision tasks that are more complicated than just
+
+01:28:46.875 --> 01:28:51.393 
+systolic computation because you need to execute different types of kernels, different types of
+
+01:28:51.393 --> 01:28:53.248 
+computation doing systolic computation.
+
+01:28:53.408 --> 01:28:59.066 
+You cannot just design a single very, very simple hardware to be able to use this for multiple
+
+01:28:59.066 --> 01:28:59.488 
+things.
+
+01:29:00.368 --> 01:29:03.048 
+This is Google's TPU tensor processing unit.
+
+01:29:03.048 --> 01:29:04.848 
+Essentially they have a systolic array.
+
+01:29:04.848 --> 01:29:09.208 
+That's this is the picture very similar to what I've shown you, a bigger version.
+
+01:29:10.528 --> 01:29:12.728 
+Essentially it's the matrix multiplication unit.
+
+01:29:12.728 --> 01:29:16.808 
+They use this for matrix multiplication and they describe it.
+
+01:29:16.808 --> 01:29:19.408 
+I will not go into detail because we don't have time, but you can read it.
+
+01:29:20.808 --> 01:29:22.208 
+Let me see, I guess.
+
+01:29:22.208 --> 01:29:23.368 
+Yeah, as the reading.
+
+01:29:23.528 --> 01:29:23.768 
+OK.
+
+01:29:24.208 --> 01:29:28.374 
+The matrix uses systolic execution to save energy by reducing reads and writes to the unified
+
+01:29:28.374 --> 01:29:28.688 
+buffer.
+
+01:29:28.928 --> 01:29:30.528 
+That's basically what we have discussed, right?
+
+01:29:31.208 --> 01:29:32.008 
+Don't go to memory.
+
+01:29:32.008 --> 01:29:36.648 
+You use systolic execution inside this array and the data flows over here.
+
+01:29:36.648 --> 01:29:40.048 
+Figure 4 shows that data flows from the left and the weights are loaded from the top.
+
+01:29:40.048 --> 01:29:42.368 
+It's a little bit different from what we have discussed.
+
+01:29:42.368 --> 01:29:44.048 
+Data comes from here, weights come from here.
+
+01:29:44.048 --> 01:29:48.808 
+You do the multiplication, the weights are pre loaded.
+
+01:29:48.928 --> 01:29:53.533 
+OK, so there's actually a lot of optimizations that you can do so you can read the paper for more
+
+01:29:53.533 --> 01:29:55.528 
+detail, but in the end it looks like this.
+
+01:29:56.248 --> 01:30:00.928 
+Whether or not weights are there and how many weights are there is depend on the implementation.
+
+01:30:02.528 --> 01:30:06.988 
+There's of course a lot of software support that needs to go into this, especially if you want to
+
+01:30:06.988 --> 01:30:08.368 
+hide this from the programmer.
+
+01:30:08.488 --> 01:30:09.648 
+And that's what they tried to do.
+
+01:30:10.048 --> 01:30:15.420 
+So they built a compiler to take advantage of the systolic array, which is essentially the matrix
+
+01:30:15.420 --> 01:30:16.528 
+multiplication unit.
+
+01:30:16.848 --> 01:30:21.377 
+You can see that there's a weight fetcher over here, there's systolic data set up, which is the
+
+01:30:21.377 --> 01:30:25.811 
+input matrices, and there's accumulators over here in the end, and there are a bunch of other
+
+01:30:25.811 --> 01:30:26.288 
+functions.
+
+01:30:26.288 --> 01:30:32.736 
+So the compiler managed all of this to make sure that the matrix multiplication gets offloaded to
+
+01:30:32.736 --> 01:30:35.928 
+this sort of TPU without the programmers effort.
+
+01:30:36.168 --> 01:30:41.153 
+And you can again, read more out of that, but there's a lot of system level support that you need to
+
+01:30:41.153 --> 01:30:42.848 
+provide so that this works nicely.
+
+01:30:43.928 --> 01:30:49.008 
+And they've improved TPU to many different generations.
+
+01:30:49.448 --> 01:30:51.008 
+For example, they used high bandwidth memory.
+
+01:30:51.008 --> 01:30:52.768 
+Right now they have floating point operations.
+
+01:30:53.248 --> 01:30:59.155 
+And they also improve the interconnect so that they can actually, instead of having a single TPU
+
+01:30:59.155 --> 01:31:05.186 
+that can do some amount of matrix computation, if you have an array of TP us, you can do many much
+
+01:31:05.186 --> 01:31:08.448 
+larger computations, much bigger models, for example.
+
+01:31:08.768 --> 01:31:10.168 
+But at some point you need to communicate.
+
+01:31:10.168 --> 01:31:14.208 
+So you need to actually have interconnects and they use optical interconnects right now actually.
+
+01:31:15.648 --> 01:31:19.088 
+But you can also see that there's a little bit of VLIW over here.
+
+01:31:19.408 --> 01:31:23.725 
+The core sequencer that they use fetches VLIW instructions from the cores on chip, software
+
+01:31:23.725 --> 01:31:26.288 
+management instruction, memory, and then you can read.
+
+01:31:26.288 --> 01:31:28.408 
+So they actually combine multiple paradigms.
+
+01:31:28.408 --> 01:31:34.595 
+VLIW is good at unleashing a lot of irregular work and they need that so that they can unleash
+
+01:31:34.595 --> 01:31:36.768 
+irregular work inside the system.
+
+01:31:37.448 --> 01:31:41.808 
+Again, I will let you read because there's a lot of material over here, but TP us have been
+
+01:31:41.808 --> 01:31:42.288 
+improving.
+
+01:31:42.928 --> 01:31:49.449 
+This is TPU 4 and I stop at some point, but you can see that per board, a large board, you get 1
+
+01:31:49.449 --> 01:31:50.808 
+exaflops using this.
+
+01:31:51.008 --> 01:31:51.808 
+It's specialised.
+
+01:31:52.248 --> 01:31:58.160 
+Again, it's good for essentially matrix multiplication, but matrix multiplication is important for
+
+01:31:58.160 --> 01:31:59.608 
+many applications today.
+
+01:32:00.368 --> 01:32:02.688 
+And if you're interested you you can see a summary reading.
+
+01:32:02.688 --> 01:32:07.164 
+This is not the latest one probably, but this is an interesting one that talks about also the
+
+01:32:07.164 --> 01:32:08.608 
+interconnect that they design.
+
+01:32:09.288 --> 01:32:12.208 
+And this is also the another one that talks about the interconnect.
+
+01:32:13.368 --> 01:32:16.248 
+OK, so this systolic arrays have high impact.
+
+01:32:16.248 --> 01:32:18.968 
+As you can see, we have done work on systolic arrays.
+
+01:32:18.968 --> 01:32:25.566 
+We worked with Google to analyse some of the issues in especially the edge version of these systolic
+
+01:32:25.566 --> 01:32:30.648 
+arrays, which can be used for example, on your phone or on devices like this.
+
+01:32:31.208 --> 01:32:35.328 
+And we found out that actually a lot of these systolic arrays are in the end bottleneck by memory.
+
+01:32:35.328 --> 01:32:37.848 
+So I'm going to motivate the memory lectures later on.
+
+01:32:38.168 --> 01:32:43.772 
+A lot of energy is really spent on moving data into the systolic arrays still and you can see some
+
+01:32:43.772 --> 01:32:45.088 
+example of our results.
+
+01:32:45.248 --> 01:32:49.128 
+This actually motivated different designs later on at Google and other places.
+
+01:32:49.488 --> 01:32:54.739 
+But for some large models, large machine learning models like LSTMS and transducers, more than 90%
+
+01:32:54.739 --> 01:32:57.848 
+of the energy spent on DRAM, main memory and interconnect.
+
+01:32:58.288 --> 01:33:02.425 
+Even though these systolic arrays are quite powerful, they accelerate computation, but data moment
+
+01:33:02.425 --> 01:33:04.368 
+becomes a bottleneck if you keep accelerating.
+
+01:33:04.488 --> 01:33:05.088 
+Computation, right?
+
+01:33:05.248 --> 01:33:07.528 
+So you need to be always forward-looking.
+
+01:33:09.808 --> 01:33:11.728 
+So wafer scale engine is a SIMD engine.
+
+01:33:11.728 --> 01:33:15.168 
+It's a different approach and we're going to cover this approach next week.
+
+01:33:15.608 --> 01:33:19.688 
+But this is another machine learning accelerator, but it's going to be a different approach as we
+
+01:33:19.688 --> 01:33:20.488 
+will see next week.
+
+01:33:21.448 --> 01:33:22.848 
+OK people.
+
+01:33:22.848 --> 01:33:24.808 
+Also X-ray machine learning using Fpgas.
+
+01:33:24.928 --> 01:33:29.008 
+This is not the most popular approach these days because of the inefficiencies Fpgas have.
+
+01:33:29.568 --> 01:33:32.608 
+If you look at the systolic array, for example, it's very specialised.
+
+01:33:32.608 --> 01:33:35.528 
+You can do a lot of computation per millimetre square.
+
+01:33:35.848 --> 01:33:38.888 
+FPGA is not the same because it's very reconfigurable.
+
+01:33:40.048 --> 01:33:45.988 
+OK, this is a food forethought I'll leave you with, even though we have not covered GPUs yet, but
+
+01:33:45.988 --> 01:33:50.888 
+we're going to contrast systolic arrays GPUs with these questions at some point.
+
+01:33:51.128 --> 01:33:55.408 
+But if you're interested in this, you can also learn more by taking our courses later on.
+
+01:33:56.088 --> 01:33:56.888 
+Let me finish here.
+
+01:33:57.048 --> 01:33:57.888 
+Have a good weekend.
+
+01:33:58.528 --> 01:34:03.750 
+I'd be happy to take questions next week or if you have burning questions right now, maybe right
+
+01:34:03.750 --> 01:34:03.968 
+now.
+
+01:34:04.808 --> 01:34:08.982 
+But next week is going to be quite exciting also because we're going to cover a different paradigm,
+
+01:34:08.982 --> 01:34:11.048 
+we're going to shift gears to SIMD and also GPUs.
+
+01:34:12.648 --> 01:34:13.808 
+OK, see you next week.
+
