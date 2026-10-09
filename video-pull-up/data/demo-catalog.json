@@ -1,0 +1,114 @@
+{
+  "courses": [
+    { "id": "linear-algebra", "name": "Lineare Algebra I" },
+    { "id": "analysis", "name": "Analysis I" },
+    { "id": "informatics", "name": "Informatik I" }
+  ],
+  "lectures": [
+    {
+      "id": "eigenvalues-introduction",
+      "courseId": "linear-algebra",
+      "title": "Eigenwerte und Eigenvektoren · Demo",
+      "lecturer": "VisCon Demo",
+      "date": "2026-10-09",
+      "duration": 90,
+      "episode": 1,
+      "demo": true,
+      "mediaUrl": "/media/eigenvalues-introduction.mp4",
+      "keywords": ["Eigenwerte", "Eigenvektoren", "Matrix"],
+      "segments": [
+        {
+          "id": "eigenvalues-geometric",
+          "start": 0,
+          "end": 30,
+          "title": "Die geometrische Bedeutung",
+          "transcript": "Ein Eigenvektor v ist ein Vektor ungleich null, für den Av = λv gilt. Die Matrix verändert seine Richtung nicht, sondern multipliziert ihn mit dem Eigenwert λ. Ein negativer Eigenwert kehrt die Orientierung um. Der Nullvektor ist ausgeschlossen, weil er die Gleichung für jedes λ erfüllt und deshalb keine ausgezeichnete Richtung beschreibt."
+        },
+        {
+          "id": "eigenvalues-computation",
+          "start": 30,
+          "end": 60,
+          "title": "Eigenwerte und Eigenvektoren berechnen",
+          "transcript": "Um Eigenwerte zu berechnen, lösen wir det(A − λI) = 0. Für jeden gefundenen Eigenwert lösen wir anschliessend (A − λI)v = 0. Die Lösungen ungleich null sind die zugehörigen Eigenvektoren. Der Eigenwert bestimmt also den Skalierungsfaktor und der Eigenvektor die dazugehörige Richtung."
+        },
+        {
+          "id": "eigenvalues-example",
+          "start": 60,
+          "end": 90,
+          "title": "Beispiel einer diagonalen 2 × 2-Matrix",
+          "transcript": "Für die Matrix A = diag(2, 3) ist das charakteristische Polynom (2 − λ)(3 − λ). Die Eigenwerte sind 2 und 3. Zum Eigenwert 2 gehört beispielsweise v = (1, 0), zum Eigenwert 3 gehört v = (0, 1). Denn A(1, 0) = 2(1, 0) und A(0, 1) = 3(0, 1). Jedes von null verschiedene Vielfache dieser Vektoren ist ebenfalls ein Eigenvektor."
+        }
+      ]
+    },
+    {
+      "id": "derivatives",
+      "courseId": "analysis",
+      "title": "Ableitungen und Kettenregel · Demo",
+      "lecturer": "VisCon Demo",
+      "date": "2026-10-09",
+      "duration": 90,
+      "episode": 1,
+      "demo": true,
+      "mediaUrl": "/media/derivatives.mp4",
+      "keywords": ["Ableitung", "Kettenregel", "Produktregel"],
+      "segments": [
+        {
+          "id": "derivatives-tangent",
+          "start": 0,
+          "end": 30,
+          "title": "Die Ableitung als Tangentensteigung",
+          "transcript": "Die Ableitung f′(x) ist der Grenzwert des Differenzenquotienten (f(x + h) − f(x)) / h für h gegen null, sofern dieser Grenzwert existiert. Sie beschreibt die lokale Änderungsrate der Funktion und die Steigung ihrer Tangente. Für f(x) = x² ergibt sich f′(x) = 2x."
+        },
+        {
+          "id": "derivatives-chain-rule",
+          "start": 30,
+          "end": 60,
+          "title": "Die Kettenregel Schritt für Schritt",
+          "transcript": "Die Kettenregel für eine zusammengesetzte Funktion f(g(x)) lautet: f′(g(x)) · g′(x). Wir leiten zuerst die äussere Funktion ab und setzen die innere Funktion ein. Dann multiplizieren wir mit der inneren Ableitung. Für sin(x²) ist die innere Funktion x² und die äussere Funktion sin. Das Ergebnis ist cos(x²) · 2x."
+        },
+        {
+          "id": "derivatives-product-rule",
+          "start": 60,
+          "end": 90,
+          "title": "Produktregel mit Kettenregel kombinieren",
+          "transcript": "Die Produktregel lautet (u · v)′ = u′ · v + u · v′. Für x · exp(x²) wenden wir zusätzlich die Kettenregel auf exp(x²) an. Die Ableitung ist exp(x²) + 2x² · exp(x²). Wir unterscheiden dabei das Produkt zweier Funktionen von der Verkettung einer inneren und einer äusseren Funktion."
+        }
+      ]
+    },
+    {
+      "id": "recursion",
+      "courseId": "informatics",
+      "title": "Rekursion und Basisfall · Demo",
+      "lecturer": "VisCon Demo",
+      "date": "2026-10-09",
+      "duration": 90,
+      "episode": 1,
+      "demo": true,
+      "mediaUrl": "/media/recursion.mp4",
+      "keywords": ["Rekursion", "Basisfall", "Fakultät", "Fibonacci", "Laufzeit"],
+      "segments": [
+        {
+          "id": "recursion-base-case",
+          "start": 0,
+          "end": 30,
+          "title": "Weshalb Rekursion einen Basisfall braucht",
+          "transcript": "Eine rekursive Funktion ruft sich selbst mit einem kleineren Teilproblem auf. Der Basisfall beantwortet einen einfachen Fall direkt und beendet die Rekursion. Ohne erreichbaren Basisfall endet die Folge rekursiver Aufrufe nicht. Zusätzlich muss jeder Aufruf dem Basisfall näherkommen, damit die Rekursion terminiert."
+        },
+        {
+          "id": "recursion-factorial",
+          "start": 30,
+          "end": 60,
+          "title": "Die Fakultät rekursiv berechnen",
+          "transcript": "Für die Fakultät einer nichtnegativen ganzen Zahl gilt 0! = 1 als Basisfall. Für n > 0 berechnen wir n! = n · (n − 1)!. Beispielsweise ergibt 3! den Ausdruck 3 · 2 · 1 · 1 = 6. Bei jedem rekursiven Aufruf wird n um eins kleiner, bis der Basisfall n = 0 erreicht ist."
+        },
+        {
+          "id": "recursion-complexity",
+          "start": 60,
+          "end": 90,
+          "title": "Fibonacci und Memoisierung",
+          "transcript": "Die naive rekursive Berechnung der Fibonacci-Zahlen berechnet dieselben Teilprobleme wiederholt und hat exponentielle Laufzeit. Memoisierung speichert bereits berechnete Werte. Dadurch wird jedes Teilproblem nur einmal gelöst, und die Anzahl der Rechenschritte wächst linear mit n."
+        }
+      ]
+    }
+  ]
+}

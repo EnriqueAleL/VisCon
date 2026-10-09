@@ -1,0 +1,12 @@
+{
+  "id": "analysis-week-1",
+  "courseId": "analysis",
+  "courseName": "Analysis I",
+  "title": "Analysis I – Woche 1",
+  "lecturer": "Lehrperson",
+  "date": "2026-10-09",
+  "duration": 3600,
+  "demo": false,
+  "mediaUrl": null,
+  "keywords": ["Ableitung", "Kettenregel"]
+}
