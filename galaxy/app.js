@@ -448,15 +448,31 @@
 
   var PLANET_R = 9;
   var planets = [];
+  // Worlds with nothing on them yet: they fill the system out so a two-course
+  // galaxy does not read as empty. They are scenery only -- no cities, no label,
+  // nothing to click -- so they never enter `planets` and nothing below this
+  // block has to know they exist.
+  var ORBIT_0 = 56, ORBIT_STEP = 42;
+  var COURSE_OUTER = ORBIT_0 + (DATA.length - 1) * ORBIT_STEP;
+  // `at` is a fraction of the course system's reach: under 1 slots a world
+  // between the courses, over 1 puts one outside them. Spread this way the
+  // extra worlds fill the frame without pushing the camera so far back that
+  // the courses themselves turn into specks.
+  var DECOR = [
+    { at: 0.74, phase: 1.1, r: PLANET_R, color: 0x6f7fae, look: { ocean: 0x1b3550, land: 0x4a5f7d, high: 0x9aa9c4, ice: 0.14, sea: 0.55, bands: 0, ring: false } },
+    { at: 1.34, phase: 4.45, r: PLANET_R, color: 0xad7f6a, look: { ocean: 0x3a2b2a, land: 0x8c5a42, high: 0xcf9f78, ice: 0, sea: 0.3, bands: 0.35, ring: true } },
+    { at: 1.62, phase: 5.3, r: PLANET_R * 0.68, color: 0x7fa58e, look: { ocean: 0x1d3b33, land: 0x4e7a5f, high: 0x9dbfa4, ice: 0.06, sea: 0.42, bands: 0, ring: false } }
+  ];
+  var DECOR_OUTER = DECOR.reduce(function (m, w) { return Math.max(m, COURSE_OUTER * w.at); }, 0);
   // Look down on the system from far enough out that the outermost orbit still fits
-  var OUTER_ORBIT = 56 + (DATA.length - 1) * 42;
-  var GALAXY_DIST = OUTER_ORBIT * 1.9 + 95;
+  var OUTER_ORBIT = Math.max(COURSE_OUTER, DECOR_OUTER);
+  var GALAXY_DIST = COURSE_OUTER * 1.9 + 95 + (OUTER_ORBIT - COURSE_OUTER) * 0.95;
   var GALAXY_PITCH = 0.82;
 
   DATA.forEach(function (course, i) {
     var pivot = new THREE.Group();
     var body = new THREE.Group();
-    var orbit = 56 + i * 42;
+    var orbit = ORBIT_0 + i * ORBIT_STEP;
     body.position.set(orbit, i % 2 === 1 ? -6 : 4, 0);
     pivot.rotation.y = i * 2.3;
     pivot.add(body);
@@ -647,6 +663,74 @@
       course: course, pivot: pivot, body: body, globe: globe, routes: routes,
       halo: halo, ring: ring, belt: belt, mat: mat, cities: cities, index: i
     });
+  });
+
+  // The empty worlds. Same shader and atmosphere as a course planet, so they sit
+  // in the same light, but they carry no cities, no routes and no picking.
+  var decor = [];
+  DECOR.forEach(function (world, n) {
+    var i = DATA.length + n;
+    var pivot = new THREE.Group();
+    var body = new THREE.Group();
+    var orbit = COURSE_OUTER * world.at;
+    body.position.set(orbit, n % 2 === 1 ? -9 : 7, 0);
+    pivot.rotation.y = world.phase;
+    pivot.add(body);
+    sky.add(pivot);
+
+    var mat = new THREE.ShaderMaterial({
+      vertexShader: PLANET_VERT, fragmentShader: PLANET_FRAG,
+      uniforms: {
+        uColor: { value: new THREE.Color(world.color) }, uTime: { value: 0 },
+        uOcean: { value: new THREE.Color(world.look.ocean) }, uLand: { value: new THREE.Color(world.look.land) },
+        uHigh: { value: new THREE.Color(world.look.high) },
+        uSea: { value: world.look.sea }, uIce: { value: world.look.ice }, uBands: { value: world.look.bands }
+      }
+    });
+    body.add(new THREE.Mesh(new THREE.SphereGeometry(world.r, 64, 48), mat));
+
+    if (world.look.ring) {
+      var belt = new THREE.Mesh(
+        new THREE.RingGeometry(world.r * 1.45, world.r * 2.1, 96),
+        new THREE.MeshBasicMaterial({
+          color: new THREE.Color(world.look.high).lerp(new THREE.Color(world.look.land), 0.4),
+          transparent: true, opacity: 0.4, side: THREE.DoubleSide, depthWrite: false
+        })
+      );
+      belt.rotation.set(-Math.PI / 2 + 0.38, 0, 0.2);
+      body.add(belt);
+    }
+
+    body.add(new THREE.Mesh(
+      new THREE.SphereGeometry(world.r * 1.16, 48, 32),
+      new THREE.ShaderMaterial({
+        vertexShader: PLANET_VERT, fragmentShader: ATMO_FRAG,
+        uniforms: { uColor: { value: new THREE.Color(world.color) } },
+        side: THREE.BackSide, transparent: true, depthWrite: false,
+        blending: THREE.AdditiveBlending
+      })
+    ));
+
+    // Dimmer than a course world, so the eye still goes to the ones you can enter.
+    var halo = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: GLOW_TEX, color: world.color, transparent: true, opacity: 0.2,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    }));
+    halo.scale.set(world.r * 7, world.r * 7, 1);
+    body.add(halo);
+
+    var pts = [];
+    for (var a = 0; a <= 128; a++) {
+      var tt = (a / 128) * Math.PI * 2;
+      pts.push(new THREE.Vector3(Math.cos(tt) * orbit, 0, Math.sin(tt) * orbit));
+    }
+    var ring = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(pts),
+      new THREE.LineBasicMaterial({ color: world.color, transparent: true, opacity: 0.08 })
+    );
+    sky.add(ring);
+
+    decor.push({ pivot: pivot, globe: body.children[0], mat: mat, index: i });
   });
 
   /* ============================================================
@@ -2129,6 +2213,11 @@
           var lift = 1 + Math.sin(t * 2 + j) * 0.12;
           c.spark.scale.set(2.2 * lift, 2.2 * lift, 1);
         });
+      });
+      decor.forEach(function (d) {
+        d.mat.uniforms.uTime.value = t;
+        d.globe.rotation.y += dt * (0.045 - d.index * 0.008);
+        d.pivot.rotation.y += dt * (0.016 / (d.index + 1));
       });
       starNear.rotation.y += dt * 0.004;
       starFar.rotation.y -= dt * 0.0016;
