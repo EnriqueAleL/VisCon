@@ -41,6 +41,7 @@ async function request(path, options = {}) {
   const headers = { Origin: base.origin, ...(cookieHeader() ? { Cookie: cookieHeader() } : {}), ...options.headers };
   const response = await fetch(new URL(path, base), { ...options, headers, redirect: 'manual', signal: AbortSignal.timeout(15_000) });
   if (response.status >= 300 && response.status < 400) throw new Error('Request redirected. Log in at the managed URL and supply CHECK_COOKIE_FILE, then retry.');
+  assert(response.status !== 401 && response.status !== 403, `${path} needs a logged-in ETH account (HTTP ${response.status}). Log in at the managed URL and supply CHECK_COOKIE_FILE with the ba_session cookie, then retry.`);
   assert(response.ok, `${path} returned HTTP ${response.status}`);
   for (const header of response.headers.getSetCookie()) {
     const value = header.split(';', 1)[0];

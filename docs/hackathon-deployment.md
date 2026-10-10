@@ -71,6 +71,14 @@ The managed hostname and SSH details must come from the team portal.
    tools to confirm Socket.IO starts with HTTP polling. Keep **default transports**;
    the managed proxy does not support a raw WebSocket-only connection.
 
+## ETH account guard
+
+The whole API, the lecture media and both Socket.IO namespaces require an account with a confirmed ETH student
+email (see [`auth/README.md`](../auth/README.md)). Before deploying: set `AUTH_SMTP_URL` and `AUTH_MAIL_FROM` so codes
+can be sent, set `AUTH_CLIENT_IP_HEADER=x-forwarded-for` so rate limits are per person behind the proxy, and make sure the
+front end has a register/log-in screen. Leave `AUTH_REQUIRE_VERIFIED` unset. For `check:deployment`, log in once in a
+browser and pass the `ba_session` cookie through `CHECK_COOKIE_FILE`.
+
 ## Trust the managed identity explicitly
 
 `X-User-Id` and `X-User-Name` are honored only when `MANIA_TRUST_PROXY=true`.

@@ -26,6 +26,24 @@ An account owns an ordinary `players` row, so the Arena, the study world and soc
 both through the same `ba_session` cookie (HttpOnly, SameSite=Lax, `Secure` when `COOKIE_SECURE=true`,
 30 days). Accounts and sessions live in the app database; the CLI uses its own file (`AUTH_DB_PATH`).
 
+## What is guarded
+
+With `AUTH_REQUIRE_VERIFIED` unset (the default), a request is served only if its session belongs to a player
+whose account has `verifiedAt` set, i.e. a confirmed `@student.ethz.ch` mailbox:
+
+| Surface | Without a verified account |
+|---|---|
+| every `/api/*` route (Arena, study world, lectures, Q&A, puzzles, study tables) | `401 login_required` (no account) or `403 verification_required` (registered, email not confirmed) |
+| lecture videos, captions, chapters under `/media/*` | same |
+| Socket.IO root namespace (Arena) and `/study` | connection refused with the same message |
+| `/api/health`, `/api/auth/*` | open, so people can register, log in and be monitored |
+| the static page shell (`/`, `/learn`, JS and CSS) | open, so a log-in screen can load |
+
+Anonymous guest cookies are never enough, and confirming an account retires the account's old guest cookie.
+The hackathon proxy headers (`MANIA_TRUST_PROXY`) do not bypass the guard.
+`AUTH_REQUIRE_VERIFIED=false` turns the guard off for local front-end work (the browser test runner sets it).
+The deployment checker needs a logged-in cookie: `CHECK_COOKIE_FILE` with the `ba_session` value.
+
 ## Rules
 
 - Passwords: 10-128 characters, scrypt (N=32768) with a per-password salt, never stored or logged in clear.
@@ -56,7 +74,7 @@ Production needs `AUTH_SMTP_URL` and `AUTH_MAIL_FROM` (see `.env.example`). From
 
 ## Not done yet
 
-- **No front end.** There are no register/login screens; the API is ready for them.
+- **No front end.** There are no register/login screens, so with the guard on the web UI cannot get past its first API call until they exist; the API is ready for them.
 - **Needs SMTP.** Without `AUTH_SMTP_URL` + `AUTH_MAIL_FROM` the server starts (with a warning) but cannot
   send codes. Use `AUTH_MAIL_TRANSPORT=console` in development to print them.
 - A nonexistent mailbox just never receives the code; we cannot tell.

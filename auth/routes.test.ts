@@ -5,7 +5,7 @@ import type { Server } from 'node:http';
 import express from 'express';
 
 process.env.DATABASE_PATH = ':memory:';
-const { db, session, createPlayer, adoptAccountName } = await import('../server/store');
+const { db, session, createPlayer, adoptAccount } = await import('../server/store');
 const { mountAuth } = await import('./routes');
 
 const PASSWORD = 'correct horse battery';
@@ -15,7 +15,7 @@ let server: Server, base: string, skew = 0;
 before(async () => {
   const app = express();
   app.use(express.json());
-  mountAuth(app, { db, playerFromCookie: session, createPlayer, mailer: { send: async mail => { outbox.push(mail); } }, clock: () => Date.now() + skew, accountOptions: { onVerified: a => adoptAccountName(a.playerId, a.username) } });
+  mountAuth(app, { db, playerFromCookie: session, createPlayer, mailer: { send: async mail => { outbox.push(mail); } }, clock: () => Date.now() + skew, accountOptions: { onVerified: a => adoptAccount(a.playerId, a.username) } });
   server = app.listen(0);
   base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
 });
