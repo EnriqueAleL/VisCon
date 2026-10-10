@@ -403,9 +403,22 @@ export function App() {
         <ProductHeader
           module="Lectures"
           actions={
-            <div className="avatar" title="Lernraum">
-              DU
-            </div>
+            <>
+              <span className="view-toggle" role="group" aria-label="Ansicht">
+                <a href="/learn" className="on" aria-current="page" title="Normale Ansicht">
+                  Liste
+                </a>
+                <a
+                  href={selectedCourse ? `/#/${selectedCourse.courseId}` : '/'}
+                  title="Galaxie-Ansicht"
+                >
+                  Galaxie
+                </a>
+              </span>
+              <div className="avatar" title="Lernraum">
+                DU
+              </div>
+            </>
           }
         >
           <a href="/arena">Play</a>
