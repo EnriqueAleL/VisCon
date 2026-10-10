@@ -17,10 +17,13 @@ export interface MountSubmissionsDeps {
   limits?: UploadLimits;
   clock?: () => number;
   reverifyDays?: number;
+  isNumberReserved?: (courseId: string, number: number) => boolean;
+  onApproved?: (submission: import('./service').Submission) => void;
+  onRemoved?: (submission: import('./service').Submission) => void | Promise<void>;
 }
 
 export function mountSubmissions(app: Express, deps: MountSubmissionsDeps): SubmissionService {
-  const service = createSubmissionService(deps.db, deps.admin, { uploadsDir: deps.uploadsDir, limits: deps.limits, clock: deps.clock });
+  const service = createSubmissionService(deps.db, deps.admin, { uploadsDir: deps.uploadsDir, limits: deps.limits, clock: deps.clock, isNumberReserved: deps.isNumberReserved, onApproved: deps.onApproved, onRemoved: deps.onRemoved });
   const actorOf = createActorResolver({ db: deps.db, playerFromCookie: deps.playerFromCookie, clock: deps.clock, reverifyDays: deps.reverifyDays });
   const body = (req: Request) => (req.body && typeof req.body === 'object' ? req.body : {}) as Record<string, unknown>;
   const param = (req: Request, name: string) => String(req.params[name] ?? '');

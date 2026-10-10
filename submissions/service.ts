@@ -13,13 +13,20 @@ export interface SubmissionFile { slot: Slot; size: number; sha256: string; orig
 export interface Submission {
   id: string; courseId: string; type: SubmissionType; title: string; number: number | null; notes: string; status: SubmissionStatus;
   submitter: string; createdAt: string; submittedAt: string | null; reviewedBy: string | null; reviewedAt: string | null; reviewNote: string | null;
-  indexState: 'none' | 'queued' | 'indexing' | 'done' | 'failed'; files: SubmissionFile[]; missing: Slot[];
+  indexState: 'none' | 'queued' | 'indexing' | 'done' | 'failed'; indexError: string | null; indexedAt: string | null; files: SubmissionFile[]; missing: Slot[];
 }
-export interface SubmissionOptions { uploadsDir: string; limits?: UploadLimits; clock?: () => number }
+export interface SubmissionOptions {
+  uploadsDir: string; limits?: UploadLimits; clock?: () => number;
+  /** Lecture numbers that already exist outside the submission system (the original DDCA recordings). */
+  isNumberReserved?: (courseId: string, number: number) => boolean;
+  /** Called after material was approved (queue it for indexing) or removed (take it out of the index again). */
+  onApproved?: (submission: Submission) => void;
+  onRemoved?: (submission: Submission) => void | Promise<void>;
+}
 
 interface Row {
   id: string; courseId: string; submitter: string; type: SubmissionType; title: string; number: number | null; notes: string; status: SubmissionStatus;
-  createdAt: number; submittedAt: number | null; reviewedBy: string | null; reviewedAt: number | null; reviewNote: string | null; indexState: Submission['indexState'];
+  createdAt: number; submittedAt: number | null; reviewedBy: string | null; reviewedAt: number | null; reviewNote: string | null; indexState: Submission['indexState']; indexError: string | null; indexedAt: number | null;
 }
 interface FileRow { slot: Slot; size: number; sha256: string; originalName: string; mime: string; ext: string }
 
@@ -41,7 +48,7 @@ export function createSubmissionService(db: DatabaseSync, admin: AdminService, o
     const spec = SLOTS[r.type];
     return {
       id: r.id, courseId: r.courseId, type: r.type, title: r.title, number: r.number, notes: r.notes, status: r.status, submitter: r.submitter,
-      createdAt: iso(r.createdAt)!, submittedAt: iso(r.submittedAt), reviewedBy: r.reviewedBy, reviewedAt: iso(r.reviewedAt), reviewNote: r.reviewNote, indexState: r.indexState,
+      createdAt: iso(r.createdAt)!, submittedAt: iso(r.submittedAt), reviewedBy: r.reviewedBy, reviewedAt: iso(r.reviewedAt), reviewNote: r.reviewNote, indexState: r.indexState, indexError: r.indexError, indexedAt: iso(r.indexedAt),
       files: files.map(({ slot, size, sha256, originalName, mime }) => ({ slot, size, sha256, originalName, mime })),
       missing: spec.required.filter(slot => !files.some(f => f.slot === slot)),
     };
@@ -146,6 +153,7 @@ export function createSubmissionService(db: DatabaseSync, admin: AdminService, o
   }
   function assertNumberFree(r: Row) {
     if (r.type !== 'lecture') return;
+    if (r.number !== null && options.isNumberReserved?.(r.courseId, r.number)) throw new AdminError('conflict', `Lecture ${r.number} already exists among the original recordings of this course.`);
     const taken = db.prepare("SELECT 1 FROM submissions WHERE courseId=? AND type='lecture' AND number=? AND status='approved' AND id<>?").get(r.courseId, r.number, r.id);
     if (taken) throw new AdminError('conflict', `Lecture ${r.number} already exists in this course. An administrator has to remove it before it can be replaced.`);
   }
@@ -174,7 +182,9 @@ export function createSubmissionService(db: DatabaseSync, admin: AdminService, o
     const text = note === undefined || note === null || note === '' ? null : cleanText(note, 'The note', 1, 500);
     db.prepare("UPDATE submissions SET status='approved', reviewedBy=?, reviewedAt=?, reviewNote=?, indexState='queued' WHERE id=?").run(actor, now(), text, r.id);
     admin.audit(actor, 'submission.approve', r.id, { course: r.courseId, type: r.type, submitter: r.submitter });
-    return present(row(r.id)!);
+    const approved = present(row(r.id)!);
+    options.onApproved?.(approved);
+    return approved;
   }
   async function reject(actor: string, id: unknown, note: unknown): Promise<Submission> {
     const r = reviewable(actor, id);
@@ -193,7 +203,9 @@ export function createSubmissionService(db: DatabaseSync, admin: AdminService, o
     db.prepare("UPDATE submissions SET status='removed', reviewNote=?, reviewedBy=?, reviewedAt=?, indexState='none' WHERE id=?").run(text, actor, now(), r.id);
     await removeFiles(r.id);
     admin.audit(actor, 'submission.remove', r.id, { course: r.courseId, type: r.type, submitter: r.submitter, reason: text });
-    return present(row(r.id)!);
+    const removed = present(row(r.id)!);
+    try { await options.onRemoved?.(removed); } catch (error) { console.error('submissions: cleanup after removal failed', error instanceof Error ? error.message : error); }
+    return removed;
   }
 
   // ---- reading
@@ -227,6 +239,11 @@ export function createSubmissionService(db: DatabaseSync, admin: AdminService, o
     return stale.length;
   }
 
-  return { create, prepareUpload, ensureDir, commitFile, submit, withdraw, approve, reject, remove, get, listMine, listForCourse, fileForDownload, purgeStaleDrafts, limits, slots: ALL_SLOTS };
+  /** Server-side only (the indexer): where a submission's stored files are, without any user permission check. */
+  function internalFiles(id: string): { slot: Slot; path: string; ext: string; size: number }[] {
+    return filesOf(id).map(f => ({ slot: f.slot, ext: f.ext, size: f.size, path: join(dirFor(id), `${f.slot}.${f.ext}`) })).filter(f => existsSync(f.path));
+  }
+
+  return { internalFiles, create, prepareUpload, ensureDir, commitFile, submit, withdraw, approve, reject, remove, get, listMine, listForCourse, fileForDownload, purgeStaleDrafts, limits, slots: ALL_SLOTS };
 }
 export type SubmissionService = ReturnType<typeof createSubmissionService>;

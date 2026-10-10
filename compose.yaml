@@ -52,6 +52,11 @@ services:
       UPLOAD_MAX_USER_DAY_MB: ${UPLOAD_MAX_USER_DAY_MB:-4000}
       UPLOAD_MAX_TOTAL_MB: ${UPLOAD_MAX_TOTAL_MB:-30000}
       UPLOAD_MAX_PENDING_PER_USER: ${UPLOAD_MAX_PENDING_PER_USER:-5}
+      # Indexing of approved material (needs the Python image: DOCKER_TARGET=qa-runtime, plus OPENAI_API_KEY and QA_INDEX_MODEL).
+      COURSES_DIR: /app/.data/courses
+      INDEXING_ENABLED: ${INDEXING_ENABLED:-true}
+      INDEXING_MAX_ATTEMPTS: ${INDEXING_MAX_ATTEMPTS:-3}
+      INDEXING_POLL_SECONDS: ${INDEXING_POLL_SECONDS:-5}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

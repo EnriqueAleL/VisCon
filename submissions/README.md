@@ -1,7 +1,7 @@
 # Material submissions and review
 
 Backend only. A verified student submits lecture material to an active course; an administrator or that course's admin
-reviews it. Approved material is marked `indexState: 'queued'`: **the indexer that reads it with `qa/` is not built yet.**
+reviews it. Approved material is published and indexed in the background: see [`../indexing/README.md`](../indexing/README.md).
 
 ## What can be submitted
 

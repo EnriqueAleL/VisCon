@@ -112,6 +112,13 @@ Submitted material is stored under `UPLOADS_DIR` (`/app/.data/uploads`, on the p
 the disk). The limits are in `.env.example`; a lecture video may be up to 2 GB by default. Before relying on it, upload a large file through the
 managed URL: the proxy in front of the VM may cap request size or duration, and the app cannot raise that. Back up `.data` if the material matters.
 
+## Indexing approved material
+
+Approved lectures are indexed with an LLM and approved PDFs are text-extracted, in the background (`indexing/README.md`). That needs Python, so build the
+Python image (`DOCKER_TARGET=qa-runtime` in `.env`; it installs `qa/requirements.txt`) and set `OPENAI_API_KEY` and `QA_INDEX_MODEL`. Without them
+approvals still work and items simply wait; `GET /api/courses/<id>/index` shows why. Check Python with
+`docker compose exec app /opt/qa-venv/bin/python -c "import openai, pypdf"`. Published material and indexes live under `/app/.data/courses`.
+
 ## Trust the managed identity explicitly
 
 `X-User-Id` and `X-User-Name` are honored only when `MANIA_TRUST_PROXY=true`.

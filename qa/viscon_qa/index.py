@@ -137,3 +137,21 @@ def build_index(
         save_index(path, data)
         log(f"{lecture.title}: {len(data['lectures'][key]['chapters'])} chapters")
     return data
+
+
+def remove_lectures(path: Path, numbers: Iterable[int]) -> list[int]:
+    """Take lectures out of the index and delete their exported chapter markers and cached summaries."""
+    data = load_index(path)
+    removed = []
+    for number in numbers:
+        if data["lectures"].pop(str(number), None) is not None:
+            removed.append(number)
+        for leftover in (
+            path.parent / "chapters" / f"lec{number}.json",
+            path.parent / "chapters" / f"lec{number}.chapters.vtt",
+            path.parent / "summaries" / f"lec{number}.json",
+        ):
+            leftover.unlink(missing_ok=True)
+    if removed:
+        save_index(path, data)
+    return removed

@@ -1,15 +1,17 @@
-"""Command line: `python -m viscon_qa {index,ask,lines,models}`."""
+"""Command line: `python -m viscon_qa {index,ask,chapters,summary,lines,extract,unindex,models}`."""
 from __future__ import annotations
 
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from . import corpus
 from .ask import ask
 from .chapters import export_chapters
 from .config import ConfigError, load_settings
-from .index import build_index, load_index
+from .documents import DocumentError, extract_pdf, limit_resources, save_document
+from .index import build_index, load_index, remove_lectures
 from .llm import OpenAILLM
 from .player import open_at
 from .summary import get_summary, render_summary
@@ -88,6 +90,18 @@ def cmd_lines(args, settings) -> None:
     print(render_lines(lines))
 
 
+def cmd_extract(args, settings) -> None:
+    limit_resources()
+    data = extract_pdf(Path(args.pdf))
+    save_document(data, Path(args.out))
+    print(f"{data['pages_with_text']} of {data['page_count']} pages have text ({data['chars']} characters). Saved to {args.out}")
+
+
+def cmd_unindex(args, settings) -> None:
+    removed = remove_lectures(settings.index_path, args.lectures)
+    print(f"Removed lecture(s) {removed} from {settings.index_path}" if removed else "Nothing to remove.")
+
+
 def cmd_models(args, settings) -> None:
     print("\n".join(OpenAILLM(settings.require_key()).list_models()))
 
@@ -124,13 +138,22 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--count", type=int, default=40)
     p.set_defaults(func=cmd_lines)
 
+    p = sub.add_parser("extract", help="extract the text of a PDF (slides, script) per page into a JSON file; no LLM calls")
+    p.add_argument("pdf")
+    p.add_argument("out")
+    p.set_defaults(func=cmd_extract)
+
+    p = sub.add_parser("unindex", help="remove lectures from the index, with their chapter markers and summaries")
+    p.add_argument("lectures", type=int, nargs="+", metavar="N")
+    p.set_defaults(func=cmd_unindex)
+
     p = sub.add_parser("models", help="list the models your API key can use")
     p.set_defaults(func=cmd_models)
 
     args = parser.parse_args(argv)
     try:
         args.func(args, load_settings())
-    except (ConfigError, FileNotFoundError, ValueError) as e:
+    except (ConfigError, DocumentError, FileNotFoundError, ValueError) as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
     return 0

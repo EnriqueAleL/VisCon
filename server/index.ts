@@ -1,5 +1,7 @@
 import express from 'express';
 import { createServer } from 'node:http';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { randomBytes,randomInt,randomUUID } from 'node:crypto';
 import { Server } from 'socket.io';
 import type { BankQuestion,Settings,Player,RoomView,RoundResult,Outcome,Profile,HistoryEntry } from '../shared/types';
@@ -9,6 +11,9 @@ import { mountAuth } from '../auth/routes';
 import { mountAdmin, rootAdminsFromEnv } from '../admin/routes';
 import type { AdminService } from '../admin/service';
 import { mountSubmissions } from '../submissions/routes';
+import { mountIndexing } from '../indexing/routes';
+import { createPythonRunner, pythonConfigFromEnv } from '../indexing/runner';
+import type { IndexingService } from '../indexing/service';
 import { createVerifiedGuard } from '../auth/guard';
 import { mountStatic } from './static';
 import { eloDelta } from './rating';
@@ -112,9 +117,20 @@ io.of('/study').use(guard.socket);
 const rootAdmins=rootAdminsFromEnv();
 if(!rootAdmins.size)console.warn('AUTH_ADMINS is empty: nobody can administer courses or other admins. Set AUTH_ADMINS=<eth username>.');
 admin=mountAdmin(app,{db,playerFromCookie:session,accounts:accountsService,rootAdmins});
-const submissions=mountSubmissions(app,{db,playerFromCookie:session,admin,uploadsDir:process.env.UPLOADS_DIR||'.data/uploads'});
+// Lecture numbers of the original DDCA recordings (they live outside the submission system and must not be replaced by it).
+const originalLectures=new Set<number>();
+try{for(const key of Object.keys(JSON.parse(readFileSync('qa/data/index.json','utf8')).lectures??{}))originalLectures.add(Number(key));}catch{/* no original recordings on this machine */}
+let indexing:IndexingService|undefined;
+const submissions=mountSubmissions(app,{db,playerFromCookie:session,admin,uploadsDir:process.env.UPLOADS_DIR||'.data/uploads',
+  isNumberReserved:(courseId,number)=>courseId==='computer-architecture'&&originalLectures.has(number),
+  onApproved:()=>indexing?.kick(),onRemoved:submission=>indexing?.unpublish(submission)});
 submissions.purgeStaleDrafts();
 setInterval(()=>submissions.purgeStaleDrafts(),3_600_000).unref();
+// Approved material is indexed in the background, one item at a time, with the Python tool in qa/.
+indexing=mountIndexing(app,{db,playerFromCookie:session,admin,submissions,coursesDir:process.env.COURSES_DIR||'.data/courses',
+  runner:createPythonRunner(pythonConfigFromEnv(fileURLToPath(new URL('../',import.meta.url)))),
+  enabled:process.env.INDEXING_ENABLED!=='false',maxAttempts:Number(process.env.INDEXING_MAX_ATTEMPTS)||3});
+indexing.start(Math.max(1,Number(process.env.INDEXING_POLL_SECONDS)||5)*1000);
 // A revoke done from the command line (another process), an expired session or an expired verification must also end
 // connections that are already open, so every open socket is re-checked against the guard on a timer.
 const recheckSeconds=Number(process.env.AUTH_SOCKET_RECHECK_SECONDS||30);
