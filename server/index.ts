@@ -23,6 +23,7 @@ import { mountDocumentTranslation } from './document-translation';
 import { mountMania, maniaIdentity } from './mania';
 import { mountSocial } from './social';
 import { mountManiaAnswers } from './mania-answers';
+import { mountGalaxyLive } from './galaxy-live';
 
 const app=express(),http=createServer(app),port=Number(process.env.PORT||3001);
 // Node cuts any request after 5 minutes by default; a large video upload on a slow connection needs longer.
@@ -174,7 +175,9 @@ io.on('connection',socket=>{
   socket.on('disconnect',()=>{connections.get(id)?.delete(socket.id);if(connections.get(id)?.size)return;connections.delete(id);for(const r of rooms.values()){const p=r.players.find(x=>x.id===id);if(p){p.online=false;broadcast(r);}}const timer=setTimeout(()=>{const r=rooms.get(active.get(id)||'');if(!r)return;if(r.state==='lobby')leave(r,profile(id));else if(r.players.filter(p=>!p.bot).every(p=>!p.online))cancel(r,'Both players disconnected. No Elo changed.');else finish(r,'Opponent disconnected for over 60 seconds',id);},60000);disconnects.set(id,timer);});
 });
 setInterval(()=>{for(const [key,value]of rates)if(Date.now()-value.at>120000)rates.delete(key);for(const [key,r]of rooms)if(Date.now()-r.createdAt>4*3600000){if(!['finished','cancelled'].includes(r.state))cancel(r,'This room expired. Create a new challenge.');rooms.delete(key);}},60000).unref();
-await mountLectures(app,{db,coursesDir});
+const lectureCatalog=await mountLectures(app,{db,coursesDir});
+// Who is in which galaxy lecture city right now, and how hard each chapter is (crowds and weather).
+mountGalaxyLive(app,route,{db,knows:lectureCatalog.knows});
 const learning = await mountMania(app, io);
 registerCourseQuestions(learning.bundle.bank.map(question => ({
   id: `ddca-${question.id}`, subject: 'ddca', topic: learning.bundle.world.cities.find(city => city.id === question.cityId)!.name,

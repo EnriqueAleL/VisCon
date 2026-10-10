@@ -14,7 +14,7 @@
 <body>
   <div id="stage"><canvas id="scene"></canvas></div>
   <div class="grade" aria-hidden="true"></div>
-  <div class="warp" id="warp" aria-hidden="true"></div>
+  <div class="veil" id="veil" aria-hidden="true" hidden></div>
   <div class="tags" id="tags" aria-hidden="true"></div>
   <button class="ship-beacon" id="board-versus" type="button" hidden aria-label="Versus-Schiff betreten">
     <span>Versus</span><small>Cockpit betreten <span aria-hidden="true">↗</span></small>
@@ -65,6 +65,7 @@
       <p class="ask-status" id="ask-status" role="status"></p>
     </form>
 
+    <p class="ride-toast" id="ride-toast" role="status" hidden></p>
     <section class="lecture-chat" id="lecture-chat" aria-label="Chat zur Vorlesung" hidden>
       <header class="lc-head">
         <div>
@@ -91,6 +92,7 @@
 
     <nav class="hop" id="hop" aria-label="Nachbarvorlesungen" hidden>
       <button type="button" id="hop-prev"></button>
+      <button type="button" id="hop-ride" class="ride"></button>
       <button type="button" id="hop-next"></button>
     </nav>
 
@@ -115,6 +117,17 @@
       <div class="player-nav">
         <button type="button" id="player-prev"></button>
         <button type="button" id="player-next"></button>
+      </div>
+      <div class="player-rate" id="player-rate">
+        <span>Wie schwer war dieses Kapitel?</span>
+        <span class="rate-buttons" role="group" aria-label="Schwierigkeit von 1 (leicht) bis 5 (schwer)">
+          <button type="button" data-rating="1" title="leicht">1</button>
+          <button type="button" data-rating="2">2</button>
+          <button type="button" data-rating="3">3</button>
+          <button type="button" data-rating="4">4</button>
+          <button type="button" data-rating="5" title="schwer">5</button>
+        </span>
+        <em id="player-rate-note"></em>
       </div>
     </div>
   </div>
@@ -149,6 +162,7 @@
   <script src="/galaxy/api.js"></script>
   <script src="/galaxy/documents.js"></script>
   <script src="/galaxy/themes.js"></script>
+  <script src="/galaxy/transitions.js"></script>
   <script src="/galaxy/city.js"></script>
   <script src="/galaxy/duel-scene.js"></script>
   <script src="/galaxy/soundtrack.js"></script>

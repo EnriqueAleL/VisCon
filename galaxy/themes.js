@@ -16,6 +16,8 @@ window.GalaxyThemes = (function () {
       id: "altstadt",
       planet: { ocean: 0x1f4f7a, land: 0x5f7f3e, high: 0x8a7350, ice: 0.1, sea: 0.5, bands: 0, ring: false },
       city: {
+        facades: { single: 3, arched: 3, pair: 2, balcony: 1 },
+        ride: { kind: "tram", label: "Tram", caption: "Mit dem Tram zum nächsten Termin" }, horizon3d: "alps",
         skyTop: 0x6aa6d8, horizon: 0xdce8ee, sun: 0xffeccf, ground: 0x7f9f58,
         street: 0x7d736a, lane: 0xe9e1cf, sidewalk: 0xc7baa6, lawn: 0x86ab5c,
         styles: [
@@ -34,6 +36,8 @@ window.GalaxyThemes = (function () {
       id: "neustadt",
       planet: { ocean: 0x0f3a66, land: 0x3f7f86, high: 0xb9d4dc, ice: 0.08, sea: 0.62, bands: 0, ring: true },
       city: {
+        facades: { ribbon: 3, glass: 2, balcony: 2, pair: 1 },
+        ride: { kind: "pod", label: "Shuttle", caption: "Das Shuttle bringt dich zum nächsten Meeting" }, horizon3d: "hills",
         skyTop: 0x4f95d6, horizon: 0xd3e4ef, sun: 0xfff6e8, ground: 0x7aa46a,
         street: 0x3f444a, lane: 0xf1d36b, sidewalk: 0xd4d6d6, lawn: 0x7fb069,
         styles: [
@@ -53,6 +57,8 @@ window.GalaxyThemes = (function () {
       // Autumn forest world, so it never reads as a second Earth next to the old town
       planet: { ocean: 0x264f5c, land: 0xc0702f, high: 0x7d3b1c, ice: 0, sea: 0.38, bands: 0, ring: false },
       city: {
+        facades: { single: 3, pair: 3, ribbon: 1, balcony: 1 },
+        ride: { kind: "velo", label: "Velo", caption: "Mit dem Velo zum nächsten Kapitel" }, horizon3d: "alps",
         skyTop: 0x66a9dc, horizon: 0xdfeaea, sun: 0xfff1d6, ground: 0x6f9a4a,
         street: 0x4b4f52, lane: 0xf2f2ee, sidewalk: 0xc9c5bc, lawn: 0x74a84f,
         styles: [
@@ -71,6 +77,8 @@ window.GalaxyThemes = (function () {
       id: "hafen",
       planet: { ocean: 0x3a2a24, land: 0xa4552f, high: 0xd29a62, ice: 0, sea: 0.36, bands: 0, ring: true },
       city: {
+        facades: { balcony: 3, pair: 2, ribbon: 2, single: 1 },
+        ride: { kind: "taxi", label: "Taxi", caption: "Taxi zum nächsten Business-Meeting" }, horizon3d: "hills",
         skyTop: 0x8fb3cc, horizon: 0xe3ddd2, sun: 0xffe2bd, ground: 0x8f9a6a,
         street: 0x55524e, lane: 0xe8c45a, sidewalk: 0xb9b2a6, lawn: 0x8aa462,
         styles: [
@@ -89,6 +97,8 @@ window.GalaxyThemes = (function () {
       id: "riviera",
       planet: { ocean: 0x1b6f8f, land: 0xd8b878, high: 0xb98a52, ice: 0, sea: 0.3, bands: 0.6, ring: false },
       city: {
+        facades: { arched: 4, single: 2, pair: 1 },
+        ride: { kind: "vespa", label: "Vespa", caption: "Mit der Vespa zum nächsten Termin" }, horizon3d: "dunes",
         skyTop: 0x3f9ae0, horizon: 0xe9f1f2, sun: 0xfff3dc, ground: 0xd8c48f,
         street: 0x8a8378, lane: 0xf4f0e6, sidewalk: 0xe6dccb, lawn: 0x9fb862,
         styles: [
@@ -107,6 +117,8 @@ window.GalaxyThemes = (function () {
       id: "fjord",
       planet: { ocean: 0x2c4f6e, land: 0xc9d6dc, high: 0xffffff, ice: 0.55, sea: 0.48, bands: 0, ring: false },
       city: {
+        facades: { single: 3, pair: 2, balcony: 1 },
+        ride: { kind: "sled", label: "Schlitten", caption: "Mit dem Rentierschlitten zum nächsten Termin" }, horizon3d: "alps",
         skyTop: 0x8db8d8, horizon: 0xe8eef2, sun: 0xfff4e6, ground: 0xe4ebee,
         street: 0x5a5f63, lane: 0xf0f0ea, sidewalk: 0xd6dbde, lawn: 0xdfe8ec,
         styles: [
