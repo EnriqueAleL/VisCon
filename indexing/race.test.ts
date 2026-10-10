@@ -32,6 +32,7 @@ test('removal racing with publishing and indexing leaves nothing behind', async 
       const runner: IndexRunner = {
         readiness: async () => ({ ok: true }),
         indexLecture: async job => { await sleep(30); mkdirSync(join(job.indexPath, '..'), { recursive: true }); indexed.add(job.number); writeFileSync(job.indexPath, JSON.stringify([...indexed])); },
+        summarizeLecture: async () => {},
         unindexLecture: async job => { await sleep(5); indexed.delete(job.number); },
         extractDocument: async () => ({ pages: 1 }),
       };

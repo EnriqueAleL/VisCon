@@ -21,6 +21,8 @@ class FakeRunner implements IndexRunner {
   document: (job: DocumentJob) => Promise<{ pages: number }> = async () => ({ pages: 3 });
   async readiness(kind: JobKind) { return this.ready[kind]; }
   async indexLecture(job: LectureJob) { this.calls.push(`index:${job.number}`); await this.lecture(job); }
+  summary: (job: LectureJob) => Promise<void> = async () => {};
+  async summarizeLecture(job: LectureJob) { this.calls.push(`summary:${job.number}`); await this.summary(job); }
   async unindexLecture(job: { number: number }) { this.calls.push(`unindex:${job.number}`); }
   async extractDocument(job: DocumentJob) { this.calls.push(`extract:${job.pdfPath.split('/').pop()}`); return this.document(job); }
 }
@@ -50,8 +52,10 @@ beforeEach(() => {
     uploadsDir: uploads, clock, limits: uploadLimits({}), isNumberReserved: (course, n) => course === 'computer-architecture' && n <= 24,
     onApproved: s => { kicked.push(s.id); }, onRemoved: async s => { removedCalls.push(s.id); await indexing.unpublish(s); },
   });
-  indexing = createIndexingService(db, admin, { runner, submissions, coursesDir: courses, clock, maxAttempts: 3, retryBaseSeconds: 60 });
+  indexing = createIndexingService(db, admin, { runner, submissions, coursesDir: courses, clock, maxAttempts: 3, retryBaseSeconds: 60, summaries: false });
 });
+const withSummaries = () => { indexing = createIndexingService(db, admin, { runner, submissions, coursesDir: courses, clock: () => time, maxAttempts: 3, retryBaseSeconds: 60, summaries: true }); };
+const sstate = (id: string) => db.prepare('SELECT summaryState, summaryAttempts, summaryError, summaryAt FROM submissions WHERE id=?').get(id) as { summaryState: string; summaryAttempts: number; summaryError: string | null; summaryAt: number | null };
 afterEach(() => { rmSync(uploads, { recursive: true, force: true }); rmSync(courses, { recursive: true, force: true }); });
 
 async function addFile(who: string, id: string, slot: Slot, data: Buffer) {
@@ -278,4 +282,62 @@ test('a shared budget caps paid lecture runs across courses; retries count, PDFs
   const status = await indexing.status('riordache', chemistry);
   assert.equal(status.lectureIndexing.ok, false);
   assert.equal(status.budget.remaining, 0);
+});
+
+test('summaries: after indexing a lecture, notes are made from the index, and index jobs always go first', async () => {
+  withSummaries();
+  const a = await approved('lecture', { number: 1 }), b = await approved('lecture', { number: 2 });
+  assert.equal(sstate(a).summaryState, 'none');
+  await indexing.tick();
+  assert.deepEqual([state(a).indexState, sstate(a).summaryState], ['done', 'queued']);
+  while (await indexing.tick());
+  assert.deepEqual(runner.calls, ['index:1', 'index:2', 'summary:1', 'summary:2']);
+  assert.deepEqual([sstate(a).summaryState, sstate(b).summaryState], ['done', 'done']);
+  assert.ok(sstate(a).summaryAt);
+  assert.ok(db.prepare("SELECT 1 FROM audit_log WHERE action='summary.done' AND target=?").get(a));
+  assert.equal((await indexing.status('riordache', 'physics')).summariesEnabled, true);
+});
+
+test('summaries: a failing summary is retried and never touches the index state', async () => {
+  withSummaries();
+  const id = await approved('lecture', { number: 4 });
+  runner.summary = async () => { throw new RunnerError('RateLimitError: slow down', true); };
+  await indexing.tick(); await indexing.tick();
+  assert.deepEqual([state(id).indexState, sstate(id).summaryState, sstate(id).summaryAttempts], ['done', 'queued', 1]);
+  assert.equal(await indexing.tick(), false, 'not due yet');
+  time += 61_000; await indexing.tick();
+  time += 121_000; await indexing.tick();
+  assert.deepEqual([state(id).indexState, sstate(id).summaryState, sstate(id).summaryError], ['done', 'failed', 'RateLimitError: slow down']);
+  // retry only redoes the summary, not the index
+  runner.summary = async () => {};
+  runner.calls.length = 0;
+  indexing.retry('riordache', id);
+  while (await indexing.tick());
+  assert.deepEqual(runner.calls, ['summary:4']);
+  assert.equal(sstate(id).summaryState, 'done');
+});
+
+test('summaries: switched off, nothing is queued; indexing again queues fresh notes', async () => {
+  const id = await approved('lecture', { number: 6 });
+  while (await indexing.tick());
+  assert.equal(sstate(id).summaryState, 'none');
+  assert.equal((await indexing.status('riordache', 'physics')).summariesEnabled, false);
+  withSummaries();
+  indexing.retry('riordache', id);
+  while (await indexing.tick());
+  assert.deepEqual(runner.calls.filter(c => c.startsWith('summary')), ['summary:6']);
+  indexing.retry('riordache', id);
+  assert.equal(state(id).indexState, 'queued', 'a done lecture is re-indexed in full');
+  while (await indexing.tick());
+  assert.equal(runner.calls.filter(c => c.startsWith('summary')).length, 2, 'new index, new notes');
+});
+
+test('summaries: a crash while summarizing is recovered', async () => {
+  withSummaries();
+  const id = await approved('lecture', { number: 8 });
+  await indexing.tick();
+  db.prepare("UPDATE submissions SET summaryState='summarizing' WHERE id=?").run(id);
+  withSummaries();
+  indexing.recover();
+  assert.equal(sstate(id).summaryState, 'queued');
 });

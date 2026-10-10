@@ -23,7 +23,7 @@ courses without lectures are not listed. Archiving a course hides it, with its m
 
 - `GET /api/lectures` has the **same shape as before** (the app loads it once and filters in the browser). It is serialised and gzip-compressed once per
   catalogue version (about 640 KB becomes about 130 KB) and revalidated with an `ETag`, so an unchanged list costs a `304` with no body. `?courseId=` still filters.
-- `GET /api/lectures/:id` returns one lecture with its full transcript; `.../summary` returns a summary if one exists (summaries are not generated automatically).
+- `GET /api/lectures/:id` returns one lecture with its full transcript; `.../summary` returns a summary if one exists (generated automatically after indexing, from the chapter index only).
 - **Videos are never part of any of this.** They are only links. A video is requested when someone presses play (`preload="metadata"`), and then in pieces:
   `Range` requests return `206` with just those bytes.
 - `/api/courses` is the lecture app's course list. Course management lives under `/api/platform/` (see `admin/README.md`) so the two never collide.
@@ -46,6 +46,6 @@ Behind the same login as all of `/media`. Only exact names, only for an approved
 ## Not done yet
 
 - The **study world** (map, recall questions, visualizers) is still DDCA-only and hand-authored.
-- No automatic summaries; slides and scripts are extracted but not used in answers.
+- Slides and scripts are extracted but not used in answers.
 - No semester, degree or year for new courses (so they all sit under *Aufzeichnungen*), no lecturer, date or thumbnail.
 - Videos are served as uploaded: no lower-quality version for slow connections.

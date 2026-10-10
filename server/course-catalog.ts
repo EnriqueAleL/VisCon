@@ -19,7 +19,7 @@ interface IndexedLecture { lecture: number; duration: number; chapters: IndexedC
 
 export interface PublishedCourse { course: Course; lectures: CatalogLecture[]; skipped: string[] }
 interface CourseRow { id: string; name: string }
-interface LectureRow { number: number; title: string; indexedAt: number | null }
+interface LectureRow { number: number; title: string; indexedAt: number | null; summaryAt: number | null }
 
 export const courseColor = (id: string) => COLORS[createHash('sha1').update(id).digest()[0] % COLORS.length];
 export function shortName(name: string): string {
@@ -40,12 +40,12 @@ export function activeCourses(db: DatabaseSync): CourseRow[] {
   return db.prepare("SELECT id, name FROM courses WHERE status='active' ORDER BY name").all() as unknown as CourseRow[];
 }
 const lectureRows = (db: DatabaseSync, courseId: string) =>
-  db.prepare("SELECT number, title, indexedAt FROM submissions WHERE courseId=? AND type='lecture' AND status='approved' AND indexState='done' AND number IS NOT NULL ORDER BY number").all(courseId) as unknown as LectureRow[];
+  db.prepare("SELECT number, title, indexedAt, summaryAt FROM submissions WHERE courseId=? AND type='lecture' AND status='approved' AND indexState='done' AND number IS NOT NULL ORDER BY number").all(courseId) as unknown as LectureRow[];
 
 /** Changes whenever one course's lectures, titles, index or name change; used to rebuild only that course. */
 export async function courseKey(db: DatabaseSync, coursesDir: string, row: CourseRow): Promise<string> {
   const hash = createHash('sha1').update(`${row.id}|${row.name}\n`);
-  for (const lecture of lectureRows(db, row.id)) hash.update(`${lecture.number}|${lecture.title}|${lecture.indexedAt}\n`);
+  for (const lecture of lectureRows(db, row.id)) hash.update(`${lecture.number}|${lecture.title}|${lecture.indexedAt}|${lecture.summaryAt}\n`);
   try { hash.update(String((await stat(join(qaDir(coursesDir, row.id), 'index.json'))).mtimeMs)); } catch { /* no index yet */ }
   return hash.digest('hex');
 }
@@ -55,7 +55,7 @@ export function catalogFingerprint(db: DatabaseSync): string {
   const hash = createHash('sha1');
   for (const course of activeCourses(db)) {
     hash.update(`c|${course.id}|${course.name}\n`);
-    for (const row of lectureRows(db, course.id)) hash.update(`l|${course.id}|${row.number}|${row.title}|${row.indexedAt}\n`);
+    for (const row of lectureRows(db, course.id)) hash.update(`l|${course.id}|${row.number}|${row.title}|${row.indexedAt}|${row.summaryAt}\n`);
   }
   return hash.digest('hex');
 }

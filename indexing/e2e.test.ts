@@ -82,7 +82,8 @@ async function world(openaiUrl: string, options: { maxAttempts?: number } = {}) 
   }
   const state = (id: string) => db.prepare('SELECT indexState, indexAttempts, indexError FROM submissions WHERE id=?').get(id) as { indexState: string; indexAttempts: number; indexError: string | null };
   const cleanup = () => { rmSync(uploads, { recursive: true, force: true }); rmSync(courses, { recursive: true, force: true }); };
-  return { db, admin, submissions, indexing, approved, state, courses, uploads, cleanup, tickAll: async () => { while (await indexing.tick()); } };
+  const summaryState = (id: string) => (db.prepare('SELECT summaryState FROM submissions WHERE id=?').get(id) as { summaryState: string }).summaryState;
+  return { db, admin, submissions, indexing, approved, state, summaryState, courses, uploads, cleanup, tickAll: async () => { while (await indexing.tick()); } };
 }
 
 test('real pipeline: a lecture gets a chapter index, a script its text, a scan fails clearly, and removal cleans up', { skip }, async () => {
@@ -104,9 +105,16 @@ test('real pipeline: a lecture gets a chapter index, a script its text, a scan f
     assert.ok(index.lectures['7'].chapters.every((c: { start: number; end: number }) => c.end > c.start), 'timestamps come from the transcript');
     assert.ok(existsSync(join(w.courses, 'physics', 'qa', 'chapters', 'lec7.chapters.vtt')), 'chapter markers for the player were exported');
     assert.deepEqual(readdirSync(join(w.courses, 'physics', 'lectures')).sort(), ['lec7.mp4', 'lec7.vtt']);
-    assert.equal(fake.requests.length, 1, 'exactly one model call per lecture');
+    assert.deepEqual(fake.requests.map(r => r.body.text.format.name), ['ChapterDrafts', 'SummaryDraft'], 'one call to index, one for the notes');
     assert.equal(fake.requests[0].body.model, 'fake-model');
-    assert.equal(fake.requests[0].body.text.format.name, 'ChapterDrafts');
+    // the notes are built from the index alone: the model never sees the transcript
+    const notesInput = JSON.stringify(fake.requests[1].body.input);
+    assert.match(notesInput, /Introduction/);
+    assert.doesNotMatch(notesInput, /Sentence \d/);
+    const notes = JSON.parse(readFileSync(join(w.courses, 'physics', 'qa', 'summaries', 'lec7.json'), 'utf8'));
+    assert.equal(notes.basis, 'index');
+    assert.equal(notes.sections[0].start, 0);
+    assert.equal(w.summaryState(lecture), 'done');
 
     // script: text per page
     assert.equal(w.state(script).indexState, 'done');
@@ -124,6 +132,7 @@ test('real pipeline: a lecture gets a chapter index, a script its text, a scan f
     assert.deepEqual(Object.keys(JSON.parse(readFileSync(indexFile, 'utf8')).lectures), []);
     assert.ok(!existsSync(join(w.courses, 'physics', 'qa', 'chapters', 'lec7.chapters.vtt')));
     assert.deepEqual(readdirSync(join(w.courses, 'physics', 'lectures')), []);
+    assert.ok(!existsSync(join(w.courses, 'physics', 'qa', 'summaries', 'lec7.json')), 'the notes go with the lecture');
   } finally { w.cleanup(); await fake.close(); }
 });
 

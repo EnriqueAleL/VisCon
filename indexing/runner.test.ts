@@ -39,7 +39,7 @@ test('a tool that reports a clean error is not retried; a crash or timeout is', 
     await assert.rejects(clean.extractDocument(job(dir)), (e: RunnerError) => e.retryable === false);
     const crash = createPythonRunner({ python: script(dir, 'printf "Traceback (most recent call last):\\nMemoryError\\n" >&2; exit 1'), qaDir: dir, env: { PATH: process.env.PATH } });
     await assert.rejects(crash.extractDocument(job(dir)), (e: RunnerError) => e.retryable === true && e.message === 'MemoryError');
-    const slow = createPythonRunner({ python: script(dir, 'sleep 30'), qaDir: dir, env: { PATH: process.env.PATH }, timeouts: { lecture: 300, document: 300, unindex: 300 } });
+    const slow = createPythonRunner({ python: script(dir, 'sleep 30'), qaDir: dir, env: { PATH: process.env.PATH }, timeouts: { lecture: 300, document: 300, unindex: 300, summary: 300 } });
     const started = Date.now();
     await assert.rejects(slow.extractDocument(job(dir)), (e: RunnerError) => e.retryable === true && /too long/.test(e.message));
     assert.ok(Date.now() - started < 5000, 'the stuck process was stopped');

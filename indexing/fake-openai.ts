@@ -34,6 +34,11 @@ export function startFakeOpenAI(options: { failWith?: number } = {}): Promise<Fa
         const label = (/\[(L\d+-\d+)\]/.exec(input) ?? [])[1] ?? '';
         return reply({ evidence: 'verbatim words from the transcript', found: Boolean(label), start_ref: label, end_ref: label, answer: 'The lecturer explains this here.' });
       }
+      // Index-only study notes: one section per first chapter id shown in the chapter list.
+      if (format === 'SummaryDraft') {
+        const id = (/^(\d+\.\d+) \|/m.exec(input) ?? [])[1];
+        return reply({ overview: 'An overview of the lecture.', sections: [{ chapter_ids: id ? [id] : [], heading: 'Introduction', points: ['What the lecture is about.'] }], takeaways: ['Remember the basics.'] });
+      }
       const lines = (input.match(/^\[\d+\]/gm) ?? []).length;
       const chapters = [{ start_line: 0, title: 'Introduction', summary: 'What the lecture is about.', key_terms: ['overview'] }];
       if (lines >= 4) chapters.push({ start_line: Math.floor(lines / 2), title: 'Main topic', summary: 'The core explanation.', key_terms: ['pipelining', 'hazard'] });

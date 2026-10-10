@@ -15,6 +15,8 @@ export interface DocumentJob { pdfPath: string; outPath: string }
 export interface IndexRunner {
   readiness(kind: JobKind): Promise<Readiness>;
   indexLecture(job: LectureJob): Promise<void>;
+  /** Study notes written from the chapter list in the index only (no transcript): a small, cheap model call. */
+  summarizeLecture(job: LectureJob): Promise<void>;
   unindexLecture(job: { number: number; indexPath: string }): Promise<void>;
   extractDocument(job: DocumentJob): Promise<{ pages: number }>;
 }
@@ -24,10 +26,10 @@ export interface PythonRunnerConfig {
   /** Folder that contains the `viscon_qa` package. */
   qaDir: string;
   env: NodeJS.ProcessEnv;
-  timeouts?: { lecture: number; document: number; unindex: number };
+  timeouts?: { lecture: number; document: number; unindex: number; summary: number };
 }
 
-const DEFAULT_TIMEOUTS = { lecture: 20 * 60_000, document: 5 * 60_000, unindex: 60_000 };
+const DEFAULT_TIMEOUTS = { lecture: 20 * 60_000, document: 5 * 60_000, unindex: 60_000, summary: 5 * 60_000 };
 /** Only these variables reach the Python process: no cookies, session secrets or SMTP passwords. */
 const PASS_THROUGH = ['PATH', 'LANG', 'LC_ALL', 'TMPDIR', 'SYSTEMROOT', 'HOME', 'OPENAI_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_ORG_ID', 'QA_INDEX_MODEL', 'QA_ANSWER_MODEL', 'HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY', 'SSL_CERT_FILE', 'REQUESTS_CA_BUNDLE'];
 
@@ -103,6 +105,14 @@ export function createPythonRunner(config: PythonRunnerConfig): IndexRunner {
       let chapters = 0;
       try { chapters = (JSON.parse(readFileSync(job.indexPath, 'utf8')).lectures?.[String(job.number)]?.chapters ?? []).length; } catch { /* handled below */ }
       if (chapters < 1) throw new RunnerError('Indexing finished but produced no chapters.', true);
+    },
+    async summarizeLecture(job) {
+      // --from-index: only the chapter list goes to the model. --force: always redo it, a re-indexed lecture has new chapters.
+      const result = await run(['summary', String(job.number), '--from-index', '--force', '--json'], { QA_LECTURES_DIR: job.lecturesDir, QA_INDEX_PATH: job.indexPath }, timeouts.summary);
+      if (result.code !== 0) throw failure(result, true);
+      let overview = '';
+      try { overview = JSON.parse(readFileSync(join(job.indexPath, '..', 'summaries', `lec${job.number}.json`), 'utf8')).overview ?? ''; } catch { /* handled below */ }
+      if (typeof overview !== 'string' || !overview.trim()) throw new RunnerError('Summarizing finished but produced no notes.', true);
     },
     async unindexLecture(job) {
       if (!existsSync(job.indexPath)) return;

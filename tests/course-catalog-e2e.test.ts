@@ -73,6 +73,11 @@ test('approve -> index -> catalogue -> model-backed answer, per course', { skip 
     const lectures = (await get('/api/lectures')).lectures.map((l: { id: string }) => l.id);
     for (const id of ['physics-lec7', 'chemistry-lec8', 'computer-architecture-lec25', 'lec7']) assert.ok(lectures.includes(id), id);
     assert.equal((await get('/api/courses')).courses.find((c: { id: string }) => c.id === 'physics').videoCount, 1);
+    // the study notes were made automatically after indexing, and the app can read them
+    const physics7 = (await get('/api/lectures')).lectures.find((l: { id: string }) => l.id === 'physics-lec7');
+    assert.equal(physics7.hasSummary, true);
+    const notes = (await get('/api/lectures/physics-lec7/summary')).summary;
+    assert.ok(notes.overview && notes.sections.length > 0, JSON.stringify(notes).slice(0, 200));
 
     // 2. a question to one course reaches the real Python Q&A tool, which reads only that course's index
     const answer = await ask('How does thermodynamics work?', 'physics');

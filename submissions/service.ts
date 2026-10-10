@@ -13,7 +13,9 @@ export interface SubmissionFile { slot: Slot; size: number; sha256: string; orig
 export interface Submission {
   id: string; courseId: string; type: SubmissionType; title: string; number: number | null; notes: string; status: SubmissionStatus;
   submitter: string; createdAt: string; submittedAt: string | null; reviewedBy: string | null; reviewedAt: string | null; reviewNote: string | null;
-  indexState: 'none' | 'queued' | 'indexing' | 'done' | 'failed'; indexError: string | null; indexedAt: string | null; files: SubmissionFile[]; missing: Slot[];
+  indexState: 'none' | 'queued' | 'indexing' | 'done' | 'failed'; indexError: string | null; indexedAt: string | null;
+  summaryState: 'none' | 'queued' | 'summarizing' | 'done' | 'failed'; summaryError: string | null; summaryAt: string | null;
+  files: SubmissionFile[]; missing: Slot[];
 }
 export interface SubmissionOptions {
   uploadsDir: string; limits?: UploadLimits; clock?: () => number;
@@ -27,6 +29,7 @@ export interface SubmissionOptions {
 interface Row {
   id: string; courseId: string; submitter: string; type: SubmissionType; title: string; number: number | null; notes: string; status: SubmissionStatus;
   createdAt: number; submittedAt: number | null; reviewedBy: string | null; reviewedAt: number | null; reviewNote: string | null; indexState: Submission['indexState']; indexError: string | null; indexedAt: number | null;
+  summaryState: Submission['summaryState']; summaryError: string | null; summaryAt: number | null;
 }
 interface FileRow { slot: Slot; size: number; sha256: string; originalName: string; mime: string; ext: string }
 
@@ -48,6 +51,7 @@ export function createSubmissionService(db: DatabaseSync, admin: AdminService, o
     return {
       id: r.id, courseId: r.courseId, type: r.type, title: r.title, number: r.number, notes: r.notes, status: r.status, submitter: r.submitter,
       createdAt: iso(r.createdAt)!, submittedAt: iso(r.submittedAt), reviewedBy: r.reviewedBy, reviewedAt: iso(r.reviewedAt), reviewNote: r.reviewNote, indexState: r.indexState, indexError: r.indexError, indexedAt: iso(r.indexedAt),
+      summaryState: r.summaryState, summaryError: r.summaryError, summaryAt: iso(r.summaryAt),
       files: files.map(({ slot, size, sha256, originalName, mime }) => ({ slot, size, sha256, originalName, mime })),
       missing: spec.required.filter(slot => !files.some(f => f.slot === slot)),
     };

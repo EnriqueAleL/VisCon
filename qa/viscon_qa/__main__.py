@@ -67,18 +67,26 @@ def cmd_ask(args, settings) -> None:
 
 
 def cmd_summary(args, settings) -> None:
-    lecture = corpus.discover(settings.lectures_dir).get(args.lecture)
-    if lecture is None:
-        raise ConfigError(f"No transcript for lecture {args.lecture}")
-    entry = load_index(settings.index_path)["lectures"].get(str(args.lecture))
-    if entry is None:
-        raise ConfigError(f"Lecture {args.lecture} isn't indexed yet. Run `index --lectures {args.lecture}` first.")
+    index = load_index(settings.index_path)
+    lectures = {} if args.from_index else corpus.discover(settings.lectures_dir)
+    if args.all == (args.lecture is not None):
+        raise ConfigError("Give a lecture number, or --all for every indexed lecture.")
+    keys = sorted(index["lectures"], key=int) if args.all else [str(args.lecture)]
     llm = OpenAILLM(settings.require_key())
-    summary = get_summary(
-        llm, settings.require_model("answer"), lecture, entry,
-        settings.index_path.parent / "summaries", force=args.force,
-    )
-    print(json.dumps(summary, indent=2, ensure_ascii=False) if args.json else render_summary(summary))
+    model = settings.require_model("answer")
+    for key in keys:
+        number = int(key)
+        entry = index["lectures"].get(key)
+        if entry is None:
+            raise ConfigError(f"Lecture {number} isn't indexed yet. Run `index --lectures {number}` first.")
+        if not args.from_index and number not in lectures:
+            raise ConfigError(f"No transcript for lecture {number}")
+        summary = get_summary(llm, model, lectures.get(number), entry, settings.index_path.parent / "summaries",
+                              force=args.force, from_index=args.from_index)
+        if args.all:
+            print(f"Lecture {number}: {len(summary['sections'])} sections")
+        else:
+            print(json.dumps(summary, indent=2, ensure_ascii=False) if args.json else render_summary(summary))
 
 
 def cmd_lines(args, settings) -> None:
@@ -126,8 +134,10 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("chapters", help="export chapter markers per lecture (JSON + WebVTT); no LLM calls")
     p.set_defaults(func=cmd_chapters)
 
-    p = sub.add_parser("summary", help="summarize a lecture (cached in data/summaries/)")
-    p.add_argument("lecture", type=int)
+    p = sub.add_parser("summary", help="summarize a lecture (cached in data/summaries/); --all does every indexed lecture")
+    p.add_argument("lecture", type=int, nargs="?")
+    p.add_argument("--all", action="store_true", help="summarize every indexed lecture (already cached ones are skipped)")
+    p.add_argument("--from-index", action="store_true", help="cheap: write the notes from the chapter list in the index only (about 2k tokens per lecture instead of the whole transcript)")
     p.add_argument("--force", action="store_true", help="regenerate even if a cached summary exists")
     p.add_argument("--json", action="store_true", help="print the result as JSON")
     p.set_defaults(func=cmd_summary)

@@ -22,8 +22,11 @@ export interface IndexingOptions {
    * Undefined = no limit. When it is used up, lectures wait and only the free PDF extraction goes on.
    */
   maxPaidRuns?: number;
+  /** After a lecture is indexed, also write its study notes from the index (one small model call). Default true. */
+  summaries?: boolean;
 }
-interface Job { id: string; courseId: string; type: 'lecture' | 'slides' | 'script'; number: number | null; indexAttempts: number }
+/** `kind` says which stage this is: indexing a lecture or extracting a PDF (`index`), or the study notes of an indexed lecture (`summary`). */
+interface Job { id: string; courseId: string; type: 'lecture' | 'slides' | 'script'; number: number | null; kind: 'index' | 'summary'; attempts: number }
 
 const SLUG = /^[a-z0-9][a-z0-9-]{0,47}$/;
 const VIDEO_EXTS = ['mp4', 'mov', 'webm', 'mkv'];
@@ -41,6 +44,7 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
   let timer: ReturnType<typeof setInterval> | undefined;
   let busy = false;
   let enabled = options.enabled ?? true;
+  const summaries = options.summaries ?? true;
 
   /** Every operation on a course's index.json runs one at a time, so two writers can never interleave. */
   let chain: Promise<unknown> = Promise.resolve();
@@ -94,6 +98,10 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
   }
 
   async function execute(job: Job) {
+    if (job.kind === 'summary') {
+      await serial(() => options.runner.summarizeLecture({ number: job.number!, lecturesDir: lecturesDir(job.courseId), indexPath: indexPath(job.courseId) }));
+      return;
+    }
     await publish(job);
     if (job.type === 'lecture') await serial(() => options.runner.indexLecture({ number: job.number!, lecturesDir: lecturesDir(job.courseId), indexPath: indexPath(job.courseId) }));
     else await serial(() => options.runner.extractDocument({ pdfPath: documentPdf(job.courseId, job.id), outPath: documentJson(job.courseId, job.id) }));
@@ -109,9 +117,20 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
   const budgetReason = () => `The shared indexing budget is used up (${options.maxPaidRuns} paid runs). An administrator can raise INDEXING_MAX_PAID_RUNS.`;
 
   // ---- queue
-  const dueJobs = () => db.prepare(`SELECT id, courseId, type, number, indexAttempts FROM submissions
-    WHERE status='approved' AND indexState='queued' AND (indexNextAt IS NULL OR indexNextAt<=?) ORDER BY reviewedAt, id LIMIT 25`).all(now()) as unknown as Job[];
+  /** Indexing always goes first; the study notes of already indexed lectures use the time in between. */
+  function dueJobs(): Job[] {
+    const index = db.prepare(`SELECT id, courseId, type, number, 'index' AS kind, indexAttempts AS attempts FROM submissions
+      WHERE status='approved' AND indexState='queued' AND (indexNextAt IS NULL OR indexNextAt<=?) ORDER BY reviewedAt, id LIMIT 25`).all(now()) as unknown as Job[];
+    if (!summaries) return index;
+    const notes = db.prepare(`SELECT id, courseId, type, number, 'summary' AS kind, summaryAttempts AS attempts FROM submissions
+      WHERE status='approved' AND type='lecture' AND indexState='done' AND summaryState='queued' AND (summaryNextAt IS NULL OR summaryNextAt<=?) ORDER BY reviewedAt, id LIMIT 25`).all(now()) as unknown as Job[];
+    return [...index, ...notes];
+  }
   function claim(job: Job): boolean {
+    if (job.kind === 'summary') {
+      // Study notes are one small call per indexed lecture, so they are bounded by the index runs and not counted against the budget.
+      return Number(db.prepare("UPDATE submissions SET summaryState='summarizing' WHERE id=? AND status='approved' AND indexState='done' AND summaryState='queued'").run(job.id).changes) === 1;
+    }
     if (isPaid(job.type) && !budgetLeft()) return false;
     const claimed = Number(db.prepare("UPDATE submissions SET indexState='indexing', indexStartedAt=? WHERE id=? AND status='approved' AND indexState='queued'").run(now(), job.id).changes) === 1;
     // Counted before the run starts: a run that fails or is cut off may still have been billed.
@@ -126,8 +145,8 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
     try {
       let chosen: Job | undefined;
       for (const job of dueJobs()) {
-        if (isPaid(job.type) && !budgetLeft()) continue; // waits, like a missing API key, until the budget is raised
-        if ((await options.runner.readiness(kindOf(job.type))).ok) { chosen = job; break; }
+        if (job.kind === 'index' && isPaid(job.type) && !budgetLeft()) continue; // waits, like a missing API key, until the budget is raised
+        if ((await options.runner.readiness(job.kind === 'summary' ? 'lecture' : kindOf(job.type))).ok) { chosen = job; break; }
       }
       if (!chosen || !claim(chosen)) return false;
       await finish(chosen);
@@ -138,25 +157,37 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
   async function finish(job: Job) {
     let error: RunnerError | undefined;
     try { await execute(job); }
-    catch (cause) { error = cause instanceof RunnerError ? cause : new RunnerError(cause instanceof Error ? cause.message.slice(0, 300) : 'Indexing failed.', true); }
+    catch (cause) { error = cause instanceof RunnerError ? cause : new RunnerError(cause instanceof Error ? cause.message.slice(0, 300) : 'The job failed.', true); }
     const current = db.prepare('SELECT status FROM submissions WHERE id=?').get(job.id) as { status: string } | undefined;
     if (!current || current.status !== 'approved') { await cleanup(job).catch(() => undefined); return; } // removed while it was running
+    const column = job.kind === 'index' ? 'index' : 'summary';
     if (!error) {
-      db.prepare("UPDATE submissions SET indexState='done', indexedAt=?, indexError=NULL, indexAttempts=?, indexNextAt=NULL WHERE id=?").run(now(), job.indexAttempts + 1, job.id);
+      if (job.kind === 'summary') {
+        db.prepare("UPDATE submissions SET summaryState='done', summaryAt=?, summaryError=NULL, summaryAttempts=?, summaryNextAt=NULL WHERE id=?").run(now(), job.attempts + 1, job.id);
+        admin.audit('system', 'summary.done', job.id, { course: job.courseId });
+        return;
+      }
+      db.prepare("UPDATE submissions SET indexState='done', indexedAt=?, indexError=NULL, indexAttempts=?, indexNextAt=NULL WHERE id=?").run(now(), job.attempts + 1, job.id);
       admin.audit('system', 'index.done', job.id, { course: job.courseId, type: job.type });
+      // A lecture has new chapters now, so any earlier notes are out of date: drop them and write fresh ones from the new index.
+      if (summaries && job.type === 'lecture') {
+        await rm(join(courseDir(job.courseId), 'qa', 'summaries', `lec${job.number}.json`), { force: true });
+        db.prepare("UPDATE submissions SET summaryState='queued', summaryAttempts=0, summaryNextAt=NULL, summaryError=NULL, summaryAt=NULL WHERE id=?").run(job.id);
+      }
       return;
     }
-    const attempts = job.indexAttempts + 1;
+    const attempts = job.attempts + 1;
     if (error.retryable && attempts < maxAttempts) {
-      db.prepare("UPDATE submissions SET indexState='queued', indexAttempts=?, indexError=?, indexNextAt=? WHERE id=?").run(attempts, error.message, now() + retryBase * 2 ** (attempts - 1), job.id);
+      db.prepare(`UPDATE submissions SET ${column}State='queued', ${column}Attempts=?, ${column}Error=?, ${column}NextAt=? WHERE id=?`).run(attempts, error.message, now() + retryBase * 2 ** (attempts - 1), job.id);
     } else {
-      db.prepare("UPDATE submissions SET indexState='failed', indexAttempts=?, indexError=?, indexNextAt=NULL WHERE id=?").run(attempts, error.message, job.id);
-      admin.audit('system', 'index.failed', job.id, { course: job.courseId, type: job.type, error: error.message });
+      db.prepare(`UPDATE submissions SET ${column}State='failed', ${column}Attempts=?, ${column}Error=?, ${column}NextAt=NULL WHERE id=?`).run(attempts, error.message, job.id);
+      admin.audit('system', `${column}.failed`, job.id, { course: job.courseId, type: job.type, error: error.message });
     }
   }
 
   /** Back to a clean state after a crash: whatever was running when the process died is simply queued again. */
-  const recover = () => Number(db.prepare("UPDATE submissions SET indexState='queued' WHERE indexState='indexing'").run().changes);
+  const recover = () => Number(db.prepare("UPDATE submissions SET indexState='queued' WHERE indexState='indexing'").run().changes)
+    + Number(db.prepare("UPDATE submissions SET summaryState='queued' WHERE summaryState='summarizing'").run().changes);
 
   function start(pollMs = options.pollMs ?? 5000) {
     recover();
@@ -174,6 +205,7 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
   async function cleanup(job: Pick<Job, 'id' | 'courseId' | 'type' | 'number'>) {
     if (job.type === 'lecture' && job.number !== null) {
       await serial(() => options.runner.unindexLecture({ number: job.number!, indexPath: indexPath(job.courseId) }));
+      await rm(join(courseDir(job.courseId), 'qa', 'summaries', `lec${job.number}.json`), { force: true });
       const dir = lecturesDir(job.courseId);
       if (existsSync(dir)) await dropFiles(dir, `lec${job.number}`, [...TRANSCRIPT_EXTS, ...VIDEO_EXTS]);
     } else {
@@ -187,14 +219,23 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
   }
 
   // ---- reading and retrying
+  /**
+   * Run it again. If indexing failed that is what is retried; if only the study notes failed, just those (a small call); otherwise
+   * an indexed item is indexed afresh (which also rewrites its notes).
+   */
   function retry(actor: string, id: unknown): Submission {
-    const row = typeof id === 'string' ? db.prepare('SELECT id, courseId, type, status, indexState FROM submissions WHERE id=?').get(id) as { id: string; courseId: string; type: Job['type']; status: string; indexState: string } | undefined : undefined;
+    const row = typeof id === 'string' ? db.prepare('SELECT id, courseId, type, status, indexState, summaryState FROM submissions WHERE id=?').get(id) as { id: string; courseId: string; type: Job['type']; status: string; indexState: string; summaryState: string } | undefined : undefined;
     if (!row || row.status === 'draft' || !admin.canManage(actor, row.courseId)) throw new AdminError('not_found', 'There is no such submission.');
     if (row.status !== 'approved') throw new AdminError('conflict', 'Only approved material is indexed.');
-    if (!['failed', 'done'].includes(row.indexState)) throw new AdminError('conflict', `Indexing is ${row.indexState}; nothing to retry.`);
-    if (row.type === 'lecture' && !budgetLeft()) throw new AdminError('conflict', budgetReason());
-    db.prepare("UPDATE submissions SET indexState='queued', indexAttempts=0, indexNextAt=NULL, indexError=NULL WHERE id=?").run(row.id);
-    admin.audit(actor, 'index.retry', row.id, { course: row.courseId });
+    if (row.indexState === 'done' && row.summaryState === 'failed') {
+      db.prepare("UPDATE submissions SET summaryState='queued', summaryAttempts=0, summaryNextAt=NULL, summaryError=NULL WHERE id=?").run(row.id);
+      admin.audit(actor, 'summary.retry', row.id, { course: row.courseId });
+    } else {
+      if (!['failed', 'done'].includes(row.indexState)) throw new AdminError('conflict', `Indexing is ${row.indexState}; nothing to retry.`);
+      if (row.type === 'lecture' && !budgetLeft()) throw new AdminError('conflict', budgetReason());
+      db.prepare("UPDATE submissions SET indexState='queued', indexAttempts=0, indexNextAt=NULL, indexError=NULL WHERE id=?").run(row.id);
+      admin.audit(actor, 'index.retry', row.id, { course: row.courseId });
+    }
     kick();
     return options.submissions.get(actor, row.id) as Submission;
   }
@@ -203,12 +244,14 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
     if (!admin.canManage(actor, course.id)) throw new AdminError('forbidden', 'Only administrators and this course\'s admins can see indexing.');
     const [ready, document] = await Promise.all([options.runner.readiness('lecture'), options.runner.readiness('document')]);
     const lecture: typeof ready = ready.ok && !budgetLeft() ? { ok: false, reason: budgetReason() } : ready;
-    const rows = db.prepare(`SELECT id, type, title, number, submitter, indexState, indexAttempts, indexError, indexedAt FROM submissions WHERE courseId=? AND status='approved' ORDER BY COALESCE(number, 9999), title`).all(course.id) as unknown as
-      { id: string; type: string; title: string; number: number | null; submitter: string; indexState: string; indexAttempts: number; indexError: string | null; indexedAt: number | null }[];
+    const rows = db.prepare(`SELECT id, type, title, number, submitter, indexState, indexAttempts, indexError, indexedAt, summaryState, summaryError FROM submissions WHERE courseId=? AND status='approved' ORDER BY COALESCE(number, 9999), title`).all(course.id) as unknown as
+      { id: string; type: string; title: string; number: number | null; submitter: string; indexState: string; indexAttempts: number; indexError: string | null; indexedAt: number | null; summaryState: string; summaryError: string | null }[];
     const counts: Record<string, number> = { queued: 0, indexing: 0, done: 0, failed: 0 };
     for (const r of rows) counts[r.indexState] = (counts[r.indexState] ?? 0) + 1;
+    const notes: Record<string, number> = { none: 0, queued: 0, summarizing: 0, done: 0, failed: 0 };
+    for (const r of rows.filter(item => item.type === 'lecture')) notes[r.summaryState] = (notes[r.summaryState] ?? 0) + 1;
     return {
-      workerEnabled: enabled, lectureIndexing: lecture, documentExtraction: document, budget: budget(), counts,
+      workerEnabled: enabled, summariesEnabled: summaries, lectureIndexing: lecture, documentExtraction: document, budget: budget(), counts, summaries: notes,
       items: rows.map(r => ({ ...r, indexedAt: r.indexedAt === null ? null : new Date(r.indexedAt * 1000).toISOString() })),
     };
   }

@@ -64,5 +64,5 @@ The lecture app and its Q&A: see [`../docs/course-catalog.md`](../docs/course-ca
 ## Not done yet
 
 - Slides and scripts are extracted but not used for answers or matched to lecture chapters (see `TODO.md`).
-- Summaries are not generated automatically (still on demand via `qa summary`).
+- Study notes are generated automatically after a lecture is indexed, from the index only (chapter titles, summaries, key terms; no transcript, about 2k tokens per lecture). They are a second queued job (`summaryState`), always after pending index jobs; a failed summary is retried with backoff and never affects `indexState`. Because they only see the chapter list, the notes restate and organise it; they add no detail. `INDEXING_SUMMARIES=false` turns it off. The thorough transcript-based version stays available as `python -m viscon_qa summary N`.
 - If the server is killed while Python runs, that Python process may finish on its own; the job is re-queued on the next start.
