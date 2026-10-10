@@ -44,6 +44,13 @@ The hackathon proxy headers (`MANIA_TRUST_PROXY`) do not bypass the guard.
 `AUTH_REQUIRE_VERIFIED=false` turns the guard off for local front-end work (the browser test runner sets it).
 The deployment checker needs a logged-in cookie: `CHECK_COOKIE_FILE` with the `ba_session` value.
 
+## Front end
+
+`shared/auth/` holds the screens: `AuthGate.tsx` (flow), `authApi.ts` (calls `/api/auth/*`), `strings.ts` (en/de) and
+`AuthGate.css`. `src/main.tsx` and `web-interface/src/main.tsx` wrap their root in `<AuthGate locale=...>`. The gate asks
+`GET /api/auth/me`; when the server reports `required: false` (guard disabled) the app renders straight away.
+The server stays the security boundary, the gate is only the user interface.
+
 ## Rules
 
 - Passwords: 10-128 characters, scrypt (N=32768) with a per-password salt, never stored or logged in clear.
@@ -74,7 +81,7 @@ Production needs `AUTH_SMTP_URL` and `AUTH_MAIL_FROM` (see `.env.example`). From
 
 ## Not done yet
 
-- **No front end.** There are no register/login screens, so with the guard on the web UI cannot get past its first API call until they exist; the API is ready for them.
+- **Screens are a first version.** `shared/auth/AuthGate.tsx` (English and German, styled with the shared tokens) wraps the study world, Arena and lecture app. It shows log in / create account / code / forgot-password screens until the account is verified, re-shows them if the session ends, and adds a small "Signed in as" pill with log out. Expect to restyle it.
 - **Needs SMTP.** Without `AUTH_SMTP_URL` + `AUTH_MAIL_FROM` the server starts (with a warning) but cannot
   send codes. Use `AUTH_MAIL_TRANSPORT=console` in development to print them.
 - A nonexistent mailbox just never receives the code; we cannot tell.

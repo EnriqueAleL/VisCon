@@ -17,6 +17,8 @@ export interface MountAuthDeps {
   clientIpHeader?: string;
   accountOptions?: Partial<AccountOptions>;
   clock?: () => number;
+  /** Reported by /api/auth/me so the front end knows whether it must show the log-in screens. Default true. */
+  required?: boolean;
 }
 
 const STATUS: Record<AuthError['code'], number> = {
@@ -120,7 +122,7 @@ export function mountAuth(app: Express, deps: MountAuthDeps) {
   // Who am I? Never creates a guest profile.
   app.get('/api/auth/me', handle({}, (req, res) => {
     const profile = deps.playerFromCookie(req.headers.cookie);
-    res.json({ profile, account: profile ? publicAccount(accounts.accountForPlayer(profile.id)) : null });
+    res.json({ required: deps.required ?? true, profile, account: profile ? publicAccount(accounts.accountForPlayer(profile.id)) : null });
   }));
 
   return accounts;
