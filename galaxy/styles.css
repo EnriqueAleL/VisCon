@@ -142,6 +142,15 @@ canvas { display: block; width: 100%; height: 100%; }
 }
 .meta b { color: var(--starlight); font-weight: 500; }
 
+.change-programme {
+  display: block; margin-top: 12px; padding: 4px 0;
+  border: 0; background: none; color: var(--dim);
+  font: 600 12px var(--body); text-align: left; cursor: pointer;
+}
+.change-programme[hidden] { display: none; }
+.change-programme:hover { color: var(--starlight); }
+.change-programme:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
 .list { display: flex; flex-direction: column; gap: 1px; margin: 0 0 12px; }
 
 .row {
@@ -241,7 +250,12 @@ canvas { display: block; width: 100%; height: 100%; }
   .hint { display: none; }
   .panel { width: calc(100vw - 36px); }
   .panel h1 { font-size: 18px; }
-  .trail { font-size: 11.5px; }
+  .trail {
+    font-size: 11.5px; flex-wrap: nowrap; white-space: nowrap;
+    overflow-x: auto; overflow-y: hidden; scrollbar-width: none;
+  }
+  .trail::-webkit-scrollbar { display: none; }
+  .trail > * { flex: 0 0 auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -430,7 +444,10 @@ canvas { display: block; width: 100%; height: 100%; }
 .ask { top: calc(52px + env(safe-area-inset-top, 0px)); }
 
 @media (max-width: 620px) {
-  .elsewhere { font-size: 9.5px; gap: 0; }
+  .elsewhere {
+    top: calc(56px + env(safe-area-inset-top, 0px));
+    left: 18px; right: auto; font-size: 9.5px; gap: 0;
+  }
 }
 
 /* A 24-lecture course overflows the panel; keep it on screen and scrollable. */
@@ -464,7 +481,7 @@ canvas { display: block; width: 100%; height: 100%; }
 .document-empty { font:12px/1.6 var(--body); color:var(--faint); margin:0; }
 
 @media (max-width:620px) {
-  .panel.has-course { display:block; top:90px; bottom:auto; max-height:40dvh; padding:16px; }
+  .panel.has-course { display:block; top:130px; bottom:auto; max-height:40dvh; padding:16px; }
   .panel.has-course .course-documents { margin:12px 0; padding:12px 0; }
 }
 @media (max-width:620px) {
@@ -566,6 +583,9 @@ body.daylight .hint-city { display: block; }
 .hop button[hidden] { display: none; }
 @media (max-width: 1100px) {
   .hop { left: 18px; right: 18px; transform: none; max-width: none; bottom: auto; top: calc(64px + env(safe-area-inset-top, 0px)); }
+}
+@media (max-width: 620px) {
+  .hop { top: calc(98px + env(safe-area-inset-top, 0px)); }
 }
 
 /* A scene-anchored entry, shared with the visible spacecraft. */
