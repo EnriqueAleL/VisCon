@@ -10,6 +10,7 @@ import { profile,session,createPlayer,rename,history,leaderboard,saveMatch } fro
 import { eloDelta } from './rating';
 import { javaAvailable,judge } from './judge';
 import { mountLectures } from './lectures';
+import { mountDocumentTranslation } from './document-translation';
 import { mountMania, maniaIdentity } from './mania';
 import { mountSocial } from './social';
 import { mountManiaAnswers } from './mania-answers';
@@ -137,9 +138,17 @@ app.post('/api/mania/cities/:id/duel', route((req, res, p) => {
   const settings = validateSettings({ subject: 'ddca', topic: city.name, format: 'quiz', difficulty: 'mixed', rounds: 3, seconds: 60, ranked: false });
   res.json(view(newRoom(p, settings)));
 }));
+app.use('/translate-api', (req, res, next) => {
+  if (!allowedOrigin(req.headers.origin)) return res.status(403).json({ error: 'This origin is not allowed.' });
+  try { limit(`document:${req.ip}`); next(); } catch { res.status(429).json({ error: 'Please wait a moment before trying again.' }); }
+});
+mountDocumentTranslation(app);
 mountSocial(app, io);
 await mountManiaAnswers(app);
 app.use('/api',(_req,res)=>res.status(404).json({error:'API route not found.'}));
-if(existsSync('dist/index.html')){app.get(['/learn','/learn/'],(_req,res)=>res.sendFile(resolve('dist/learn.html')));app.use(express.static('dist'));app.get('/{*path}',(_req,res)=>res.sendFile(resolve('dist/index.html')));}
+if(existsSync('dist/index.html')){app.get(['/learn','/learn/'],(_req,res)=>res.sendFile(resolve('dist/learn.html')));
+// The galaxy is the front page; it must answer before express.static serves dist/index.html for '/'.
+app.get(['/','/galaxy','/galaxy/'],(_req,res)=>res.sendFile(resolve('dist/galaxy/index.html')));
+app.use(express.static('dist'));app.get('/{*path}',(_req,res)=>res.sendFile(resolve('dist/index.html')));}
 app.use((err:any,_req:express.Request,res:express.Response,_next:express.NextFunction)=>res.status(Number.isInteger(err.status)&&err.status>=400&&err.status<600?err.status:500).json({error:err.status===404?'File not found.':'The request could not be read.'}));
 http.listen(port,process.env.HOST||'0.0.0.0',()=>console.log(`VisCon + Basis Arena ready on http://localhost:${port}`));

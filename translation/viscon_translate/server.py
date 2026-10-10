@@ -64,12 +64,18 @@ def make_handler(settings, llm):
             return payload
 
         def do_POST(self) -> None:
+            # Embedded in the main app these arrive under /translate-api, because the
+            # app server owns /api there. Standalone they arrive under /api. Accept both
+            # so the viewer can use one path in either place.
+            path = self.path
+            if path.startswith("/translate-api/"):
+                path = "/api/" + path[len("/translate-api/"):]
             try:
-                if self.path == "/api/translate":
+                if path == "/api/translate":
                     self._translate()
-                elif self.path == "/api/translate-page":
+                elif path == "/api/translate-page":
                     self._translate_page()
-                elif self.path == "/api/ask":
+                elif path == "/api/ask":
                     self._ask()
                 else:
                     self._json(404, {"error": "Not found."})

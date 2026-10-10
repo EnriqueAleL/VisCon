@@ -1,6 +1,6 @@
 # Folio
 
-A minimal, document-only PDF viewer with continuous scrolling and selectable text. Opens `ti_book.pdf` by default. Pages automatically fit the available width and height, with a maximum width of 900 CSS pixels. Resizing preserves the reading position. Drop another PDF anywhere to open it. Left/right arrow keys change pages when the document area has focus. Select any text in the document to see it translated in a popover next to the selection. The chat bubble in the bottom-right corner answers questions about the document and points you at the page.
+A focused PDF workspace styled for the VisCon galaxy with continuous scrolling and selectable text. Opens `ti_book.pdf` by default. Pages automatically fit the available width and height, with a maximum width of 900 CSS pixels. Resizing preserves the reading position. Drop another PDF anywhere to open it. Left/right arrow keys change pages when the document area has focus. Select any text in the document to see it translated in a popover next to the selection. The optional reading companion answers questions about the indexed book and points you at the page.
 
 ## Setup
 
@@ -57,6 +57,14 @@ Each page uses the same viewport for a raster canvas, a selectable text layer, a
 
 Requires a modern browser supporting JavaScript modules and PDF.js, and Python 3.10+ for the backend.
 
-## Embedded in the main web interface
+## Galaxy workspace
 
-`../web-interface/`'s sidebar **Dokumente** view embeds this viewer in an iframe (its static files are copied into `web-interface/public/translation/` automatically on `npm run dev`/`build`). That embedding only brings the static files — this backend still needs to be running on its own (`.venv/bin/python -m viscon_translate serve`, port 8788) for translation to work there; `web-interface/vite.config.ts` proxies the iframe's same-origin `/api/*` calls to it.
+Select a course planet, then choose a PDF in its **Dokumente** list. The Informatik course currently contains **Theoretische Informatik**; other courses show an empty state. The document opens as a full-window workspace; **Galaxie** closes it and preserves the camera, course, and lecture. Escape dismisses a translation first, then the question panel, then the workspace. The viewer uses the galaxy fonts and dark colors around the unmodified white pages.
+
+The question panel opens on demand. Dropped/local PDFs support reading and selected-text translation, but document Q&A and background pretranslation are limited to the indexed `ti_book.pdf`; local PDFs are not uploaded. Only selected text is sent for translation.
+
+From the repository root, `npm run dev` and `npm run build` copy the viewer into the app's public assets. Run the Python service separately on port 8788 for translation and book questions. Vite proxies `/translate-api` during development; the Node app proxies the same endpoints in production, configured with `TRANSLATION_SERVICE_URL` (default `http://127.0.0.1:8788`). The PDF remains readable when the service is unavailable. The book still needs its `index-book` index for Q&A.
+
+## Course document catalogue
+
+`documents.json` associates each available PDF with a `courseId`, title, kind and stable document ID. Put the PDF in this folder and add an entry to make it available to its course; `npm run dev`/`build` copies all PDFs and the catalogue into the app. Set `indexed` to true after preparing its translation and book indexes. Selecting a list item opens that document, and all translation/Q&A requests carry its filename. There is no global documents button.

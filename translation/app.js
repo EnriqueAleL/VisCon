@@ -1,7 +1,13 @@
 import * as pdfjs from './vendor/pdfjs/build/pdf.mjs';
 import { TextLayerBuilder } from './vendor/pdfjs/web/pdf_viewer.mjs';
-pdfjs.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/build/pdf.worker.mjs';
+pdfjs.GlobalWorkerOptions.workerSrc = new URL('./vendor/pdfjs/build/pdf.worker.mjs', import.meta.url).href;
 const $ = (id) => document.getElementById(id);
+// The app server owns /api when this viewer is embedded, so calls go out under
+// /translate-api there. The Python service accepts either prefix.
+const TR_API = location.pathname.startsWith('/translation/') ? '/translate-api' : '/api';
+let activePdfName = 'ti_book.pdf';
+let documentCatalogue = [];
+let indexedDocument = true;
 const status = $('status');
 let pdf, loadingTask, objectUrl, pageNumber = 1, scale = 1;
 let loadVersion = 0;
@@ -9,6 +15,7 @@ let pages = [];
 let pageObserver;
 let scrollFrame;
 let fitPage = true;
+let lastRenderSize = '';
 let translatePopover;
 let translatePopoverPage;
 const prefetchedPages = new Set();
@@ -17,6 +24,7 @@ let prefetchBusy = false;
 
 function updateControls() {
   $('viewer').dataset.currentPage = pageNumber;
+  $('page-indicator').textContent = `${pageNumber} / ${pdf?.numPages || '—'}`;
 }
 
 // Each page keeps raster, selectable text, translation, and context layers.
@@ -38,11 +46,11 @@ function clearTranslationPopover() {
   translatePopoverPage = null;
 }
 async function requestTranslation(text, pageNumber) {
-  const response = await fetch('/api/translate', {
+  const response = await fetch(`${TR_API}/translate`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, page: pageNumber }),
+    body: JSON.stringify({ text, ...(indexedDocument ? { page: pageNumber } : {}), pdf: activePdfName }),
   });
-  const data = await response.json();
+  const data = await response.json().catch(() => ({ error: 'The reading companion is temporarily unavailable. Please try again.' }));
   if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
   return data.translation;
 }
@@ -50,7 +58,7 @@ async function requestTranslation(text, pageNumber) {
 // paragraph resolves instantly. Queued one at a time: firing a burst of these per scroll is
 // what was causing requests (including your own live selection) to queue up and crawl.
 function prefetchPageTranslation(record) {
-  if (prefetchedPages.has(record.number)) return;
+  if (!indexedDocument || prefetchedPages.has(record.number)) return;
   prefetchedPages.add(record.number);
   prefetchQueue.push(record.number);
   runPrefetchQueue();
@@ -61,10 +69,11 @@ async function runPrefetchQueue() {
   if (page === undefined) return;
   prefetchBusy = true;
   try {
-    await fetch('/api/translate-page', {
+    const response = await fetch(`${TR_API}/translate-page`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ page }),
+      body: JSON.stringify({ page, pdf: activePdfName }),
     });
+    if (!response.ok) throw new Error('Prefetch unavailable');
   } catch {
     prefetchedPages.delete(page);
   } finally {
@@ -87,13 +96,17 @@ async function showTranslationForSelection() {
   clearTranslationPopover();
   // Anchored to #viewer (which scrolls, not clips) rather than the page surface (which
   // clips at its own bottom edge via overflow:hidden) so a tall translation never gets cut off.
-  const left = Math.max(0, Math.min(rect.left - viewerRect.left + viewer.scrollLeft, viewer.scrollWidth - 280));
+  const width = Math.min(340, viewer.clientWidth - 32);
+  const left = viewer.scrollLeft + Math.max(16, Math.min(rect.left - viewerRect.left, viewer.clientWidth - width - 16));
   const top = rect.bottom - viewerRect.top + viewer.scrollTop + 6;
   const popover = document.createElement('div');
   popover.className = 'translation-popover loading';
+  popover.style.width = `${width}px`;
   popover.style.left = `${left}px`;
   popover.style.top = `${top}px`;
-  popover.innerHTML = '<button class="close" aria-label="Close">×</button><p class="original"></p><p class="result"></p>';
+  popover.innerHTML = '<button class="close" aria-label="Close translation">×</button><p class="translation-label">TRANSLATION</p><p class="original"></p><p class="result" role="status"></p>';
+  popover.setAttribute('role', 'region');
+  popover.setAttribute('aria-label', 'Selected passage translation');
   popover.querySelector('.original').textContent = text.length > 160 ? `${text.slice(0, 157)}…` : text;
   popover.querySelector('.close').addEventListener('click', () => {
     document.getSelection()?.removeAllRanges();
@@ -108,6 +121,10 @@ async function showTranslationForSelection() {
     if (translatePopover !== popover) return;
     popover.classList.remove('loading');
     popover.querySelector('.result').textContent = translation;
+    const visibleBottom = viewer.scrollTop + viewer.clientHeight - 16;
+    if (top + popover.offsetHeight > visibleBottom) {
+      popover.style.top = `${Math.max(viewer.scrollTop + 16, rect.top - viewerRect.top + viewer.scrollTop - popover.offsetHeight - 8)}px`;
+    }
   } catch (error) {
     if (translatePopover !== popover) return;
     popover.classList.remove('loading');
@@ -121,7 +138,12 @@ $('viewer').addEventListener('pointerup', (event) => {
 document.addEventListener('pointerdown', (event) => {
   if (translatePopover && !translatePopover.contains(event.target)) clearTranslationPopover();
 });
-document.addEventListener('keydown', (event) => { if (event.key === 'Escape') clearTranslationPopover(); });
+document.addEventListener('keydown', (event) => {
+  if (event.key !== 'Escape') return;
+  if (translatePopover) { clearTranslationPopover(); document.getSelection()?.removeAllRanges(); }
+  else if (!$('chat-panel').hidden) setChatOpen(false);
+  else if (new URLSearchParams(location.search).get('embedded') === 'galaxy') returnToGalaxy();
+});
 function resetPages() {
   pageObserver?.disconnect();
   pages.forEach(clearPage);
@@ -164,7 +186,7 @@ async function paintPage(record) {
   }
 }
 function updateVisiblePage() {
-  if (!pages.length) return;
+  if (!pages.length || $('viewer').clientHeight <= 32) return;
   const top = $('viewer').getBoundingClientRect().top + 60;
   let closest = pages[0], distance = Infinity;
   for (const record of pages) {
@@ -176,7 +198,8 @@ function updateVisiblePage() {
   updateControls();
 }
 function renderPage(resetScroll = false) {
-  if (!pages.length) return;
+  if (!pages.length || $('viewer').clientWidth <= 32 || $('viewer').clientHeight <= 32) return;
+  lastRenderSize = `${$('viewer').clientWidth}:${$('viewer').clientHeight}`;
   const anchor = pages[pageNumber - 1];
   const offset = ($('viewer').scrollTop - anchor.row.offsetTop) / anchor.surface.clientHeight;
   if (fitPage) {
@@ -255,13 +278,25 @@ async function loadPdf(source, name) {
   try {
     if (oldTask) await oldTask.destroy();
     if (version !== loadVersion) return;
-    loadingTask = pdfjs.getDocument({ ...source, cMapUrl: './vendor/pdfjs/cmaps/', cMapPacked: true, standardFontDataUrl: './vendor/pdfjs/standard_fonts/', wasmUrl: './vendor/pdfjs/wasm/' });
+    loadingTask = pdfjs.getDocument({ ...source, cMapUrl: new URL('./vendor/pdfjs/cmaps/', import.meta.url).href, cMapPacked: true, standardFontDataUrl: new URL('./vendor/pdfjs/standard_fonts/', import.meta.url).href, wasmUrl: new URL('./vendor/pdfjs/wasm/', import.meta.url).href });
     const document = await loadingTask.promise;
     if (version !== loadVersion) return;
     pdf = document;
     pageNumber = 1;
     fitPage = true;
-    window.document.title = `${name} · Folio`;
+    window.document.title = `${name} · VisCon`;
+    $('document-name').textContent = name === 'ti_book.pdf' ? 'Theoretische Informatik' : name;
+    const local = source.url.startsWith('blob:');
+    const entry = documentCatalogue.find(document => document.filename === name);
+    indexedDocument = !local && Boolean(entry?.indexed);
+    activePdfName = local ? `local:${name}` : name;
+    if (window.parent !== window) window.parent.postMessage({ type: 'viscon:document-opened', documentId: local ? null : entry?.id }, location.origin);
+    $('document-name').textContent = local ? name : entry?.title || name;
+    $('chat-input').disabled = !indexedDocument;
+    $('chat-form').querySelector('button').disabled = !indexedDocument;
+    $('chat-scope').textContent = indexedDocument ? 'Answers are grounded in the indexed book.' : local ? 'Local PDF: selection translation is available. Document questions require an indexed book.' : 'Select text to translate a passage. Questions require this document to be indexed.';
+    $('chat-messages').querySelectorAll('.chat-message').forEach(message => message.remove());
+    $('chat-welcome').hidden = false;
     $('viewer').setAttribute('aria-label', `PDF document: ${name}`);
     await buildPages(document, version);
   } catch (error) {
@@ -300,7 +335,9 @@ $('viewer').addEventListener('keydown', (event) => {
 let resizeTimer;
 new ResizeObserver(() => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { if (pdf && fitPage) renderPage(); }, 150);
+  resizeTimer = setTimeout(() => {
+    if (pdf && fitPage && `${$('viewer').clientWidth}:${$('viewer').clientHeight}` !== lastRenderSize) renderPage();
+  }, 100);
 }).observe($('viewer'));
 let dragDepth = 0;
 window.addEventListener('dragenter', (event) => {
@@ -315,7 +352,7 @@ window.addEventListener('drop', (event) => {
   event.preventDefault(); dragDepth = 0; document.body.classList.remove('dragging');
   openPdf(event.dataTransfer.files[0]);
 });
-loadPdf({ url: './ti_book.pdf' }, 'ti_book.pdf');
+
 
 // Ask questions about the whole document; the server points back at a page via
 // /api/ask, built from an offline per-page summary index (`index-book`), never from
@@ -328,17 +365,18 @@ function addMessage(role, text, className = '') {
   const message = document.createElement('div');
   message.className = `chat-message ${role} ${className}`.trim();
   message.textContent = text;
+  $('chat-welcome').hidden = true;
   chatMessages.append(message);
   chatMessages.scrollTop = chatMessages.scrollHeight;
   return message;
 }
 
 async function askDocument(question) {
-  const response = await fetch('/api/ask', {
+  const response = await fetch(`${TR_API}/ask`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ question, pdf: activePdfName }),
   });
-  const data = await response.json();
+  const data = await response.json().catch(() => ({ error: 'The reading companion is temporarily unavailable. Please try again.' }));
   if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
   return data;
 }
@@ -346,14 +384,17 @@ async function askDocument(question) {
 chatForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const question = chatInput.value.trim();
-  if (!question) return;
+  if (!question || !indexedDocument || chatInput.disabled) return;
   chatInput.value = '';
   chatInput.disabled = true;
+  chatForm.querySelector('button').disabled = true;
+  const version = loadVersion;
   addMessage('user', question);
   const pending = addMessage('assistant', 'Thinking…', 'pending');
 
   try {
     const result = await askDocument(question);
+    if (version !== loadVersion) return;
     pending.remove();
     const answer = addMessage('assistant', result.answer, result.found ? '' : 'not-found');
     if (result.found && result.page) {
@@ -364,10 +405,43 @@ chatForm.addEventListener('submit', async (event) => {
       answer.append(document.createElement('br'), jump);
     }
   } catch (error) {
+    if (version !== loadVersion) return;
     pending.remove();
     addMessage('assistant', `Could not answer: ${error.message}`, 'not-found');
   } finally {
-    chatInput.disabled = false;
-    chatInput.focus();
+    if (version === loadVersion) {
+      chatInput.disabled = !indexedDocument;
+      chatForm.querySelector('button').disabled = !indexedDocument;
+      chatInput.focus();
+    }
   }
 });
+
+function returnToGalaxy() {
+  if (window.parent !== window && new URLSearchParams(location.search).get('embedded') === 'galaxy') {
+    window.parent.postMessage({ type: 'viscon:close-document' }, location.origin);
+  } else location.assign('/');
+}
+$('return-galaxy').addEventListener('click', event => { event.preventDefault(); returnToGalaxy(); });
+function setChatOpen(open) {
+  $('chat-panel').hidden = !open;
+  $('chat-toggle').setAttribute('aria-expanded', String(open));
+  if (open) $('chat-input').focus();
+  else $('chat-toggle').focus();
+}
+$('chat-toggle').addEventListener('click', () => setChatOpen($('chat-panel').hidden));
+$('chat-close').addEventListener('click', () => setChatOpen(false));
+$('open-pdf').addEventListener('click', () => $('file-input').click());
+$('file-input').addEventListener('change', () => { openPdf($('file-input').files[0]); $('file-input').value = ''; });
+async function openInitialDocument() {
+  try {
+    const response = await fetch(new URL('./documents.json', import.meta.url));
+    if (!response.ok) throw new Error('The document list could not be loaded.');
+    documentCatalogue = (await response.json()).documents;
+    const requestedId = new URLSearchParams(location.search).get('document');
+    const entry = requestedId ? documentCatalogue.find(document => document.id === requestedId) : documentCatalogue[0];
+    if (!entry || !/^[^/\\]+\.pdf$/i.test(entry.filename)) throw new Error('This document is not available. Return to the course to choose another.');
+    await loadPdf({ url: new URL(entry.filename, import.meta.url).href }, entry.filename);
+  } catch (error) { status.textContent = error.message; }
+}
+openInitialDocument();

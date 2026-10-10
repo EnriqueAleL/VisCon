@@ -1,6 +1,15 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { resolve } from 'node:path';
+import { cpSync, createReadStream, statSync } from 'node:fs';
+import { resolve, sep } from 'node:path';
+
+const GALAXY_TYPES: Record<string, string> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.woff2': 'font/woff2',
+};
 
 export default defineConfig({
   publicDir: 'web-interface/public',
@@ -9,14 +18,70 @@ export default defineConfig({
   plugins: [react(), {
     name: 'viscon-learn-route',
     configureServer(server) {
-      server.middlewares.use((req, _res, next) => {
-        if (/^\/learn\/?(?:\?|$)/.test(req.url || '')) req.url = req.url!.replace(/^\/learn\/?/, '/learn.html');
+      server.middlewares.use((req, res, next) => {
+        const url = req.url || '';
+        if (/^\/learn\/?(?:\?|$)/.test(url)) {
+          req.url = url.replace(/^\/learn\/?/, '/learn.html');
+          return next();
+        }
+        // The galaxy is the front page. It is a plain page with classic scripts and
+        // vendored three.js, served straight from disk rather than through Vite's
+        // pipeline, which would hand back its stylesheet wrapped as a JS module and
+        // leave the page unstyled. Its own asset URLs are absolute, so the same file
+        // works whether it is reached at / or at /galaxy/.
+        const [rawPath] = url.split('?');
+        const isGalaxyPage = rawPath === '/' || rawPath === '/galaxy' || rawPath === '/galaxy/';
+        if (isGalaxyPage || /^\/galaxy\//.test(rawPath)) {
+          const relative = isGalaxyPage ? 'galaxy/index.html' : decodeURIComponent(rawPath).slice(1);
+          const file = resolve(relative);
+          const root = resolve('galaxy') + sep;
+          if (!file.startsWith(root)) {
+            res.statusCode = 403;
+            return res.end('Forbidden');
+          }
+          try {
+            if (!statSync(file).isFile()) throw new Error('not a file');
+          } catch {
+            res.statusCode = 404;
+            return res.end('Not found');
+          }
+          const ext = file.slice(file.lastIndexOf('.'));
+          res.setHeader('Content-Type', GALAXY_TYPES[ext] || 'application/octet-stream');
+          res.setHeader('Cache-Control', 'no-cache');
+          return createReadStream(file).pipe(res);
+        }
         next();
+      });
+    },
+  }, {
+    // The galaxy is a standalone page with classic scripts and its own vendored
+    // three.js, so it ships as-is rather than through the bundler. Copying it keeps
+    // it runnable both from dist and straight out of galaxy/ on its own.
+    name: 'viscon-galaxy-page',
+    apply: 'build',
+    closeBundle() {
+      cpSync(resolve('galaxy'), resolve('dist/galaxy'), {
+        recursive: true,
+        filter: (src) => !/README\.md$/.test(src),
       });
     },
   }],
   build: { rollupOptions: { input: { arena: resolve('index.html'), learn: resolve('learn.html') } } },
   server: { port: 5173, strictPort: true, proxy: {
+    // The app server owns /api. The standalone translation service gets its own
+    // prefix, rewritten back to /api on the way out, so the two never collide.
+    '/translate-api': {
+      target: 'http://127.0.0.1:8788',
+      rewrite: (path: string) => path.replace(/^\/translate-api/, '/api'),
+      configure(proxy) {
+        proxy.on('error', (_error, _req, res) => {
+          if ('writeHead' in res && !res.headersSent) {
+            res.writeHead(503, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'The reading companion is temporarily unavailable. You can keep reading and try again shortly.' }));
+          }
+        });
+      },
+    },
     '/api': 'http://127.0.0.1:3001', '/media': 'http://127.0.0.1:3001',
     '/socket.io': { target: 'http://127.0.0.1:3001', ws: true },
   } },

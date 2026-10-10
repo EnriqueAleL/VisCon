@@ -1,0 +1,12 @@
+{
+  "documents": [
+    {
+      "id": "theoretische-informatik",
+      "courseId": "informatics",
+      "title": "Theoretische Informatik",
+      "filename": "ti_book.pdf",
+      "kind": "Lehrbuch",
+      "indexed": true
+    }
+  ]
+}
