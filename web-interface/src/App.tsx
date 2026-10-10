@@ -30,6 +30,8 @@ import { LectureViewer } from './components/LectureViewer';
 import { askLecture, type AnswerResult } from '../../video-pull-up/client/client.mjs';
 import { getJSON, formatTime } from './api';
 import { useLocalStorage } from './hooks/useLocalStorage';
+import { SettingsMenu, type AnswerLanguage } from './components/SettingsMenu';
+import { useI18n } from './i18n';
 import type {
   Course,
   CourseId,
@@ -42,12 +44,6 @@ import type {
 
 type View = 'questions' | 'library' | 'saved' | 'documents';
 type Sort = 'relevance' | 'newest' | 'shortest';
-const viewNames: Record<View, string> = {
-  questions: 'Chat',
-  library: 'Meine Vorlesungen',
-  saved: 'Gespeicherte Stellen',
-  documents: 'Dokumente',
-};
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string');
 const isQuestionHistory = (value: unknown): value is QuestionHistoryEntry[] =>
@@ -75,6 +71,13 @@ const isSegmentMap = (value: unknown): value is Record<string, Segment> =>
   );
 
 export function App() {
+  const { t, language } = useI18n();
+  const viewNames: Record<View, string> = {
+    questions: t('view.questions'),
+    library: t('view.library'),
+    saved: t('view.saved'),
+    documents: t('view.documents'),
+  };
   const [view, setView] = useState<View>(() =>
     ['library', 'saved'].includes(location.hash.slice(1))
       ? (location.hash.slice(1) as View)
@@ -100,6 +103,11 @@ export function App() {
     'viscon.selected-course.v1',
     null,
     (value): value is CourseSelection | null => value === null || isCourseSelection(value),
+  );
+  const [answerLanguage, setAnswerLanguage] = useLocalStorage<AnswerLanguage>(
+    'viscon.answer-language.v1',
+    'auto',
+    (value): value is AnswerLanguage => value === 'auto' || value === 'en' || value === 'de',
   );
   const [pickerRequest, setPickerRequest] = useState(0);
   const [layout, setLayout] = useState<'grid' | 'list'>('grid');
@@ -284,7 +292,7 @@ export function App() {
     );
     try {
       const result = await askLecture(
-        { question: trimmed, courseId: selection.courseId, limit: 3 },
+        { question: trimmed, courseId: selection.courseId, limit: 3, language: answerLanguage },
         { signal: controller.signal },
       );
       if (!controller.signal.aborted) setAnswer(result);
@@ -293,7 +301,7 @@ export function App() {
         setSearchError(
           error instanceof Error
             ? error.message
-            : 'Die Suche ist fehlgeschlagen. Bitte versuche es erneut.',
+            : t('error.search'),
         );
     } finally {
       if (!controller.signal.aborted) setAsking(false);
@@ -311,7 +319,7 @@ export function App() {
       return next;
     });
     setToast(
-      removing ? 'Stelle aus deiner Merkliste entfernt' : 'Stelle in deiner Merkliste gespeichert',
+      removing ? t('toast.removed') : t('toast.saved'),
     );
   };
 
@@ -330,7 +338,7 @@ export function App() {
     } catch (error) {
       if (!controller.signal.aborted)
         setPlayerError(
-          error instanceof Error ? error.message : 'Die Vorlesung konnte nicht geladen werden.',
+          error instanceof Error ? error.message : t('error.lecture'),
         );
     } finally {
       if (!controller.signal.aborted) setOpening(false);
@@ -386,7 +394,7 @@ export function App() {
   return (
     <div className="app-shell">
       <a className="skip-link" href="#main">
-        Zum Inhalt
+        {t('skip')}
       </a>
       <IconSidebar
         view={view}
@@ -410,20 +418,18 @@ export function App() {
           module="Lectures"
           actions={
             <>
-              <span className="view-toggle" role="group" aria-label="Ansicht">
-                <a href="/learn" className="on" aria-current="page" title="Normale Ansicht">
-                  Liste
+              <span className="view-toggle" role="group" aria-label={t('header.view')}>
+                <a href="/learn" className="on" aria-current="page" title={t('header.listTitle')}>
+                  {t('header.list')}
                 </a>
                 <a
                   href={selectedCourse ? `/#/${selectedCourse.courseId}` : '/'}
-                  title="Galaxie-Ansicht"
+                  title={t('header.galaxyTitle')}
                 >
-                  Galaxie
+                  {t('header.galaxy')}
                 </a>
               </span>
-              <div className="avatar" title="Lernraum">
-                DU
-              </div>
+              <SettingsMenu language={answerLanguage} onLanguage={setAnswerLanguage} />
             </>
           }
         >
@@ -442,7 +448,7 @@ export function App() {
           {view !== 'documents' && catalogLoading && (
             <p className="connection-status" role="status">
               <LoaderCircle size={18} className="loading-spin" />
-              Vorlesungen werden geladen…
+              {t('loading.catalog')}
             </p>
           )}
           {view !== 'documents' && catalogError && (
@@ -452,14 +458,14 @@ export function App() {
                 className="secondary-button"
                 onClick={() => setCatalogAttempt((value) => value + 1)}
               >
-                Verbindung erneut versuchen
+                {t('retry.connection')}
               </button>
             </div>
           )}
           {view !== 'documents' && opening && (
             <p className="connection-status" role="status">
               <LoaderCircle size={18} className="loading-spin" />
-              Vorlesung wird geöffnet…
+              {t('loading.lecture')}
             </p>
           )}
           {view !== 'documents' && playerError && (
@@ -473,11 +479,11 @@ export function App() {
             <div className="question-workspace">
               <div className="workspace-heading">
                 <p className="page-kicker">WORKSPACE / LECTURES</p>
-                <h1 className="chat-prompt">{selectedCourseDetails?.name ?? 'Vorlesungen'}</h1>
+                <h1 className="chat-prompt">{selectedCourseDetails?.name ?? t('workspace.default')}</h1>
                 <p className="workspace-context">
                   {selectedCourse
-                    ? selectionLabel(selectedCourse)
-                    : `${lectures.length} Vorlesungen · ${courses.length} Kurse`}
+                    ? selectionLabel(selectedCourse, language)
+                    : t('workspace.counts', { lectures: lectures.length, courses: courses.length })}
                 </p>
               </div>
               <form
@@ -491,11 +497,11 @@ export function App() {
                   <MessageCircle size={21} strokeWidth={1.7} />
                   <textarea
                     id="question"
-                    aria-label="Nachricht eingeben"
+                    aria-label={t('input.label')}
                     ref={textareaRef}
                     value={question}
                     placeholder={
-                      selectedCourse ? 'Nachricht an VisCon …' : 'Wähle zuerst ein Fach …'
+                      selectedCourse ? t('input.placeholder') : t('input.pickFirst')
                     }
                     disabled={!selectedCourse}
                     maxLength={500}
@@ -512,12 +518,12 @@ export function App() {
                   <button
                     className={`lecture-context ${selectedCourse ? 'selected' : ''}`}
                     type="button"
-                    aria-label={selectedCourse ? 'Fach wechseln' : 'Fach auswählen'}
-                    title={selectedCourse ? selectionLabel(selectedCourse) : undefined}
+                    aria-label={selectedCourse ? t('course.change') : t('course.pick')}
+                    title={selectedCourse ? selectionLabel(selectedCourse, language) : undefined}
                     onClick={() => setPickerRequest((value) => value + 1)}
                   >
                     <GraduationCap size={16} />
-                    <span>{selectedCourseDetails?.name ?? 'Fach auswählen'}</span>
+                    <span>{selectedCourseDetails?.name ?? t('course.pick')}</span>
                     <ChevronDown size={13} />
                   </button>
                   <span className="question-limit">{question.length}/500</span>
@@ -528,7 +534,7 @@ export function App() {
                       !selectedCourse || !question.trim() || catalogLoading || !!catalogError
                     }
                   >
-                    {asking ? 'Erneut suchen' : 'Frage stellen'}
+                    {asking ? t('ask.again') : t('ask.submit')}
                     {asking ? (
                       <LoaderCircle size={17} className="loading-spin" />
                     ) : (
@@ -540,7 +546,7 @@ export function App() {
 
               {asking && (
                 <p className="connection-status" role="status">
-                  Passende Transkriptstellen werden gesucht…
+                  {t('ask.searching')}
                 </p>
               )}
               {searchError && (
@@ -550,32 +556,32 @@ export function App() {
                     className="secondary-button"
                     onClick={() => void submitQuestion(submittedQuestion)}
                   >
-                    Suche erneut versuchen
+                    {t('ask.retry')}
                   </button>
                 </div>
               )}
               {answer && (
-                <section className="answer-panel" aria-label="Antwort">
+                <section className="answer-panel" aria-label={t('answer.label')}>
                   <h2>
                     {answer.status === 'no_match'
-                      ? 'Keine passende Stelle gefunden'
+                      ? t('answer.noMatch')
                       : answer.status === 'insufficient_context'
-                        ? 'Ähnliche Stellen gefunden'
+                        ? t('answer.similar')
                         : answer.answer.mode === 'generated'
-                          ? 'Antwort aus deinen Vorlesungen'
-                          : 'Aus dem Transkript'}
+                          ? t('answer.generated')
+                          : t('answer.transcript')}
                   </h2>
                   <p className="answer-notice">{answer.answer.notice}</p>
                   {answer.answer.paragraphs.map((paragraph, index) => (
                     <div className="answer-paragraph" key={index}>
                       <p>
-                        {paragraph.text.length > 380
+                        {answer.answer.mode !== 'generated' && paragraph.text.length > 380
                           ? `${paragraph.text.slice(0, 380).replace(/\s+\S*$/, '')}…`
                           : paragraph.text}
                       </p>
-                      {paragraph.text.length > 380 && (
+                      {answer.answer.mode !== 'generated' && paragraph.text.length > 380 && (
                         <details className="transcript-excerpt">
-                          <summary>Vollständigen Ausschnitt lesen</summary>
+                          <summary>{t('answer.readFull')}</summary>
                           <p>{paragraph.text}</p>
                         </details>
                       )}
@@ -587,7 +593,7 @@ export function App() {
                               <Play size={14} />
                               <span>
                                 {source.lectureTitle} · {formatTime(source.start)}
-                                {source.demo ? ' · Demo' : ''}
+                                {source.demo ? ` · ${t('common.demo')}` : ''}
                               </span>
                             </button>
                           ) : null;
@@ -606,8 +612,13 @@ export function App() {
                   <h1>{viewNames[view]}</h1>
                   <p className="heading-context">
                     {view === 'library'
-                      ? `${lectures.filter((item) => !item.demo).length} Aufzeichnungen und ${lectures.filter((item) => item.demo).length} Demo-Videos · Kapitel und Transkripte`
-                      : `${savedIds.length} gespeicherte ${savedIds.length === 1 ? 'Stelle' : 'Stellen'} · Deine persönliche Merkliste`}
+                      ? t('library.counts', {
+                          recordings: lectures.filter((item) => !item.demo).length,
+                          demos: lectures.filter((item) => item.demo).length,
+                        })
+                      : t(savedIds.length === 1 ? 'saved.counts.one' : 'saved.counts.other', {
+                          n: savedIds.length,
+                        })}
                   </p>
                 </div>
                 <span className="heading-mark" aria-hidden="true">
@@ -621,28 +632,28 @@ export function App() {
               <div className="library-search">
                 <Search size={18} />
                 <input
-                  aria-label="Vorlesungen durchsuchen"
+                  aria-label={t('search.label')}
                   value={librarySearch}
                   onChange={(event) => setLibrarySearch(event.target.value)}
-                  placeholder="Vorlesungen durchsuchen …"
+                  placeholder={t('search.placeholder')}
                 />
                 {librarySearch && (
                   <button
                     className="icon-button"
-                    title="Suche zurücksetzen"
-                    aria-label="Suche zurücksetzen"
+                    title={t('search.reset')}
+                    aria-label={t('search.reset')}
                     onClick={() => setLibrarySearch('')}
                   >
                     <X size={17} />
                   </button>
                 )}
               </div>
-              <div className="course-filters" aria-label="Kursfilter">
+              <div className="course-filters" aria-label={t('filter.label')}>
                 <button
                   className={courseId === 'all' ? 'active' : ''}
                   onClick={() => setCourseId('all')}
                 >
-                  Alle Kurse<span>{lectures.length}</span>
+                  {t('filter.all')}<span>{lectures.length}</span>
                 </button>
                 {courses.map((course) => (
                   <button
@@ -663,16 +674,16 @@ export function App() {
           (view !== 'questions' || answer?.sources.length) ? (
             <section
               className="results-section"
-              aria-label={view === 'questions' ? 'Passende Vorlesungen' : viewNames[view]}
+              aria-label={view === 'questions' ? t('results.matching') : viewNames[view]}
             >
               <div className="results-toolbar">
                 <div className="results-heading">
                   <h2>
                     {view === 'questions'
-                      ? 'Passende Vorlesungen'
+                      ? t('results.matching')
                       : view === 'library'
-                        ? 'Alle Vorlesungen'
-                        : 'Deine Merkliste'}
+                        ? t('results.all')
+                        : t('results.saved')}
                   </h2>
                   <span className="result-count">{results.length}</span>
                 </div>
@@ -680,21 +691,21 @@ export function App() {
                   <div className="sort-select">
                     <ArrowDownUp size={14} />
                     <select
-                      aria-label="Vorlesungen sortieren"
+                      aria-label={t('sort.label')}
                       value={sort}
                       onChange={(event) => setSort(event.target.value as Sort)}
                     >
-                      <option value="relevance">Relevanz</option>
-                      <option value="newest">Letzte Vorlesung zuerst</option>
-                      <option value="shortest">Kürzeste zuerst</option>
+                      <option value="relevance">{t('sort.relevance')}</option>
+                      <option value="newest">{t('sort.newest')}</option>
+                      <option value="shortest">{t('sort.shortest')}</option>
                     </select>
                     <ChevronDown size={13} />
                   </div>
-                  <div className="layout-toggle" role="group" aria-label="Darstellung">
+                  <div className="layout-toggle" role="group" aria-label={t('layout.label')}>
                     <button
                       className={layout === 'grid' ? 'active' : ''}
-                      title="Rasteransicht"
-                      aria-label="Rasteransicht"
+                      title={t('layout.grid')}
+                      aria-label={t('layout.grid')}
                       aria-pressed={layout === 'grid'}
                       onClick={() => setLayout('grid')}
                     >
@@ -702,8 +713,8 @@ export function App() {
                     </button>
                     <button
                       className={layout === 'list' ? 'active' : ''}
-                      title="Listenansicht"
-                      aria-label="Listenansicht"
+                      title={t('layout.list')}
+                      aria-label={t('layout.list')}
                       aria-pressed={layout === 'list'}
                       onClick={() => setLayout('list')}
                     >
@@ -717,12 +728,12 @@ export function App() {
                   <>
                     <span className="results-indicator" />
                     {submittedQuestion
-                      ? `${segmentCount} passende Stellen zu deiner Frage`
-                      : 'Deine nächste Frage'}
+                      ? t('results.forQuestion', { n: segmentCount })
+                      : t('results.next')}
                   </>
                 ) : (
                   <>
-                    {results.length} {results.length === 1 ? 'Vorlesung' : 'Vorlesungen'}
+                    {results.length} {t(results.length === 1 ? 'results.lecture.one' : 'results.lecture.other')}
                     {courseId !== 'all' &&
                       ` · ${courses.find((item) => item.id === courseId)?.name}`}
                   </>
@@ -753,17 +764,17 @@ export function App() {
                   )}
                   <h3>
                     {view === 'saved'
-                      ? 'Hier ist Platz für deine Aha-Momente.'
+                      ? t('empty.saved.title')
                       : view === 'questions' && !submittedQuestion
-                        ? 'Was steht auf deinem Lernplan?'
-                        : 'Keine passenden Vorlesungen gefunden.'}
+                        ? t('empty.landing.title')
+                        : t('empty.none.title')}
                   </h3>
                   <p>
                     {view === 'saved'
-                      ? 'Deine gespeicherten Zeitstellen erscheinen hier.'
+                      ? t('empty.saved.text')
                       : view === 'questions' && !submittedQuestion
-                        ? 'Lineare Algebra, Analysis oder Informatik.'
-                        : 'Versuche einen anderen Begriff oder wähle alle Kurse.'}
+                        ? t('empty.landing.text')
+                        : t('empty.none.text')}
                   </p>
                   <button
                     className="secondary-button"
@@ -775,7 +786,7 @@ export function App() {
                           setPickerRequest((value) => value + 1))
                     }
                   >
-                    {view === 'saved' ? 'Vorlesungen ansehen' : 'Fach auswählen'}
+                    {view === 'saved' ? t('empty.saved.action') : t('course.pick')}
                     <ArrowRight size={16} />
                   </button>
                 </div>
@@ -811,29 +822,22 @@ export function App() {
           </span>
           <button
             className="icon-button"
-            aria-label="Information schliessen"
-            title="Schliessen"
+            aria-label={t('help.close')}
+            title={t('common.close')}
             onClick={() => setHelpOpen(false)}
           >
             <X size={20} />
           </button>
         </div>
-        <h2 id="help-title">Dein VisCon Lernraum</h2>
-        <p>
-          Hier findest du die Vorlesungsaufzeichnungen mit ihren Transkripten, Kapiteln und
-          vorhandenen Lernnotizen. Die drei kurzen Beispielvideos sind als Demo gekennzeichnet.
-        </p>
-        <p>
-          Die Suche zeigt passende Transkriptstellen. Gespeicherte Momente und Fragen bleiben in
-          diesem Browser. Über Basis Arena kannst du weiterhin gemeinsam spielen und deinen
-          Elo-Fortschritt verfolgen. Die Arena verwendet eine separate Fragenbank.
-        </p>
+        <h2 id="help-title">{t('help.title')}</h2>
+        <p>{t('help.p1')}</p>
+        <p>{t('help.p2')}</p>
         <span className="help-status">
           <Check size={15} />
-          Vorlesungen und Basis Arena verbunden
+          {t('help.status')}
         </span>
         <button className="primary-button" onClick={() => setHelpOpen(false)}>
-          Zurück zum Lernraum
+          {t('help.back')}
           <ArrowRight size={17} />
         </button>
       </dialog>

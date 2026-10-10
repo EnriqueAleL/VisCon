@@ -66,6 +66,29 @@
     </form>
 
     <p class="ride-toast" id="ride-toast" role="status" hidden></p>
+    <section class="lecture-chat" id="lecture-chat" aria-label="Chat zur Vorlesung" hidden>
+      <header class="lc-head">
+        <div>
+          <p class="lc-eyebrow">Chat zur Vorlesung</p>
+          <h3 class="lc-title" id="lc-title"></h3>
+        </div>
+        <button type="button" id="lc-toggle" class="lc-toggle" aria-label="Chat ausblenden" title="Chat ausblenden">&minus;</button>
+      </header>
+      <div class="lc-body" id="lc-body">
+        <div class="lc-log" id="lc-log" role="log" aria-live="polite"></div>
+        <form class="lc-form" id="lc-form">
+          <textarea id="lc-input" rows="2" maxlength="1000" aria-label="Nachricht an den Vorlesungs-Chat"
+                    placeholder="Frag etwas zu dieser Vorlesung …"></textarea>
+          <button type="submit" id="lc-send" aria-label="Senden">
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+          </button>
+        </form>
+      </div>
+    </section>
+    <button type="button" class="lc-launcher" id="lc-launcher" hidden>Chat zur Vorlesung</button>
 
     <nav class="hop" id="hop" aria-label="Nachbarvorlesungen" hidden>
       <button type="button" id="hop-prev"></button>

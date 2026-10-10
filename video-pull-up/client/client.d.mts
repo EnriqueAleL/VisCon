@@ -25,5 +25,5 @@ export interface AnswerResult {
   playback: { sourceId: string; lectureId: string; mediaUrl: string; url: string; start: number; end: number } | null;
   videos: { id: string; courseId: string; title: string; duration: number; mediaUrl?: string | null; segments: { id: string; start: number; end: number; title: string; transcript: string; sourceId: string }[] }[];
 }
-export function askLecture(request: { question: string; courseId?: string | null; lectureId?: string | null; limit?: number }, options?: { baseUrl?: string; signal?: AbortSignal }): Promise<AnswerResult>;
+export function askLecture(request: { question: string; courseId?: string | null; lectureId?: string | null; limit?: number; language?: 'auto' | 'en' | 'de' }, options?: { baseUrl?: string; signal?: AbortSignal }): Promise<AnswerResult>;
 export function pullUpVideo(video: HTMLVideoElement, source: Pick<Source, 'mediaUrl' | 'start'>, options?: { baseUrl?: string; autoplay?: boolean }): Promise<{ cancelled: boolean; playing: boolean }>;

@@ -80,10 +80,33 @@ window.GalaxyAPI = (function () {
     return data.lecture;
   }
 
+  // The same setting the lecture app saves: which language the AI answer is written in.
+  function answerLanguage() {
+    try {
+      const language = JSON.parse(localStorage.getItem("viscon.answer-language.v1"));
+      if (language === "en" || language === "de") return language;
+    } catch (e) { /* no stored choice: the server follows the language of the question */ }
+    return null;
+  }
+
   async function ask(question, courseId) {
     const body = { question };
     if (courseId) body.courseId = courseId;
+    const language = answerLanguage();
+    if (language) body.language = language;
     return getJSON("/api/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  }
+
+  // Chat beside the open lecture. `turns` are the last few { role, text } messages, `currentTime` the video position.
+  async function chat(lectureId, message, turns, currentTime) {
+    const body = { message, history: turns, currentTime: currentTime === undefined ? null : currentTime };
+    const language = answerLanguage();
+    if (language) body.language = language;
+    return getJSON("/api/lectures/" + encodeURIComponent(lectureId) + "/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -108,5 +131,5 @@ window.GalaxyAPI = (function () {
     return postJSON("/api/galaxy/difficulty", { lectureId, chapterId, rating });
   }
 
-  return { load, lectureDetail, ask, here, rate };
+  return { load, lectureDetail, ask, chat, here, rate };
 })();

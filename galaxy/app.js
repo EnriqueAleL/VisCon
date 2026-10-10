@@ -887,6 +887,7 @@
 
   function renderPanel() {
     syncHop();
+    syncChat();
     changeProgramme.hidden = state.level !== "galaxy";
     el.list.replaceChildren();
     document.getElementById("panel").classList.toggle("has-course", state.course !== null);
@@ -1321,11 +1322,13 @@
     videoEl.pause();
     videoEl.removeAttribute("src");
     videoEl.load();
+    syncChat();
   }
 
   async function openPlayer(lecture, seg) {
     var token = ++playerToken;
     playerEl.hidden = false;
+    syncChat();
     followTime = false;
     showChapter(lecture, seg);
     playerNote.textContent = "Vorlesung wird geladen …";
@@ -1355,6 +1358,222 @@
 
   document.getElementById("player-close").addEventListener("click", closePlayer);
   playerEl.addEventListener("pointerdown", function (e) { if (e.target === playerEl) closePlayer(); });
+
+  /* ============================================================
+     LECTURE CHAT — ask about the lecture that is open, over the city or beside the video
+     ============================================================ */
+  var chatEl = document.getElementById("lecture-chat");
+  var chatLog = document.getElementById("lc-log");
+  var chatForm = document.getElementById("lc-form");
+  var chatInput = document.getElementById("lc-input");
+  var chatSend = document.getElementById("lc-send");
+  var chatTitle = document.getElementById("lc-title");
+  var chatToggle = document.getElementById("lc-toggle");
+  var playerBox = playerEl.querySelector(".player-box");
+  var chatHome = chatEl.parentNode;     // the HUD: where the panel sits over the city
+  var chats = {};                       // lecture id → { turns: [...], busy: bool }
+  var chatLecture = null;               // the lecture id the log currently shows
+  var chatBesideVideo = false;
+
+  // The minus hides the whole panel; a small button stays behind to bring it back.
+  var chatLauncher = document.getElementById("lc-launcher");
+  var chatHidden = window.innerWidth < 900;     // small screens start with just the button
+  function setChatHidden(hidden) {
+    chatHidden = hidden;
+    syncChat();
+    if (!hidden) chatInput.focus();
+  }
+  chatToggle.addEventListener("click", function () { setChatHidden(true); });
+  chatLauncher.addEventListener("click", function () { setChatHidden(false); });
+
+  function openLectureData() {
+    if (state.level !== "city" || state.course === null || state.lecture === null) return null;
+    return DATA[state.course].lectures[state.lecture] || null;
+  }
+
+  function chatOf(lecture) {
+    return chats[lecture.id] || (chats[lecture.id] = { turns: [], busy: false });
+  }
+
+  // Called whenever the level, the lecture or the player changes.
+  function syncChat() {
+    if (!chatEl) return;      // renderPanel can run before this block has set itself up
+    var lecture = openLectureData();
+    chatEl.hidden = !lecture || chatHidden;
+    chatLauncher.hidden = !lecture || !chatHidden;
+    if (!lecture) { chatLecture = null; return; }
+    var beside = !playerEl.hidden;
+    var home = beside ? playerBox : chatHome;
+    if (chatEl.parentNode !== home) home.appendChild(chatEl);
+    // Beside a video the button sits in the player's header, left of the close button, so it never covers the chapter controls.
+    if (beside) {
+      var head = playerBox.querySelector(".player-head");
+      var close = document.getElementById("player-close");
+      if (chatLauncher.parentNode !== head) head.insertBefore(chatLauncher, close);
+    } else if (chatLauncher.parentNode !== chatHome) {
+      chatHome.appendChild(chatLauncher);
+    }
+    chatEl.classList.toggle("in-player", beside);
+    chatLauncher.classList.toggle("in-player", beside);
+    var changed = chatLecture !== lecture.id;
+    var chat = chatOf(lecture);
+    // The starter suggestions differ while a video is open, so redraw an empty log when that flips.
+    if (changed || (beside !== chatBesideVideo && !chat.turns.length)) {
+      chatLecture = lecture.id;
+      chatBesideVideo = beside;
+      chatTitle.textContent = lecture.title;
+      renderChat();
+    }
+    chatBesideVideo = beside;
+  }
+
+  function node(tag, className, text) {
+    var n = document.createElement(tag);
+    if (className) n.className = className;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  function momentButton(moment, currentLectureId) {
+    var button = node("button", "lc-moment");
+    button.type = "button";
+    button.append(node("span", "lc-moment-time", mmss(moment.start)));
+    var label = moment.title || "";
+    if (moment.lectureId !== currentLectureId && moment.lectureTitle) {
+      label = moment.lectureTitle + (label ? " · " + label : "");
+    }
+    button.append(node("span", "", label || "Stelle ansehen"));
+    button.addEventListener("click", function () { jumpToMoment(moment); });
+    return button;
+  }
+
+  function turnNode(turn, lecture) {
+    var box = node("div", "lc-turn lc-" + turn.role + (turn.error ? " lc-error" : ""));
+    if (turn.role === "assistant" && turn.scope === "course" && !turn.error && turn.status === "answered") {
+      box.append(node("p", "lc-scope",
+        "Das wird in dieser Vorlesung nicht behandelt" +
+        (turn.moment && turn.moment.lectureId !== lecture.id ? " – gefunden in „" + turn.moment.lectureTitle + "“:" : ":")));
+    }
+    box.append(node("p", "lc-text", turn.text));
+    if (turn.background) {
+      var bg = node("p", "lc-background");
+      bg.append(node("span", "lc-bg-label", turn.backgroundLabel || "Allgemeines Wissen (nicht aus der Vorlesung):"));
+      bg.append(document.createTextNode(turn.background));
+      box.append(bg);
+    }
+    if (turn.moment) box.append(momentButton(turn.moment, lecture.id));
+    return box;
+  }
+
+  function starterNode() {
+    var box = node("div", "lc-starter");
+    box.append(node("p", "", "Ich kenne den ganzen Transkripttext dieser Vorlesung. Frag mich etwas, lass dir eine Stelle erklären oder such einen Begriff."));
+    var suggestions = ["Fasse diese Vorlesung zusammen", "Was sind die wichtigsten Begriffe hier?"];
+    if (!playerEl.hidden) suggestions.unshift("Erkläre mir die Stelle, an der ich gerade bin");
+    var list = node("div", "lc-suggestions");
+    suggestions.forEach(function (text) {
+      var b = node("button", "", text);
+      b.type = "button";
+      b.addEventListener("click", function () { sendChat(text); });
+      list.append(b);
+    });
+    box.append(list);
+    return box;
+  }
+
+  function renderChat() {
+    var lecture = openLectureData();
+    chatLog.replaceChildren();
+    if (!lecture) return;
+    var chat = chatOf(lecture);
+    if (!chat.turns.length) chatLog.append(starterNode());
+    chat.turns.forEach(function (turn) { chatLog.append(turnNode(turn, lecture)); });
+    if (chat.busy) chatLog.append(node("p", "lc-thinking", "Ich lese die Vorlesung …"));
+    chatSend.disabled = chat.busy;
+    chatLog.scrollTop = chatLog.scrollHeight;
+  }
+
+  async function sendChat(text) {
+    var lecture = openLectureData();
+    text = String(text || "").trim();
+    if (!lecture || !text) return;
+    var chat = chatOf(lecture);
+    if (chat.busy) return;
+    // Only the last few finished turns go along; the server trims them again.
+    var history = chat.turns.filter(function (t) { return !t.error; }).slice(-6).map(function (t) {
+      return { role: t.role, text: t.text };
+    });
+    var time = (!playerEl.hidden && isFinite(videoEl.currentTime) && videoEl.currentTime > 0)
+      ? Math.round(videoEl.currentTime) : null;
+    chat.turns.push({ role: "user", text: text });
+    chat.busy = true;
+    chatInput.value = "";
+    renderChat();
+    try {
+      var r = await window.GalaxyAPI.chat(lecture.id, text, history, time);
+      chat.turns.push({
+        role: "assistant",
+        status: r.status,
+        scope: r.scope,
+        text: r.status === "answered" ? r.reply : "Dazu habe ich in diesem Kurs keine passende Stelle gefunden.",
+        background: r.status === "answered" ? r.background : "",
+        backgroundLabel: r.backgroundLabel,
+        moment: r.status === "answered" ? r.moment : null,
+      });
+    } catch (error) {
+      chat.turns.push({ role: "assistant", error: true, text: error.message });
+    } finally {
+      chat.busy = false;
+      var open = openLectureData();
+      if (open && open.id === lecture.id) renderChat();
+    }
+  }
+
+  // Seek in the open video, or open the moment's video, or fly to another lecture and open it there.
+  function jumpToMoment(moment) {
+    if (locked) return;
+    var place = locate(moment.lectureId, moment.start);
+    if (!place) return;
+    var target = DATA[place.ci].lectures[place.li];
+    var seg = target.segs[place.k];
+    var timed = {};
+    Object.keys(seg).forEach(function (key) { timed[key] = seg[key]; });
+    timed.a = moment.start;           // the exact moment, not the start of its chapter
+
+    var sameLecture = state.level === "city" && state.course === place.ci && state.lecture === place.li;
+    if (sameLecture) {
+      selectHouse(place.k, false);
+      if (!playerEl.hidden) {
+        showChapter(target, timed);
+        videoEl.currentTime = Math.max(0, moment.start);
+        var playing = videoEl.play();
+        if (playing && playing.catch) playing.catch(function () { /* autoplay blocked; controls still work */ });
+      } else {
+        openPlayer(target, timed);
+      }
+      return;
+    }
+    if (!playerEl.hidden) closePlayer();
+    toCity(place.ci, place.li, false, function () {
+      selectHouse(place.k, false);
+      openPlayer(DATA[place.ci].lectures[place.li], timed);
+    });
+  }
+
+  chatForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    sendChat(chatInput.value);
+  });
+  chatInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+      event.preventDefault();
+      sendChat(chatInput.value);
+    } else if (event.key === "Escape") {
+      // Leave the text box instead of closing the video behind it
+      event.stopPropagation();
+      chatInput.blur();
+    }
+  });
 
   /* ============================================================
      MOVING ON — chapter to chapter in the player, lecture to lecture in the city
