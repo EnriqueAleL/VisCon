@@ -18,7 +18,7 @@ interface IndexedChapter { id: string; start: number; end: number; title: string
 interface IndexedLecture { lecture: number; duration: number; chapters: IndexedChapter[] }
 
 export interface PublishedCourse { course: Course; lectures: CatalogLecture[]; skipped: string[] }
-interface CourseRow { id: string; name: string }
+interface CourseRow { id: string; name: string; department?: string | null; degree?: 'bsc' | 'msc' | null; studyYear?: number | null; semester?: 'autumn' | 'spring' | null }
 interface LectureRow { number: number; title: string; indexedAt: number | null; summaryAt: number | null }
 
 export const courseColor = (id: string) => COLORS[createHash('sha1').update(id).digest()[0] % COLORS.length];
@@ -36,15 +36,16 @@ const transcriptPath = (coursesDir: string, courseId: string, number: number) =>
 const videoExt = (coursesDir: string, courseId: string, number: number) =>
   VIDEO_EXTS.find(ext => existsSync(join(lecturesDir(coursesDir, courseId), `lec${number}.${ext}`)));
 
+const placementKey = (row: CourseRow) => `${row.department}|${row.degree}|${row.studyYear}|${row.semester}`;
 export function activeCourses(db: DatabaseSync): CourseRow[] {
-  return db.prepare("SELECT id, name FROM courses WHERE status='active' ORDER BY name").all() as unknown as CourseRow[];
+  return db.prepare("SELECT id, name, department, degree, studyYear, semester FROM courses WHERE status='active' ORDER BY name").all() as unknown as CourseRow[];
 }
 const lectureRows = (db: DatabaseSync, courseId: string) =>
   db.prepare("SELECT number, title, indexedAt, summaryAt FROM submissions WHERE courseId=? AND type='lecture' AND status='approved' AND indexState='done' AND number IS NOT NULL ORDER BY number").all(courseId) as unknown as LectureRow[];
 
 /** Changes whenever one course's lectures, titles, index or name change; used to rebuild only that course. */
 export async function courseKey(db: DatabaseSync, coursesDir: string, row: CourseRow): Promise<string> {
-  const hash = createHash('sha1').update(`${row.id}|${row.name}\n`);
+  const hash = createHash('sha1').update(`${row.id}|${row.name}|${placementKey(row)}\n`);
   for (const lecture of lectureRows(db, row.id)) hash.update(`${lecture.number}|${lecture.title}|${lecture.indexedAt}|${lecture.summaryAt}\n`);
   try { hash.update(String((await stat(join(qaDir(coursesDir, row.id), 'index.json'))).mtimeMs)); } catch { /* no index yet */ }
   return hash.digest('hex');
@@ -54,7 +55,7 @@ export async function courseKey(db: DatabaseSync, coursesDir: string, row: Cours
 export function catalogFingerprint(db: DatabaseSync): string {
   const hash = createHash('sha1');
   for (const course of activeCourses(db)) {
-    hash.update(`c|${course.id}|${course.name}\n`);
+    hash.update(`c|${course.id}|${course.name}|${placementKey(course)}\n`);
     for (const row of lectureRows(db, course.id)) hash.update(`l|${course.id}|${row.number}|${row.title}|${row.indexedAt}|${row.summaryAt}\n`);
   }
   return hash.digest('hex');
@@ -70,7 +71,8 @@ async function readIndex(file: string): Promise<{ lectures: Record<string, Index
  * damaged transcript costs that lecture (and is reported in `skipped`), never the whole catalog.
  */
 export async function loadPublishedCourse(db: DatabaseSync, coursesDir: string, row: CourseRow): Promise<PublishedCourse> {
-  const course: Course = { id: row.id, name: row.name, shortName: shortName(row.name), color: courseColor(row.id), videoCount: 0, degree: 'unspecified', studyYear: 0 };
+  const course: Course = { id: row.id, name: row.name, shortName: shortName(row.name), color: courseColor(row.id), videoCount: 0,
+    degree: row.degree ?? 'unspecified', studyYear: (row.studyYear ?? 0) as Course['studyYear'], department: row.department ?? null, semester: row.semester ?? null };
   const lectures: CatalogLecture[] = [], skipped: string[] = [];
   const index = await readIndex(join(qaDir(coursesDir, row.id), 'index.json'));
   for (const entry of lectureRows(db, row.id)) {

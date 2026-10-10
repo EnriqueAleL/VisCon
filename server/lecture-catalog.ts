@@ -55,8 +55,8 @@ export async function loadLectureCatalog(root = projectRoot): Promise<LectureCat
   const demo = JSON.parse(await readFile(join(root, 'video-pull-up/data/demo-catalog.json'), 'utf8')) as LectureCatalog;
   const colors = ['#526cb7', '#9a5933', '#24765a'];
   const courses: Course[] = [
-    { id: 'computer-architecture', name: 'Digital Design & Computer Architecture', shortName: 'Computer Architecture', color: '#24765a', videoCount: lectures.length, degree: 'unspecified', studyYear: 0 },
-    ...demo.courses.map((course, index) => ({ ...course, name: `${course.name} · Demo`, shortName: course.name, color: colors[index % colors.length], videoCount: demo.lectures.filter(lecture => lecture.courseId === course.id).length, degree: 'bsc' as const, studyYear: 1 as const })),
+    { id: 'computer-architecture', name: 'Digital Design & Computer Architecture', shortName: 'Computer Architecture', color: '#24765a', videoCount: lectures.length, degree: 'bsc' as const, studyYear: 1 as const, department: 'D-INFK', semester: 'autumn' as const },
+    ...demo.courses.map((course, index) => ({ ...course, name: `${course.name} · Demo`, shortName: course.name, color: colors[index % colors.length], videoCount: demo.lectures.filter(lecture => lecture.courseId === course.id).length, degree: 'bsc' as const, studyYear: 1 as const, department: course.id === 'informatics' ? 'D-INFK' : 'D-MATH', semester: 'autumn' as const })),
   ];
   return validateCatalog({ courses, lectures: [...lectures, ...demo.lectures.map(lecture => ({ ...lecture, thumbnail: '', demo: true }))] });
 }

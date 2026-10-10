@@ -248,7 +248,7 @@ test('input is validated: types, titles, numbers, courses that are not active', 
   assert.equal((await bad({ type: 'slides', title: 'ab' })).status, 400);
   assert.equal((await bad({ type: 'slides', title: 'Fine title', notes: 'n'.repeat(1001) })).status, 400);
   assert.equal((await bad({ type: 'slides', title: 'Fine title' }, 'no-such-course')).status, 404);
-  const proposed = (await call('ben', 'POST', '/api/platform/courses/propose', { name: 'Chemistry' })).body;
+  const proposed = (await call('ben', 'POST', '/api/platform/courses/propose', { name: 'Chemistry', department: 'D-CHAB', degree: 'bsc', studyYear: 1 })).body;
   assert.equal(proposed.status, 'proposed');
   assert.equal((await call('ben', 'POST', '/api/platform/courses/chemistry/submissions', { type: 'script', title: 'Early script' })).status, 409, 'not before the course is approved');
 });

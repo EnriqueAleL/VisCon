@@ -39,6 +39,7 @@ test('approve -> index -> catalogue -> model-backed answer, per course', { skip 
     let time = 1_800_000_000_000;
     const admin = createAdminService(db, { rootAdmins: new Set(['riordache']), clock: () => time });
     admin.createCourse('riordache', { name: 'Physics' });
+    admin.updateCourse('riordache', 'physics', { department: 'D-PHYS', degree: 'bsc', studyYear: 2, semester: 'spring' });
     admin.createCourse('riordache', { name: 'Chemistry' });
     const submissions = createSubmissionService(db, admin, { uploadsDir: uploads, limits: uploadLimits({}), clock: () => time });
     const indexing = createIndexingService(db, admin, { runner: createPythonRunner(pythonConfigFromEnv(root, process.env)), submissions, coursesDir: courses, clock: () => time, retryBaseSeconds: 0 });
@@ -79,6 +80,11 @@ test('approve -> index -> catalogue -> model-backed answer, per course', { skip 
     // what the galaxy front page builds its planets, cities and houses from
     const course = (await get('/api/courses')).courses.find((c: { id: string }) => c.id === 'physics');
     assert.ok(course.color && course.shortName, 'planet colour and name');
+    assert.deepEqual([course.department, course.degree, course.studyYear, course.semester], ['D-PHYS', 'bsc', 2, 'spring'], 'where the course sits in the programme');
+    const all = await get('/api/courses');
+    assert.ok(all.departments.some((d: { id: string }) => d.id === 'D-INFK'), 'the department list comes from the server');
+    const chem0 = all.courses.find((c: { id: string }) => c.id === 'chemistry');
+    assert.deepEqual([chem0.department, chem0.degree, chem0.studyYear], [null, 'unspecified', 0], 'an unplaced course says so');
     assert.ok(physics7.episode === 7 && physics7.duration > 0 && physics7.chapters.length === 2, 'city and houses');
     assert.ok(physics7.chapters.every((c: { title: string; start: number; end: number }) => c.title && c.end > c.start));
     const notes = (await get('/api/lectures/physics-lec7/summary')).summary;

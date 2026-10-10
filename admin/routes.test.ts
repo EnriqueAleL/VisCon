@@ -60,7 +60,7 @@ test('roles are reported correctly and students are blocked from every administr
 });
 
 test('full flow: propose, review, approve, appoint a course admin, then that admin edits only their course', async () => {
-  const proposed = await call('ben', 'POST', '/api/platform/courses/propose', { name: 'Discrete Mathematics', description: 'Graphs and counting' });
+  const proposed = await call('ben', 'POST', '/api/platform/courses/propose', { name: 'Discrete Mathematics', department: 'D-MATH', degree: 'bsc', studyYear: 1, description: 'Graphs and counting' });
   assert.equal(proposed.status, 201);
   assert.deepEqual([proposed.body.id, proposed.body.status, proposed.body.admins], ['discrete-mathematics', 'proposed', ['ben']]);
   assert.deepEqual((await call('ben', 'GET', '/api/me/roles')).body.courseAdminOf, ['discrete-mathematics']);

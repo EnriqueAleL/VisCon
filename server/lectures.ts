@@ -7,6 +7,7 @@ import { InputError, validateQuestion } from '../video-pull-up/src/catalog.mjs';
 import type { LectureSummary } from '../web-interface/src/types';
 import { createCatalogStore } from './catalog-store';
 import { mountCourseMedia } from './course-catalog';
+import { DEPARTMENTS } from '../shared/departments';
 import { loadLectureCatalog, projectRoot, readSummary } from './lecture-catalog';
 import { qaAnswer, runPythonQA } from './lecture-qa';
 
@@ -27,7 +28,7 @@ export async function mountLectures(app: express.Express, deps: MountLecturesDep
   const route = (fn: (req: express.Request, res: express.Response) => unknown): express.RequestHandler => async (req, res, next) => {
     try { await fn(req, res); } catch (error) { next(error); }
   };
-  app.get('/api/courses', route(async (_req, res) => { res.json({ courses: (await store.snapshot()).catalog.courses }); }));
+  app.get('/api/courses', route(async (_req, res) => { res.json({ courses: (await store.snapshot()).catalog.courses, departments: DEPARTMENTS }); }));
 
   // The same list as ever (the app loads it once and filters in the browser), but serialised and compressed once per
   // catalogue version, and revalidated with an ETag: an unchanged list costs a 304 with no body.

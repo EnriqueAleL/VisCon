@@ -24,6 +24,9 @@ export interface Course {
   videoCount: number;
   degree: Degree;
   studyYear: StudyYear;
+  /** ETH department code such as D-INFK; null while the course has not been placed. */
+  department?: string | null;
+  semester?: 'autumn' | 'spring' | null;
 }
 
 export interface Segment {

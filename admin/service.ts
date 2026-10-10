@@ -1,12 +1,16 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { parseEthIdentifier } from '../auth/identifier';
 import { AdminError } from './errors';
+import { DEPARTMENTS, DEGREES, SEMESTERS, STUDY_YEARS } from '../shared/departments';
 
 export type CourseStatus = 'proposed' | 'active' | 'archived';
 export interface Course {
   id: string; name: string; description: string; status: CourseStatus;
   proposedBy: string | null; createdBy: string; createdAt: string; approvedBy: string | null; admins: string[];
+  /** Where the course sits in the study programme; all null until someone sets it. */
+  department: string | null; degree: 'bsc' | 'msc' | null; studyYear: number | null; semester: 'autumn' | 'spring' | null;
 }
+export interface Placement { department: string | null; degree: 'bsc' | 'msc' | null; studyYear: number | null; semester: 'autumn' | 'spring' | null }
 export interface Roles { username: string; admin: boolean; rootAdmin: boolean; courseAdminOf: string[] }
 export interface AdminOptions {
   /** Usernames that are always administrators; set on the server (AUTH_ADMINS), never changeable through the app. */
@@ -16,7 +20,7 @@ export interface AdminOptions {
   maxProposalsPerDay?: number;
 }
 
-interface CourseRow { id: string; name: string; description: string; status: CourseStatus; proposedBy: string | null; createdBy: string; createdAt: number; approvedBy: string | null }
+interface CourseRow extends Placement { id: string; name: string; description: string; status: CourseStatus; proposedBy: string | null; createdBy: string; createdAt: number; approvedBy: string | null }
 const NAME_RE = /^[\p{L}\p{N}][\p{L}\p{N} .,:&()'+\-/]{2,79}$/u;
 
 export function slugify(name: string): string {
@@ -77,7 +81,8 @@ export function createAdminService(db: DatabaseSync, options: AdminOptions) {
 
   // ---- courses
   const adminsOf = (courseId: string) => (db.prepare('SELECT username FROM course_admins WHERE courseId=? ORDER BY grantedAt, username').all(courseId) as { username: string }[]).map(r => r.username);
-  const toCourse = (r: CourseRow): Course => ({ id: r.id, name: r.name, description: r.description, status: r.status, proposedBy: r.proposedBy, createdBy: r.createdBy, createdAt: new Date(r.createdAt * 1000).toISOString(), approvedBy: r.approvedBy, admins: adminsOf(r.id) });
+  const toCourse = (r: CourseRow): Course => ({ id: r.id, name: r.name, description: r.description, status: r.status, proposedBy: r.proposedBy, createdBy: r.createdBy, createdAt: new Date(r.createdAt * 1000).toISOString(), approvedBy: r.approvedBy, admins: adminsOf(r.id),
+    department: r.department ?? null, degree: r.degree ?? null, studyYear: r.studyYear ?? null, semester: r.semester ?? null });
   const row = (id: string) => db.prepare('SELECT * FROM courses WHERE id=?').get(id) as CourseRow | undefined;
   const mustFind = (id: unknown) => { const r = typeof id === 'string' ? row(id) : undefined; if (!r) throw new AdminError('not_found', 'There is no such course.'); return r; };
   const isCourseAdmin = (name: string, courseId: string) => db.prepare('SELECT 1 FROM course_admins WHERE courseId=? AND username=?').get(courseId, name) !== undefined;
@@ -94,13 +99,33 @@ export function createAdminService(db: DatabaseSync, options: AdminOptions) {
     if (typeof input !== 'string' || text.length > 500 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(text)) throw new AdminError('invalid_input', 'The description must be plain text of at most 500 characters.');
     return text;
   }
-  function insertCourse(actor: string, name: string, description: string, status: CourseStatus, proposedBy: string | null): Course {
+  const NO_PLACEMENT: Placement = { department: null, degree: null, studyYear: null, semester: null };
+  /**
+   * Where a course sits in the study programme. `current` is what is stored; fields left out of `input` keep their value.
+   * With `required`, department, degree and study year must all be present (a proposal needs them).
+   */
+  function cleanPlacement(input: Record<string, unknown>, current: Placement = NO_PLACEMENT, required = false): Placement {
+    const bad = (message: string) => new AdminError('invalid_input', message);
+    const given = (key: string) => input[key] !== undefined;
+    const department = given('department') ? input.department : current.department;
+    if (department !== null && !DEPARTMENTS.some(d => d.id === department)) throw bad('Choose a department from the list (for example D-INFK).');
+    const degree = given('degree') ? input.degree : current.degree;
+    if (degree !== null && !(DEGREES as readonly unknown[]).includes(degree)) throw bad('The degree must be bsc or msc.');
+    const studyYear = given('studyYear') ? input.studyYear : current.studyYear;
+    if (studyYear !== null && (!Number.isInteger(studyYear) || !degree || !(STUDY_YEARS[degree as 'bsc' | 'msc'] as readonly unknown[]).includes(studyYear))) throw bad('The study year does not exist for this degree (bachelor 1-3, master 1-2).');
+    const semester = given('semester') ? input.semester : current.semester;
+    if (semester !== null && !(SEMESTERS as readonly unknown[]).includes(semester)) throw bad('The semester must be autumn or spring.');
+    if (required && (department === null || degree === null || studyYear === null)) throw bad('Say which department, degree and study year the course is for.');
+    if ((degree === null) !== (studyYear === null)) throw bad('Degree and study year go together.');
+    return { department, degree, studyYear, semester } as Placement;
+  }
+  function insertCourse(actor: string, name: string, description: string, status: CourseStatus, proposedBy: string | null, placement: Placement = NO_PLACEMENT): Course {
     const id = slugify(name);
     if (!id) throw new AdminError('invalid_input', 'The course name needs letters or numbers.');
     if (row(id)) throw new AdminError('conflict', 'A course with this name already exists.');
     const t = now();
-    db.prepare('INSERT INTO courses (id,name,description,status,proposedBy,createdBy,createdAt,approvedBy,approvedAt) VALUES (?,?,?,?,?,?,?,?,?)')
-      .run(id, name, description, status, proposedBy, actor, t, status === 'active' ? actor : null, status === 'active' ? t : null);
+    db.prepare('INSERT INTO courses (id,name,description,status,proposedBy,createdBy,createdAt,approvedBy,approvedAt,department,degree,studyYear,semester) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)')
+      .run(id, name, description, status, proposedBy, actor, t, status === 'active' ? actor : null, status === 'active' ? t : null, placement.department, placement.degree, placement.studyYear, placement.semester);
     return toCourse(row(id)!);
   }
 
@@ -115,24 +140,24 @@ export function createAdminService(db: DatabaseSync, options: AdminOptions) {
     if (!isAdmin(actor) && course.status !== 'active' && course.proposedBy !== actor && !isCourseAdmin(actor, course.id)) throw new AdminError('not_found', 'There is no such course.');
     return toCourse(course);
   }
-  function createCourse(actor: string, input: { name?: unknown; description?: unknown }): Course {
+  function createCourse(actor: string, input: { name?: unknown; description?: unknown } & Record<string, unknown>): Course {
     requireAdmin(actor);
-    const course = insertCourse(actor, cleanName(input.name), cleanDescription(input.description), 'active', null);
+    const course = insertCourse(actor, cleanName(input.name), cleanDescription(input.description), 'active', null, cleanPlacement(input));
     audit(actor, 'course.create', course.id, { name: course.name });
     return course;
   }
   /** Any verified student may propose a course. They become its course admin; it stays hidden until an administrator approves it. */
-  function proposeCourse(actor: string, input: { name?: unknown; description?: unknown }): Course {
-    const name = cleanName(input.name), description = cleanDescription(input.description);
+  function proposeCourse(actor: string, input: { name?: unknown; description?: unknown } & Record<string, unknown>): Course {
+    const name = cleanName(input.name), description = cleanDescription(input.description), placement = cleanPlacement(input, NO_PLACEMENT, true);
     const pending = (db.prepare("SELECT COUNT(*) AS n FROM courses WHERE proposedBy=? AND status='proposed'").get(actor) as { n: number }).n;
     if (pending >= maxPending) throw new AdminError('rate_limited', `You already have ${pending} proposals waiting for review.`);
     const today = (db.prepare('SELECT COUNT(*) AS n FROM courses WHERE proposedBy=? AND createdAt>?').get(actor, now() - 86_400) as { n: number }).n;
     if (today >= maxPerDay) throw new AdminError('rate_limited', 'You proposed several courses today. Try again tomorrow.', 86_400);
     db.exec('BEGIN IMMEDIATE');
     try {
-      const course = insertCourse(actor, name, description, 'proposed', actor);
+      const course = insertCourse(actor, name, description, 'proposed', actor, placement);
       db.prepare('INSERT INTO course_admins (courseId,username,grantedBy,grantedAt) VALUES (?,?,?,?)').run(course.id, actor, actor, now());
-      audit(actor, 'course.propose', course.id, { name });
+      audit(actor, 'course.propose', course.id, { name, ...placement });
       db.exec('COMMIT');
       return toCourse(row(course.id)!);
     } catch (error) { db.exec('ROLLBACK'); throw error; }
@@ -157,14 +182,15 @@ export function createAdminService(db: DatabaseSync, options: AdminOptions) {
     db.prepare('DELETE FROM courses WHERE id=?').run(course.id);
     audit(actor, 'course.reject', course.id, { name: course.name, proposedBy: course.proposedBy });
   }
-  /** Administrators, and the course's own admins, may change its name and description (the id never changes). */
-  function updateCourse(actor: string, id: unknown, input: { name?: unknown; description?: unknown }): Course {
+  /** Administrators, and the course's own admins, may change its name, description and placement (the id never changes). */
+  function updateCourse(actor: string, id: unknown, input: { name?: unknown; description?: unknown } & Record<string, unknown>): Course {
     const course = mustFind(id);
     if (!canManage(actor, course.id)) throw forbidden('Only administrators and this course\'s admins can edit it.');
     const name = input.name === undefined ? course.name : cleanName(input.name);
     const description = input.description === undefined ? course.description : cleanDescription(input.description);
-    db.prepare('UPDATE courses SET name=?, description=? WHERE id=?').run(name, description, course.id);
-    audit(actor, 'course.update', course.id, { name, description });
+    const placement = cleanPlacement(input, course);
+    db.prepare('UPDATE courses SET name=?, description=?, department=?, degree=?, studyYear=?, semester=? WHERE id=?').run(name, description, placement.department, placement.degree, placement.studyYear, placement.semester, course.id);
+    audit(actor, 'course.update', course.id, { name, description, ...placement });
     return toCourse(row(course.id)!);
   }
   function grantCourseAdmin(actor: string, id: unknown, target: unknown) {

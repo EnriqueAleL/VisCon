@@ -6,6 +6,7 @@ import { initAdminSchema } from './schema';
 import { createAdminService, slugify } from './service';
 
 const NOW = 1_800_000_000_000;
+const PLACE = { department: 'D-INFK', degree: 'bsc', studyYear: 1 };
 function setup(options = {}) {
   const db = new DatabaseSync(':memory:');
   initAdminSchema(db);
@@ -46,7 +47,7 @@ test('an administrator creates a course, names course admins, and a student prop
   assert.equal(admin.rolesOf('anna').admin, false);
   assert.deepEqual(admin.rolesOf('anna').courseAdminOf, ['linear-algebra']);
 
-  const proposal = admin.proposeCourse('ben', { name: 'Discrete Mathematics' });
+  const proposal = admin.proposeCourse('ben', { ...PLACE, name: 'Discrete Mathematics' });
   assert.deepEqual([proposal.status, proposal.admins, proposal.proposedBy], ['proposed', ['ben'], 'ben']);
   assert.deepEqual(admin.listCourses('cara').map(c => c.id), ['computer-architecture', 'linear-algebra'], 'others do not see a proposal');
   assert.ok(admin.listCourses('ben').some(c => c.id === 'discrete-mathematics'), 'the proposer does');
@@ -74,27 +75,27 @@ test('a course admin manages only their own course', () => {
 
 test('proposals are limited, validated and de-duplicated', () => {
   const { admin, advance } = setup();
-  admin.proposeCourse('ben', { name: 'Course One' });
-  admin.proposeCourse('ben', { name: 'Course Two' });
-  admin.proposeCourse('ben', { name: 'Course Three' });
-  fails(() => admin.proposeCourse('ben', { name: 'Course Four' }), 'rate_limited');
+  admin.proposeCourse('ben', { ...PLACE, name: 'Course One' });
+  admin.proposeCourse('ben', { ...PLACE, name: 'Course Two' });
+  admin.proposeCourse('ben', { ...PLACE, name: 'Course Three' });
+  fails(() => admin.proposeCourse('ben', { ...PLACE, name: 'Course Four' }), 'rate_limited');
   admin.approveCourse('riordache', 'course-one');
-  admin.proposeCourse('ben', { name: 'Course Four' });
-  fails(() => admin.proposeCourse('ben', { name: 'Course Five' }), 'rate_limited'); // 5 in a day soon
+  admin.proposeCourse('ben', { ...PLACE, name: 'Course Four' });
+  fails(() => admin.proposeCourse('ben', { ...PLACE, name: 'Course Five' }), 'rate_limited'); // 5 in a day soon
   advance(86_401);
-  fails(() => admin.proposeCourse('ben', { name: 'Course Six' }), 'rate_limited'); // still 3 waiting
+  fails(() => admin.proposeCourse('ben', { ...PLACE, name: 'Course Six' }), 'rate_limited'); // still 3 waiting
   admin.approveCourse('riordache', 'course-two');
-  admin.proposeCourse('ben', { name: 'Course Six' });
-  fails(() => admin.proposeCourse('cara', { name: 'course   one' }), 'conflict');
+  admin.proposeCourse('ben', { ...PLACE, name: 'Course Six' });
+  fails(() => admin.proposeCourse('cara', { ...PLACE, name: 'course   one' }), 'conflict');
   for (const bad of ['', 'ab', 'x'.repeat(200), '<script>alert(1)</script>', 'name\u0000', 42, null, '---'])
-    fails(() => admin.proposeCourse('cara', { name: bad }), 'invalid_input');
-  fails(() => admin.proposeCourse('cara', { name: 'Valid Name', description: 'y'.repeat(501) }), 'invalid_input');
-  fails(() => admin.proposeCourse('cara', { name: 'Valid Name', description: { toString: 'x' } }), 'invalid_input');
+    fails(() => admin.proposeCourse('cara', { ...PLACE, name: bad }), 'invalid_input');
+  fails(() => admin.proposeCourse('cara', { ...PLACE, name: 'Valid Name', description: 'y'.repeat(501) }), 'invalid_input');
+  fails(() => admin.proposeCourse('cara', { ...PLACE, name: 'Valid Name', description: { toString: 'x' } }), 'invalid_input');
 });
 
 test('rejecting a proposal removes it and its course admin; active courses can only be archived', () => {
   const { admin, db } = setup();
-  admin.proposeCourse('ben', { name: 'Spam Course' });
+  admin.proposeCourse('ben', { ...PLACE, name: 'Spam Course' });
   admin.rejectProposal('riordache', 'spam-course');
   assert.equal((db.prepare('SELECT COUNT(*) AS n FROM courses WHERE id=?').get('spam-course') as { n: number }).n, 0);
   assert.equal(admin.rolesOf('ben').courseAdminOf.length, 0);
@@ -126,7 +127,7 @@ test('every change is written to the audit log, readable only by administrators'
   const { admin } = setup();
   admin.createCourse('riordache', { name: 'Physics' });
   admin.grantAdmin('riordache', 'anna');
-  admin.proposeCourse('ben', { name: 'Chemistry' });
+  admin.proposeCourse('ben', { ...PLACE, name: 'Chemistry' });
   admin.rejectProposal('riordache', 'chemistry');
   const log = admin.listAudit('riordache');
   assert.deepEqual(log.map(e => `${e.actor}:${e.action}:${e.target}`).reverse(), ['riordache:course.create:physics', 'riordache:admin.grant:anna', 'ben:course.propose:chemistry', 'riordache:course.reject:chemistry']);
@@ -156,4 +157,27 @@ test('an older database without the role column is upgraded in place', () => {
   db.exec("INSERT INTO accounts VALUES ('old','p','h',1,1,NULL)");
   initAdminSchema(db); initAdminSchema(db);
   assert.equal((db.prepare('SELECT role FROM accounts WHERE username=?').get('old') as { role: string }).role, 'user');
+});
+
+test('a proposal must say where the course belongs; admins can fix it later', () => {
+  const { admin } = setup();
+  fails(() => admin.proposeCourse('ben', { name: 'No Place' }), 'invalid_input');
+  fails(() => admin.proposeCourse('ben', { name: 'No Year', department: 'D-INFK', degree: 'bsc' }), 'invalid_input');
+  for (const bad of [{ department: 'D-NOPE' }, { degree: 'phd' }, { studyYear: 4 }, { degree: 'msc', studyYear: 3 }, { studyYear: 1.5 }, { semester: 'summer' }, { department: { id: 'D-INFK' } }]) {
+    fails(() => admin.proposeCourse('ben', { name: 'Bad Place', ...PLACE, ...bad }), 'invalid_input');
+  }
+  const course = admin.proposeCourse('ben', { name: 'Placed', ...PLACE, semester: 'spring' });
+  assert.deepEqual([course.department, course.degree, course.studyYear, course.semester], ['D-INFK', 'bsc', 1, 'spring']);
+  // a course admin can move it; fields left out keep their value, and the pair degree/year stays consistent
+  const moved = admin.updateCourse('ben', course.id, { department: 'D-MATH', degree: 'msc', studyYear: 2 });
+  assert.deepEqual([moved.department, moved.degree, moved.studyYear, moved.semester], ['D-MATH', 'msc', 2, 'spring']);
+  fails(() => admin.updateCourse('ben', course.id, { studyYear: 3 }), 'invalid_input'); // a master has no third year
+  const clean = admin.updateCourse('ben', course.id, { name: 'Placed Renamed' });
+  assert.equal(clean.department, 'D-MATH');
+  // admins may create a course without a placement; it just has none
+  const plain = admin.createCourse('riordache', { name: 'Unsorted' });
+  assert.deepEqual([plain.department, plain.degree, plain.studyYear], [null, null, null]);
+  // DDCA is seeded as a first-year D-INFK bachelor course
+  const ddca = admin.getCourse('riordache', 'computer-architecture');
+  assert.deepEqual([ddca.department, ddca.degree, ddca.studyYear, ddca.semester], ['D-INFK', 'bsc', 1, 'autumn']);
 });
