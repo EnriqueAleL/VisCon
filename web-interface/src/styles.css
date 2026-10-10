@@ -528,6 +528,75 @@ textarea:disabled {
   color: var(--muted);
   margin-left: auto;
 }
+button.avatar {
+  padding: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+button.avatar:hover,
+button.avatar[aria-expanded='true'] {
+  color: inherit;
+}
+.settings-menu {
+  position: relative;
+}
+.settings-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  width: 252px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-raised);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+}
+.settings-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.settings-title-spaced {
+  margin-top: 14px;
+}
+.settings-options {
+  display: grid;
+  gap: 4px;
+}
+.settings-option {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.settings-option small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.settings-option:hover {
+  border-color: var(--line);
+}
+.settings-option.selected {
+  border-color: currentColor;
+  font-weight: 600;
+}
+.settings-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
 .primary-button {
   display: flex;
   align-items: center;

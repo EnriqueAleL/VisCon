@@ -88,5 +88,8 @@ export function validateQuestion(input, catalog) {
   if (lecture && courseId !== null && lecture.courseId !== courseId) throw new InputError('Vorlesung gehört nicht zum gewählten Kurs.');
   const limit = input.limit ?? 3;
   if (!Number.isInteger(limit) || limit < 1 || limit > 5) throw new InputError('limit muss zwischen 1 und 5 liegen.');
-  return { question, courseId, lectureId, limit };
+  // Which language the AI answer is written in. "auto" follows the language of the question.
+  const language = input.language ?? 'auto';
+  if (!['auto', 'en', 'de'].includes(language)) throw new InputError('language muss auto, en oder de sein.');
+  return { question, courseId, lectureId, limit, language };
 }

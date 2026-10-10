@@ -1,9 +1,11 @@
 import type { Course, CourseSelection, Degree, Department, Lecture, StudyYear } from '../types';
+import { translate, type UiLanguage } from '../i18n';
 
 /** Courses nobody has placed in the study programme yet are grouped here. */
 export const OTHER_DEPARTMENT = 'other';
 
-export const degreeNames: Record<Degree, string> = { bsc: 'Bachelor (BSc)', msc: 'Master (MSc)', unspecified: 'Ohne Studiengangsangabe' };
+export const degreeName = (degree: Degree, language: UiLanguage) =>
+  degree === 'bsc' ? 'Bachelor (BSc)' : degree === 'msc' ? 'Master (MSc)' : translate(language, 'degree.unspecified');
 export const degreeShortNames: Record<Degree, string> = { bsc: 'BSc', msc: 'MSc', unspecified: '' };
 export const studyYears: Record<Degree, readonly StudyYear[]> = { bsc: [1, 2, 3], msc: [1, 2], unspecified: [0] };
 
@@ -11,12 +13,12 @@ export function selectionForCourse(course: Course): CourseSelection {
   return { courseId: course.id, department: course.department ?? OTHER_DEPARTMENT, degree: course.degree, studyYear: course.studyYear };
 }
 
-export const departmentName = (id: string, departments: Department[]) =>
-  id === OTHER_DEPARTMENT ? 'Weitere Fächer' : departments.find(item => item.id === id)?.name ?? id;
+export const departmentName = (id: string, departments: Department[], language: UiLanguage) =>
+  id === OTHER_DEPARTMENT ? translate(language, 'picker.other') : departments.find(item => item.id === id)?.name ?? id;
 
-export function selectionLabel(selection: CourseSelection) {
-  if (selection.department === OTHER_DEPARTMENT) return 'Weitere Fächer';
-  return `${selection.department} · ${degreeShortNames[selection.degree]} · ${selection.studyYear}. Jahr`;
+export function selectionLabel(selection: CourseSelection, language: UiLanguage) {
+  if (selection.department === OTHER_DEPARTMENT) return translate(language, 'picker.other');
+  return `${selection.department} · ${degreeShortNames[selection.degree]} · ${translate(language, 'picker.year', { year: selection.studyYear })}`;
 }
 
 export function sameCourseSelection(a: CourseSelection, b: CourseSelection): boolean {

@@ -1,8 +1,8 @@
 /** Framework-independent integration; use baseUrl='' with a Vite /api + /media proxy. */
-export async function askLecture({ question, courseId = null, lectureId = null, limit = 3 }, { baseUrl = '', signal } = {}) {
+export async function askLecture({ question, courseId = null, lectureId = null, limit = 3, language = 'auto' }, { baseUrl = '', signal } = {}) {
   const response = await fetch(`${baseUrl}/api/ask`, {
     method: 'POST', signal, headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question, courseId, lectureId, limit }),
+    body: JSON.stringify({ question, courseId, lectureId, limit, language }),
   });
   const result = await response.json();
   if (!response.ok) throw new Error(result.error ?? 'Die Frage konnte nicht beantwortet werden.');

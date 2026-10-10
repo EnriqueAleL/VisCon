@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { ArrowLeft, Bookmark, ChevronRight, GraduationCap, Layers3, Play, Search, X } from 'lucide-react';
 import type { Course, Lecture, Segment } from '../types';
 import { formatTime } from '../api';
+import { useI18n, type Translate } from '../i18n';
 import { CourseDocuments } from './CourseDocuments';
 import './course-browser.css';
 
@@ -33,10 +34,10 @@ interface CourseBrowserProps {
 const chaptersOf = (lecture: Lecture): Segment[] =>
   lecture.chapters?.length ? lecture.chapters : lecture.segments;
 
-const programmeLabel = (course: Course) => {
-  if (!course.department) return 'Weitere Fächer';
+const programmeLabel = (course: Course, t: Translate) => {
+  if (!course.department) return t('picker.other');
   const degree = course.degree === 'msc' ? 'MSc' : course.degree === 'bsc' ? 'BSc' : null;
-  return [course.department, degree, course.studyYear ? `${course.studyYear}. Jahr` : null]
+  return [course.department, degree, course.studyYear ? t('picker.year', { year: course.studyYear }) : null]
     .filter(Boolean)
     .join(' · ');
 };
@@ -50,6 +51,7 @@ export function CourseBrowser({
   selectedCourseId,
   onSelectCourse,
 }: CourseBrowserProps) {
+  const { t } = useI18n();
   const [courseId, setCourseId] = useState<string | null>(selectedCourseId);
   const [lectureId, setLectureId] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -92,9 +94,9 @@ export function CourseBrowser({
 
   return (
     <div className="browser">
-      <nav className="browser-trail" aria-label="Pfad">
+      <nav className="browser-trail" aria-label={t('browser.trail')}>
         <button className="browser-crumb" onClick={toCourses} disabled={level === 'courses'}>
-          Kurse
+          {t('browser.courses')}
         </button>
         {course && (
           <>
@@ -107,7 +109,7 @@ export function CourseBrowser({
         {lecture && (
           <>
             <ChevronRight size={13} aria-hidden="true" />
-            <span className="browser-crumb current">VL {lecture.episode}</span>
+            <span className="browser-crumb current">{t('browser.lectureShort', { n: lecture.episode })}</span>
           </>
         )}
       </nav>
@@ -115,7 +117,7 @@ export function CourseBrowser({
       {level !== 'courses' && (
         <button className="browser-back" onClick={level === 'chapters' ? toLectures : toCourses}>
           <ArrowLeft size={15} />
-          {level === 'chapters' ? 'Alle Vorlesungen' : 'Alle Kurse'}
+          {t(level === 'chapters' ? 'browser.backToLectures' : 'browser.backToCourses')}
         </button>
       )}
 
@@ -124,10 +126,12 @@ export function CourseBrowser({
         <>
           <header className="browser-head">
             <div>
-              <p className="browser-eyebrow">Lernraum</p>
-              <h1>Kurse</h1>
+              <p className="browser-eyebrow">{t('browser.room')}</p>
+              <h1>{t('browser.courses')}</h1>
               <p className="browser-sub">
-                {courses.length} {courses.length === 1 ? 'Kurs' : 'Kurse'} · jeder Kurs ist ein Planet in der Galaxie.
+                {t(courses.length === 1 ? 'browser.courses.sub.one' : 'browser.courses.sub.other', {
+                  n: courses.length,
+                })}
               </p>
             </div>
             <span className="browser-mark" aria-hidden="true"><GraduationCap size={28} strokeWidth={1.3} /></span>
@@ -146,12 +150,12 @@ export function CourseBrowser({
                 >
                   <span className="course-tile-top">
                     <span className="course-dot" style={{ background: item.color }} />
-                    <span className="course-tile-programme">{programmeLabel(item)}</span>
+                    <span className="course-tile-programme">{programmeLabel(item, t)}</span>
                   </span>
                   <span className="course-tile-name">{item.name}</span>
                   <span className="course-tile-meta">
-                    <span><b>{own.length}</b> {own.length === 1 ? 'Vorlesung' : 'Vorlesungen'}</span>
-                    <span><b>{chapterCount}</b> Kapitel</span>
+                    <span>{t(own.length === 1 ? 'browser.lectures.one' : 'browser.lectures.other', { n: own.length })}</span>
+                    <span>{t('browser.chapters', { n: chapterCount })}</span>
                   </span>
                 </button>
               );
@@ -165,10 +169,12 @@ export function CourseBrowser({
         <>
           <header className="browser-head">
             <div>
-              <p className="browser-eyebrow">Kurs · {programmeLabel(course)}</p>
+              <p className="browser-eyebrow">{t('browser.course', { programme: programmeLabel(course, t) })}</p>
               <h1>{course.name}</h1>
               <p className="browser-sub">
-                {ownLectures.length} {ownLectures.length === 1 ? 'Vorlesung' : 'Vorlesungen'} · jede Vorlesung ist eine Stadt.
+                {t(ownLectures.length === 1 ? 'browser.lectures.sub.one' : 'browser.lectures.sub.other', {
+                  n: ownLectures.length,
+                })}
               </p>
             </div>
             <span className="browser-mark" aria-hidden="true"><Layers3 size={28} strokeWidth={1.3} /></span>
@@ -176,7 +182,7 @@ export function CourseBrowser({
 
           <CourseDocuments courseId={course.id} />
 
-          <Filter value={query} onChange={setQuery} placeholder="Vorlesungen durchsuchen …" />
+          <Filter value={query} onChange={setQuery} placeholder={t('browser.searchLectures')} />
 
           <ul className="browser-list">
             {ownLectures.filter((item) => match(item.title)).map((item) => {
@@ -189,9 +195,9 @@ export function CourseBrowser({
                     </span>
                     <span className="row-body">
                       <span className="row-title">{item.title}</span>
-                      <span className="row-note">{own.length} Kapitel · {item.lecturer}</span>
+                      <span className="row-note">{t('browser.lectureMeta', { n: own.length, lecturer: item.lecturer })}</span>
                     </span>
-                    <span className="row-tail">{Math.round(item.duration / 60)} min</span>
+                    <span className="row-tail">{t('browser.minutes', { n: Math.round(item.duration / 60) })}</span>
                     <ChevronRight size={16} className="row-chevron" aria-hidden="true" />
                   </button>
                 </li>
@@ -206,16 +212,16 @@ export function CourseBrowser({
         <>
           <header className="browser-head">
             <div>
-              <p className="browser-eyebrow">Vorlesung {lecture.episode} · {course.shortName || course.name}</p>
-              <h1>{lecture.title}</h1>
-              <p className="browser-sub">
-                {chapters.length} Kapitel · die Balkenlänge entspricht der Kapitellänge.
+              <p className="browser-eyebrow">
+                {t('browser.chapterEyebrow', { n: lecture.episode, course: course.shortName || course.name })}
               </p>
+              <h1>{lecture.title}</h1>
+              <p className="browser-sub">{t('browser.chapters.sub', { n: chapters.length })}</p>
             </div>
             <span className="browser-mark" aria-hidden="true"><Play size={26} strokeWidth={1.3} /></span>
           </header>
 
-          <Filter value={query} onChange={setQuery} placeholder="Kapitel durchsuchen …" />
+          <Filter value={query} onChange={setQuery} placeholder={t('browser.searchChapters')} />
 
           <ul className="browser-list chapters">
             {chapters.map((segment, index) => ({ segment, index }))
@@ -229,7 +235,7 @@ export function CourseBrowser({
                       <button
                         className="chapter-open"
                         onClick={() => onOpenSegment(lecture, segment)}
-                        title="Videostelle öffnen"
+                        title={t('browser.openMoment')}
                       >
                         <span className="row-index" style={{ color: course.color }}>
                           {String(index + 1).padStart(2, '0')}
@@ -246,7 +252,8 @@ export function CourseBrowser({
                             />
                           </span>
                           <span className="row-note">
-                            {formatTime(segment.start)}–{formatTime(segment.end)} · {Math.max(1, Math.round(seconds / 60))} min
+                            {formatTime(segment.start)}–{formatTime(segment.end)} ·{' '}
+                            {t('browser.minutes', { n: Math.max(1, Math.round(seconds / 60)) })}
                           </span>
                         </span>
                         <span className="chapter-play"><Play size={15} /></span>
@@ -254,7 +261,7 @@ export function CourseBrowser({
                       <button
                         className={`chapter-save ${saved ? 'on' : ''}`}
                         aria-pressed={saved}
-                        title={saved ? 'Aus der Merkliste entfernen' : 'In der Merkliste speichern'}
+                        title={t(saved ? 'browser.unsave' : 'browser.save')}
                         onClick={() => onSave(segment.id, segment)}
                       >
                         <Bookmark size={15} />
@@ -271,12 +278,13 @@ export function CourseBrowser({
 }
 
 function Filter({ value, onChange, placeholder }: { value: string; onChange(v: string): void; placeholder: string }) {
+  const { t } = useI18n();
   return (
     <div className="browser-filter">
       <Search size={17} />
       <input value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} aria-label={placeholder} />
       {value && (
-        <button className="icon-button" onClick={() => onChange('')} title="Suche zurücksetzen" aria-label="Suche zurücksetzen">
+        <button className="icon-button" onClick={() => onChange('')} title={t('search.reset')} aria-label={t('search.reset')}>
           <X size={16} />
         </button>
       )}

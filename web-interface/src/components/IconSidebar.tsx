@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  BookOpen,
   Bookmark,
   CircleHelp,
   GraduationCap,
@@ -14,6 +13,7 @@ import { selectionLabel } from '../data/courseSelection';
 import type { Course, CourseSelection, Department, Lecture, QuestionHistoryEntry } from '../types';
 import { CoursePicker } from './CoursePicker';
 import { ArenaIcon } from './ArenaIcon';
+import { useI18n } from '../i18n';
 
 interface IconSidebarProps {
   courses: Course[];
@@ -48,6 +48,7 @@ export function IconSidebar({
   onClearHistory,
   onHelp,
 }: IconSidebarProps) {
+  const { t, language } = useI18n();
   const [panel, setPanel] = useState<'courses' | 'history' | null>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const courseButtonRef = useRef<HTMLButtonElement>(null);
@@ -111,12 +112,12 @@ export function IconSidebar({
   };
 
   return (
-    <aside ref={sidebarRef} className="sidebar" aria-label="Hauptnavigation">
-      <nav className="rail-nav" aria-label="Lernraum">
+    <aside ref={sidebarRef} className="sidebar" aria-label={t('sidebar.main')}>
+      <nav className="rail-nav" aria-label={t('sidebar.room')}>
         <button
           className="rail-button rail-new-chat"
-          title="Neuer Chat"
-          aria-label="Neuer Chat"
+          title={t('sidebar.newChat')}
+          aria-label={t('sidebar.newChat')}
           onClick={() => {
             setPanel(null);
             onNewChat();
@@ -160,11 +161,11 @@ export function IconSidebar({
             >
               <div className="lecture-picker-header">
                 <h2 id="history-panel-title" className="lecture-picker-title">
-                  Chatverlauf
+                  {t('sidebar.history')}
                 </h2>
                 <button
                   className="lecture-picker-close"
-                  aria-label="Chatverlauf schliessen"
+                  aria-label={t('sidebar.historyClose')}
                   onClick={() => {
                     setPanel(null);
                     chatButtonRef.current?.focus();
@@ -188,18 +189,18 @@ export function IconSidebar({
                         <small>
                           {courses.find((course) => course.id === entry.courseId)?.name}
                           {' · '}
-                          {selectionLabel(entry)}
+                          {selectionLabel(entry, language)}
                         </small>
                       </button>
                     ))}
                   </div>
                   <button className="clear-history" onClick={onClearHistory}>
                     <Trash2 size={14} />
-                    Frageverlauf löschen
+                    {t('sidebar.historyClear')}
                   </button>
                 </>
               ) : (
-                <p className="lecture-picker-empty">Noch keine Fragen gestellt.</p>
+                <p className="lecture-picker-empty">{t('sidebar.historyEmpty')}</p>
               )}
             </div>
           )}
@@ -217,8 +218,8 @@ export function IconSidebar({
           <button
             ref={courseButtonRef}
             className={`rail-button ${panel === 'courses' || selectedCourse ? 'has-selection' : ''}`}
-            title="Kurse"
-            aria-label="Kurse"
+            title={t('sidebar.courses')}
+            aria-label={t('sidebar.courses')}
             aria-haspopup="dialog"
             aria-expanded={panel === 'courses'}
             aria-controls={panel === 'courses' ? 'course-picker-panel' : undefined}
@@ -251,8 +252,8 @@ export function IconSidebar({
         </div>
         <button
           className={`rail-button ${view === 'library' ? 'active' : ''}`}
-          title="Meine Vorlesungen"
-          aria-label="Meine Vorlesungen"
+          title={t('view.library')}
+          aria-label={t('view.library')}
           aria-current={view === 'library' ? 'page' : undefined}
           onClick={() => navigate('library')}
         >
@@ -260,8 +261,8 @@ export function IconSidebar({
         </button>
         <button
           className={`rail-button ${view === 'saved' ? 'active' : ''}`}
-          title="Gespeicherte Stellen"
-          aria-label="Gespeicherte Stellen"
+          title={t('view.saved')}
+          aria-label={t('view.saved')}
           aria-current={view === 'saved' ? 'page' : undefined}
           onClick={() => navigate('saved')}
         >
@@ -269,8 +270,8 @@ export function IconSidebar({
         </button>
         <button
           className={`rail-button ${view === 'versus' ? 'active' : ''}`}
-          title="Versus"
-          aria-label="Versus"
+          title={t('view.versus')}
+          aria-label={t('view.versus')}
           aria-current={view === 'versus' ? 'page' : undefined}
           onClick={() => navigate('versus')}
         >
@@ -280,8 +281,8 @@ export function IconSidebar({
       <div className="rail-bottom">
         <button
           className="rail-button"
-          title="Über VisCon"
-          aria-label="Über VisCon"
+          title={t('sidebar.about')}
+          aria-label={t('sidebar.about')}
           onClick={() => {
             setPanel(null);
             onHelp();

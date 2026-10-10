@@ -174,29 +174,33 @@
       beam([s*.54,.74,.3],[s*.61,1.14,.02],.055,edge,pilot);
       box(.2,.12,.9,s*.6,1.13,-.18,rubber,pilot);
     });
-    ball(0,1.48,.06,.49,.61,.3,suit,pilot);
-    ball(0,.87,-.09,.43,.24,.35,suitDark,pilot);
+    var upper=new T.Group();pilot.add(upper);
+    ball(0,1.48,.06,.49,.61,.3,suit,upper);
+    ball(0,.87,-.09,.43,.24,.35,suitDark,upper);
     // Collar, helmet shell, visor and rear communications pack.
-    var collar=new T.Mesh(new T.CylinderGeometry(.25,.28,.14,24),rubber);collar.position.set(0,2.02,.03);pilot.add(collar);
-    ball(0,2.32,.025,.365,.39,.35,suit,pilot);
-    var visor=ball(0,2.34,-.075,.37,.235,.32,new T.MeshStandardMaterial({color:0x142d42,metalness:.85,roughness:.19}),pilot);
-    box(.3,.13,.06,0,2.3,.363,suitDark,pilot);
-    box(.2,.028,.012,0,2.3,.397,trim,pilot);
+    var collar=new T.Mesh(new T.CylinderGeometry(.25,.28,.14,24),rubber);collar.position.set(0,2.02,.03);upper.add(collar);
+    var head=new T.Group();head.position.set(0,2.08,0);upper.add(head);
+    ball(0,.24,.025,.365,.39,.35,suit,head);
+    var visorMat=new T.MeshStandardMaterial({color:0x142d42,emissive:0x071524,emissiveIntensity:.55,metalness:.85,roughness:.19});
+    ball(0,.26,-.075,.37,.235,.32,visorMat,head);
+    box(.3,.13,.06,0,.22,.363,suitDark,head);
+    box(.2,.028,.012,0,.22,.397,trim,head);
     [-1,1].forEach(function(s){
-      ball(s*.365,2.3,.015,.06,.13,.13,suitDark,pilot);
-      ball(s*.46,1.8,0,.22,.23,.22,suit,pilot);
-      beam([s*.45,1.76,-.02],[s*.62,1.3,-.31],.145,suit,pilot);
-      ball(s*.62,1.3,-.31,.15,.15,.15,suitDark,pilot);
-      beam([s*.62,1.3,-.31],[s*.59,1.26,-.9],.12,suit,pilot);
-      ball(s*.59,1.26,-.91,.13,.105,.16,suitDark,pilot);
-      beam([s*.59,1.0,-.97],[s*.59,1.29,-.94],.055,rubber,pilot);
+      ball(s*.365,.22,.015,.06,.13,.13,suitDark,head);
+      ball(s*.46,1.8,0,.22,.23,.22,suit,upper);
+      beam([s*.45,1.76,-.02],[s*.62,1.3,-.31],.145,suit,upper);
+      ball(s*.62,1.3,-.31,.15,.15,.15,suitDark,upper);
+      beam([s*.62,1.3,-.31],[s*.59,1.26,-.9],.12,suit,upper);
+      ball(s*.59,1.26,-.91,.13,.105,.16,suitDark,upper);
+      beam([s*.59,1.0,-.97],[s*.59,1.29,-.94],.055,rubber,upper);
       beam([s*.24,.86,-.17],[s*.29,.74,-.85],.19,suit,pilot);
       ball(s*.29,.74,-.85,.19,.2,.19,suitDark,pilot);
       beam([s*.29,.69,-.88],[s*.29,.24,-1.1],.145,suit,pilot);
       ball(s*.29,.15,-1.2,.19,.15,.33,rubber,pilot);
       // Harness visible at shoulders, not a floating avatar badge.
-      beam([s*.28,1.98,.28],[s*.31,1.14,.37],.038,rubber,pilot);
+      beam([s*.28,1.98,.28],[s*.31,1.14,.37],.038,rubber,upper);
     });
+    frame.userData.pilotReaction={upper:upper,head:head,visor:visorMat};
     var lamp=new T.PointLight(0x8cacde,.55,12*(worldScale||1));lamp.position.set(0,3,-2);frame.add(lamp);
     var ambient=new T.AmbientLight(0x94a7d7,.65);frame.add(ambient);
     var lightTarget=new T.Object3D();frame.add(lightTarget);
@@ -250,6 +254,26 @@
     canvas.dataset.origin = origin.toArray().join(',');
 
     var frame=createCabin(T);scene.add(frame);
+    var pilotReaction=frame.userData.pilotReaction;
+    var cockpitFire=new T.Group();cockpitFire.position.set(2.85,1.35,-3.4);frame.add(cockpitFire);
+    var flameMaterials=[];
+    [0,1,2,3].forEach(function(i){
+      var material=new T.MeshBasicMaterial({color:i%2?0xffd27b:0xff6737,transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending});
+      var flame=new T.Mesh(new T.ConeGeometry(.18+i*.055,.72+i*.19,7),material);
+      flame.position.set((i-1.5)*.22,.38+i*.1,(i%2)*.14);cockpitFire.add(flame);flameMaterials.push(material);
+    });
+    var smoke=new T.Sprite(new T.SpriteMaterial({map:glow,color:0x747b88,transparent:true,opacity:0,depthWrite:false}));
+    smoke.position.set(0,1.45,-.15);smoke.scale.set(1.8,2.5,1);cockpitFire.add(smoke);
+    var fireLight=new T.PointLight(0xff6840,0,9);fireLight.position.set(2.8,1.8,-3.2);frame.add(fireLight);
+    var cabinSparksGeo=new T.BufferGeometry(),cabinSparksPos=new Float32Array(36*3);
+    for(var sparkIndex=0;sparkIndex<36;sparkIndex++){
+      cabinSparksPos[sparkIndex*3]=(sparkIndex%9-4)*.16;
+      cabinSparksPos[sparkIndex*3+1]=(sparkIndex*17%31)*.045;
+      cabinSparksPos[sparkIndex*3+2]=(sparkIndex%5-2)*.13;
+    }
+    cabinSparksGeo.setAttribute('position',new T.BufferAttribute(cabinSparksPos,3));
+    var cabinSparks=new T.Points(cabinSparksGeo,new T.PointsMaterial({color:0xffc68f,size:.07,transparent:true,opacity:0,depthWrite:false,blending:T.AdditiveBlending}));
+    cabinSparks.position.set(2.8,1.45,-3.3);frame.add(cabinSparks);
     // Render the same exterior around the cabin, so the last boarding frame and
     // the first cockpit frame have identical hull/roof/wing geometry.
     var ownHull=createShip(T,0x8daaff);ownHull.scale.setScalar(1/.18);ownHull.position.set(0,-.35/.18,1.05/.18);ownHull.userData.canopy.visible=false;scene.add(ownHull);
@@ -268,7 +292,7 @@
     sparksGeo.setAttribute("position", new T.BufferAttribute(particles,3));
     var sparks = new T.Points(sparksGeo,new T.PointsMaterial({color:0xffcda0,size:.18,transparent:true,opacity:0}));
     sparks.position.copy(enemy.position); scene.add(sparks);
-    var reduced = !!options.reduced, paused = false, disposed = false, raf = 0, burst = null, battle = false, active = true;
+    var reduced = !!options.reduced, paused = false, disposed = false, raf = 0, burst = null, impactAt = 0, battle = false, active = true;
     var startAt = performance.now(), lastAt = 0, lookX=0, lookY=0, drag=null, enemyArrival=0;
     var eye=new T.Vector3(), aim=new T.Vector3();
     function resize() {
@@ -296,6 +320,24 @@
       camera.position.copy(eye);
       shield.material.opacity = 0; sparks.material.opacity = 0;
       bolts.forEach(function(b){b.visible=false;});
+      var damage=motion && impactAt ? (now-impactAt)/1000 : -1;
+      var burning=damage>=0 && damage<3;
+      var heat=burning?Math.min(1,damage*5)*Math.max(0,1-damage/3):0;
+      var panic=burning?Math.min(1,Math.max(0,(damage-.08)*3))*Math.min(1,Math.max(0,(2.8-damage)*1.2)):0;
+      cockpitFire.visible=burning;
+      flameMaterials.forEach(function(mat,i){mat.opacity=heat*(.58+.22*Math.sin(t*19+i*2));});
+      smoke.material.opacity=heat*.23;
+      smoke.position.y=1.45+Math.max(0,damage)*.26;
+      smoke.scale.set(1.8+Math.max(0,damage)*.32,2.5+Math.max(0,damage)*.5,1);
+      fireLight.intensity=heat*(2.1+.6*Math.sin(t*25));
+      cabinSparks.material.opacity=heat*(.3+.5*Math.abs(Math.sin(t*29)));
+      pilotReaction.upper.rotation.y=-.22*panic;
+      pilotReaction.upper.rotation.z=.09*panic;
+      pilotReaction.head.rotation.y=-2.32*panic;
+      pilotReaction.head.rotation.z=-.18*panic;
+      pilotReaction.visor.emissive.setRGB(.03+.45*panic,.08,.14*(1-panic));
+      canvas.dataset.pilot=panic>.1?'alarmed':'steady';
+      canvas.dataset.impact=burning?'burning':'idle';
       if (burst && motion) {
         var elapsed = (now-burst.at)/1000;
         for(var n=0;n<3;n++) {
@@ -308,7 +350,7 @@
         var pulse=Math.max(0,Math.sin((elapsed-.48)*Math.PI*2));
         if(elapsed>.48 && elapsed<1.18) {
           if(burst.outgoing) { shield.material.opacity=pulse*.33; sparks.material.opacity=pulse; sparks.scale.setScalar(.5+elapsed); enemy.rotation.z+=Math.sin(elapsed*24)*.07*pulse; }
-          if(burst.incoming) { camera.position.x+=Math.sin(elapsed*38)*.045*pulse; camera.position.y+=Math.cos(elapsed*29)*.055*pulse; }
+          if(burst.incoming) { camera.position.x+=Math.sin(elapsed*38)*.095*pulse; camera.position.y+=Math.cos(elapsed*29)*.08*pulse; }
         }
         if(elapsed>1.5) burst=null;
       }
@@ -319,7 +361,7 @@
       raf = 0;
       if (disposed || document.hidden || !active) return;
       if(now-lastAt>32) {render(now); lastAt=now;}
-      if(!reduced && !paused && (burst || enemyArrival)) raf=requestAnimationFrame(loop);
+      if(!reduced && !paused && (burst || enemyArrival || (impactAt && now<impactAt+3000))) raf=requestAnimationFrame(loop);
     }
     function resume() { if(!raf && !disposed) raf=requestAnimationFrame(loop); }
     var observer = new ResizeObserver(resize); observer.observe(canvas);
@@ -336,7 +378,7 @@
       look: look,
       reset: function(){lookX=lookY=0;look(0,0);},
       update: function(state) { reduced=state.reduced;paused=state.paused;if(state.battle&&!battle)enemyArrival=performance.now();battle=state.battle;if(!state.reviewing)burst=null;render(performance.now());resume(); },
-      fire: function(event) { burst={at:performance.now(),outgoing:event.outgoing,incoming:event.incoming};render(performance.now());resume(); },
+      fire: function(event) { var now=performance.now();burst={at:now,outgoing:event.outgoing,incoming:event.incoming};if(event.incoming)impactAt=now+350;render(now);resume(); },
       dispose: function() {
         disposed=true;canvas.removeEventListener('pointerdown',down);canvas.removeEventListener('pointermove',move);canvas.removeEventListener('pointerup',up);canvas.removeEventListener('pointercancel',up);cancelAnimationFrame(raf);observer.disconnect();visibility.disconnect();document.removeEventListener("visibilitychange",onVisibility);
         var geos=new Set(), mats=new Set(); scene.traverse(function(o){if(o.geometry)geos.add(o.geometry);if(o.material) {if(Array.isArray(o.material))o.material.forEach(function(m){mats.add(m);});else mats.add(o.material);}});

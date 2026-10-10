@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ExternalLink, FileText } from 'lucide-react';
+import { useI18n } from '../i18n';
 
 /* The galaxy shows a course's documents inside the course panel, not behind a
  * global button — documents belong to a course. This is the same section for
@@ -17,6 +18,7 @@ interface DocumentEntry {
 type Catalogue = { state: 'loading' | 'ready' | 'failed'; documents: DocumentEntry[] };
 
 export function CourseDocuments({ courseId }: { courseId: string }) {
+  const { t } = useI18n();
   const [catalogue, setCatalogue] = useState<Catalogue>({ state: 'loading', documents: [] });
   const [openId, setOpenId] = useState<string | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -59,18 +61,14 @@ export function CourseDocuments({ courseId }: { courseId: string }) {
   const open = available.find((entry) => entry.id === openId) ?? null;
 
   return (
-    <section className="course-docs" aria-label="Kursdokumente">
+    <section className="course-docs" aria-label={t('docs.label')}>
       <h2 className="course-docs-head">
-        Dokumente <span>{catalogue.state === 'loading' ? '…' : available.length}</span>
+        {t('docs.title')} <span>{catalogue.state === 'loading' ? '…' : available.length}</span>
       </h2>
 
       {available.length === 0 ? (
         <p className="course-docs-empty">
-          {catalogue.state === 'failed'
-            ? 'Dokumentliste konnte nicht geladen werden. Bitte lade die Seite neu.'
-            : catalogue.state === 'loading'
-              ? 'Dokumente werden geladen …'
-              : 'Noch keine Dokumente für diesen Kurs.'}
+          {t(catalogue.state === 'failed' ? 'docs.failed' : catalogue.state === 'loading' ? 'docs.loading' : 'docs.empty')}
         </p>
       ) : (
         <div className="course-docs-list">
@@ -82,7 +80,7 @@ export function CourseDocuments({ courseId }: { courseId: string }) {
             >
               <span className="course-doc-symbol" aria-hidden="true"><FileText size={16} /></span>
               <span className="course-doc-identity">
-                <small>{entry.kind} / PDF</small>
+                <small>{t('docs.kind', { kind: entry.kind })}</small>
                 <strong>{entry.title}</strong>
               </span>
               <ExternalLink size={14} className="course-doc-arrow" aria-hidden="true" />
@@ -94,12 +92,12 @@ export function CourseDocuments({ courseId }: { courseId: string }) {
       <dialog
         className="course-doc-reader"
         ref={dialog}
-        aria-label="Dokument lesen"
+        aria-label={t('docs.read')}
         onCancel={(event) => { event.preventDefault(); setOpenId(null); }}
       >
         {open && (
           <iframe
-            title={`Dokument lesen · ${open.title}`}
+            title={t('docs.readTitle', { title: open.title })}
             src={`${import.meta.env.BASE_URL}translation/index.html?embedded=galaxy&document=${encodeURIComponent(open.id)}`}
           />
         )}

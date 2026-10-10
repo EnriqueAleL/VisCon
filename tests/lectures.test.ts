@@ -57,4 +57,17 @@ test('Python Q&A adapter rejects out-of-range or cross-lecture answers', () => {
   assert.throws(() => qaAnswer({ ...raw, end: 999999 }, request, catalog));
   assert.throws(() => qaAnswer({ ...raw, lecture: 8 }, request, catalog));
   assert.equal(qaAnswer({ ...raw, found: false }, request, catalog).sources.length, 0);
+
+  // An explanation adds a separate, unlinked and labelled paragraph; a plain lookup never does.
+  const explained = qaAnswer({ ...raw, intent: 'explain', background: 'MIPS is a RISC instruction set.' }, request, catalog);
+  assert.equal(explained.answer.paragraphs.length, 2);
+  assert.deepEqual(explained.answer.paragraphs[0].sourceIds, ['S1']);
+  assert.deepEqual(explained.answer.paragraphs[1].sourceIds, []);
+  assert.match(explained.answer.paragraphs[1].text, /allgemeinem Wissen/);
+  assert.equal(qaAnswer({ ...raw, intent: 'find', background: 'ignored' }, request, catalog).answer.paragraphs.length, 1);
+  // Labels follow the language the answer was written in, so English answers do not carry a German label.
+  const english = qaAnswer({ ...raw, intent: 'explain', background: 'MIPS is a RISC instruction set.', language: 'en' }, request, catalog);
+  assert.match(english.answer.paragraphs[1].text, /^In addition, from general knowledge/);
+  assert.match(english.answer.notice, /^AI answer/);
+  assert.match(explained.answer.paragraphs[1].text, /^Zusätzlich/);
 });

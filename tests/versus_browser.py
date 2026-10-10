@@ -49,6 +49,19 @@ with sync_playwright() as pw:
     capture(page, 'galaxy-desktop')
     page.locator('#list .row').filter(has_text='Digital Design & Computer Architecture').click()
     page.wait_for_url('**/#/computer-architecture')
+    page.set_viewport_size({'width': 390, 'height': 844})
+    page.locator('#trail .crumb').filter(has_text='D-INFK').click()
+    page.wait_for_url('**/#/')
+    page.set_viewport_size({'width': 1440, 'height': 1000})
+    expect(page.locator('#title')).to_have_text('Lernraum')
+    expect(page.locator('#gate')).to_be_hidden()
+    assert page.locator('#list .row').count() > 0
+    page.locator('#change-programme').click()
+    expect(page.locator('#gate')).to_be_visible()
+    page.locator('#gate-list .gate-option').filter(has_text='D-INFK').click()
+    if page.locator('#gate').is_visible():
+        page.locator('#gate-list .gate-option').filter(has_text='Bachelor · 1. Jahr').click()
+    page.locator('#gate').wait_for(state='hidden')
     page.goto(BASE + '/#/computer-architecture/vl-11/kapitel-3'); settle(page)
     page.locator('#loading.gone').wait_for()
     expect(page.locator('#versus-link')).to_have_attribute('href', '/arena?returnTo=%2F%23%2Fcomputer-architecture%2Fvl-11%2Fkapitel-3&course=computer-architecture')
@@ -99,7 +112,7 @@ with sync_playwright() as pw:
         assert page.evaluate('getComputedStyle(document.body).backgroundColor') == 'rgb(17, 19, 21)'
         assert 'Inter' in page.evaluate('getComputedStyle(document.body).fontFamily')
     assert not errors, errors
-    report = {'passed': True, 'checks': ['galaxy visual continuity', 'course-aware entry and return', 'same profile and question bank', '390px and 320px layout', 'leave confirmation and Escape focus', 'pending internal destination preserved', 'unsupported bank explained', 'unsafe return URL rejected', 'other modules keep their theme', 'static sky under reduced motion'], 'consoleErrors': errors}
+    report = {'passed': True, 'checks': ['galaxy visual continuity', 'programme breadcrumb returns to course galaxy', 'explicit programme switch reopens selection', 'course-aware entry and return', 'same profile and question bank', '390px and 320px layout', 'leave confirmation and Escape focus', 'pending internal destination preserved', 'unsupported bank explained', 'unsafe return URL rejected', 'other modules keep their theme', 'static sky under reduced motion'], 'consoleErrors': errors}
     (OUT / 'report.json').write_text(json.dumps(report, indent=2))
     print(json.dumps(report))
     browser.close()

@@ -29,7 +29,12 @@
 .immersive-cabin .cockpit-unavailable { position: absolute; left: 10%; top: 40%; width: 30%; color: var(--muted); line-height: 1.7; font-size: 14px; }
 .cockpit-impact { position: absolute; inset: 0; pointer-events: none; }
 .flight-deck[data-pulse="incoming"] .cockpit-impact, .flight-deck[data-pulse="exchange"] .cockpit-impact { animation: cockpit-hit 1.5s ease-out; }
-@keyframes cockpit-hit { 0%, 28%, 100% { background: transparent; } 43% { background: #a44d591c; } 62% { background: transparent; } }
+@keyframes cockpit-hit {
+  0%, 22%, 100% { background: transparent; box-shadow: inset 0 0 0 transparent; }
+  34% { background: radial-gradient(circle at 72% 48%, #ffe0a540, #b9433e31 38%, transparent 72%); box-shadow: inset 0 0 100px #db60404d; }
+  57% { background: radial-gradient(circle at 72% 48%, #e45b3520, transparent 68%); box-shadow: inset 0 0 70px #bd49402c; }
+  78% { background: transparent; box-shadow: inset 0 0 25px #bd494015; }
+}
 .versus-shell.immersive-cabin h1 { font-size: 28px; line-height: 1.2; margin: 0 0 10px; }
 .versus-shell.immersive-cabin h2 { font-size: 20px; }
 .immersive-cabin .console-mode { color: var(--muted); font-size: 15px; font-weight: 400; margin-left: 6px; }

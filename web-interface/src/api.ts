@@ -1,8 +1,9 @@
+import { storedLanguage, translate } from './i18n';
 export async function getJSON<T>(path: string, signal?: AbortSignal): Promise<T> {
   const response = await fetch(path, { signal });
   if (!response.ok) {
     const result = await response.json().catch(() => null);
-    throw new Error(result?.error || 'Die Verbindung ist unterbrochen. Bitte versuche es erneut.');
+    throw new Error(result?.error || translate(storedLanguage(), 'error.connection'));
   }
   return response.json();
 }
