@@ -10,6 +10,7 @@ import { mountCourseMedia } from './course-catalog';
 import { DEPARTMENTS } from '../shared/departments';
 import { loadLectureCatalog, projectRoot, readSummary } from './lecture-catalog';
 import { qaAnswer, runPythonQA } from './lecture-qa';
+import { chatReply, validateChat } from './lecture-chat';
 
 export interface MountLecturesDeps {
   db: DatabaseSync;
@@ -88,6 +89,33 @@ export async function mountLectures(app: express.Express, deps: MountLecturesDep
     } catch (error) {
       if (res.destroyed) return;
       res.status(error instanceof InputError ? error.status : 500).json({ error: error instanceof InputError ? error.message : 'Die Vorlesungssuche ist gerade nicht verfügbar. Bitte versuche es erneut.' });
+    }
+  });
+
+  // Chat next to a video or city: the open lecture first, the whole course when it does not cover the question.
+  app.post('/api/lectures/:id/chat', async (req, res) => {
+    const controller = new AbortController();
+    res.on('close', () => { if (!res.writableEnded) controller.abort(); });
+    try {
+      if (!req.is('application/json')) throw new InputError('Content-Type application/json erwartet.', 415);
+      const snap = await store.snapshot();
+      const lecture = snap.catalog.lectures.find(item => item.id === req.params.id);
+      if (!lecture) throw new InputError('Vorlesung nicht gefunden.', 404);
+      const chat = validateChat(req.body);
+      const workspace = provider === 'python' && !lecture.demo ? snap.workspace(lecture.courseId) : null;
+      if (!workspace) throw new InputError('Der KI-Chat ist für diese Vorlesung nicht verfügbar.', 503);
+      if (activeModelRequests >= 2) throw new InputError('Der Chat ist gerade ausgelastet. Bitte versuche es gleich erneut.', 429);
+      activeModelRequests++;
+      try {
+        const result = await runPythonQA({
+          question: chat.message, courseId: lecture.courseId, lectureId: `lec${lecture.episode}`, language: chat.language,
+          mode: 'chat', history: chat.history, currentTime: chat.currentTime,
+        }, controller.signal, workspace.env);
+        if (!controller.signal.aborted) res.json(chatReply(result, snap.catalog, lecture.courseId));
+      } finally { activeModelRequests--; }
+    } catch (error) {
+      if (res.destroyed || controller.signal.aborted) return;
+      res.status(error instanceof InputError ? error.status : 500).json({ error: error instanceof InputError ? error.message : 'Der Chat ist gerade nicht verfügbar. Bitte versuche es erneut.' });
     }
   });
 

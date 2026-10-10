@@ -9,6 +9,7 @@ from pathlib import Path
 
 from . import corpus
 from .ask import ask
+from .chat import chat
 from .config import load_settings
 from .index import load_index
 from .llm import OpenAILLM
@@ -37,6 +38,24 @@ def main() -> None:
     settings = load_settings()
     extra_index, extra_lectures = os.getenv("QA_EXTRA_INDEX_PATH"), os.getenv("QA_EXTRA_LECTURES_DIR")
     index, lectures = load_sources(settings, Path(extra_index) if extra_index else None, Path(extra_lectures) if extra_lectures else None)
+    language = request.get("language") or "auto"
+    if request.get("mode") == "chat":
+        # The open lecture first, with the whole course as the fallback when it does not cover the question.
+        match = re.fullmatch(r"lec(\d+)", request.get("lectureId") or "")
+        if not match:
+            raise ValueError("Unknown lecture")
+        llm, model = OpenAILLM(settings.require_key()), settings.require_model("answer")
+        history = request.get("history") if isinstance(request.get("history"), list) else []
+        current = request.get("currentTime")
+        current = float(current) if isinstance(current, (int, float)) and not isinstance(current, bool) else None
+        result = chat(request["question"], number=int(match.group(1)), index=index, lectures=lectures, llm=llm,
+                      model=model, history=history, current_time=current, language=language)
+        if result is None:
+            result = ask(request["question"], index=index, lectures=lectures, llm=llm, model=model, language=language)
+        payload = result.to_dict()
+        payload.pop("video", None)
+        print(json.dumps(payload, ensure_ascii=False))
+        return
     lecture_id = request.get("lectureId")
     if lecture_id:
         if not re.fullmatch(r"lec\d+", lecture_id):
@@ -47,7 +66,7 @@ def main() -> None:
                                       if value["lecture"] == number}}
     result = ask(request["question"], index=index, lectures=lectures,
                  llm=OpenAILLM(settings.require_key()), model=settings.require_model("answer"),
-                 language=request.get("language") or "auto")
+                 language=language)
     # Absolute filesystem paths stay on the server; the web layer supplies media URLs.
     payload = result.to_dict()
     payload.pop("video", None)

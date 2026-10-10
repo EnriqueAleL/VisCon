@@ -163,11 +163,12 @@ class Answer:
     intent: str = "find"
     background: str = ""
     language: str = "en"
+    scope: str = "course"  # "lecture" when the answer came from the open lecture alone (see chat.py)
 
     def to_dict(self) -> dict:
         return {
             "question": self.question, "found": self.found, "answer": self.answer,
-            "intent": self.intent, "background": self.background, "language": self.language,
+            "intent": self.intent, "background": self.background, "language": self.language, "scope": self.scope,
             "lecture": self.lecture, "start": self.start, "end": self.end,
             "chapter": self.chapter, "video": str(self.video) if self.video else None,
             "candidates": [c.__dict__ for c in self.candidates],

@@ -6,11 +6,15 @@ import type { LectureCatalog } from './lecture-catalog';
 import { buildPythonEnv } from '../indexing/runner';
 import { projectRoot } from './lecture-catalog';
 
-interface QAResult { found: boolean; answer: string; lecture: number | null; start: number | null; end: number | null; chapter: string | null; intent?: string; background?: string; language?: string }
-export interface QARequest { question: string; courseId: string | null; lectureId: string | null; language?: string }
+export interface QAResult { found: boolean; answer: string; lecture: number | null; start: number | null; end: number | null; chapter: string | null; intent?: string; background?: string; language?: string; scope?: string }
+export interface QARequest {
+  question: string; courseId: string | null; lectureId: string | null; language?: string;
+  /** "chat": the open lecture first, the whole course as the fallback (see qa/viscon_qa/chat.py). */
+  mode?: 'chat'; history?: { role: string; text: string }[]; currentTime?: number | null;
+}
 
 /** Labels the app adds around the model's text, in the language the answer was written in. */
-const LABELS = {
+export const LABELS = {
   de: {
     background: 'Zusätzlich, aus allgemeinem Wissen (nicht aus der Vorlesung):',
     noticeBackground: 'KI-Antwort aus dem Kapitelindex und den Transkripten, ergänzt durch allgemeines Wissen. Prüfe die Erklärung an der verlinkten Vorlesungsstelle.',

@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from viscon_qa.chat import ChatReply, chat
 from viscon_qa.ask import EXPLAIN_INSTRUCTIONS, LANGUAGE_RULES, LOCATE_INSTRUCTIONS, ChapterPick, Explanation, Moment, ask
 from viscon_qa.corpus import Lecture, discover
 from viscon_qa.index import ChapterDraft, ChapterDrafts, build_index, load_index
@@ -262,3 +263,63 @@ def test_export_chapters_writes_contiguous_markers(tmp_path):
         "WEBVTT\n\n1.1\n00:00:01.000 --> 00:00:45.000\nBellman contraction\n\n"
         "1.2\n00:00:45.000 --> 00:00:50.000\nExample\n"
     )
+
+
+class RecordingLLM(FakeLLM):
+    def parse(self, *, model, instructions, input, schema):
+        self.instructions = instructions
+        return super().parse(model=model, instructions=instructions, input=input, schema=schema)
+
+
+def chat_reply(**overrides):
+    values = dict(evidence="we prove that", found=True, start_ref="L1-1", end_ref="L1-1",
+                  answer="The lecturer proves the contraction property.", background="", language="en")
+    return ChatReply(**{**values, **overrides})
+
+
+def test_chat_answers_from_the_open_lecture_with_full_context(tmp_path):
+    index, lectures = indexed(tmp_path)
+    llm = RecordingLLM(chat_reply(background="A contraction shrinks distances."))
+    history = [{"role": "user", "text": "What is a contraction?"}, {"role": "assistant", "text": "A map that shrinks distances."}]
+    result = chat("and why does it matter?", number=1, index=index, lectures=lectures, llm=llm, model="m",
+                  history=history, current_time=12.0, language="en")
+    assert result.scope == "lecture" and result.found and result.lecture == 1
+    assert result.start == 9.5 - 3.0 and result.end == 30.0 and result.chapter == "Bellman contraction"
+    assert result.background == "A contraction shrinks distances."
+    prompt = llm.calls[0]
+    assert "[L1-0]" in prompt and "[L1-2]" in prompt          # the whole lecture, with labels
+    assert "Bellman contraction - Proof." in prompt            # the chapter outline
+    assert "The student is at: 00:12" in prompt                # where the student is watching
+    assert "Student: What is a contraction?" in prompt         # the conversation so far
+    assert prompt.rstrip().endswith("Student question: and why does it matter?")
+    assert prompt.index("Transcript:") < prompt.index("The student is at")  # stable part first, for caching
+
+
+def test_chat_returns_none_when_the_lecture_does_not_cover_it(tmp_path):
+    index, lectures = indexed(tmp_path)
+    llm = FakeLLM(chat_reply(found=False, evidence="", answer="", start_ref="", end_ref=""))
+    assert chat("something from another lecture", number=1, index=index, lectures=lectures, llm=llm, model="m") is None
+    assert chat("x", number=9, index=index, lectures=lectures, llm=FakeLLM(), model="m") is None  # lecture not available
+
+
+def test_chat_keeps_a_general_answer_without_a_moment(tmp_path):
+    index, lectures = indexed(tmp_path)
+    llm = FakeLLM(chat_reply(start_ref="", end_ref="", answer="The lecture proves a contraction property."))
+    result = chat("summarise this lecture", number=1, index=index, lectures=lectures, llm=llm, model="m")
+    assert result.found and result.start is None and result.end is None and result.chapter is None
+
+
+def test_chat_ignores_invented_labels_but_keeps_the_answer(tmp_path):
+    index, lectures = indexed(tmp_path)
+    llm = FakeLLM(chat_reply(start_ref="L9-99", end_ref="L9-100"))
+    result = chat("q", number=1, index=index, lectures=lectures, llm=llm, model="m")
+    assert result.found and result.start is None
+
+
+def test_chat_only_sends_the_last_turns_and_the_chosen_language(tmp_path):
+    index, lectures = indexed(tmp_path)
+    history = [{"role": "user", "text": f"question {i}"} for i in range(10)]
+    llm = RecordingLLM(chat_reply(language="de"))
+    result = chat("q", number=1, index=index, lectures=lectures, llm=llm, model="m", history=history, language="de")
+    assert "question 3" not in llm.calls[0] and "question 4" in llm.calls[0] and "question 9" in llm.calls[0]
+    assert llm.instructions.endswith(LANGUAGE_RULES["de"]) and result.language == "de"
