@@ -15,7 +15,8 @@ export default defineConfig({
       });
     },
   }],
-  build: { rollupOptions: { input: { arena: resolve('index.html'), learn: resolve('learn.html') } } },
+  // `auth` is the only entry served to anonymous visitors; the manifest lets the server tell its files from the app's.
+  build: { manifest: true, rollupOptions: { input: { arena: resolve('index.html'), learn: resolve('learn.html'), auth: resolve('auth.html') } } },
   server: { port: 5173, strictPort: true, proxy: {
     '/api': 'http://127.0.0.1:3001', '/media': 'http://127.0.0.1:3001',
     '/socket.io': { target: 'http://127.0.0.1:3001', ws: true },

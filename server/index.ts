@@ -1,14 +1,13 @@
 import express from 'express';
 import { createServer } from 'node:http';
 import { randomBytes,randomInt,randomUUID } from 'node:crypto';
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { Server } from 'socket.io';
 import type { BankQuestion,Settings,Player,RoomView,RoundResult,Outcome,Profile,HistoryEntry } from '../shared/types';
 import { subjects,eligible,publicQuestion,correct,answerLabel,demoContent,numericValue,registerCourseQuestions } from './questions';
 import { db,profile,session,createPlayer,rename,history,leaderboard,saveMatch,adoptAccount } from './store';
 import { mountAuth } from '../auth/routes';
 import { createVerifiedGuard } from '../auth/guard';
+import { mountStatic } from './static';
 import { eloDelta } from './rating';
 import { javaAvailable,judge } from './judge';
 import { mountLectures } from './lectures';
@@ -150,6 +149,6 @@ app.post('/api/mania/cities/:id/duel', route((req, res, p) => {
 mountSocial(app, io);
 await mountManiaAnswers(app);
 app.use('/api',(_req,res)=>res.status(404).json({error:'API route not found.'}));
-if(existsSync('dist/index.html')){app.get(['/learn','/learn/'],(_req,res)=>res.sendFile(resolve('dist/learn.html')));app.use(express.static('dist'));app.get('/{*path}',(_req,res)=>res.sendFile(resolve('dist/index.html')));}
+mountStatic(app,guard);
 app.use((err:any,_req:express.Request,res:express.Response,_next:express.NextFunction)=>res.status(Number.isInteger(err.status)&&err.status>=400&&err.status<600?err.status:500).json({error:err.status===404?'File not found.':'The request could not be read.'}));
 http.listen(port,process.env.HOST||'0.0.0.0',()=>console.log(`VisCon + Basis Arena ready on http://localhost:${port}`));

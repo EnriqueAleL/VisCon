@@ -37,9 +37,9 @@ whose account has `verifiedAt` set, i.e. a confirmed `@student.ethz.ch` mailbox:
 | lecture videos, captions, chapters under `/media/*` | same |
 | Socket.IO root namespace (Arena) and `/study` | connection refused with the same message |
 | `/api/health`, `/api/auth/*` | open, so people can register, log in and be monitored |
-| the static page shell (`/`, `/learn`, JS and CSS) | open, so a log-in screen can load |
+| the built front end (`/`, `/arena`, `/learn`, every JS, CSS, image and font file) | **gated too.** Anonymous visitors get a tiny sign-in page (`auth.html`, 733 bytes plus ~260 KB of React and the screens) for every page URL, and `401` for every other file. After log-in the same URL serves the real app. Only `favicon.svg`, the fonts and the sign-in page's own files are public. |
 
-Anonymous guest cookies are never enough, and confirming an account retires the account's old guest cookie.
+Nothing about the courses (names, structure, lectures, questions, media) leaves the server before verification. The sign-in page's file list is read from Vite's build manifest (`dist/.vite/manifest.json`), so the server refuses to start with the guard on if `dist/auth.html` is missing. Anonymous guest cookies are never enough, and confirming an account retires the account's old guest cookie.
 The hackathon proxy headers (`MANIA_TRUST_PROXY`) do not bypass the guard.
 `AUTH_REQUIRE_VERIFIED=false` turns the guard off for local front-end work (the browser test runner sets it).
 The deployment checker needs a logged-in cookie: `CHECK_COOKIE_FILE` with the `ba_session` value.
