@@ -75,7 +75,12 @@
         start(all.filter(function (c) { return inProgramme(c, chosen); }), {
           programme: chosen,
           label: programmeLabel(chosen, departments),
-          change: function () { writeStored(PROGRAMME_KEY, null); history.replaceState(null, "", location.pathname); location.reload(); }
+          change: function () {
+            writeStored(PROGRAMME_KEY, null);
+            writeStored(SELECTION_KEY, null);
+            history.replaceState(null, "", location.pathname);
+            location.reload();
+          }
         });
       } catch (err) {
         fail("Die Galaxie konnte nicht aufgebaut werden: " + err.message);
@@ -675,6 +680,13 @@
     meta: document.getElementById("meta"),
     tags: document.getElementById("tags")
   };
+  var changeProgramme = document.createElement("button");
+  changeProgramme.id = "change-programme";
+  changeProgramme.className = "change-programme";
+  changeProgramme.type = "button";
+  changeProgramme.textContent = "Studiengang wechseln";
+  changeProgramme.addEventListener("click", context.change);
+  document.getElementById("panel").append(changeProgramme);
 
   function accent(css) { document.documentElement.style.setProperty("--accent", css); }
 
@@ -758,9 +770,11 @@
     brand.append(dot);
     el.trail.append(brand);
 
-    // The programme (department, degree, year) the planets were picked from; clicking it chooses another
-    el.trail.append(crumb(context.label, context.change, false));
-    el.trail.append(sepNode());
+    // The selected programme is the course galaxy. From a planet or city,
+    // this breadcrumb returns to its planets without reloading the page.
+    var programmeCrumb = crumb(context.label, state.level === "galaxy" ? context.change : toGalaxy, state.level === "galaxy");
+    programmeCrumb.title = state.level === "galaxy" ? "Studiengang wechseln" : "Zur Galaxie";
+    el.trail.append(programmeCrumb);
 
     function sep() { return sepNode(); }
     function sepNode() {
@@ -776,8 +790,6 @@
       writeStored(SELECTION_KEY, { courseId: shown.id, department: shown.department, degree: shown.degree, studyYear: shown.studyYear });
     }
 
-    el.trail.append(crumb("Galaxie", state.level === "galaxy" ? null : toGalaxy, state.level === "galaxy"));
-
     if (state.course !== null) {
       el.trail.append(sep(), crumb(
         DATA[state.course].short,
@@ -792,6 +804,7 @@
 
   function renderPanel() {
     syncHop();
+    changeProgramme.hidden = state.level !== "galaxy";
     el.list.replaceChildren();
     document.getElementById("panel").classList.toggle("has-course", state.course !== null);
     window.dispatchEvent(new CustomEvent("viscon:course-documents", { detail: { courseId: state.course === null ? null : DATA[state.course].id } }));

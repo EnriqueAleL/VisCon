@@ -34,6 +34,11 @@ with sync_playwright() as pw:
     for page in (a,b): page.on('pageerror',lambda error:errors.append(str(error)))
     a.goto(BASE+'/');settle(a)
     a.locator('#loading.gone').wait_for()
+    expect(a.get_by_role('button',name='Play music')).to_be_visible()
+    assert a.request.get(BASE+'/galaxy/media/also-sprach-zarathustra-kevin-macleod.mp3').status == 200
+    a.get_by_role('button',name='Play music').click()
+    expect(a.locator('.music-toggle')).to_have_attribute('aria-pressed','true')
+    a.get_by_role('button',name='Pause music').click()
     if a.locator('#gate').is_visible():
         a.locator('#gate-list .gate-option').filter(has_text='D-INFK').click()
         if a.locator('#gate').is_visible():
@@ -148,6 +153,8 @@ with sync_playwright() as pw:
         expect(b.locator('.flight-deck')).to_have_attribute('data-combat',kind_b)
         expect(a.locator('.flight-deck')).to_have_attribute('data-pulse',kind_a)
         if index==0:
+            expect(b.locator('.cockpit-scene')).to_have_attribute('data-impact','burning')
+            expect(b.locator('.cockpit-scene')).to_have_attribute('data-pilot','alarmed')
             a.evaluate('scrollTo(0,0)'); a.wait_for_timeout(250)
             capture(a,'outgoing',False); capture(b,'incoming',False)
             a.reload();settle(a)
@@ -184,6 +191,6 @@ with sync_playwright() as pw:
     expect(a.locator('.flight-deck')).to_have_attribute('data-renderer','fallback')
     expect(a.get_by_role('button',name='Create a room',exact=True)).to_be_enabled()
     assert not errors, errors
-    report={'passed':True,'checks':['3D rear boarding into shared physical cabin', 'matching camera and rendered frame across navigation', 'opponent only during active duel','keyboard boarding and cancel','behind-pilot cabin and look/reset', 'console disclosure', 'actual galaxy position handoff','390/320 responsive','two actual players','answer privacy','correct/wrong mirrored fire','tie exchanges','reconnect without replay','next-round pulse reset','score unchanged','reduced motion','WebGL failure and context loss fallback','mobile sticky timer'], 'consoleErrors':errors}
+    report={'passed':True,'checks':['3D rear boarding into shared physical cabin', 'matching camera and rendered frame across navigation', 'opponent only during active duel','keyboard boarding and cancel','behind-pilot cabin and look/reset', 'console disclosure', 'actual galaxy position handoff','390/320 responsive','two actual players','answer privacy','correct/wrong mirrored fire','incoming hit turns pilot and ignites cabin','licensed music asset and control','tie exchanges','reconnect without replay','next-round pulse reset','score unchanged','reduced motion','WebGL failure and context loss fallback','mobile sticky timer'], 'consoleErrors':errors}
     (OUT/'report.json').write_text(json.dumps(report,indent=2));print(json.dumps(report))
     browser.close()
