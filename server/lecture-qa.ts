@@ -6,8 +6,22 @@ import type { LectureCatalog } from './lecture-catalog';
 import { buildPythonEnv } from '../indexing/runner';
 import { projectRoot } from './lecture-catalog';
 
-interface QAResult { found: boolean; answer: string; lecture: number | null; start: number | null; end: number | null; chapter: string | null }
-export interface QARequest { question: string; courseId: string | null; lectureId: string | null }
+interface QAResult { found: boolean; answer: string; lecture: number | null; start: number | null; end: number | null; chapter: string | null; intent?: string; background?: string; language?: string }
+export interface QARequest { question: string; courseId: string | null; lectureId: string | null; language?: string }
+
+/** Labels the app adds around the model's text, in the language the answer was written in. */
+const LABELS = {
+  de: {
+    background: 'Zusätzlich, aus allgemeinem Wissen (nicht aus der Vorlesung):',
+    noticeBackground: 'KI-Antwort aus dem Kapitelindex und den Transkripten, ergänzt durch allgemeines Wissen. Prüfe die Erklärung an der verlinkten Vorlesungsstelle.',
+    notice: 'KI-Antwort aus dem Kapitelindex und den Transkripten. Prüfe die Erklärung an der verlinkten Vorlesungsstelle.',
+  },
+  en: {
+    background: 'In addition, from general knowledge (not from the lecture):',
+    noticeBackground: 'AI answer from the chapter index and transcripts, supplemented with general knowledge. Check the explanation at the linked point in the lecture.',
+    notice: 'AI answer from the chapter index and transcripts. Check the explanation at the linked point in the lecture.',
+  },
+} as const;
 
 /** The Q&A tool reads these too (the original recordings can be configured with them), besides the model settings. */
 const QA_PASS_THROUGH = ['PATH', 'LANG', 'LC_ALL', 'TMPDIR', 'SYSTEMROOT', 'HOME', 'OPENAI_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_ORG_ID', 'QA_INDEX_MODEL', 'QA_ANSWER_MODEL', 'QA_LECTURES_DIR', 'QA_INDEX_PATH', 'HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY', 'SSL_CERT_FILE', 'REQUESTS_CA_BUNDLE'];
@@ -60,9 +74,18 @@ export function qaAnswer(result: QAResult, request: QARequest, catalog: LectureC
     start, end, contextStart: segment.start, transcript, mediaUrl: lecture.mediaUrl ?? null,
     playbackUrl: lecture.mediaUrl ? `${lecture.mediaUrl}#t=${start}` : null, score: 0, demo: false,
   };
+  // An "explain" question may carry background knowledge beyond the lecture. It gets its own paragraph without a
+  // source link and an explicit label, so a student can tell what the lecturer said from what the model added.
+  const labels = LABELS[result.language === 'en' ? 'en' : 'de'];
+  const background = result.intent === 'explain' && typeof result.background === 'string' ? result.background.trim() : '';
+  const paragraphs = [{ text: result.answer, sourceIds: ['S1'] }];
+  if (background) paragraphs.push({ text: `${labels.background} ${background}`, sourceIds: [] });
   return {
     ...request, status: 'answered',
-    answer: { mode: 'generated', text: result.answer, paragraphs: [{ text: result.answer, sourceIds: ['S1'] }], notice: 'KI-Antwort aus dem Kapitelindex und den Transkripten. Prüfe die Erklärung an der verlinkten Vorlesungsstelle.' },
+    answer: {
+      mode: 'generated', text: paragraphs.map(item => item.text).join('\n\n'), paragraphs,
+      notice: background ? labels.noticeBackground : labels.notice,
+    },
     sources: [source],
     playback: source.mediaUrl ? { sourceId: 'S1', lectureId: lecture.id, mediaUrl: source.mediaUrl, url: source.playbackUrl!, start, end } : null,
     videos: [{ ...lecture, segments: [{ ...segment, start, end, transcript, sourceId: 'S1' }] }],

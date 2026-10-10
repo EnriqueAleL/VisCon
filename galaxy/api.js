@@ -83,6 +83,11 @@ window.GalaxyAPI = (function () {
   async function ask(question, courseId) {
     const body = { question };
     if (courseId) body.courseId = courseId;
+    // The same setting the lecture app saves: which language the AI answer is written in.
+    try {
+      const language = JSON.parse(localStorage.getItem("viscon.answer-language.v1"));
+      if (language === "en" || language === "de") body.language = language;
+    } catch (e) { /* no stored choice: the server follows the language of the question */ }
     return getJSON("/api/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

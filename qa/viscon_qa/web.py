@@ -46,7 +46,8 @@ def main() -> None:
         index = {**index, "lectures": {key: value for key, value in index["lectures"].items()
                                       if value["lecture"] == number}}
     result = ask(request["question"], index=index, lectures=lectures,
-                 llm=OpenAILLM(settings.require_key()), model=settings.require_model("answer"))
+                 llm=OpenAILLM(settings.require_key()), model=settings.require_model("answer"),
+                 language=request.get("language") or "auto")
     # Absolute filesystem paths stay on the server; the web layer supplies media URLs.
     payload = result.to_dict()
     payload.pop("video", None)
