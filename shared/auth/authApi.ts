@@ -1,4 +1,4 @@
-export interface AuthAccount { username: string; verified: boolean }
+export interface AuthAccount { username: string; verified: boolean; status?: 'pending' | 'verified' | 'expired' | 'disabled' }
 export interface AuthStatus { required: boolean; account: AuthAccount | null }
 
 export class AuthApiError extends Error {

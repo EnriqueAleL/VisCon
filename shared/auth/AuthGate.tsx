@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { ArrowLeft, BookOpen, Eye, EyeOff, LoaderCircle, LogIn, LogOut, Mail, ShieldCheck } from 'lucide-react';
 import { authApi, AuthApiError, type AuthAccount } from './authApi';
+import { AUTH_CHECK_EVENT } from './socketAccess';
 import { strings, type Locale } from './strings';
 import './AuthGate.css';
 
@@ -30,21 +31,38 @@ export function AuthGate({ locale = 'en', children }: { locale?: Locale; childre
   }, [t]);
   useEffect(() => { void check(); }, [check]);
 
-  // If the session ends while the app is open, the server answers its API calls with 401: show the log-in screen again.
+  // Access can end while the app is open: the session expires or is revoked (401 login_required), the confirmation runs out
+  // (403 verification_required) or the account is disabled (403 account_disabled), or the server drops the live socket.
+  // Ask the server what changed and show the matching screen; leave the app alone if everything is in fact fine.
+  const recheck = useCallback(async () => {
+    const status = await authApi.status().catch(() => null);
+    if (!status || !status.required || status.account?.verified) return;
+    const lost = status.account;
+    if (!lost) { setMode('login'); setNotice(t.sessionEnded); }
+    else if (lost.status === 'disabled') { setMode('login'); setNotice(t.errors.account_disabled); }
+    else {
+      setIdentifier(lost.username); setMode('confirm');
+      setNotice(lost.status === 'expired' ? t.reconfirm : t.confirmPending);
+      if (lost.status === 'expired') void authApi.resend(lost.username).catch(() => {});
+    }
+    setPhase('screen');
+  }, [t]);
   useEffect(() => {
     if (phase !== 'open') return;
     const original = window.fetch;
     window.fetch = async (...args) => {
       const response = await original(...args);
       const url = typeof args[0] === 'string' ? args[0] : args[0] instanceof URL ? args[0].pathname : (args[0] as Request).url;
-      if (response.status === 401 && /\/api\/(?!auth\/)/.test(url)) {
+      if ((response.status === 401 || response.status === 403) && /\/api\/(?!auth\/)/.test(url)) {
         const body = await response.clone().json().catch(() => null);
-        if (body?.code === 'login_required') { setMode('login'); setNotice(t.sessionEnded); setPhase('screen'); }
+        if (['login_required', 'verification_required', 'account_disabled'].includes(body?.code)) void recheck();
       }
       return response;
     };
-    return () => { window.fetch = original; };
-  }, [phase, t]);
+    const onCheck = () => void recheck();
+    window.addEventListener(AUTH_CHECK_EVENT, onCheck);
+    return () => { window.fetch = original; window.removeEventListener(AUTH_CHECK_EVENT, onCheck); };
+  }, [phase, recheck]);
 
   const enter = (next: AuthAccount) => { setAccount(next); setNotice(''); setPhase('open'); };
   const logout = async () => { try { await authApi.logout(); } finally { location.reload(); } };

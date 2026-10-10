@@ -43,8 +43,7 @@ export function createSubmissionService(db: DatabaseSync, admin: AdminService, o
 
   const row = (id: unknown) => typeof id === 'string' ? db.prepare('SELECT * FROM submissions WHERE id=?').get(id) as unknown as Row | undefined : undefined;
   const filesOf = (id: string) => db.prepare('SELECT slot,size,sha256,originalName,mime,ext FROM submission_files WHERE submissionId=? ORDER BY slot').all(id) as unknown as FileRow[];
-  function present(r: Row): Submission {
-    const files = filesOf(r.id);
+  function present(r: Row, files = filesOf(r.id)): Submission {
     const spec = SLOTS[r.type];
     return {
       id: r.id, courseId: r.courseId, type: r.type, title: r.title, number: r.number, notes: r.notes, status: r.status, submitter: r.submitter,
@@ -52,6 +51,16 @@ export function createSubmissionService(db: DatabaseSync, admin: AdminService, o
       files: files.map(({ slot, size, sha256, originalName, mime }) => ({ slot, size, sha256, originalName, mime })),
       missing: spec.required.filter(slot => !files.some(f => f.slot === slot)),
     };
+  }
+  /** Lists load every file in one query instead of one per submission. */
+  function presentAll(rows: Row[]): Submission[] {
+    const bySubmission = new Map<string, FileRow[]>(rows.map(r => [r.id, []]));
+    if (rows.length) {
+      const all = db.prepare('SELECT submissionId,slot,size,sha256,originalName,mime,ext FROM submission_files WHERE submissionId IN (SELECT value FROM json_each(?)) ORDER BY slot')
+        .all(JSON.stringify(rows.map(r => r.id))) as unknown as (FileRow & { submissionId: string })[];
+      for (const { submissionId, ...file } of all) bySubmission.get(submissionId)?.push(file);
+    }
+    return rows.map(r => present(r, bySubmission.get(r.id)));
   }
   const isReviewer = (actor: string, r: Row) => admin.canManage(actor, r.courseId);
   /** Submitters see their own (drafts included); reviewers see everything except other people's drafts. */
@@ -110,6 +119,19 @@ export function createSubmissionService(db: DatabaseSync, admin: AdminService, o
     const total = (db.prepare(`SELECT COALESCE(SUM(f.size),0) AS n FROM submission_files f JOIN submissions s ON s.id=f.submissionId WHERE s.status IN ${LIVE}`).get() as { n: number }).n;
     if (total + declaredLength > limits.total) throw new AdminError('rate_limited', 'The platform is out of upload space right now. Tell an administrator.', 3600);
     return { submission: r, slot: slot as Slot, max, dir: dirFor(r.id), tmpPath: join(dirFor(r.id), `.${slot}.${randomBytes(6).toString('hex')}.part`) };
+  }
+  /** Drafts with an upload streaming in right now; purgeStaleDrafts leaves them alone. */
+  const uploading = new Map<string, number>();
+  /** Marks an upload as running until the returned function is called (always call it, in a finally). */
+  function holdDraft(id: string) {
+    uploading.set(id, (uploading.get(id) ?? 0) + 1);
+    let released = false;
+    return () => {
+      if (released) return;
+      released = true;
+      const left = (uploading.get(id) ?? 1) - 1;
+      if (left > 0) uploading.set(id, left); else uploading.delete(id);
+    };
   }
   async function ensureDir(id: string) { await mkdir(dirFor(id), { recursive: true, mode: 0o750 }); }
 
@@ -210,13 +232,13 @@ export function createSubmissionService(db: DatabaseSync, admin: AdminService, o
 
   // ---- reading
   const get = (actor: string, id: unknown) => present(visible(actor, id));
-  const listMine = (actor: string) => (db.prepare('SELECT * FROM submissions WHERE submitter=? ORDER BY createdAt DESC LIMIT 200').all(actor) as unknown as Row[]).map(present);
+  const listMine = (actor: string) => presentAll(db.prepare('SELECT * FROM submissions WHERE submitter=? ORDER BY createdAt DESC LIMIT 200').all(actor) as unknown as Row[]);
   function listForCourse(actor: string, courseId: unknown, status?: unknown): Submission[] {
     const course = admin.getCourse(actor, courseId);
     if (!admin.canManage(actor, course.id)) throw new AdminError('forbidden', 'Only administrators and this course\'s admins can see its submissions.');
     const wanted = typeof status === 'string' ? status : 'pending';
     if (!['pending', 'approved', 'rejected', 'withdrawn', 'removed'].includes(wanted)) throw bad('Unknown status.');
-    return (db.prepare('SELECT * FROM submissions WHERE courseId=? AND status=? ORDER BY COALESCE(submittedAt,createdAt) DESC LIMIT 500').all(course.id, wanted) as unknown as Row[]).map(present);
+    return presentAll(db.prepare('SELECT * FROM submissions WHERE courseId=? AND status=? ORDER BY COALESCE(submittedAt,createdAt) DESC LIMIT 500').all(course.id, wanted) as unknown as Row[]);
   }
   /** For the download route: only while the file still exists, and only for people who may see the submission. */
   function fileForDownload(actor: string, id: unknown, slot: unknown) {
@@ -228,9 +250,14 @@ export function createSubmissionService(db: DatabaseSync, admin: AdminService, o
     return { path, mime: file.mime, filename: safeName(file.originalName, `${file.slot}.${file.ext}`), size: file.size };
   }
 
-  /** Drafts nobody finished within a day are deleted with their files. Safe to call often. */
+  /**
+   * Drafts nobody touched for a day are deleted with their files. "Touched" is the creation or the last finished upload,
+   * and a draft with an upload in progress is never deleted. Safe to call often.
+   */
   function purgeStaleDrafts(maxAgeSeconds = 86_400): number {
-    const stale = db.prepare("SELECT id FROM submissions WHERE status='draft' AND createdAt<?").all(now() - maxAgeSeconds) as { id: string }[];
+    const stale = (db.prepare(`SELECT s.id FROM submissions s WHERE s.status='draft'
+      AND MAX(s.createdAt, COALESCE((SELECT MAX(f.createdAt) FROM submission_files f WHERE f.submissionId=s.id), 0))<?`).all(now() - maxAgeSeconds) as { id: string }[])
+      .filter(({ id }) => !uploading.has(id));
     for (const { id } of stale) {
       rmSync(dirFor(id), { recursive: true, force: true });
       db.prepare('DELETE FROM submission_files WHERE submissionId=?').run(id);
@@ -244,6 +271,6 @@ export function createSubmissionService(db: DatabaseSync, admin: AdminService, o
     return filesOf(id).map(f => ({ slot: f.slot, ext: f.ext, size: f.size, path: join(dirFor(id), `${f.slot}.${f.ext}`) })).filter(f => existsSync(f.path));
   }
 
-  return { internalFiles, create, prepareUpload, ensureDir, commitFile, submit, withdraw, approve, reject, remove, get, listMine, listForCourse, fileForDownload, purgeStaleDrafts, limits, slots: ALL_SLOTS };
+  return { internalFiles, create, prepareUpload, holdDraft, ensureDir, commitFile, submit, withdraw, approve, reject, remove, get, listMine, listForCourse, fileForDownload, purgeStaleDrafts, limits, slots: ALL_SLOTS };
 }
 export type SubmissionService = ReturnType<typeof createSubmissionService>;

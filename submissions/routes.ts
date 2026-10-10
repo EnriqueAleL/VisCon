@@ -50,6 +50,7 @@ export function mountSubmissions(app: Express, deps: MountSubmissionsDeps): Subm
   app.put('/api/submissions/:id/files/:slot', async (req, res) => {
     const id = param(req, 'id');
     let tmpPath = '';
+    let release: (() => void) | undefined;
     try {
       res.setHeader('Cache-Control', 'no-store');
       const actor = actorOf(req);
@@ -58,6 +59,7 @@ export function mountSubmissions(app: Express, deps: MountSubmissionsDeps): Subm
       if (!isSlot(req.params.slot)) throw new AdminError('invalid_input', 'Unknown file slot.');
       const prepared = service.prepareUpload(actor, id, req.params.slot, declared);
       tmpPath = prepared.tmpPath;
+      release = service.holdDraft(prepared.submission.id); // the hourly clean-up must not delete the draft under a running upload
       await service.ensureDir(id);
       // Piping through a PassThrough keeps the socket alive when the pipeline aborts, so the error can still be answered.
       const source = new PassThrough();
@@ -69,7 +71,7 @@ export function mountSubmissions(app: Express, deps: MountSubmissionsDeps): Subm
     } catch (error) {
       if (!req.complete) { res.setHeader('Connection', 'close'); res.once('finish', () => req.destroy()); }
       sendError(res, error, 'submissions');
-    }
+    } finally { release?.(); }
   });
 
   app.get('/api/submissions/:id/files/:slot', async (req, res) => {

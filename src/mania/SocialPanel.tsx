@@ -6,6 +6,7 @@ import type { SharedVisualizerState, SocialSnapshot, StudyAck, StudyTable } from
 import type { RoomView } from '../../shared/types';
 import { PIPELINE_PRESETS, PIPELINE_STAGES, simulatePipeline } from '../../shared/pipeline';
 import { CACHE_DEMO_CONFIG, CACHE_PRESETS, emptyCacheSets, simulateCache } from '../../shared/cache';
+import { watchSocketAccess } from '../../shared/auth/socketAccess';
 import './social.css';
 
 export interface SocialPanelProps { cityId: string; cityName: string; demo: boolean; cities?: WorldCity[] }
@@ -146,6 +147,7 @@ export default function SocialPanel({ cityId, cityName, demo, cities }: SocialPa
       socket.current = live;
       live.on('connect', () => { if (generation.current === epoch) { setConnected(true); live.emit('city:enter', { cityId: cityRef.current }); } });
       live.on('disconnect', () => { if (generation.current === epoch) setConnected(false); });
+      watchSocketAccess(live);
       live.on('connect_error', () => { if (generation.current === epoch) setConnected(false); });
       live.on('social:snapshot', update);
       live.on('table:update', (table: StudyTable) => { if (generation.current === epoch) upsertTable(table); });

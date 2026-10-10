@@ -211,6 +211,32 @@ test('quotas, limits per student, other students\' drafts and stale drafts', asy
   assert.throws(() => tiny.prepareUpload('cara', d.id, 'script', 51), (e: { code: string }) => e.code === 'rate_limited');
 });
 
+test("a draft is purged a day after its last activity, never while an upload is running; lists show each draft's own files", () => {
+  let time = 1_900_000_000_000;
+  const clocked = createSubmissionService(db, admin, { uploadsDir: uploads, clock: () => time });
+  const busy = clocked.create('cara', 'computer-architecture', { type: 'script', title: 'Uploading' });
+  const active = clocked.create('cara', 'computer-architecture', { type: 'lecture', title: 'Recently touched', number: 90 });
+  const addRow = (id: string, slot: string) => db.prepare("INSERT INTO submission_files (submissionId,slot,size,sha256,originalName,mime,ext,createdAt) VALUES (?,?,1,'x','f','application/pdf','pdf',?)").run(id, slot, Math.floor(time / 1000));
+  addRow(busy.id, 'script');
+  time += 20 * 3600_000;
+  addRow(active.id, 'transcript');
+  const mine = clocked.listMine('cara').filter(x => x.id === busy.id || x.id === active.id);
+  assert.deepEqual(mine.map(x => [x.id, x.files.map(f => f.slot), x.missing]).sort(),
+    [[busy.id, ['script'], []], [active.id, ['transcript'], []]].sort(), 'files are matched to their own submission');
+  const release = clocked.holdDraft(busy.id);
+  time += 10 * 3600_000; // busy: 30 h old with an upload running; active: last file 10 h ago
+  // The database is shared with the other tests, so check these two drafts rather than how many were purged.
+  const exists = (id: string) => !!db.prepare('SELECT 1 FROM submissions WHERE id=?').get(id);
+  clocked.purgeStaleDrafts();
+  assert.deepEqual([exists(busy.id), exists(active.id)], [true, true], 'nothing goes while an upload runs or within a day of the last file');
+  release();
+  clocked.purgeStaleDrafts();
+  assert.deepEqual([exists(busy.id), exists(active.id)], [false, true], 'once the upload ends, the old draft goes');
+  time += 15 * 3600_000;
+  clocked.purgeStaleDrafts();
+  assert.equal(exists(active.id), false, 'a day after its last file, the other one goes too');
+});
+
 test('input is validated: types, titles, numbers, courses that are not active', async () => {
   const bad = (input: object, course = 'computer-architecture') => call('cara', 'POST', `/api/courses/${course}/submissions`, input);
   assert.equal((await bad({ type: 'exam', title: 'Nope' })).status, 400);
