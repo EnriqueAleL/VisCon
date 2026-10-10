@@ -262,6 +262,101 @@
   var boardingStatus = document.getElementById("boarding-status");
   var boarding = false, beforeBoarding = null, boardingFlight = null, shipCabin = null, boardingArrived = false;
 
+  // A distant, self-contained skirmish gives the course system some life. It is
+  // scenery only: the selectable Versus ship and live match state stay separate.
+  var ambience = new THREE.Group();
+  sky.add(ambience);
+  var patrols = [0x8daaff, 0xe2b48d].map(function (color) {
+    var ship = window.VisConDuel.createShip(THREE, color);
+    ship.scale.setScalar(1.55);
+    ambience.add(ship);
+    return ship;
+  });
+  var patrolCentre = new THREE.Vector3(innerWidth < 600 ? 28 : 110, -10, -110);
+  var patrolLight = new THREE.PointLight(0xdce7ff, 4.5, 140);
+  patrolLight.position.set(0, 24, 45);
+  ambience.add(patrolLight);
+  var patrolAim = new THREE.Matrix4();
+  var patrolUp = new THREE.Vector3(0, 1, 0);
+  var laserColors = [0xaec5ff, 0xffc696];
+  var laserTmp = new THREE.Vector3();
+  var laserEnd = new THREE.Vector3();
+  var lasers = patrols.map(function (_, i) {
+    var positions = new Float32Array(6);
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    var line = new THREE.Line(geometry, new THREE.LineBasicMaterial({
+      color: laserColors[i], transparent: true, opacity: 0,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    }));
+    line.frustumCulled = false;
+    ambience.add(line);
+    var spark = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: GLOW_TEX, color: laserColors[i], transparent: true, opacity: 0,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    }));
+    spark.scale.set(7, 7, 1);
+    ambience.add(spark);
+    return { line: line, positions: positions, spark: spark };
+  });
+  var travellers = [];
+  var travellerPositions = new Float32Array(12 * 6);
+  for (var travellerIndex = 0; travellerIndex < 12; travellerIndex++) {
+    travellers.push({
+      phase: (travellerIndex * 0.61803398875) % 1,
+      speed: 0.018 + (travellerIndex % 4) * 0.006,
+      y: -35 + ((travellerIndex * 79) % 190),
+      z: -220 - (travellerIndex % 4) * 55
+    });
+  }
+  var travellerGeometry = new THREE.BufferGeometry();
+  travellerGeometry.setAttribute("position", new THREE.BufferAttribute(travellerPositions, 3));
+  var travellerLines = new THREE.LineSegments(travellerGeometry, new THREE.LineBasicMaterial({
+    color: 0xa8c8ef, transparent: true, opacity: 0.58,
+    depthWrite: false, blending: THREE.AdditiveBlending
+  }));
+  travellerLines.frustumCulled = false;
+  ambience.add(travellerLines);
+
+  function moveAmbience(t) {
+    patrolLight.position.set(patrolCentre.x, patrolCentre.y + 28, patrolCentre.z + 45);
+    patrols[0].position.set(patrolCentre.x - 22 + Math.sin(t * .42) * 12,
+      patrolCentre.y + Math.sin(t * .78) * 8, patrolCentre.z + Math.cos(t * .42) * 10);
+    patrols[1].position.set(patrolCentre.x + 22 + Math.cos(t * .48) * 12,
+      patrolCentre.y + Math.cos(t * .69) * 9, patrolCentre.z - Math.sin(t * .48) * 11);
+    patrols.forEach(function (ship, i) {
+      ship.quaternion.setFromRotationMatrix(patrolAim.lookAt(ship.position, patrols[1 - i].position, patrolUp));
+      ship.rotateZ(Math.sin(t * 1.1 + i * 2) * .16);
+      ship.userData.engines.forEach(function (engine, j) {
+        engine.scale.y = .72 + Math.sin(t * 9 + i * 3 + j) * .15;
+      });
+    });
+    lasers.forEach(function (shot, i) {
+      var phase = ((t * .75 + i * .52) % 1 + 1) % 1;
+      shot.line.material.opacity = phase < .22 ? Math.sin(phase / .22 * Math.PI) * .9 : 0;
+      shot.spark.material.opacity = shot.line.material.opacity * .8;
+      if (phase >= .22) return;
+      laserTmp.copy(patrols[i].position).lerp(patrols[1 - i].position, phase / .22 * .82);
+      laserEnd.copy(patrols[i].position).lerp(patrols[1 - i].position, Math.min(1, phase / .22 * .82 + .14));
+      shot.spark.position.copy(laserEnd);
+      shot.positions.set([laserTmp.x, laserTmp.y, laserTmp.z, laserEnd.x, laserEnd.y, laserEnd.z]);
+      shot.line.geometry.attributes.position.needsUpdate = true;
+    });
+    travellers.forEach(function (star, i) {
+      var progress = (star.phase + t * star.speed) % 1;
+      var x = -350 + progress * 700;
+      var y = star.y + Math.sin(progress * Math.PI * 2 + i) * 9;
+      var at = i * 6;
+      travellerPositions[at] = x - 9;
+      travellerPositions[at + 1] = y - 2;
+      travellerPositions[at + 2] = star.z;
+      travellerPositions[at + 3] = x;
+      travellerPositions[at + 4] = y;
+      travellerPositions[at + 5] = star.z;
+    });
+    travellerGeometry.attributes.position.needsUpdate = true;
+  }
+
   var WINDOW_POOL = null;
   function windowSkin(courseCss, variant, repeatX, repeatY) {
     if (!WINDOW_POOL) {
@@ -1446,6 +1541,7 @@
   function resize() {
     var w = window.innerWidth, h = window.innerHeight;
     shipHome.x = shipOrbitX * Math.min(1, Math.pow(w / 800, 2));
+    patrolCentre.x = w < 600 ? 28 : 110;
     if (!boarding) duelShip.position.x = shipHome.x;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
@@ -1460,9 +1556,22 @@
   var clock = new THREE.Clock();
   var scaleTmp = new THREE.Vector3();
   var worldTmp = new THREE.Vector3();
+  var frameHandle = 0;
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) {
+      cancelAnimationFrame(frameHandle);
+      frameHandle = 0;
+    } else if (!frameHandle) {
+      clock.oldTime = performance.now();
+      frameHandle = requestAnimationFrame(frame);
+    }
+  });
 
   function frame() {
-    requestAnimationFrame(frame);
+    frameHandle = 0;
+    if (document.hidden) return;
+    frameHandle = requestAnimationFrame(frame);
     var dt = Math.min(clock.getDelta(), 0.05);
     var t = clock.elapsedTime;
     if (document.getElementById("document-workspace").open) return;
@@ -1516,6 +1625,8 @@
       duelShip.position.x = shipHome.x + Math.sin(t * .12) * 4;
       duelShip.rotation.z = -.12 + Math.sin(t * .35) * .035;
     }
+    ambience.visible = !REDUCED && !boarding && state.level === "galaxy" && activeScene === sky;
+    if (ambience.visible) moveAmbience(t);
     if(boarding)stepBoarding(performance.now());else applyCamera();
     var shipPoint = duelShip.position.clone(); shipPoint.y += 13; shipPoint.project(camera);
     var showShip = !boarding && state.level === "galaxy" && shipPoint.z < 1 && Math.abs(shipPoint.x) < .9 && Math.abs(shipPoint.y) < .85;
