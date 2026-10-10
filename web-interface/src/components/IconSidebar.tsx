@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  Bookmark,
   CircleHelp,
   GraduationCap,
   Layers3,
@@ -19,11 +18,11 @@ interface IconSidebarProps {
   courses: Course[];
   departments: Department[];
   lectures: Lecture[];
-  view: 'questions' | 'library' | 'saved' | 'versus';
+  view: 'questions' | 'library' | 'versus';
   selectedCourse: CourseSelection | null;
   pickerRequest: number;
   history: QuestionHistoryEntry[];
-  onNavigate: (view: 'questions' | 'library' | 'saved' | 'versus') => void;
+  onNavigate: (view: 'questions' | 'library' | 'versus') => void;
   onNewChat: () => void;
   onSelectCourse: (selection: CourseSelection) => void;
   onClearCourse: () => void;
@@ -258,15 +257,6 @@ export function IconSidebar({
           onClick={() => navigate('library')}
         >
           <Layers3 size={21} />
-        </button>
-        <button
-          className={`rail-button ${view === 'saved' ? 'active' : ''}`}
-          title={t('view.saved')}
-          aria-label={t('view.saved')}
-          aria-current={view === 'saved' ? 'page' : undefined}
-          onClick={() => navigate('saved')}
-        >
-          <Bookmark size={20} />
         </button>
         <button
           className={`rail-button ${view === 'versus' ? 'active' : ''}`}

@@ -8,6 +8,20 @@ export async function getJSON<T>(path: string, signal?: AbortSignal): Promise<T>
   return response.json();
 }
 
+export async function postJSON<T>(path: string, body: unknown, signal?: AbortSignal): Promise<T> {
+  const response = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal,
+  });
+  if (!response.ok) {
+    const result = await response.json().catch(() => null);
+    throw new Error(result?.error || translate(storedLanguage(), 'error.connection'));
+  }
+  return response.json();
+}
+
 export function formatTime(seconds: number): string {
   const value = Math.floor(Math.max(0, seconds));
   const hours = Math.floor(value / 3600);

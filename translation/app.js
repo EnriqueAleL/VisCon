@@ -381,6 +381,10 @@ async function askDocument(question) {
   return data;
 }
 
+chatInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); chatForm.requestSubmit(); }
+});
+
 chatForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const question = chatInput.value.trim();
@@ -402,7 +406,7 @@ chatForm.addEventListener('submit', async (event) => {
       jump.className = 'chat-jump';
       jump.textContent = `Go to page ${result.page}`;
       jump.addEventListener('click', () => goToPage(result.page));
-      answer.append(document.createElement('br'), jump);
+      answer.append(jump);
     }
   } catch (error) {
     if (version !== loadVersion) return;

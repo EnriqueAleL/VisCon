@@ -2358,3 +2358,283 @@ textarea::placeholder {
   background: var(--ground);
   color: var(--ink);
 }
+
+/* ---------------------------------------------------------------
+   The ask box, where the galaxy keeps it: upper right, always there.
+   The galaxy floats it over the 3D scene; here the page is a document,
+   so it sits in the flow at the top right and the content runs under
+   it rather than behind it. Same treatment otherwise — mono label,
+   translucent panel, accent edge, and an answer that is a place.
+   --------------------------------------------------------------- */
+/* The strip above the page, where the ask box sits in the corner. */
+.content-top {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 14px;
+  width: calc(100% - var(--sidebar-width));
+  max-width: 1440px;
+  margin-left: var(--sidebar-width);
+  padding: 14px 36px 0;
+}
+
+.ask-box {
+  width: min(330px, 100%);
+  padding: 13px 14px;
+  background: rgba(9, 14, 25, .72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-right: 2px solid var(--accent);
+  border-radius: 3px;
+}
+.ask-box-label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.ask-box-row { display: flex; gap: 6px; }
+.ask-box-row input {
+  flex: 1;
+  min-width: 0;
+  background: #0a111d;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 8px 10px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+.ask-box-row input::placeholder { color: var(--subtle); }
+.ask-box-row input:focus-visible { outline: 2px solid var(--accent); outline-offset: -1px; }
+.ask-box-row button {
+  width: 34px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 3px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.ask-box-row button:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.ask-box.busy .ask-box-row button { opacity: .5; }
+
+.ask-box-status {
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* The answer is a place you can go, so it is a button, not a sentence. */
+.ask-box-hit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 9px;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  background: none;
+  font: inherit;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.ask-box-hit:hover { border-color: var(--accent); }
+.ask-box-hit:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ask-box-hit > svg { color: var(--accent); flex-shrink: 0; }
+.ask-box-hit > span:first-of-type { flex: 1; min-width: 0; }
+.ask-box-hit em { font-style: normal; color: var(--muted); }
+.ask-box-time { color: var(--muted); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+@media (max-width: 760px) {
+  .ask-box { width: 100%; margin-bottom: 18px; }
+}
+
+/* ---------------------------------------------------------------
+   Chat beside the video, the galaxy's lecture chat panel.
+   The galaxy makes it a second column of the player box; the viewer
+   here is a dialog, so it becomes a second column of the dialog,
+   full height, with its own scroll. Below 1000px there is no room
+   for two columns, so it stacks under the lecture instead.
+   --------------------------------------------------------------- */
+.viewer-dialog.has-chat {
+  width: min(1180px, calc(100vw - 40px));
+  /* An explicit height so both columns scroll inside it and the composer
+     stays on the bottom edge, instead of the row growing past the dialog. */
+  height: min(880px, calc(100dvh - 48px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 350px;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+}
+.viewer-dialog.has-chat .viewer-main { overflow-y: auto; min-width: 0; min-height: 0; }
+.viewer-dialog.has-chat .lecture-chat { min-height: 0; }
+.viewer-header-actions { display: flex; align-items: center; gap: 2px; }
+
+.lecture-chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+}
+.lc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 10px 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.lc-eyebrow {
+  margin: 0 0 3px;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.lc-title { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.3; color: var(--ink); }
+.lc-toggle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px; height: 28px;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.lc-toggle:hover { background: var(--surface-hover); color: var(--ink); }
+.lc-toggle:focus-visible { outline: 2px solid var(--accent); }
+
+.lc-log {
+  flex: 1;
+  min-height: 140px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 13px 14px;
+}
+
+.lc-turn { max-width: 94%; font-size: 13px; line-height: 1.55; }
+.lc-turn p { margin: 0; }
+.lc-user {
+  align-self: flex-end;
+  padding: 8px 10px;
+  border-radius: 9px 9px 2px 9px;
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+.lc-assistant { align-self: flex-start; color: var(--ink); }
+.lc-error .lc-text { color: var(--danger, #e6a98a); }
+.lc-scope { margin-bottom: 5px !important; font-size: 11.5px; color: var(--muted); }
+.lc-text { white-space: pre-wrap; }
+.lc-background {
+  margin-top: 8px !important;
+  padding-left: 9px;
+  border-left: 2px solid var(--line-strong);
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.lc-bg-label { display: block; margin-bottom: 2px; font-size: 10.5px; letter-spacing: .04em; color: var(--subtle); }
+
+.lc-moment {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  margin-top: 9px;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface-raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+.lc-moment:hover { border-color: var(--accent); background: var(--surface-hover); }
+.lc-moment:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.lc-moment > svg { color: var(--accent); flex: none; }
+.lc-moment-time { color: var(--accent); flex: none; font-variant-numeric: tabular-nums; }
+
+.lc-starter { color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+.lc-starter p { margin: 0 0 10px; }
+.lc-suggestions { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.lc-suggestions button {
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+.lc-suggestions button:hover { border-color: var(--accent); }
+.lc-suggestions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.lc-thinking { margin: 0; color: var(--muted); font-size: 12px; font-style: italic; }
+
+.lc-form {
+  display: flex;
+  gap: 7px;
+  padding: 10px 11px 11px;
+  border-top: 1px solid var(--line);
+}
+.lc-form textarea {
+  flex: 1;
+  min-width: 0;
+  resize: none;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--ground);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.lc-form textarea::placeholder { color: var(--subtle); }
+.lc-form textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: -1px; }
+.lc-form button {
+  flex: none;
+  align-self: flex-end;
+  display: grid;
+  place-items: center;
+  width: 36px; height: 36px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  cursor: pointer;
+}
+.lc-form button:disabled { opacity: .45; cursor: default; }
+.lc-form button:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+@media (max-width: 1000px) {
+  .viewer-dialog.has-chat {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    height: auto;
+    overflow: auto;
+  }
+  .viewer-dialog.has-chat .viewer-main { overflow: visible; }
+  .lecture-chat { border-left: 0; border-top: 1px solid var(--line); }
+  .lc-log { max-height: 50vh; }
+}

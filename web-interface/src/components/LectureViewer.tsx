@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bookmark, BookOpen, Check, ChevronRight, Clock3, FileText, Play, X } from 'lucide-react';
+import { Bookmark, BookOpen, Check, ChevronRight, Clock3, FileText, MessageCircle, Play, X } from 'lucide-react';
 import { pullUpVideo } from '../../../video-pull-up/client/client.mjs';
 import { lectureVisualizerAt, lectureVisualizerHref } from '../../../shared/lecture-visualizers';
 import { formatTime, getJSON } from '../api';
 import type { Course, Lecture, LectureSummary, Segment } from '../types';
 import { useI18n } from '../i18n';
+import { LectureChat, type ChatMoment } from './LectureChat';
+import type { AnswerLanguage } from './SettingsMenu';
 
 interface LectureViewerProps {
   lecture: Lecture;
@@ -13,9 +15,12 @@ interface LectureViewerProps {
   savedIds: string[];
   onSave: (segment: Segment) => void;
   onClose: () => void;
+  language: AnswerLanguage;
+  /** The chat can answer from another lecture of the course; only App can open that one. */
+  onOpenElsewhere: (lectureId: string, start: number) => void;
 }
 
-export function LectureViewer({ lecture, course, segment, savedIds, onSave, onClose }: LectureViewerProps) {
+export function LectureViewer({ lecture, course, segment, savedIds, onSave, onClose, language, onOpenElsewhere }: LectureViewerProps) {
   const { t } = useI18n();
   const [activeSegment, setActiveSegment] = useState(segment);
   const [tab, setTab] = useState<'moments' | 'transcript' | 'notes'>('moments');
@@ -26,6 +31,8 @@ export function LectureViewer({ lecture, course, segment, savedIds, onSave, onCl
   const [notesError, setNotesError] = useState('');
   const [notesLoading, setNotesLoading] = useState(false);
   const [notesAttempt, setNotesAttempt] = useState(0);
+  // Beside the video on a wide screen; behind its button when there is no room.
+  const [chatOpen, setChatOpen] = useState(() => window.innerWidth >= 1100);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const moments = lecture.chapters?.length ? lecture.chapters : lecture.segments;
@@ -60,11 +67,28 @@ export function LectureViewer({ lecture, course, segment, savedIds, onSave, onCl
   }, [tab, lecture.id, lecture.hasSummary, notesAttempt]);
 
   const choose = (item: Segment) => setActiveSegment({ ...item });
+
+  const jump = (moment: ChatMoment) => {
+    if (moment.lectureId !== lecture.id) { onOpenElsewhere(moment.lectureId, moment.start); return; }
+    const video = videoRef.current;
+    // The video is already loaded, so seeking beats reloading it through activeSegment.
+    const chapter = moments.find(item => moment.start >= item.start && moment.start < item.end);
+    if (chapter) setActiveSegment({ ...chapter, start: moment.start, end: Math.max(moment.end, moment.start + 1) });
+    if (video) {
+      video.currentTime = Math.max(0, moment.start);
+      void video.play().catch(() => { /* autoplay blocked; the controls still work */ });
+    }
+  };
+
   return (
-    <dialog className="viewer-dialog" ref={dialogRef} onCancel={onClose} onClick={event => { if (event.target === event.currentTarget) onClose(); }} aria-labelledby="viewer-title">
+    <dialog className={`viewer-dialog ${chatOpen ? 'has-chat' : ''}`} ref={dialogRef} onCancel={onClose} onClick={event => { if (event.target === event.currentTarget) onClose(); }} aria-labelledby="viewer-title">
+      <div className="viewer-main">
       <div className="viewer-header">
         <span className="course-label"><span className="course-dot" style={{ background: course.color }} />{course.shortName}<ChevronRight size={14} />{lecture.demo ? t('common.demo') : t('viewer.lecture', { n: lecture.episode })}</span>
-        <button className="icon-button" title={t('common.close')} aria-label={t('viewer.closeLabel')} onClick={onClose}><X size={20} /></button>
+        <span className="viewer-header-actions">
+          {!chatOpen && <button className="icon-button" title={t('chat.show')} aria-label={t('chat.show')} onClick={() => setChatOpen(true)}><MessageCircle size={19} /></button>}
+          <button className="icon-button" title={t('common.close')} aria-label={t('viewer.closeLabel')} onClick={onClose}><X size={20} /></button>
+        </span>
       </div>
       <div className="lecture-player">
         {lecture.mediaUrl ? <video ref={videoRef} controls playsInline preload="metadata" aria-label={lecture.title} onTimeUpdate={event => setPlaybackTime(event.currentTarget.currentTime)} onError={() => setMediaError(t('viewer.mediaError'))}>
@@ -95,6 +119,17 @@ export function LectureViewer({ lecture, course, segment, savedIds, onSave, onCl
           </div>;
         })}</div>}
       </div>
+      </div>
+      {chatOpen && (
+        <LectureChat
+          lectureId={lecture.id}
+          lectureTitle={lecture.title}
+          currentTime={lecture.mediaUrl ? playbackTime : null}
+          language={language}
+          onJump={jump}
+          onHide={() => setChatOpen(false)}
+        />
+      )}
     </dialog>
   );
 }

@@ -12,7 +12,6 @@ const messages = {
   'skip': { de: 'Zum Inhalt', en: 'Skip to content' },
   'view.questions': { de: 'Chat', en: 'Chat' },
   'view.library': { de: 'Meine Vorlesungen', en: 'My lectures' },
-  'view.saved': { de: 'Gespeicherte Stellen', en: 'Saved moments' },
   'view.documents': { de: 'Dokumente', en: 'Documents' },
   'view.versus': { de: 'Versus', en: 'Versus' },
   'header.view': { de: 'Ansicht', en: 'View' },
@@ -52,26 +51,12 @@ const messages = {
   'common.demo': { de: 'Demo', en: 'Demo' },
 
   // library and saved
-  'library.counts': {
-    de: '{recordings} Aufzeichnungen und {demos} Demo-Videos · Kapitel und Transkripte',
-    en: '{recordings} recordings and {demos} demo videos · chapters and transcripts',
-  },
-  'saved.counts.one': { de: '{n} gespeicherte Stelle · Deine persönliche Merkliste', en: '{n} saved moment · Your personal list' },
-  'saved.counts.other': { de: '{n} gespeicherte Stellen · Deine persönliche Merkliste', en: '{n} saved moments · Your personal list' },
-  'search.label': { de: 'Vorlesungen durchsuchen', en: 'Search lectures' },
-  'search.placeholder': { de: 'Vorlesungen durchsuchen …', en: 'Search lectures …' },
   'search.reset': { de: 'Suche zurücksetzen', en: 'Clear search' },
-  'filter.label': { de: 'Kursfilter', en: 'Course filter' },
-  'filter.all': { de: 'Alle Kurse', en: 'All courses' },
 
   // results
   'results.matching': { de: 'Passende Vorlesungen', en: 'Matching lectures' },
-  'results.all': { de: 'Alle Vorlesungen', en: 'All lectures' },
-  'results.saved': { de: 'Deine Merkliste', en: 'Your saved list' },
   'results.forQuestion': { de: '{n} passende Stellen zu deiner Frage', en: '{n} matching passages for your question' },
   'results.next': { de: 'Deine nächste Frage', en: 'Your next question' },
-  'results.lecture.one': { de: 'Vorlesung', en: 'lecture' },
-  'results.lecture.other': { de: 'Vorlesungen', en: 'lectures' },
   'sort.label': { de: 'Vorlesungen sortieren', en: 'Sort lectures' },
   'sort.relevance': { de: 'Relevanz', en: 'Relevance' },
   'sort.newest': { de: 'Letzte Vorlesung zuerst', en: 'Newest lecture first' },
@@ -81,13 +66,10 @@ const messages = {
   'layout.list': { de: 'Listenansicht', en: 'List view' },
 
   // empty states
-  'empty.saved.title': { de: 'Hier ist Platz für deine Aha-Momente.', en: 'Room for your aha moments.' },
   'empty.landing.title': { de: 'Was steht auf deinem Lernplan?', en: "What's on your study plan?" },
   'empty.none.title': { de: 'Keine passenden Vorlesungen gefunden.', en: 'No matching lectures found.' },
-  'empty.saved.text': { de: 'Deine gespeicherten Zeitstellen erscheinen hier.', en: 'Your saved moments will appear here.' },
   'empty.landing.text': { de: 'Lineare Algebra, Analysis oder Informatik.', en: 'Linear algebra, analysis or computer science.' },
   'empty.none.text': { de: 'Versuche einen anderen Begriff oder wähle alle Kurse.', en: 'Try a different term or choose all courses.' },
-  'empty.saved.action': { de: 'Vorlesungen ansehen', en: 'Browse lectures' },
 
   // toast
   'toast.removed': { de: 'Stelle aus deiner Merkliste entfernt', en: 'Moment removed from your saved list' },
@@ -135,6 +117,40 @@ const messages = {
   'picker.yearLabel': { de: '{degree}, {year}. Studienjahr', en: '{degree}, year {year}' },
   'picker.empty': { de: 'Hier sind noch keine Fächer verfügbar.', en: 'No courses are available here yet.' },
   'degree.unspecified': { de: 'Ohne Studiengangsangabe', en: 'No programme specified' },
+
+  // chat beside the video, the galaxy's lecture chat
+  'chat.label': { de: 'Chat zur Vorlesung', en: 'Chat about this lecture' },
+  'chat.show': { de: 'Chat einblenden', en: 'Show chat' },
+  'chat.hide': { de: 'Chat ausblenden', en: 'Hide chat' },
+  'chat.intro': {
+    de: 'Ich kenne den ganzen Transkripttext dieser Vorlesung. Frag mich etwas, lass dir eine Stelle erklären oder such einen Begriff.',
+    en: 'I know the whole transcript of this lecture. Ask me something, have a passage explained, or look up a term.',
+  },
+  'chat.suggest.here': { de: 'Erkläre mir die Stelle, an der ich gerade bin', en: 'Explain the part I am at' },
+  'chat.suggest.summary': { de: 'Fasse diese Vorlesung zusammen', en: 'Summarize this lecture' },
+  'chat.suggest.terms': { de: 'Was sind die wichtigsten Begriffe hier?', en: 'What are the key terms here?' },
+  'chat.thinking': { de: 'Ich lese die Vorlesung …', en: 'Reading the lecture …' },
+  'chat.noMatch': {
+    de: 'Dazu habe ich in diesem Kurs keine passende Stelle gefunden.',
+    en: 'I could not find a passage about that in this course.',
+  },
+  'chat.scope.other': { de: 'Das wird in dieser Vorlesung nicht behandelt:', en: 'This lecture does not cover that:' },
+  'chat.scope.found': {
+    de: 'Das wird in dieser Vorlesung nicht behandelt – gefunden in „{lecture}“:',
+    en: 'This lecture does not cover that – found in "{lecture}":',
+  },
+  'chat.watchMoment': { de: 'Stelle ansehen', en: 'Watch this moment' },
+  'chat.placeholder': { de: 'Frag etwas zu dieser Vorlesung …', en: 'Ask about this lecture …' },
+  'chat.inputLabel': { de: 'Nachricht an den Vorlesungs-Chat', en: 'Message the lecture chat' },
+  'chat.send': { de: 'Senden', en: 'Send' },
+
+  // the corner ask box, as the galaxy has it
+  'askbox.label': { de: 'Frag den Lernraum', en: 'Ask the study room' },
+  'askbox.placeholder': { de: 'Wo wird Pipelining erklärt?', en: 'Where is pipelining explained?' },
+  'askbox.searching': { de: 'Suche läuft …', en: 'Searching …' },
+  'askbox.noMatch': { de: 'Dazu wurde keine Stelle gefunden.', en: 'No passage was found for that.' },
+  'askbox.nearest': { de: 'Nächstliegende Stelle · ', en: 'Closest passage · ' },
+  'askbox.reopen': { de: 'Stelle erneut öffnen', en: 'Open this moment again' },
 
   // course browser: the galaxy's hierarchy in list form
   'browser.trail': { de: 'Pfad', en: 'Path' },

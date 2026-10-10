@@ -18,11 +18,11 @@
   <div class="layout">
     <main id="viewer" class="page-scroll" tabindex="0" aria-label="PDF document"><div id="page-stage"></div></main>
     <aside id="chat-panel" class="chat-panel" aria-label="Ask about this document" hidden>
-      <div class="chat-header"><div><p class="eyebrow">READING COMPANION</p><h2>Ask this document</h2></div><button id="chat-close" class="close-button" aria-label="Close question panel">×</button></div>
+      <div class="chat-header"><div><p class="eyebrow">READING COMPANION</p><h2 id="chat-title">Ask this document</h2></div><button id="chat-close" class="chat-hide" aria-label="Close question panel" title="Close question panel">−</button></div>
       <div id="chat-messages" class="chat-messages" role="log" aria-live="polite">
-        <div id="chat-welcome" class="chat-welcome"><span class="companion-mark" aria-hidden="true">✧</span><h3>A little clarity,<br>right where you read.</h3><p>Ask a question about the book. Follow the page citation back to the source.</p><div class="selection-tip"><span aria-hidden="true">↳</span> Select a passage on the page to translate it.</div></div>
+        <div id="chat-welcome" class="chat-welcome"><p>Ask a question about this book. Every answer cites the page it came from, and the citation takes you there.</p><div class="selection-tip"><span aria-hidden="true">↳</span> Select a passage on the page to translate it.</div></div>
       </div>
-      <form id="chat-form" class="chat-form"><label class="sr-only" for="chat-input">Question about this document</label><input id="chat-input" type="text" placeholder="Ask about this document…" autocomplete="off" maxlength="500"><button type="submit" aria-label="Send question">↑</button></form>
+      <form id="chat-form" class="chat-form"><label class="sr-only" for="chat-input">Question about this document</label><textarea id="chat-input" rows="2" placeholder="Ask about this document…" autocomplete="off" maxlength="500"></textarea><button type="submit" aria-label="Send question" title="Send question">↑</button></form>
       <p id="chat-scope" class="chat-scope">Answers are grounded in the indexed book.</p>
     </aside>
   </div>

@@ -565,7 +565,7 @@ export default function App({ hosted = false }: { hosted?: boolean } = {}) {
       {hosted ? null : path === "/campus" ? <ProductHeader module="Campus" actions={profileAction}>
         <button onClick={() => safeNavigate("/arena")}>Versus</button>
         <button onClick={() => safeNavigate("/history")}>Match history</button>
-        <a href="/learn">Lectures</a><a href="/world">Study world</a>
+        <a href="/learn">Lectures</a>
         <button className="active">Campus</button>
       </ProductHeader> : <VersusHeader
         immersive={immersive} path={path} inRoom={Boolean(currentRoom)} galaxyHref={versusContext.returnTo}

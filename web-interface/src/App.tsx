@@ -3,7 +3,6 @@ import {
   ArrowDownUp,
   ArrowRight,
   BookOpen,
-  Bookmark,
   Check,
   ChevronDown,
   GraduationCap,
@@ -22,6 +21,7 @@ import ArenaApp from '../../src/App';
 import 'katex/dist/katex.min.css';
 import '../../src/styles.css';
 import './versus-hosted.css';
+import { AskBox } from './components/AskBox';
 import { CourseBrowser } from './components/CourseBrowser';
 import {
   isCourseSelection,
@@ -46,13 +46,13 @@ import type {
   Segment,
 } from './types';
 
-type View = 'questions' | 'library' | 'saved' | 'versus';
+type View = 'questions' | 'library' | 'versus';
 type Sort = 'relevance' | 'newest' | 'shortest';
 /* Versus keeps its own route under the hash (#versus/room/ABC), so the view is
    the first segment, not the whole hash. */
 const viewFromHash = (): View | null => {
   const name = decodeURIComponent(location.hash.slice(1)).split('/')[0];
-  return ['questions', 'saved', 'versus', 'library'].includes(name) ? (name as View) : null;
+  return ['questions', 'versus', 'library'].includes(name) ? (name as View) : null;
 };
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string');
@@ -85,7 +85,6 @@ export function App() {
   const viewNames: Record<View, string> = {
     questions: t('view.questions'),
     library: t('view.library'),
-    saved: t('view.saved'),
     versus: t('view.versus'),
   };
   const [view, setView] = useState<View>(() => viewFromHash() ?? 'library');
@@ -137,7 +136,6 @@ export function App() {
     null,
   );
   const [helpOpen, setHelpOpen] = useState(false);
-  const [librarySearch, setLibrarySearch] = useState('');
   const [toast, setToast] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const helpRef = useRef<HTMLDialogElement>(null);
@@ -187,63 +185,20 @@ export function App() {
     else helpRef.current?.close();
   }, [helpOpen]);
 
+  // Only the chat view lists lectures now; the library is the course browser.
   const results = useMemo(() => {
-    let items: Lecture[] =
-      view === 'questions'
-        ? (answer?.videos ?? []).flatMap((video) => {
-            const metadata = lectures.find((item) => item.id === video.id);
-            return metadata ? [{ ...metadata, segments: video.segments }] : [];
-          })
-        : lectures.map((lecture) => ({
-            ...lecture,
-            segments:
-              view === 'saved'
-                ? [...(lecture.chapters ?? []), ...lecture.segments]
-                    .filter((segment) => savedIds.includes(segment.id))
-                    .map((segment) => savedSegments[segment.id] ?? segment)
-                : lecture.chapters?.length
-                  ? lecture.chapters
-                  : lecture.segments,
-          }));
-    if (view === 'questions' && selectedCourse)
-      items = items.filter((item) => lectureMatchesSelection(item, selectedCourse));
-    if (view !== 'questions' && courseId !== 'all')
-      items = items.filter((item) => item.courseId === courseId);
-    if (view === 'saved') items = items.filter((item) => item.segments.length);
-    if (view !== 'questions' && librarySearch.trim()) {
-      const terms = librarySearch.toLowerCase().trim().split(/\s+/);
-      items = items.filter((item) =>
-        terms.every((term) =>
-          `${item.title} ${item.keywords.join(' ')} ${item.segments.map((segment) => segment.title).join(' ')}`
-            .toLowerCase()
-            .includes(term),
-        ),
-      );
-    }
+    let items: Lecture[] = (answer?.videos ?? []).flatMap((video) => {
+      const metadata = lectures.find((item) => item.id === video.id);
+      return metadata ? [{ ...metadata, segments: video.segments }] : [];
+    });
+    if (selectedCourse) items = items.filter((item) => lectureMatchesSelection(item, selectedCourse));
     if (sort === 'newest')
       items = [...items].sort((a, b) => b.date.localeCompare(a.date) || b.episode - a.episode);
     if (sort === 'shortest') items = [...items].sort((a, b) => a.duration - b.duration);
     return items;
-  }, [
-    view,
-    answer,
-    lectures,
-    courseId,
-    librarySearch,
-    sort,
-    savedIds,
-    savedSegments,
-    selectedCourse,
-    courses,
-  ]);
+  }, [answer, lectures, sort, selectedCourse]);
 
-  const segmentCount = results.reduce(
-    (total, lecture) =>
-      total +
-      lecture.segments.filter((segment) => view !== 'saved' || savedIds.includes(segment.id))
-        .length,
-    0,
-  );
+  const segmentCount = results.reduce((total, lecture) => total + lecture.segments.length, 0);
 
   const navigate = (nextView: View, nextCourse: CourseId = 'all', hash: string = nextView) => {
     searchRequest.current?.abort();
@@ -263,7 +218,6 @@ export function App() {
     if (view === 'versus' && nextView === 'versus') location.hash = hash;
     else window.history.replaceState(null, '', `#${hash}`);
     setCourseId(nextCourse);
-    setLibrarySearch('');
   };
 
   const submitQuestion = async (nextQuestion: string = question, selection = selectedCourse) => {
@@ -460,10 +414,20 @@ export function App() {
           >
             Lectures
           </button>
-          <a href="/campus">Campus</a>
         </ProductHeader>
 
-        <div id="audio-controls-slot" className="audio-controls-slot" />
+        {/* The galaxy keeps an ask box in this corner wherever you are; so does this. */}
+        <div className="content-top">
+          {view !== 'questions' && view !== 'versus' && !catalogLoading && !catalogError && (
+            <AskBox
+              lectures={lectures}
+              courseId={selectedCourse?.courseId ?? null}
+              language={answerLanguage}
+              onNeedCourse={() => setPickerRequest((value) => value + 1)}
+              onOpen={(item, segment) => void openLecture(item, segment)}
+            />
+          )}
+        </div>
 
         <main id="main" className={`main-content ${isQuestionLanding ? 'chat-landing' : ''}`}>
           {/* The same match the galaxy runs — same questions, answers and Elo
@@ -630,93 +594,31 @@ export function App() {
             </div>
           ) : (
             <>
-              {view === 'library' ? (
-                <CourseBrowser
-                  courses={courses}
-                  lectures={lectures}
-                  savedIds={savedIds}
-                  onSave={(_id, segment) => toggleSaved(segment)}
-                  onOpenSegment={(item, segment) => void openLecture(item, segment)}
-                  selectedCourseId={selectedCourse?.courseId ?? null}
-                  onSelectCourse={(id) => {
-                    const next = courses.find((item) => item.id === id);
-                    if (next) setSelectedCourse({
-                      department: next.department ?? 'other',
-                      degree: next.degree,
-                      studyYear: next.studyYear,
-                      courseId: next.id,
-                    });
-                  }}
-                />
-              ) : (
-                <>
-                <div className="page-heading library-heading">
-                  <div>
-                    <h1>{viewNames[view]}</h1>
-                    <p className="heading-context">
-                      {t(savedIds.length === 1 ? 'saved.counts.one' : 'saved.counts.other', {
-                        n: savedIds.length,
-                      })}
-                    </p>
-                  </div>
-                  <span className="heading-mark" aria-hidden="true">
-                    <Bookmark size={29} strokeWidth={1.3} />
-                  </span>
-                </div>
-                <div className="library-search">
-                  <Search size={18} />
-                  <input
-                    aria-label={t('search.label')}
-                    value={librarySearch}
-                    onChange={(event) => setLibrarySearch(event.target.value)}
-                    placeholder={t('search.placeholder')}
-                  />
-                  {librarySearch && (
-                    <button
-                      className="icon-button"
-                      title={t('search.reset')}
-                      aria-label={t('search.reset')}
-                      onClick={() => setLibrarySearch('')}
-                    >
-                      <X size={17} />
-                    </button>
-                  )}
-                </div>
-                <div className="course-filters" aria-label={t('filter.label')}>
-                  <button
-                    className={courseId === 'all' ? 'active' : ''}
-                    onClick={() => setCourseId('all')}
-                  >
-                    {t('filter.all')}<span>{lectures.length}</span>
-                  </button>
-                  {courses.map((course) => (
-                    <button
-                      className={courseId === course.id ? 'active' : ''}
-                      key={course.id}
-                      onClick={() => setCourseId(course.id)}
-                    >
-                      <span className="course-dot" style={{ background: course.color }} />
-                      {course.name}
-                      <span>{course.videoCount}</span>
-                    </button>
-                  ))}
-                </div>
-                </>
-              )}
+              <CourseBrowser
+                courses={courses}
+                lectures={lectures}
+                savedIds={savedIds}
+                onSave={(_id, segment) => toggleSaved(segment)}
+                onOpenSegment={(item, segment) => void openLecture(item, segment)}
+                selectedCourseId={selectedCourse?.courseId ?? null}
+                onSelectCourse={(id) => {
+                  const next = courses.find((item) => item.id === id);
+                  if (next) setSelectedCourse({
+                    department: next.department ?? 'other',
+                    degree: next.degree,
+                    studyYear: next.studyYear,
+                    courseId: next.id,
+                  });
+                }}
+              />
             </>
           )}
 
-          {view !== 'library' && !catalogLoading && !catalogError &&
-          (view !== 'questions' || answer?.sources.length) ? (
-            <section
-              className="results-section"
-              aria-label={view === 'questions' ? t('results.matching') : viewNames[view]}
-            >
+          {view === 'questions' && !catalogLoading && !catalogError && answer?.sources.length ? (
+            <section className="results-section" aria-label={t('results.matching')}>
               <div className="results-toolbar">
                 <div className="results-heading">
-                  <h2>
-                    {view === 'questions' ? t('results.matching') : t('results.saved')}
-                  </h2>
+                  <h2>{t('results.matching')}</h2>
                   <span className="result-count">{results.length}</span>
                 </div>
                 <div className="results-controls">
@@ -756,20 +658,8 @@ export function App() {
                 </div>
               </div>
               <p className="results-caption">
-                {view === 'questions' ? (
-                  <>
-                    <span className="results-indicator" />
-                    {submittedQuestion
-                      ? t('results.forQuestion', { n: segmentCount })
-                      : t('results.next')}
-                  </>
-                ) : (
-                  <>
-                    {results.length} {t(results.length === 1 ? 'results.lecture.one' : 'results.lecture.other')}
-                    {courseId !== 'all' &&
-                      ` · ${courses.find((item) => item.id === courseId)?.name}`}
-                  </>
-                )}
+                <span className="results-indicator" />
+                {submittedQuestion ? t('results.forQuestion', { n: segmentCount }) : t('results.next')}
               </p>
               {results.length > 0 ? (
                 <div className={`lecture-grid ${layout === 'list' ? 'lecture-list' : ''}`}>
@@ -778,47 +668,27 @@ export function App() {
                       key={lecture.id}
                       lecture={lecture}
                       course={courses.find((course) => course.id === lecture.courseId)!}
-                      showBestMatch={view === 'questions' && sort === 'relevance' && index === 0}
+                      showBestMatch={sort === 'relevance' && index === 0}
                       savedIds={savedIds}
                       onSave={toggleSaved}
                       onOpen={(item, segment) => void openLecture(item, segment)}
-                      savedOnly={view === 'saved'}
                       compact={layout === 'list'}
                     />
                   ))}
                 </div>
               ) : (
                 <div className="empty-state">
-                  {view === 'saved' ? (
-                    <Bookmark size={29} strokeWidth={1.5} />
-                  ) : (
-                    <Search size={29} strokeWidth={1.5} />
-                  )}
-                  <h3>
-                    {view === 'saved'
-                      ? t('empty.saved.title')
-                      : view === 'questions' && !submittedQuestion
-                        ? t('empty.landing.title')
-                        : t('empty.none.title')}
-                  </h3>
-                  <p>
-                    {view === 'saved'
-                      ? t('empty.saved.text')
-                      : view === 'questions' && !submittedQuestion
-                        ? t('empty.landing.text')
-                        : t('empty.none.text')}
-                  </p>
+                  <Search size={29} strokeWidth={1.5} />
+                  <h3>{t(submittedQuestion ? 'empty.none.title' : 'empty.landing.title')}</h3>
+                  <p>{t(submittedQuestion ? 'empty.none.text' : 'empty.landing.text')}</p>
                   <button
                     className="secondary-button"
-                    onClick={() =>
-                      view === 'saved'
-                        ? navigate('library')
-                        : (setCourseId('all'),
-                          setLibrarySearch(''),
-                          setPickerRequest((value) => value + 1))
-                    }
+                    onClick={() => {
+                      setCourseId('all');
+                      setPickerRequest((value) => value + 1);
+                    }}
                   >
-                    {view === 'saved' ? t('empty.saved.action') : t('course.pick')}
+                    {t('course.pick')}
                     <ArrowRight size={16} />
                   </button>
                 </div>
@@ -838,6 +708,14 @@ export function App() {
           savedIds={savedIds}
           onSave={toggleSaved}
           onClose={() => setActiveLecture(null)}
+          language={answerLanguage}
+          onOpenElsewhere={(lectureId, start) => {
+            const next = lectures.find((item) => item.id === lectureId);
+            if (!next) return;
+            const parts = next.chapters?.length ? next.chapters : next.segments;
+            const chapter = parts.find((item) => start >= item.start && start < item.end) ?? parts[0];
+            if (chapter) void openLecture(next, { ...chapter, start, end: Math.max(chapter.end, start + 1) });
+          }}
         />
       )}
       <dialog

@@ -27,7 +27,6 @@ export function VersusHeader({ path, inRoom, galaxyHref, actions, navigate, onPl
         {tabs.map(tab => <button key={tab.path} onClick={() => navigate(tab.path)}>{tab.label}</button>)}
         <button onClick={() => navigate('/java')}>Java workspace</button>
         <a href="/learn" onClick={e => onPlatformLink(e, '/learn')}>Lectures</a>
-        <a href="/world" onClick={e => onPlatformLink(e, '/world')}>Study world</a>
         {actions}
       </nav>
     </details>
@@ -42,7 +41,6 @@ export function VersusHeader({ path, inRoom, galaxyHref, actions, navigate, onPl
       </nav>
       <nav className="versus-platform-nav" aria-label="Other platform areas">
         <a href="/learn" onClick={e => onPlatformLink(e, "/learn")}>Lectures <ArrowUpRight size={12} /></a>
-        <a href="/world" onClick={e => onPlatformLink(e, "/world")}>Study world <ArrowUpRight size={12} /></a>
       </nav>
     </div>
     <div className="versus-header-bottom">
