@@ -1,12 +1,17 @@
 import { AuthError } from './errors';
 import { mailerFromEnv, verifySmtp } from './mailer';
+import { createAccountService, type Account } from './accounts';
+import { reverifyDaysFromEnv } from './guard';
 import { createVerificationService, openAuthDatabase } from './service';
 
 const usage = `Usage:
   npm run auth -- request <username|email>     email a one-time code
   npm run auth -- verify  <username|email> <code>
   npm run auth -- status  <username|email>     is this person verified?
-  npm run auth -- list                         all verified students
+  npm run auth -- list                         all accounts and their status
+  npm run auth -- revoke  <username|email>     block an account now (sessions and live connections end)
+  npm run auth -- restore <username|email>     unblock it
+  npm run auth -- delete  <username|email>     erase the account and its login data
   npm run auth -- smtp-check [to]              test the SMTP login; with <to>, also send a test email`;
 
 async function main() {
@@ -25,6 +30,7 @@ async function main() {
   const service = createVerificationService(db, mailerNeeded ? mailerFromEnv() : { send: async () => { throw new Error('mail not configured'); } }, {
     ...(process.env.AUTH_MAIL_DOMAIN ? { mailDomain: process.env.AUTH_MAIL_DOMAIN } : {}),
   });
+  const accounts = createAccountService(db, service, { reverifyDays: reverifyDaysFromEnv() });
   switch (command) {
     case 'request': {
       const result = await service.requestCode(identifier);
@@ -32,8 +38,8 @@ async function main() {
       break;
     }
     case 'verify': {
-      const student = service.verifyCode(identifier, code);
-      console.log(`Verified ${student.username} (${student.email}).`);
+      const account = accounts.confirm(identifier, code);
+      console.log(`Verified ${account.username}.`);
       break;
     }
     case 'status': {
@@ -42,7 +48,10 @@ async function main() {
       process.exitCode = student ? 0 : 1;
       break;
     }
-    case 'list': console.table(service.listVerified()); break;
+    case 'list': console.table(accounts.list().map(a => ({ username: a.username, status: a.status, verifiedAt: a.verifiedAt }))); break;
+    case 'revoke': { const a = accounts.revoke(identifier); console.log(`Revoked ${a.username}: sessions closed, access blocked.`); break; }
+    case 'restore': { const a = accounts.restore(identifier); console.log(`Restored ${a.username} (${a.status}).`); break; }
+    case 'delete': accounts.deleteByUsername(identifier); console.log('Account and login data deleted.'); break;
     default: console.error(usage); process.exitCode = 2;
   }
 }

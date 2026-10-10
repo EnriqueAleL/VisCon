@@ -3,7 +3,8 @@ import type { DatabaseSync } from 'node:sqlite';
 import { AuthError } from './errors';
 import { createAccountService, type Account, type AccountOptions } from './accounts';
 import { optionalMailerFromEnv, type Mailer } from './mailer';
-import { createVerificationService } from './service';
+import { createVerificationService, type VerificationOptions } from './service';
+import { reverifyDaysFromEnv } from './guard';
 
 export interface AuthPlayer { id: string; name: string; rating: number; createdAt: string }
 export interface MountAuthDeps {
@@ -16,13 +17,14 @@ export interface MountAuthDeps {
   /** Header carrying the real client IP behind a trusted proxy, e.g. "x-forwarded-for". Unset: use the socket address. */
   clientIpHeader?: string;
   accountOptions?: Partial<AccountOptions>;
+  verificationOptions?: Partial<VerificationOptions>;
   clock?: () => number;
   /** Reported by /api/auth/me so the front end knows whether it must show the log-in screens. Default true. */
   required?: boolean;
 }
 
 const STATUS: Record<AuthError['code'], number> = {
-  invalid_identifier: 400, weak_password: 400, invalid_or_expired: 400, invalid_credentials: 401, not_verified: 403,
+  invalid_identifier: 400, weak_password: 400, invalid_or_expired: 400, invalid_credentials: 401, not_verified: 403, account_disabled: 403,
   account_exists: 409, already_linked: 409, rate_limited: 429, too_many_attempts: 429, mail_unavailable: 503,
 };
 const COOKIE = 'ba_session';
@@ -40,8 +42,13 @@ function windowLimiter(max: number, windowMs: number, clock: () => number) {
 
 export function mountAuth(app: Express, deps: MountAuthDeps) {
   const clock = deps.clock ?? Date.now;
-  const verification = createVerificationService(deps.db, deps.mailer ?? optionalMailerFromEnv(), process.env.AUTH_MAIL_DOMAIN ? { mailDomain: process.env.AUTH_MAIL_DOMAIN } : {}, clock);
-  const accounts = createAccountService(deps.db, verification, deps.accountOptions, clock);
+  const cooldown = Number(process.env.AUTH_RESEND_COOLDOWN_SECONDS);
+  const verification = createVerificationService(deps.db, deps.mailer ?? optionalMailerFromEnv(), {
+    ...(process.env.AUTH_MAIL_DOMAIN ? { mailDomain: process.env.AUTH_MAIL_DOMAIN } : {}),
+    ...(Number.isFinite(cooldown) && cooldown >= 0 && process.env.AUTH_RESEND_COOLDOWN_SECONDS ? { resendCooldownSeconds: cooldown } : {}),
+    ...deps.verificationOptions,
+  }, clock);
+  const accounts = createAccountService(deps.db, verification, { reverifyDays: reverifyDaysFromEnv(), ...deps.accountOptions }, clock);
   const anyRequest = windowLimiter(60, 60_000, clock);
   const sendsEmail = windowLimiter(20, 3_600_000, clock);
 
@@ -70,7 +77,7 @@ export function mountAuth(app: Express, deps: MountAuthDeps) {
       res.status(500).json({ error: 'Something went wrong. Try again.' });
     }
   };
-  const publicAccount = (account: Account | null) => account && { username: account.username, verified: account.verified };
+  const publicAccount = (account: Account | null) => account && { username: account.username, verified: account.verified, status: account.status };
 
   // Register with an ETH username/email + password. Keeps the current guest profile (progress, Elo) for the account.
   app.post('/api/auth/register', handle({ sendsEmail: true }, async (req, res) => {
@@ -117,6 +124,15 @@ export function mountAuth(app: Express, deps: MountAuthDeps) {
     const { identifier, code, password } = body(req);
     const account = await accounts.resetPassword({ identifier, code, password });
     res.json({ account: publicAccount(account) });
+  }));
+
+  // Delete my account and login data (confirmed with the password). Gameplay data stays under an anonymous id.
+  app.post('/api/auth/delete', handle({}, async (req, res, client) => {
+    const profile = deps.playerFromCookie(req.headers.cookie);
+    if (!profile) throw new AuthError('invalid_credentials', 'Log in first.');
+    await accounts.deleteOwn({ playerId: profile.id, password: body(req).password, client });
+    res.clearCookie(COOKIE, { path: '/' });
+    res.json({ ok: true });
   }));
 
   // Who am I? Never creates a guest profile.

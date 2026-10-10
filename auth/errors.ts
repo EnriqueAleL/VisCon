@@ -5,6 +5,7 @@ export type AuthErrorCode =
   | 'already_linked'
   | 'invalid_credentials'
   | 'not_verified'
+  | 'account_disabled'
   | 'rate_limited'
   | 'mail_unavailable'
   | 'invalid_or_expired'

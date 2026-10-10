@@ -47,7 +47,7 @@ test('guest -> register -> verify -> same player, logged in; then log in again f
   const verifyResponse = await fetch(base + '/api/auth/verify', { method: 'POST', headers: { 'content-type': 'application/json', cookie: guestCookie }, body: JSON.stringify({ identifier: 'riordache', code: lastCode() }) });
   const verified = await verifyResponse.json() as any;
   assert.equal(verifyResponse.status, 200);
-  assert.deepEqual(verified.account, { username: 'riordache', verified: true });
+  assert.deepEqual(verified.account, { username: 'riordache', verified: true, status: 'verified' });
   assert.equal(verified.profile.id, guestPlayer.profile.id, 'the guest profile (progress, Elo) becomes the account');
   assert.equal(verified.profile.name, 'riordache');
   const set = verifyResponse.headers.getSetCookie().find(c => c.startsWith('ba_session='))!;
@@ -60,7 +60,7 @@ test('guest -> register -> verify -> same player, logged in; then log in again f
   assert.equal(login.status, 200);
   assert.equal(login.body.profile.id, guestPlayer.profile.id);
   const me = await other.call('GET', '/api/auth/me');
-  assert.deepEqual(me.body.account, { username: 'riordache', verified: true });
+  assert.deepEqual(me.body.account, { username: 'riordache', verified: true, status: 'verified' });
   assert.equal(session(other.cookie)?.id, guestPlayer.profile.id, 'existing server code (session()) accepts the login cookie');
 
   assert.equal((await other.call('POST', '/api/auth/logout')).status, 200);

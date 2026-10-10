@@ -5,7 +5,7 @@ import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto
 import { AuthError } from './errors';
 import { maskEmail, parseEthIdentifier } from './identifier';
 import type { Mailer } from './mailer';
-import { AUTH_SCHEMA_SQL } from './schema';
+import { initAuthSchema } from './schema';
 
 export interface VerificationOptions {
   /** Domain the code is mailed to. A student.ethz.ch mailbox is what proves the person studies at ETH. */
@@ -25,11 +25,11 @@ export interface VerifiedStudent { username: string; email: string; verifiedAt: 
 const HOUR = 3600;
 const sha256 = (value: string) => createHash('sha256').update(value).digest();
 
-export function openAuthDatabase(file = process.env.AUTH_DB_PATH || '.data/auth.sqlite'): DatabaseSync {
+export function openAuthDatabase(file = process.env.AUTH_DB_PATH || process.env.DATABASE_PATH || '.data/arena.sqlite'): DatabaseSync {
   if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
   db.exec('PRAGMA journal_mode=WAL;');
-  db.exec(AUTH_SCHEMA_SQL);
+  initAuthSchema(db);
   return db;
 }
 

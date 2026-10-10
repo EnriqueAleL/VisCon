@@ -24,7 +24,7 @@ real owner can restart; it never blocks a username.
 An account owns an ordinary `players` row, so the Arena, the study world and sockets work unchanged.
 `session()` in `server/store.ts` accepts either the old guest token or a login session from `auth_sessions`,
 both through the same `ba_session` cookie (HttpOnly, SameSite=Lax, `Secure` when `COOKIE_SECURE=true`,
-30 days). Accounts and sessions live in the app database; the CLI uses its own file (`AUTH_DB_PATH`).
+30 days). Accounts and sessions live in the app database (`DATABASE_PATH`); the CLI uses the same file unless `AUTH_DB_PATH` is set.
 
 ## What is guarded
 
@@ -50,6 +50,29 @@ The deployment checker needs a logged-in cookie: `CHECK_COOKIE_FILE` with the `b
 `AuthGate.css`. `src/main.tsx` and `web-interface/src/main.tsx` wrap their root in `<AuthGate locale=...>`. The gate asks
 `GET /api/auth/me`; when the server reports `required: false` (guard disabled) the app renders straight away.
 The server stays the security boundary, the gate is only the user interface.
+
+## Account lifecycle and administration
+
+Statuses: **pending** (mailbox not confirmed), **verified**, **expired** (confirmed more than `AUTH_REVERIFY_DAYS`
+ago, default 180, `0` = never) and **disabled**. Only *verified* passes the guard. An expired student logs in with the
+password, confirms a fresh emailed code and is back; a password reset also renews it. This keeps former students out.
+
+Run these where the app's database is (on the VM: `docker compose exec app npm run auth -- ...`):
+
+```sh
+npm run auth -- list                      # every account and its status
+npm run auth -- revoke  <username|email>  # block now: sessions end, open sockets close within ~30 s
+npm run auth -- restore <username|email>
+npm run auth -- delete  <username|email>  # erase the account and its login data (erasure requests)
+```
+
+A signed-in user can delete their own account with `POST /api/auth/delete {password}`. Deletion removes the account,
+sessions, codes and verification record; their study progress stays under an anonymous id (`Student xxxx`) with no link
+back to the person. Open Socket.IO connections are re-checked every `AUTH_SOCKET_RECHECK_SECONDS` (default 30), so a revoke
+from the command line, an expired session or an expired verification also ends live connections.
+
+Responses carry `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN` and `Referrer-Policy: same-origin`, plus
+HSTS when `COOKIE_SECURE=true`. The server warns at startup if it runs in production without `COOKIE_SECURE=true`.
 
 ## Rules
 

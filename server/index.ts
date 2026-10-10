@@ -4,7 +4,7 @@ import { randomBytes,randomInt,randomUUID } from 'node:crypto';
 import { Server } from 'socket.io';
 import type { BankQuestion,Settings,Player,RoomView,RoundResult,Outcome,Profile,HistoryEntry } from '../shared/types';
 import { subjects,eligible,publicQuestion,correct,answerLabel,demoContent,numericValue,registerCourseQuestions } from './questions';
-import { db,profile,session,createPlayer,rename,history,leaderboard,saveMatch,adoptAccount } from './store';
+import { db,profile,session,createPlayer,rename,history,leaderboard,saveMatch,adoptAccount,anonymizePlayer } from './store';
 import { mountAuth } from '../auth/routes';
 import { createVerifiedGuard } from '../auth/guard';
 import { mountStatic } from './static';
@@ -20,6 +20,9 @@ const allowed=new Set((process.env.ALLOWED_ORIGINS||'http://localhost:5173,http:
 if (process.env.APP_PUBLIC_URL) allowed.add(new URL(process.env.APP_PUBLIC_URL).origin);
 function allowedOrigin(origin:string|undefined){return !origin||allowed.has(origin);}
 const io=new Server(http,{allowRequest:(req,cb)=>cb(null,allowedOrigin(req.headers.origin))});
+app.disable('x-powered-by');
+app.use((_req,res,next)=>{res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Referrer-Policy','same-origin');if(process.env.COOKIE_SECURE==='true')res.setHeader('Strict-Transport-Security','max-age=15552000');next();});
+if(process.env.NODE_ENV==='production'&&process.env.COOKIE_SECURE!=='true')console.warn('COOKIE_SECURE is not true: session cookies are sent without the Secure flag. Set COOKIE_SECURE=true behind HTTPS.');
 app.use(express.json({limit:'48kb'}));
 app.use('/api',(req,res,next)=>{res.setHeader('Cache-Control','no-store');if(!allowedOrigin(req.headers.origin))return res.status(403).json({error:'This origin is not allowed.'});next();});
 const rates=new Map<string,{at:number;count:number}>();
@@ -86,15 +89,26 @@ function leave(r:Room,p:Profile){
   if(r.state==='lobby'){r.players=r.players.filter(x=>x.id!==p.id);active.delete(p.id);if(!r.players.some(x=>!x.bot)){rooms.delete(r.id);return;}r.hostId=r.players.find(x=>!x.bot)!.id;r.players.forEach(x=>x.ready=x.bot);broadcast(r);}
   else if(!['finished','cancelled'].includes(r.state))finish(r,'Opponent left the match',p.id);
 }
+/** A revoked, deleted or password-reset account must lose live Socket.IO connections too, not just future requests. */
+function dropConnections(playerId:string){
+  for(const socket of io.sockets.sockets.values())if(socket.data.playerId===playerId)socket.disconnect(true);
+  for(const socket of io.of('/study').sockets.values())if((socket.data.identity as {id?:string}|undefined)?.id===playerId)socket.disconnect(true);
+}
 const route=(handler:(req:express.Request,res:express.Response,p:Profile)=>unknown)=>async(req:express.Request,res:express.Response)=>{try{const p=user(req,res);limit(p.id);await handler(req,res,p);}catch(e){res.status(400).json({error:e instanceof Error?e.message:'Something went wrong. Try again.'});}};
 app.get('/api/health',(_req,res)=>res.json({ok:true}));
 // Everything below needs a confirmed ETH student email: the API, lecture media, and both Socket.IO namespaces.
 const guard=createVerifiedGuard({db,playerFromCookie:session});
 if(!guard.enabled)console.warn('AUTH_REQUIRE_VERIFIED=false: the API is open to unverified visitors. Never use this in production.');
-mountAuth(app,{db,required:guard.enabled,playerFromCookie:session,createPlayer,secureCookies:process.env.COOKIE_SECURE==='true',clientIpHeader:process.env.AUTH_CLIENT_IP_HEADER?.toLowerCase(),accountOptions:{onVerified:account=>adoptAccount(account.playerId,account.username)}});
+mountAuth(app,{db,required:guard.enabled,playerFromCookie:session,createPlayer,secureCookies:process.env.COOKIE_SECURE==='true',clientIpHeader:process.env.AUTH_CLIENT_IP_HEADER?.toLowerCase(),accountOptions:{onVerified:account=>adoptAccount(account.playerId,account.username),onDeleted:anonymizePlayer,onRevoked:dropConnections}});
 app.use(['/api','/media'],guard.http);
 io.use(guard.socket);
 io.of('/study').use(guard.socket);
+// A revoke done from the command line (another process), an expired session or an expired verification must also end
+// connections that are already open, so every open socket is re-checked against the guard on a timer.
+const recheckSeconds=Number(process.env.AUTH_SOCKET_RECHECK_SECONDS||30);
+if(guard.enabled&&recheckSeconds>0)setInterval(()=>{
+  for(const socket of [...io.sockets.sockets.values(),...io.of('/study').sockets.values()])if(guard.accessFor(socket.handshake.headers.cookie)!=='ok')socket.disconnect(true);
+},recheckSeconds*1000).unref();
 
 app.get('/api/bootstrap',route((_req,res,p)=>res.json({profile:p,subjects,history:history(p.id),leaderboard:leaderboard(),javaAvailable,activeRoom:active.get(p.id)||null,demoContent})));
 app.post('/api/profile',route((req,res,p)=>{const name=typeof req.body.name==='string'?req.body.name.trim():'';if(name.length<2||name.length>24||/[\x00-\x1f<>]/.test(name))throw new Error('Use a name with 2–24 characters.');const updated=rename(p.id,name);for(const r of rooms.values()){const player=r.players.find(x=>x.id===p.id);if(player){player.name=name;broadcast(r);}}res.json(updated);}));

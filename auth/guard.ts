@@ -1,8 +1,9 @@
 import type { NextFunction, Request, Response } from 'express';
 import type { DatabaseSync } from 'node:sqlite';
+import { defaultAccountOptions, statusOf } from './accounts';
 import type { AuthPlayer } from './routes';
 
-export type AccessState = 'ok' | 'login_required' | 'verification_required';
+export type AccessState = 'ok' | 'login_required' | 'verification_required' | 'account_disabled';
 
 export interface GuardOptions {
   db: DatabaseSync;
@@ -10,28 +11,41 @@ export interface GuardOptions {
   playerFromCookie(cookie?: string): AuthPlayer | null;
   /** Default true. `AUTH_REQUIRE_VERIFIED=false` turns the guard off for local development and legacy tests. */
   enabled?: boolean;
+  /** Must match the account service. Default: AUTH_REVERIFY_DAYS or 180; 0 = never expires. */
+  reverifyDays?: number;
+  clock?: () => number;
 }
 
 const MESSAGES = {
   login_required: 'Log in with your ETH account to continue.',
   verification_required: 'Confirm your ETH student email to continue.',
+  account_disabled: 'This account has been disabled. Contact the administrators.',
 } as const;
 
 /** Paths that must stay reachable without a verified account (the log-in flow itself and the health probe). */
 const OPEN = (url: string) => url === '/api/health' || url.startsWith('/api/auth/');
 
+/** AUTH_REVERIFY_DAYS: how long a confirmed mailbox counts (default 180, 0 = forever). */
+export function reverifyDaysFromEnv(env: NodeJS.ProcessEnv = process.env): number {
+  const days = Number(env.AUTH_REVERIFY_DAYS ?? defaultAccountOptions.reverifyDays);
+  return Number.isFinite(days) && days >= 0 ? days : defaultAccountOptions.reverifyDays;
+}
+
 export function createVerifiedGuard(options: GuardOptions) {
   const enabled = options.enabled ?? process.env.AUTH_REQUIRE_VERIFIED !== 'false';
-  const account = options.db.prepare('SELECT verifiedAt FROM accounts WHERE playerId=?');
+  const reverifyDays = options.reverifyDays ?? reverifyDaysFromEnv();
+  const clock = options.clock ?? Date.now;
+  const account = options.db.prepare('SELECT verifiedAt, disabledAt FROM accounts WHERE playerId=?');
 
   /** A request is trusted only if its session belongs to a player whose account has a confirmed ETH mailbox. */
   function accessFor(cookie?: string): AccessState {
     if (!enabled) return 'ok';
     const player = options.playerFromCookie(cookie);
     if (!player) return 'login_required';
-    const row = account.get(player.id) as { verifiedAt: number | null } | undefined;
+    const row = account.get(player.id) as { verifiedAt: number | null; disabledAt: number | null } | undefined;
     if (!row) return 'login_required'; // an anonymous guest profile: needs to register or log in
-    return row.verifiedAt === null ? 'verification_required' : 'ok';
+    const status = statusOf(row, Math.floor(clock() / 1000), reverifyDays);
+    return status === 'verified' ? 'ok' : status === 'disabled' ? 'account_disabled' : 'verification_required';
   }
 
   /** Express middleware for `/api` and `/media`. */

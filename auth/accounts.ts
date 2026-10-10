@@ -5,29 +5,50 @@ import { parseEthIdentifier } from './identifier';
 import { dummyHash, hashPassword, PASSWORD_MAX, validatePassword, verifyPassword } from './password';
 import type { CodeRequestResult, VerificationService } from './service';
 
-export interface Account { username: string; playerId: string; verified: boolean; verifiedAt: string | null }
+/** pending: mailbox not confirmed yet. expired: confirmed long ago, must be confirmed again. */
+export type AccountStatus = 'pending' | 'verified' | 'expired' | 'disabled';
+export interface Account { username: string; playerId: string; verified: boolean; status: AccountStatus; verifiedAt: string | null }
 export interface AccountOptions {
   sessionDays: number;
+  /** A confirmed mailbox counts for this many days, then the student must confirm again. 0 = never expires. */
+  reverifyDays: number;
   failureWindowSeconds: number;
   maxFailuresPerUserAndClient: number;
   maxFailuresPerUser: number;
   maxFailuresPerClient: number;
-  /** Called once when an email is verified, e.g. to set the player's display name. */
+  /** Called once when an email is confirmed, e.g. to set the player's display name. */
   onVerified?: (account: Account) => void;
+  /** Called when every session of a player was invalidated (revoked, password reset, deleted): close their live connections. */
+  onRevoked?: (playerId: string) => void;
+  /** Called after an account was deleted, so app data keyed to the player can be made anonymous. */
+  onDeleted?: (playerId: string) => void;
 }
 export const defaultAccountOptions: AccountOptions = {
-  sessionDays: 30, failureWindowSeconds: 900, maxFailuresPerUserAndClient: 5, maxFailuresPerUser: 30, maxFailuresPerClient: 30,
+  sessionDays: 30, reverifyDays: 180, failureWindowSeconds: 900, maxFailuresPerUserAndClient: 5, maxFailuresPerUser: 30, maxFailuresPerClient: 30,
 };
 
-interface Row { username: string; playerId: string; passwordHash: string; createdAt: number; verifiedAt: number | null }
+interface Row { username: string; playerId: string; passwordHash: string; createdAt: number; verifiedAt: number | null; disabledAt: number | null }
 export const hashSessionToken = (token: string) => createHash('sha256').update(token).digest('hex');
+
+/** Shared with the request guard so both agree on what "verified" means. */
+export function statusOf(row: { verifiedAt: number | null; disabledAt: number | null }, nowSeconds: number, reverifyDays: number): AccountStatus {
+  if (row.disabledAt !== null) return 'disabled';
+  if (row.verifiedAt === null) return 'pending';
+  return reverifyDays > 0 && nowSeconds - row.verifiedAt >= reverifyDays * 86_400 ? 'expired' : 'verified';
+}
 
 export function createAccountService(db: DatabaseSync, verification: VerificationService, overrides: Partial<AccountOptions> = {}, clock: () => number = Date.now) {
   const options = { ...defaultAccountOptions, ...overrides };
   const seconds = () => Math.floor(clock() / 1000);
-  const toAccount = (row: Row): Account => ({ username: row.username, playerId: row.playerId, verified: row.verifiedAt !== null, verifiedAt: row.verifiedAt === null ? null : new Date(row.verifiedAt * 1000).toISOString() });
+  const statusFor = (row: Row) => statusOf(row, seconds(), options.reverifyDays);
+  const toAccount = (row: Row): Account => {
+    const status = statusFor(row);
+    return { username: row.username, playerId: row.playerId, verified: status === 'verified', status, verifiedAt: row.verifiedAt === null ? null : new Date(row.verifiedAt * 1000).toISOString() };
+  };
   const byUsername = (username: string) => db.prepare('SELECT * FROM accounts WHERE username=?').get(username) as Row | undefined;
   const byPlayer = (playerId: string) => db.prepare('SELECT * FROM accounts WHERE playerId=?').get(playerId) as Row | undefined;
+  const needsConfirmation = (row: Row | undefined): row is Row => !!row && ['pending', 'expired'].includes(statusFor(row));
+  const badCode = () => new AuthError('invalid_or_expired', 'That code is wrong or has expired. Request a new one.');
 
   function assertCanRegister(username: string, playerId: string) {
     if (byUsername(username)?.verifiedAt) throw new AuthError('account_exists', 'An account for this ETH username already exists. Log in, or reset your password.');
@@ -50,15 +71,16 @@ export function createAccountService(db: DatabaseSync, verification: Verificatio
     return sent;
   }
 
-  /** Checks the emailed code and activates the account. */
+  /** Checks the emailed code and (re)activates the account: first confirmation, or a renewal after it expired. */
   function confirm(identifier: unknown, code: unknown): Account {
     const { username } = parseEthIdentifier(identifier);
     const row = byUsername(username);
-    if (!row || row.verifiedAt) throw new AuthError('invalid_or_expired', 'That code is wrong or has expired. Request a new one.');
+    if (!needsConfirmation(row)) throw badCode();
     verification.verifyCode(username, code);
-    db.prepare('UPDATE accounts SET verifiedAt=? WHERE username=? AND verifiedAt IS NULL').run(seconds(), username);
+    const first = row.verifiedAt === null;
+    db.prepare('UPDATE accounts SET verifiedAt=? WHERE username=?').run(seconds(), username);
     const account = toAccount(byUsername(username)!);
-    options.onVerified?.(account);
+    if (first) options.onVerified?.(account);
     return account;
   }
 
@@ -70,15 +92,15 @@ export function createAccountService(db: DatabaseSync, verification: Verificatio
     return { token, expiresAt: new Date(expiresAt) };
   }
   const endSession = (token: string) => { db.prepare('DELETE FROM auth_sessions WHERE tokenHash=?').run(hashSessionToken(token)); };
+  const endAllSessions = (playerId: string) => { db.prepare('DELETE FROM auth_sessions WHERE playerId=?').run(playerId); options.onRevoked?.(playerId); };
 
-  function failureCount(key: string, since: number) {
-    const rows = db.prepare('SELECT at FROM auth_failures WHERE key=? AND at>? ORDER BY at ASC').all(key, since) as { at: number }[];
-    return rows;
+  function failures(key: string, since: number) {
+    return db.prepare('SELECT at FROM auth_failures WHERE key=? AND at>? ORDER BY at ASC').all(key, since) as { at: number }[];
   }
   function assertNotBlocked(username: string, client: string) {
     const t = seconds(), since = t - options.failureWindowSeconds;
     for (const [key, max] of [[`pair:${username}|${client}`, options.maxFailuresPerUserAndClient], [`user:${username}`, options.maxFailuresPerUser], [`client:${client}`, options.maxFailuresPerClient]] as const) {
-      const rows = failureCount(key, since);
+      const rows = failures(key, since);
       if (rows.length >= max) throw new AuthError('rate_limited', 'Too many failed log-in attempts. Try again later.', Math.max(1, rows[rows.length - max].at + options.failureWindowSeconds - t));
     }
   }
@@ -98,7 +120,11 @@ export function createAccountService(db: DatabaseSync, verification: Verificatio
       recordFailure(username, input.client);
       throw new AuthError('invalid_credentials', 'Wrong username or password.');
     }
-    if (!row.verifiedAt) throw new AuthError('not_verified', 'Confirm your ETH email first. Check your inbox for the code, or request a new one.');
+    const status = statusFor(row);
+    if (status === 'disabled') throw new AuthError('account_disabled', 'This account has been disabled. Contact the administrators.');
+    if (status !== 'verified') throw new AuthError('not_verified', status === 'expired'
+      ? 'Please confirm your ETH student email again to continue.'
+      : 'Confirm your ETH email first. Check your inbox for the code, or request a new one.');
     db.prepare('DELETE FROM auth_failures WHERE key=?').run(`pair:${username}|${input.client}`);
     return { account: toAccount(row), ...startSession(row.playerId) };
   }
@@ -110,12 +136,12 @@ export function createAccountService(db: DatabaseSync, verification: Verificatio
   }
   const resendConfirmation = (identifier: unknown) => {
     const { username } = parseEthIdentifier(identifier);
-    const row = byUsername(username);
-    return row && !row.verifiedAt ? quietly(() => verification.requestCode(username)) : Promise.resolve();
+    return needsConfirmation(byUsername(username)) ? quietly(() => verification.requestCode(username)) : Promise.resolve();
   };
   const forgotPassword = (identifier: unknown) => {
     const { username } = parseEthIdentifier(identifier);
-    return byUsername(username)?.verifiedAt ? quietly(() => verification.requestCode(username)) : Promise.resolve();
+    const row = byUsername(username);
+    return row?.verifiedAt && row.disabledAt === null ? quietly(() => verification.requestCode(username)) : Promise.resolve();
   };
 
   /** Proves mailbox control with a fresh code, sets a new password and signs out every device. */
@@ -123,15 +149,62 @@ export function createAccountService(db: DatabaseSync, verification: Verificatio
     const { username } = parseEthIdentifier(input.identifier);
     validatePassword(input.password, username);
     const row = byUsername(username);
-    if (!row?.verifiedAt) throw new AuthError('invalid_or_expired', 'That code is wrong or has expired. Request a new one.');
+    if (!row?.verifiedAt || row.disabledAt !== null) throw badCode();
     verification.verifyCode(username, input.code);
-    db.prepare('UPDATE accounts SET passwordHash=? WHERE username=?').run(await hashPassword(input.password), username);
-    db.prepare('DELETE FROM auth_sessions WHERE playerId=?').run(row.playerId);
+    // Controlling the mailbox is exactly what re-verification checks, so a reset also renews it.
+    db.prepare('UPDATE accounts SET passwordHash=?, verifiedAt=? WHERE username=?').run(await hashPassword(input.password), seconds(), username);
     db.prepare('DELETE FROM auth_failures WHERE key=?').run(`user:${username}`);
+    endAllSessions(row.playerId);
     return toAccount(byUsername(username)!);
   }
 
+  const existing = (identifier: unknown) => {
+    const { username } = parseEthIdentifier(identifier);
+    const row = byUsername(username);
+    if (!row) throw new AuthError('invalid_identifier', `No account for ${username}.`);
+    return row;
+  };
+  /** Administrator action: blocks the account immediately and closes its sessions and live connections. */
+  function revoke(identifier: unknown): Account {
+    const row = existing(identifier);
+    db.prepare('UPDATE accounts SET disabledAt=? WHERE username=?').run(seconds(), row.username);
+    endAllSessions(row.playerId);
+    return toAccount(byUsername(row.username)!);
+  }
+  function restore(identifier: unknown): Account {
+    const row = existing(identifier);
+    db.prepare('UPDATE accounts SET disabledAt=NULL WHERE username=?').run(row.username);
+    return toAccount(byUsername(row.username)!);
+  }
+
+  /** Removes the account and everything we hold about the person's login. Gameplay data stays under an anonymous id. */
+  function remove(username: string, playerId: string) {
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      for (const [sql, value] of [
+        ['DELETE FROM accounts WHERE username=?', username], ['DELETE FROM verified_students WHERE username=?', username],
+        ['DELETE FROM email_challenges WHERE username=?', username], ['DELETE FROM auth_sessions WHERE playerId=?', playerId],
+      ] as const) db.prepare(sql).run(value);
+      db.prepare('DELETE FROM auth_failures WHERE key LIKE ?').run(`%${username}%`);
+      db.exec('COMMIT');
+    } catch (error) { db.exec('ROLLBACK'); throw error; }
+    options.onDeleted?.(playerId);
+    options.onRevoked?.(playerId);
+  }
+  /** Self-service: the account owner confirms with the password. */
+  async function deleteOwn(input: { playerId: string; password: unknown; client: string }) {
+    const row = byPlayer(input.playerId);
+    if (!row) throw new AuthError('invalid_credentials', 'There is no account to delete.');
+    assertNotBlocked(row.username, input.client);
+    const password = typeof input.password === 'string' && input.password.length <= PASSWORD_MAX ? input.password : '';
+    if (!(await verifyPassword(row.passwordHash, password))) { recordFailure(row.username, input.client); throw new AuthError('invalid_credentials', 'Wrong password.'); }
+    remove(row.username, row.playerId);
+  }
+  /** Administrator action, e.g. for an erasure request. */
+  const deleteByUsername = (identifier: unknown) => { const row = existing(identifier); remove(row.username, row.playerId); };
+
   const accountForPlayer = (playerId: string) => { const row = byPlayer(playerId); return row ? toAccount(row) : null; };
-  return { register, confirm, login, startSession, endSession, resendConfirmation, forgotPassword, resetPassword, accountForPlayer, options };
+  const list = () => (db.prepare('SELECT * FROM accounts ORDER BY createdAt DESC').all() as unknown as Row[]).map(toAccount);
+  return { register, confirm, login, startSession, endSession, resendConfirmation, forgotPassword, resetPassword, revoke, restore, deleteOwn, deleteByUsername, accountForPlayer, list, options };
 }
 export type AccountService = ReturnType<typeof createAccountService>;
