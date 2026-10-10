@@ -100,8 +100,8 @@ await check('Puzzle catalog and audience board', async () => {
   assert(puzzles.puzzles?.some(puzzle => puzzle.id === 'pipeline-reorder'), 'The audience pipeline puzzle is missing.');
   const board = await json('/api/puzzles/pipeline-reorder/leaderboard');
   assert(Array.isArray(board.entries), 'The leaderboard is unavailable.');
-  pass(`Audience: ${new URL('/?puzzle=pipeline-reorder', base)}`);
-  pass(`Projector: ${new URL('/?puzzle=pipeline-reorder&projector=1', base)}`);
+  pass(`Audience: ${new URL('/world?puzzle=pipeline-reorder', base)}`);
+  pass(`Projector: ${new URL('/world?puzzle=pipeline-reorder&projector=1', base)}`);
 });
 await check('Socket.IO presence with default transports', async () => {
   assert(cookies.size > 0, 'Study session cookie was not created.');

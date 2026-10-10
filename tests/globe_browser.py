@@ -67,7 +67,7 @@ with sync_playwright() as playwright:
     desktop.get_by_role('button', name='Skip intro', exact=True).click()
     expect(globe).to_have_attribute('data-view', 'zurich')
     desktop.get_by_role('link', name='Enter Arena', exact=True).click()
-    expect(desktop.get_by_role('heading', name='Set up a match', exact=True)).to_be_visible()
+    expect(desktop.get_by_role('heading', name='Versus', exact=False)).to_be_visible()
     expect(globe).to_have_count(0)
 
     mobile = browser.new_page(viewport={'width': 390, 'height': 844}, reduced_motion='reduce')
