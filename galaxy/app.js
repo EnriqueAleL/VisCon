@@ -287,6 +287,8 @@
   // scenery only: the selectable Versus ship and live match state stay separate.
   var ambience = new THREE.Group();
   sky.add(ambience);
+  var spaceTraffic=window.VisConDuel.createTraffic(THREE);sky.add(spaceTraffic);
+  canvas.dataset.fighters='20';
   var patrols = [0x8daaff, 0xe2b48d].map(function (color) {
     var ship = window.VisConDuel.createShip(THREE, color);
     ship.scale.setScalar(1.55);
@@ -1090,49 +1092,67 @@
     activeScene = sky;
     if (!shipCabin) {
       shipCabin = window.VisConDuel.createCabin(THREE,.45);
-      shipCabin.scale.setScalar(.18); shipCabin.position.set(0,.35,-1.05);duelShip.add(shipCabin);
+      shipCabin.scale.setScalar(.18); shipCabin.position.set(5.6,.15,-3.6);duelShip.add(shipCabin);
     }
     shipCabin.visible = true;shipLight.visible = false;
-    // Lift the canopy to expose the rear hatch. The same physical cabin and
-    // astronaut are visible before navigation; the camera never crosses the nose.
+    // The detailed pressure shell replaces the exterior pod during the trip.
+    // The rear hatch remains closed until the camera is aligned with its doorway.
     duelShip.userData.canopy.visible = false;
+    shipCabin.userData.setHatch(0);
     sky.updateMatrixWorld(true);
     var pose = window.VisConDuel.cabinPose(THREE, innerWidth);
     var eye = shipCabin.localToWorld(pose.eye.clone());
     var aim = shipCabin.localToWorld(pose.aim.clone());
-    var rear = shipCabin.localToWorld(new THREE.Vector3(pose.eye.x,pose.eye.y,95));
+    var rear = shipCabin.localToWorld(new THREE.Vector3(1.1,2.95,19));
+    var threshold = shipCabin.localToWorld(new THREE.Vector3(1.1,2.95,13));
+    var door = shipCabin.localToWorld(new THREE.Vector3(1.1,2.65,8.4));
+    var staging = shipCabin.localToWorld(new THREE.Vector3(7,4.5,30));
     var up = new THREE.Vector3(0,1,0).applyQuaternion(duelShip.quaternion);
-    var rearQ = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(rear,aim,up));
-    boardingFlight={at:performance.now(),from:camera.position.clone(),rotation:camera.quaternion.clone(),rear:rear,eye:eye,aim:aim,up:up,rearQ:rearQ,fov:pose.fov};
+    var rearQ = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(rear,door,up));
+    var seatedQ = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(eye,aim,up));
+    var approach = new THREE.CatmullRomCurve3([camera.position.clone(),staging,rear],false,'centripetal');
+    var entrance = new THREE.CatmullRomCurve3([threshold,shipCabin.localToWorld(new THREE.Vector3(1.1,2.95,8.4)),eye],false,'centripetal');
+    boardingFlight={at:performance.now(),rotation:camera.quaternion.clone(),rear:rear,threshold:threshold,eye:eye,up:up,rearQ:rearQ,seatedQ:seatedQ,approach:approach,entrance:entrance,fov:pose.fov,initialFov:camera.fov};
     camera.near=.02;camera.updateProjectionMatrix();
     // Warm the next document while the current scene carries the entire move.
     var preload=document.createElement('link');preload.rel='prefetch';preload.href='/arena';document.head.append(preload);
   }
   function stepBoarding(now) {
     if (!boardingFlight) return;
-    var flight=boardingFlight, t=REDUCED?1:Math.min(1,(now-flight.at)/3600);
-    if(t<.5){
-      var align=easeInOut(t*2);
-      camera.position.lerpVectors(flight.from,flight.rear,align);
+    var flight=boardingFlight, elapsed=REDUCED?5100:now-flight.at;
+    function smooth(value){var t=Math.max(0,Math.min(1,value));return t*t*t*(t*(t*6-15)+10);}
+    var hatch=smooth((elapsed-1500)/1000);
+    shipCabin.userData.setHatch(hatch);
+    canvas.dataset.hatch=hatch>=.999?'open':hatch>0?'opening':'closed';
+    if(elapsed<1500){
+      var align=smooth(elapsed/1500);
+      flight.approach.getPoint(align,camera.position);
       camera.quaternion.slerpQuaternions(flight.rotation,flight.rearQ,align);
+      camera.fov=flight.initialFov+(52-flight.initialFov)*align;
       canvas.dataset.boardingPhase='align-rear';
+    } else if(elapsed<2500){
+      var close=smooth((elapsed-1500)/1000);
+      camera.position.lerpVectors(flight.rear,flight.threshold,close);
+      camera.quaternion.copy(flight.rearQ);
+      camera.fov=52;
+      canvas.dataset.boardingPhase='open-hatch';
     } else {
-      var enter=easeInOut((t-.5)*2);
-      camera.position.lerpVectors(flight.rear,flight.eye,enter);
-      camera.up.copy(flight.up);camera.lookAt(flight.aim);
-      camera.fov=52+(flight.fov-52)*enter;camera.updateProjectionMatrix();
-      canvas.dataset.boardingPhase=enter>.96?'seated':'enter-rear';
-      // DOM chrome clears before the camera reaches the seated pilot.
-      boardingStatus.style.opacity=String(1-Math.min(1,enter*1.8));
+      var enter=smooth((elapsed-2500)/2300);
+      flight.entrance.getPoint(enter,camera.position);
+      camera.quaternion.slerpQuaternions(flight.rearQ,flight.seatedQ,enter);
+      camera.fov=52+(flight.fov-52)*enter;
+      canvas.dataset.boardingPhase=enter>.985?'seated':'enter-rear';
+      boardingStatus.style.opacity=String(1-smooth(enter/.55));
     }
-    if(t===1 && (REDUCED || now-flight.at>4050))boardingArrived=true;
+    camera.up.copy(flight.up);camera.updateProjectionMatrix();
+    if(elapsed>=5050)boardingArrived=true;
   }
   function finishBoarding() {
     boardingArrived=false;boardingFlight=null;
     sky.updateMatrixWorld(true);
     try {
       sessionStorage.setItem('viscon-cabin-universe', JSON.stringify({
-        origin:duelShip.position.toArray(),rotation:duelShip.quaternion.toArray(),
+        origin:duelShip.position.toArray(),rotation:duelShip.quaternion.toArray(),cabinOffset:shipCabin.position.toArray(),trafficTime:clock.elapsedTime,
         courses:planets.map(function(p){return {id:p.course.id,name:p.course.short,color:p.course.color,position:p.body.getWorldPosition(new THREE.Vector3()).toArray(),spin:p.globe.rotation.y,time:p.mat.uniforms.uTime.value};}),
         nearRotation:starNear.rotation.toArray().slice(0,3),farRotation:starFar.rotation.toArray().slice(0,3)
       }));
@@ -1147,8 +1167,8 @@
     if (!boarding) return;
     boarding = false; locked = false; tween = null; boardingFlight=null;boardingArrived=false;
     camera.up.set(0,1,0);camera.near=.1;camera.fov=52;camera.updateProjectionMatrix();
-    if(shipCabin)shipCabin.visible=false;shipLight.visible=true;duelShip.userData.canopy.visible=true;
-    boardingStatus.style.opacity='';delete canvas.dataset.boardingPhase;
+    if(shipCabin){shipCabin.userData.setHatch(0);shipCabin.visible=false;}shipLight.visible=true;duelShip.userData.canopy.visible=true;
+    boardingStatus.style.opacity='';delete canvas.dataset.boardingPhase;delete canvas.dataset.hatch;
     document.body.classList.remove("boarding"); boardingStatus.hidden = true;
     activeScene = state.level === "city" ? ground : sky;
     if (beforeBoarding) flyTo(beforeBoarding.anchor, beforeBoarding.distance, beforeBoarding.yaw, beforeBoarding.pitch, 700);
@@ -2198,6 +2218,8 @@
     }
     ambience.visible = !REDUCED && !boarding && state.level === "galaxy" && activeScene === sky;
     if (ambience.visible) moveAmbience(t);
+    spaceTraffic.visible=state.level==='galaxy' || boarding;
+    if(spaceTraffic.visible&&!REDUCED)spaceTraffic.userData.update(t,!boarding);
     if(boarding)stepBoarding(performance.now());else applyCamera();
     var shipPoint = duelShip.position.clone(); shipPoint.y += 13; shipPoint.project(camera);
     var showShip = !boarding && state.level === "galaxy" && shipPoint.z < 1 && Math.abs(shipPoint.x) < .9 && Math.abs(shipPoint.y) < .85;

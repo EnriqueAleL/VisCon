@@ -139,10 +139,18 @@
     }
   }
 
+  function playSpaceEvent() {
+    if(!effects||document.hidden||!context||context.state!=="running")return;
+    var at=context.currentTime+.015;
+    tone(context,at,"sawtooth",760,130,.18,.009);
+    tone(context,at+.22,"sawtooth",640,110,.16,.007);
+    noise(context,at+.4,.48,.009,600);
+  }
+
   document.addEventListener("pointerdown", function () { arm(); if (wanted && music.paused) startMusic(); }, { capture: true });
   document.addEventListener("keydown", function () { arm(); if (wanted && music.paused) startMusic(); }, { capture: true });
   document.addEventListener("visibilitychange", function () { if (document.hidden) music.pause(); else startMusic(); });
-  window.VisConAudio = { playCombat: playCombat, music: music, effectsEnabled: function () { return effects; } };
+  window.VisConAudio = { playCombat: playCombat, playSpaceEvent: playSpaceEvent, music: music, effectsEnabled: function () { return effects; } };
   render();
   if (wanted) startMusic();
 })();

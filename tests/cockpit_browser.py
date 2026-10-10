@@ -50,11 +50,20 @@ with sync_playwright() as pw:
     # Keyboard boarding supports cancellation without changing the route.
     a.locator('#board-versus').focus(); a.keyboard.press('Enter')
     expect(a.locator('#boarding-status')).to_be_visible()
-    a.wait_for_timeout(850);capture(a,'boarding',False)
+    a.wait_for_function("document.querySelector('#scene').dataset.boardingPhase==='open-hatch'")
+    expect(a.locator('#scene')).to_have_attribute('data-hatch','opening')
+    a.wait_for_timeout(300)
+    capture(a,'boarding',False)
     a.keyboard.press('Escape'); expect(a.locator('#boarding-status')).not_to_be_visible()
+    assert a.locator('#scene').get_attribute('data-hatch') is None
     assert '/arena' not in a.url
-    a.locator('#board-versus').click()
+    a.wait_for_timeout(750)  # Finish the return flight before boarding again.
+    a.locator('#board-versus').focus(); a.keyboard.press('Enter')
+    a.wait_for_function("document.querySelector('#scene').dataset.boardingPhase==='open-hatch'")
+    a.wait_for_timeout(450)
+    capture(a,'boarding-hatch',False)
     a.wait_for_function("document.querySelector('#scene').dataset.boardingPhase==='enter-rear'")
+    expect(a.locator('#scene')).to_have_attribute('data-hatch','open')
     capture(a,'boarding-rear',False)
     a.wait_for_function("document.querySelector('#scene').dataset.boardingPhase==='seated'")
     a.wait_for_timeout(260)
@@ -67,8 +76,11 @@ with sync_playwright() as pw:
     expect(a.locator('.cockpit-scene')).to_have_attribute('data-enemy','absent')
     a.get_by_role('button',name='Pause cockpit effects',exact=True).click()
     expect(a.locator('.cockpit-scene')).to_have_attribute('data-perspective','behind-pilot')
+    expect(a.locator('.cockpit-scene')).to_have_attribute('data-pilot-character','darth-vader')
+    expect(a.locator('.cockpit-scene')).to_have_attribute('data-cabin-style','falcon-freighter')
     expect(a.locator('.cockpit-scene')).to_have_attribute('data-universe','course-galaxy')
     snapshot=a.evaluate("JSON.parse(sessionStorage.getItem('viscon-cabin-universe'))")
+    assert snapshot['cabinOffset'] == [5.6, .15, -3.6]
     assert a.locator('.cockpit-scene').get_attribute('data-origin') == ','.join(str(n) for n in snapshot['origin'])
     capture(a,'home-desktop')
     a.get_by_role('button',name='Explore cockpit',exact=True).click()
@@ -108,7 +120,7 @@ with sync_playwright() as pw:
             assert ask['height']<160 and ask['y']>600,ask
         m.locator('#board-versus').focus()
         capture(m,f'galaxy-{width}',False)
-    m.locator('#board-versus').click();m.wait_for_url('**/arena?**');settle(m)
+    m.locator('#board-versus').focus();m.keyboard.press('Enter');m.wait_for_url('**/arena?**');settle(m)
     expect(m.locator('.flight-deck')).to_have_attribute('data-renderer','webgl')
     mobile.close()
     host.request.post(BASE+'/api/profile',data={'name':'Mira'})
@@ -176,7 +188,11 @@ with sync_playwright() as pw:
     # Live reduced-motion preference disables visual bursts; scores/labels remain.
     a.emulate_media(reduced_motion='reduce')
     expect(a.get_by_role('button',name='Pause cockpit effects')).to_be_disabled()
-    a.goto(BASE+'/arena');settle(a)
+    a.goto(BASE+'/');settle(a)
+    a.locator('#loading.gone').wait_for()
+    expect(a.locator('#board-versus')).to_be_visible()
+    a.locator('#board-versus').focus();a.keyboard.press('Enter')
+    a.wait_for_url('**/arena?**');settle(a)
     expect(a.locator('.flight-deck')).to_have_attribute('data-renderer','webgl')
     expect(a.get_by_role('button',name='Pause cockpit effects')).to_be_disabled()
     # WebGL unavailable and context loss both leave all actual quiz controls available.
@@ -191,6 +207,6 @@ with sync_playwright() as pw:
     expect(a.locator('.flight-deck')).to_have_attribute('data-renderer','fallback')
     expect(a.get_by_role('button',name='Create a room',exact=True)).to_be_enabled()
     assert not errors, errors
-    report={'passed':True,'checks':['3D rear boarding into shared physical cabin', 'matching camera and rendered frame across navigation', 'opponent only during active duel','keyboard boarding and cancel','behind-pilot cabin and look/reset', 'console disclosure', 'actual galaxy position handoff','390/320 responsive','two actual players','answer privacy','correct/wrong mirrored fire','incoming hit turns pilot and ignites cabin','licensed music asset and control','tie exchanges','reconnect without replay','next-round pulse reset','score unchanged','reduced motion','WebGL failure and context loss fallback','mobile sticky timer'], 'consoleErrors':errors}
+    report={'passed':True,'checks':['3D rear boarding into shared physical cabin', 'matching camera and rendered frame across navigation', 'opponent only during active duel','sliding pressure hatch, cancellation and reboarding','behind-pilot cabin and look/reset', 'console disclosure', 'actual galaxy position handoff','390/320 responsive','two actual players','answer privacy','correct/wrong mirrored fire','incoming hit turns pilot and ignites cabin','licensed music asset and control','tie exchanges','reconnect without replay','next-round pulse reset','score unchanged','reduced-motion boarding and combat','WebGL failure and context loss fallback','mobile sticky timer'], 'consoleErrors':errors}
     (OUT/'report.json').write_text(json.dumps(report,indent=2));print(json.dumps(report))
     browser.close()

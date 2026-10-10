@@ -39,3 +39,5 @@ body:has(dialog[open]) .viscon-audio-dock { opacity: 0; pointer-events: none; }
   body:has(.immersive-cabin) .viscon-audio-dock { left: 12px; top: 113px; bottom: auto; }
   body:has(.immersive-cabin) .viscon-audio-dock .music-credit p { top: 33px; bottom: auto; }
 }
+
+body.boarding .viscon-audio-dock { visibility: hidden; }
