@@ -8,6 +8,7 @@ import { db,profile,session,createPlayer,rename,history,leaderboard,saveMatch,ad
 import { mountAuth } from '../auth/routes';
 import { mountAdmin, rootAdminsFromEnv } from '../admin/routes';
 import type { AdminService } from '../admin/service';
+import { mountSubmissions } from '../submissions/routes';
 import { createVerifiedGuard } from '../auth/guard';
 import { mountStatic } from './static';
 import { eloDelta } from './rating';
@@ -18,6 +19,8 @@ import { mountSocial } from './social';
 import { mountManiaAnswers } from './mania-answers';
 
 const app=express(),http=createServer(app),port=Number(process.env.PORT||3001);
+// Node cuts any request after 5 minutes by default; a large video upload on a slow connection needs longer.
+http.requestTimeout=30*60_000;
 const allowed=new Set((process.env.ALLOWED_ORIGINS||'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3001,http://127.0.0.1:3001').split(','));
 if (process.env.APP_PUBLIC_URL) allowed.add(new URL(process.env.APP_PUBLIC_URL).origin);
 function allowedOrigin(origin:string|undefined){return !origin||allowed.has(origin);}
@@ -109,6 +112,9 @@ io.of('/study').use(guard.socket);
 const rootAdmins=rootAdminsFromEnv();
 if(!rootAdmins.size)console.warn('AUTH_ADMINS is empty: nobody can administer courses or other admins. Set AUTH_ADMINS=<eth username>.');
 admin=mountAdmin(app,{db,playerFromCookie:session,accounts:accountsService,rootAdmins});
+const submissions=mountSubmissions(app,{db,playerFromCookie:session,admin,uploadsDir:process.env.UPLOADS_DIR||'.data/uploads'});
+submissions.purgeStaleDrafts();
+setInterval(()=>submissions.purgeStaleDrafts(),3_600_000).unref();
 // A revoke done from the command line (another process), an expired session or an expired verification must also end
 // connections that are already open, so every open socket is re-checked against the guard on a timer.
 const recheckSeconds=Number(process.env.AUTH_SOCKET_RECHECK_SECONDS||30);

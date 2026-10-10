@@ -44,6 +44,14 @@ services:
       AUTH_REVERIFY_DAYS: ${AUTH_REVERIFY_DAYS:-180}
       # Bootstrap administrators (ETH usernames, comma separated). Everyone else is promoted from inside the app.
       AUTH_ADMINS: ${AUTH_ADMINS:-riordache}
+      # Student-submitted material: stored on the persistent volume, outside anything served to browsers.
+      UPLOADS_DIR: /app/.data/uploads
+      UPLOAD_MAX_VIDEO_MB: ${UPLOAD_MAX_VIDEO_MB:-2000}
+      UPLOAD_MAX_PDF_MB: ${UPLOAD_MAX_PDF_MB:-100}
+      UPLOAD_MAX_TRANSCRIPT_MB: ${UPLOAD_MAX_TRANSCRIPT_MB:-5}
+      UPLOAD_MAX_USER_DAY_MB: ${UPLOAD_MAX_USER_DAY_MB:-4000}
+      UPLOAD_MAX_TOTAL_MB: ${UPLOAD_MAX_TOTAL_MB:-30000}
+      UPLOAD_MAX_PENDING_PER_USER: ${UPLOAD_MAX_PENDING_PER_USER:-5}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

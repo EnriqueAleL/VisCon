@@ -3,12 +3,12 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { randomBytes,randomUUID,createHash } from 'node:crypto';
 import type { Profile,HistoryEntry } from '../shared/types';
-import { initAdminSchema } from '../admin/schema';
+import { initSubmissionSchema } from '../submissions/schema';
 const file=process.env.DATABASE_PATH||'.data/arena.sqlite';
 if(file!==':memory:') mkdirSync(dirname(file),{recursive:true});
 export const db=new DatabaseSync(file);
 db.exec('PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS players (id TEXT PRIMARY KEY, token TEXT UNIQUE NOT NULL, name TEXT NOT NULL, rating INTEGER NOT NULL DEFAULT 1200, createdAt TEXT NOT NULL); CREATE TABLE IF NOT EXISTS matches (id TEXT PRIMARY KEY, data TEXT NOT NULL); CREATE TABLE IF NOT EXISTS history (playerId TEXT NOT NULL, matchId TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY(playerId,matchId));');
-initAdminSchema(db);
+initSubmissionSchema(db);
 const hash=(t:string)=>createHash('sha256').update(t).digest('hex');
 export function profile(id:string){return db.prepare('SELECT id,name,rating,createdAt FROM players WHERE id=?').get(id) as unknown as Profile;}
 export function session(cookie=''){const token=cookie.match(/(?:^|;\s*)ba_session=([a-f0-9]{64})(?:;|$)/)?.[1]; if(!token)return null; const row=db.prepare('SELECT id,name,rating,createdAt FROM players WHERE token=?').get(hash(token))??db.prepare('SELECT p.id,p.name,p.rating,p.createdAt FROM auth_sessions s JOIN players p ON p.id=s.playerId WHERE s.tokenHash=? AND s.expiresAt>?').get(hash(token),Date.now()); return row as unknown as Profile|null;}

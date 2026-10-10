@@ -1,6 +1,6 @@
 # Course contributions: decisions so far
 
-Roles, courses and course admins are built (see `admin/README.md`). Material submission, review and indexing are not built yet. This records what the team decided.
+Roles, courses and course admins are built (`admin/README.md`), and so are material submission and review (`submissions/README.md`). Indexing is not built yet. This records what the team decided.
 
 ## Roles
 - **Admin**: creates courses, other admins and course admins, and can review anything. The first admin is `riordache`
@@ -19,8 +19,8 @@ Roles, courses and course admins are built (see `admin/README.md`). Material sub
 
 ## Open points for later
 - Done: a proposed course is hidden until an admin approves it, although its proposer is its course admin straight away.
-- A submitter should not approve their own submission; if a course has one course admin, an admin reviews theirs.
-- Uploads need size and type limits, per-user quotas, storage outside the web folder and outside git, and an admin action
-  to unpublish or delete.
+- Done: a course admin cannot approve their own submission; an administrator reviews it (administrators can approve their own).
+- Done: size and type limits, per-user quotas, storage outside the web folder, an admin action to remove approved material.
+  Still to decide: keep uploaded files out of git for good (the repo already tracks the DDCA lectures).
 - `qa/` is single-course today (flat `lectures/lecN.*`, one `index.json`); it needs per-course folders and indexes, a background
   indexing job, and the Python image variant on the VM. Slides and scripts need a new text-extraction step.

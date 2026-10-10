@@ -1,6 +1,6 @@
 # Admins, course admins and courses
 
-Backend only. Material submission, review and indexing come later (see `docs/course-contributions.md`).
+Backend only. Material submission and review are in [`../submissions/README.md`](../submissions/README.md); indexing comes later (see `docs/course-contributions.md`).
 
 ## Roles
 

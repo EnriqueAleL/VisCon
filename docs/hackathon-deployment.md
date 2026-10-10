@@ -106,6 +106,12 @@ docker compose exec app npm run auth -- smtp-check someone@student.ethz.ch   # a
 Look in the recipient's spam folder as well: ETH filters unknown senders. `AUTH_MAIL_TRANSPORT=console` is refused in
 production on purpose, because it would print every code into the logs.
 
+## Student uploads
+
+Submitted material is stored under `UPLOADS_DIR` (`/app/.data/uploads`, on the persistent volume, so it survives restarts and counts against
+the disk). The limits are in `.env.example`; a lecture video may be up to 2 GB by default. Before relying on it, upload a large file through the
+managed URL: the proxy in front of the VM may cap request size or duration, and the app cannot raise that. Back up `.data` if the material matters.
+
 ## Trust the managed identity explicitly
 
 `X-User-Id` and `X-User-Name` are honored only when `MANIA_TRUST_PROXY=true`.

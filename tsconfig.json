@@ -25,6 +25,7 @@
     "shared",
     "auth",
     "admin",
+    "submissions",
     "tests",
     "vite.config.ts",
     "web-interface/src"
