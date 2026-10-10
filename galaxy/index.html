@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Lernraum Galaxie · VisCon</title>
+  <meta name="description" content="Die VisCon Lernlandschaft als Galaxie: Kurse sind Planeten, Vorlesungen sind Städte, Kapitel sind Häuser.">
+  <meta name="theme-color" content="#070a12">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="/galaxy/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/galaxy/vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="/galaxy/styles.css">
+</head>
+<body>
+  <div id="stage"><canvas id="scene"></canvas></div>
+  <div class="grade" aria-hidden="true"></div>
+  <div class="warp" id="warp" aria-hidden="true"></div>
+  <div class="tags" id="tags" aria-hidden="true"></div>
+
+  <div class="hud">
+    <nav class="trail" id="trail" aria-label="Navigation"></nav>
+
+    <nav class="elsewhere" aria-label="Weitere Bereiche">
+      <a href="/learn">VisCon</a>
+      <a href="/arena">Arena</a>
+      <a href="/world">Study World</a>
+    </nav>
+
+    <section class="panel" id="panel" aria-live="polite">
+      <p class="eyebrow" id="eyebrow">Herbstsemester 2026</p>
+      <h1 id="title">Lernraum</h1>
+      <p class="sub" id="sub"></p>
+      <div class="list" id="list"></div>
+      <div class="meta" id="meta"></div>
+    </section>
+
+    <form class="ask" id="ask-form">
+      <label class="ask-label" for="ask-input">Frag den Lernraum</label>
+      <div class="ask-row">
+        <input id="ask-input" type="text" autocomplete="off" maxlength="300"
+               placeholder="Wo wird Pipelining erklärt?">
+        <button type="submit" id="ask-send" aria-label="Frage stellen">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6"/>
+          </svg>
+        </button>
+      </div>
+      <p class="ask-status" id="ask-status" role="status"></p>
+    </form>
+
+    <div class="hint">
+      <div>Ziehen zum Umsehen · Scrollen zum Zoomen</div>
+      <div><kbd>Esc</kbd> eine Ebene zurück</div>
+    </div>
+  </div>
+
+  <div class="player" id="player" hidden>
+    <div class="player-box" role="dialog" aria-modal="true" aria-labelledby="player-title">
+      <div class="player-head">
+        <div>
+          <p class="player-eyebrow" id="player-eyebrow"></p>
+          <h2 id="player-title"></h2>
+        </div>
+        <button id="player-close" aria-label="Schliessen">×</button>
+      </div>
+      <video id="player-video" controls playsinline preload="metadata"></video>
+      <p class="player-note" id="player-note"></p>
+    </div>
+  </div>
+
+  <div class="loading" id="loading">
+    <div class="loading-inner">
+      <span class="loading-mark" aria-hidden="true"></span>
+      <p id="loading-text">Galaxie wird aufgebaut</p>
+    </div>
+  </div>
+
+  <noscript>
+    <div class="fallback">
+      <h1>Lernraum Galaxie</h1>
+      <p>Diese Ansicht braucht JavaScript. Die Vorlesungen sind auch im normalen Lernraum erreichbar.</p>
+    </div>
+  </noscript>
+
+  <script src="/galaxy/vendor/three/three.min.js"></script>
+  <script src="/galaxy/api.js"></script>
+  <script src="/galaxy/app.js"></script>
+</body>
+</html>

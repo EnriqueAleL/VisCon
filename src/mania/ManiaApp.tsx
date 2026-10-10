@@ -101,7 +101,7 @@ export default function ManiaApp() {
 
   return <div className="mania">
     <ProductHeader module="World" actions={<div className="header-actions"><span className={`connection-label ${connected ? 'online' : ''}`}><i />{connected ? 'Together, live' : demo ? 'Demo world' : 'Connecting'}</span><button className={`demo-toggle ${demo ? 'on' : ''}`} onClick={() => { setDemo(d => !d); setCityId(null); setWorkspaceOpen(false); }}>{demo ? 'Demo history on' : 'Try demo history'}</button><div className="profile-badge"><span className="profile-avatar">{snapshot?.profile.name.slice(0, 2).toUpperCase() ?? 'ST'}</span><span>{snapshot?.profile.name ?? 'Your world'}</span></div></div>}>
-      <a href="/" className="active">Study world</a><a href="/arena">Play</a><a href="/history">Match history</a><a href="/leaderboard">Leaderboard</a><a href="/learn">Lectures</a><a href="/campus">Campus</a>
+      <a href="/world" className="active">Study world</a><a href="/arena">Play</a><a href="/history">Match history</a><a href="/leaderboard">Leaderboard</a><a href="/learn">Lectures</a><a href="/campus">Campus</a>
     </ProductHeader>
     <nav className="mania-rail" aria-label="Main navigation">
       <div className="mania-brand" aria-label="The Mania"><svg viewBox="0 0 40 40" fill="none"><path d="M6 29L14 10L20 23L26 10L34 29" stroke="currentColor" strokeWidth="2.3" strokeLinejoin="round" /><circle cx="20" cy="33" r="2" fill="currentColor" /></svg></div>

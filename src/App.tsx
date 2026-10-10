@@ -371,7 +371,7 @@ export default function App() {
         location.assign("/learn");
         return;
       }
-      navigate("/");
+      navigate("/arena");
       await refresh();
     } catch (e) {
       setError((e as Error).message);
@@ -494,7 +494,7 @@ export default function App() {
               <Link size={34} />
               <h1>That room is unavailable.</h1>
               <p>{roomError}</p>
-              <Button onClick={() => navigate("/")}>Back to Play</Button>
+              <Button onClick={() => navigate("/arena")}>Back to Play</Button>
             </div>
           ) : !room ? (
             <div className="loading">
@@ -546,7 +546,7 @@ export default function App() {
                   me={data.profile}
                   busy={busy}
                   onRematch={rematch}
-                  onHome={() => navigate("/")}
+                  onHome={() => navigate("/arena")}
                 />
               )}
               {room.state === "cancelled" && (
@@ -563,9 +563,9 @@ export default function App() {
         ) : path === "/campus" ? (
           <GlobeArrival />
         ) : path === "/history" ? (
-          <History data={data} onPlay={() => navigate("/")} />
+          <History data={data} onPlay={() => navigate("/arena")} />
         ) : path === "/leaderboard" ? (
-          <Leaderboard data={data} onPlay={() => navigate("/")} />
+          <Leaderboard data={data} onPlay={() => navigate("/arena")} />
         ) : path === "/profile" ? (
           <ProfilePage data={data} refresh={refresh} notify={setToast} />
         ) : path === "/java" ? (
