@@ -107,7 +107,7 @@ export function createPythonRunner(config: PythonRunnerConfig): IndexRunner {
       if (result.code !== 0) throw failure(result, true);
     },
     async extractDocument(job) {
-      const result = await run(['extract', job.pdfPath, job.outPath], { QA_INDEX_PATH: join(job.outPath, '..', 'index.json') }, timeouts.document);
+      const result = await run(['extract', job.pdfPath, job.outPath], { QA_INDEX_PATH: join(job.outPath, '..', '..', 'index.json') }, timeouts.document);
       if (result.code !== 0) throw failure(result, /Traceback/.test(result.stderr)); // a clean "Error:" means this PDF will never work
       let pages = 0;
       try { pages = JSON.parse(readFileSync(job.outPath, 'utf8')).pages_with_text ?? 0; } catch { /* handled below */ }

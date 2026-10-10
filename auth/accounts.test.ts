@@ -74,6 +74,19 @@ test('a verified username cannot be taken over; an unverified registration can b
   await rejects(accounts.register({ identifier: 'riordache', password: PASSWORD, playerId: 'someone-else' }), 'account_exists');
 });
 
+test("a pending registration restarted by someone else cannot be confirmed from the owner's browser (takeover regression)", async () => {
+  const { accounts, code, advance } = setup();
+  await accounts.register({ identifier: 'riordache', password: PASSWORD, playerId: 'owner' });
+  advance(61);
+  await accounts.register({ identifier: 'riordache', password: 'attacker password', playerId: 'attacker' }); // new code goes to the owner's mailbox
+  await rejects(() => accounts.confirm('riordache', code(), 'owner'), 'invalid_or_expired');
+  await rejects(() => accounts.confirm('riordache', code(), null), 'invalid_or_expired');
+  advance(61);
+  await accounts.register({ identifier: 'riordache', password: PASSWORD, playerId: 'owner' }); // the owner registers again
+  assert.equal(accounts.confirm('riordache', code(), 'owner').playerId, 'owner');
+  await rejects(accounts.login({ identifier: 'riordache', password: 'attacker password', client: 'x' }), 'invalid_credentials');
+});
+
 test('a profile that already belongs to a verified account cannot register a second one', async () => {
   const { accounts, code, advance } = setup();
   await accounts.register({ identifier: 'riordache', password: PASSWORD, playerId: 'p1' });

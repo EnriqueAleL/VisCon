@@ -1,8 +1,11 @@
+import { randomBytes } from 'node:crypto';
 import { AuthError } from './errors';
 import { mailerFromEnv, verifySmtp } from './mailer';
 import { createAccountService, type Account } from './accounts';
 import { reverifyDaysFromEnv } from './guard';
 import { createVerificationService, openAuthDatabase } from './service';
+import { initAdminSchema } from '../admin/schema';
+import { createAdminService } from '../admin/service';
 
 const usage = `Usage:
   npm run auth -- request <username|email>     email a one-time code
@@ -30,7 +33,17 @@ async function main() {
   const service = createVerificationService(db, mailerNeeded ? mailerFromEnv() : { send: async () => { throw new Error('mail not configured'); } }, {
     ...(process.env.AUTH_MAIL_DOMAIN ? { mailDomain: process.env.AUTH_MAIL_DOMAIN } : {}),
   });
-  const accounts = createAccountService(db, service, { reverifyDays: reverifyDaysFromEnv() });
+  const accounts = createAccountService(db, service, {
+    reverifyDays: reverifyDaysFromEnv(),
+    // Same clean-up as the server (server/index.ts): the player becomes anonymous and the username keeps no course-admin seat.
+    // Open sockets of a revoked or deleted player are closed by the server's periodic re-check.
+    onDeleted: (playerId, username) => {
+      if (db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='players'").get())
+        db.prepare('UPDATE players SET name=?,token=? WHERE id=?').run(`Student ${playerId.slice(0, 4)}`, randomBytes(32).toString('hex'), playerId);
+      initAdminSchema(db);
+      createAdminService(db, { rootAdmins: new Set() }).forgetUser(username);
+    },
+  });
   switch (command) {
     case 'request': {
       const result = await service.requestCode(identifier);

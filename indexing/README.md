@@ -29,6 +29,9 @@ numbers (1-24) cannot be taken by a submission.
 - One job at a time, oldest approval first; a poll every `INDEXING_POLL_SECONDS` (5) plus an immediate nudge on approval.
 - A failure that may be transient (network, rate limit, model hiccup, timeout) is retried with growing delays (1, 2 min...) up to `INDEXING_MAX_ATTEMPTS`
   (3). A file that can never work (a password-protected or image-only PDF) fails at once with a clear reason.
+- **Shared budget:** all courses together get at most `INDEXING_MAX_PAID_RUNS` (50) paid lecture-indexing runs, counted in `indexing_runs`.
+  Every attempt counts, retries and re-indexes included, because each one is billed. When it is used up, lectures wait, `reindex` of a lecture
+  is refused, and `GET /api/courses/:id/index` says why; PDF extraction is free and goes on. Raise the setting and restart to continue.
 - If the API key, model or Python packages are missing, lectures simply **wait** (they do not burn attempts) and `GET /api/courses/:id/index`
   says why; documents need no key and still run.
 - After a crash or restart, items that were `indexing` are put back in the queue.
@@ -45,7 +48,7 @@ numbers (1-24) cannot be taken by a submission.
 ## Settings
 
 `OPENAI_API_KEY` and `QA_INDEX_MODEL` (lectures), `QA_PYTHON` (interpreter with `qa/requirements.txt`), `COURSES_DIR`, `INDEXING_ENABLED`,
-`INDEXING_MAX_ATTEMPTS`, `INDEXING_POLL_SECONDS`. **Docker:** the default image has no Python; build with `DOCKER_TARGET=qa-runtime`.
+`INDEXING_MAX_ATTEMPTS`, `INDEXING_MAX_PAID_RUNS`, `INDEXING_POLL_SECONDS`. **Docker:** the default image has no Python; build with `DOCKER_TARGET=qa-runtime`.
 
 ## Tests
 

@@ -72,7 +72,13 @@ export function mountAuth(app: Express, deps: MountAuthDeps) {
   // Register with an ETH username/email + password. Keeps the current guest profile (progress, Elo) for the account.
   app.post('/api/auth/register', handle({ sendsEmail: true }, async (req, res) => {
     const { identifier, password } = body(req);
-    const playerId = deps.playerFromCookie(req.headers.cookie)?.id ?? deps.createPlayer().profile.id;
+    let playerId = deps.playerFromCookie(req.headers.cookie)?.id;
+    if (!playerId) {
+      // This browser must hold the new profile: only the browser that registered can confirm the code.
+      const created = deps.createPlayer();
+      playerId = created.profile.id;
+      setCookie(res, created.token, new Date(Date.now() + 365 * 86_400_000));
+    }
     const sent = await accounts.register({ identifier, password, playerId });
     res.status(202).json({ status: 'verification_sent', username: sent.username, sentTo: sent.sentTo, expiresAt: sent.expiresAt });
   }));
@@ -80,7 +86,7 @@ export function mountAuth(app: Express, deps: MountAuthDeps) {
   // Enter the emailed code: the account becomes active and this browser is logged in.
   app.post('/api/auth/verify', handle({}, (req, res) => {
     const { identifier, code } = body(req);
-    const account = accounts.confirm(identifier, code);
+    const account = accounts.confirm(identifier, code, deps.playerFromCookie(req.headers.cookie)?.id ?? null);
     const session = accounts.startSession(account.playerId);
     setCookie(res, session.token, session.expiresAt);
     res.json({ account: publicAccount(account), profile: deps.playerFromCookie(`${COOKIE}=${session.token}`) });

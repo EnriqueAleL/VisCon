@@ -129,7 +129,8 @@ setInterval(()=>submissions.purgeStaleDrafts(),3_600_000).unref();
 // Approved material is indexed in the background, one item at a time, with the Python tool in qa/.
 indexing=mountIndexing(app,{db,playerFromCookie:session,admin,submissions,coursesDir:process.env.COURSES_DIR||'.data/courses',
   runner:createPythonRunner(pythonConfigFromEnv(fileURLToPath(new URL('../',import.meta.url)))),
-  enabled:process.env.INDEXING_ENABLED!=='false',maxAttempts:Number(process.env.INDEXING_MAX_ATTEMPTS)||3});
+  enabled:process.env.INDEXING_ENABLED!=='false',maxAttempts:Number(process.env.INDEXING_MAX_ATTEMPTS)||3,
+  maxPaidRuns:process.env.INDEXING_MAX_PAID_RUNS?Math.max(0,Number(process.env.INDEXING_MAX_PAID_RUNS)||0):50});
 indexing.start(Math.max(1,Number(process.env.INDEXING_POLL_SECONDS)||5)*1000);
 // A revoke done from the command line (another process), an expired session or an expired verification must also end
 // connections that are already open, so every open socket is re-checked against the guard on a timer.

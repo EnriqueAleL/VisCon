@@ -71,11 +71,18 @@ export function createAccountService(db: DatabaseSync, verification: Verificatio
     return sent;
   }
 
-  /** Checks the emailed code and (re)activates the account: first confirmation, or a renewal after it expired. */
-  function confirm(identifier: unknown, code: unknown): Account {
+  /**
+   * Checks the emailed code and (re)activates the account: first confirmation, or a renewal after it expired.
+   * `browserPlayerId` is the profile of the browser entering the code. A first confirmation must come from the browser that
+   * registered, otherwise someone could restart a stranger's pending registration with their own password and wait for the
+   * owner to enter the next code. Leave it undefined only for the administrator CLI.
+   */
+  function confirm(identifier: unknown, code: unknown, browserPlayerId?: string | null): Account {
     const { username } = parseEthIdentifier(identifier);
     const row = byUsername(username);
     if (!needsConfirmation(row)) throw badCode();
+    if (row.verifiedAt === null && browserPlayerId !== undefined && browserPlayerId !== row.playerId)
+      throw new AuthError('invalid_or_expired', 'This registration was restarted from another browser. Register again here to get a new code.');
     verification.verifyCode(username, code);
     const first = row.verifiedAt === null;
     db.prepare('UPDATE accounts SET verifiedAt=? WHERE username=?').run(seconds(), username);
@@ -185,7 +192,8 @@ export function createAccountService(db: DatabaseSync, verification: Verificatio
         ['DELETE FROM accounts WHERE username=?', username], ['DELETE FROM verified_students WHERE username=?', username],
         ['DELETE FROM email_challenges WHERE username=?', username], ['DELETE FROM auth_sessions WHERE playerId=?', playerId],
       ] as const) db.prepare(sql).run(value);
-      db.prepare('DELETE FROM auth_failures WHERE key LIKE ?').run(`%${username}%`);
+      // Exactly this user's keys: user:<name> and pair:<name>|<client>. Never other users' or clients' counters.
+      db.prepare('DELETE FROM auth_failures WHERE key=? OR substr(key,1,?)=?').run(`user:${username}`, `pair:${username}|`.length, `pair:${username}|`);
       db.exec('COMMIT');
     } catch (error) { db.exec('ROLLBACK'); throw error; }
     options.onDeleted?.(playerId, username);

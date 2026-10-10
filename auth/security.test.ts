@@ -115,6 +115,16 @@ test('self-service deletion needs the password, erases the login data and anonym
   await rejects(accounts.deleteOwn({ playerId: 'p1', password: PASSWORD, client: 'c' }), 'invalid_credentials');
 });
 
+test('deleting an account clears only its own failed-log-in counters (regression)', async () => {
+  const { accounts, db, signUp } = setup();
+  await signUp('ab', 'p1');
+  for (const who of ['ab', 'abc123', 'xabz']) await rejects(accounts.login({ identifier: who, password: 'wrong password!', client: 'fe80::ab' }), 'invalid_credentials');
+  accounts.deleteByUsername('ab');
+  const keys = (db.prepare('SELECT key FROM auth_failures ORDER BY key').all() as { key: string }[]).map(r => r.key);
+  assert.ok(!keys.some(k => k === 'user:ab' || k.startsWith('pair:ab|')), "the deleted user's counters are gone");
+  for (const kept of ['user:abc123', 'pair:abc123|fe80::ab', 'user:xabz', 'client:fe80::ab']) assert.ok(keys.includes(kept), kept);
+});
+
 test('an administrator can erase an account by username, and list shows every status', async () => {
   const { accounts, signUp } = setup();
   await signUp('riordache', 'p1');

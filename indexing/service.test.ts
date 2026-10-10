@@ -259,3 +259,23 @@ test('a disabled worker leaves everything queued', async () => {
   indexing.setEnabled(true);
   assert.equal(await indexing.tick(), true);
 });
+
+test('a shared budget caps paid lecture runs across courses; retries count, PDFs stay free', async () => {
+  indexing = createIndexingService(db, admin, { runner, submissions, coursesDir: courses, clock: () => time, maxAttempts: 3, retryBaseSeconds: 60, maxPaidRuns: 2 });
+  const chemistry = admin.createCourse('riordache', { name: 'Chemistry' }).id;
+  const first = await approved('lecture', { number: 1 });
+  await indexing.tick();
+  assert.equal(indexing.retry('riordache', first).indexState, 'queued', 're-indexing is allowed while budget is left');
+  await indexing.tick();
+  assert.deepEqual(indexing.budget(), { used: 2, limit: 2, remaining: 0 });
+  const other = await approved('lecture', { number: 2, course: chemistry });
+  const slides = await approved('slides');
+  while (await indexing.tick());
+  assert.equal(state(other).indexState, 'queued', 'a lecture in another course waits once the shared budget is used up');
+  assert.equal(state(slides).indexState, 'done', 'free PDF extraction goes on');
+  assert.deepEqual(runner.calls.filter(c => c.startsWith('index:')), ['index:1', 'index:1']);
+  assert.throws(() => indexing.retry('riordache', first), (e: AdminError) => e.code === 'conflict' && /budget/.test(e.message));
+  const status = await indexing.status('riordache', chemistry);
+  assert.equal(status.lectureIndexing.ok, false);
+  assert.equal(status.budget.remaining, 0);
+});

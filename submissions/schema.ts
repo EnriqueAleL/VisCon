@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS submission_files (
   originalName TEXT NOT NULL, mime TEXT NOT NULL, ext TEXT NOT NULL, createdAt INTEGER NOT NULL,
   PRIMARY KEY (submissionId, slot));
 CREATE INDEX IF NOT EXISTS submission_files_hash ON submission_files (sha256);
+-- One row per paid (LLM) indexing run, for the shared budget. Retries count too: every attempt is billed.
+CREATE TABLE IF NOT EXISTS indexing_runs (id INTEGER PRIMARY KEY, at INTEGER NOT NULL, submissionId TEXT NOT NULL, courseId TEXT NOT NULL);
 `;
 
 export function initSubmissionSchema(db: Parameters<typeof initAdminSchema>[0]) {

@@ -17,6 +17,11 @@ export interface IndexingOptions {
   retryBaseSeconds?: number;
   pollMs?: number;
   enabled?: boolean;
+  /**
+   * Shared budget across all courses: at most this many paid (LLM) indexing runs, ever. Every attempt counts, retries included.
+   * Undefined = no limit. When it is used up, lectures wait and only the free PDF extraction goes on.
+   */
+  maxPaidRuns?: number;
 }
 interface Job { id: string; courseId: string; type: 'lecture' | 'slides' | 'script'; number: number | null; indexAttempts: number }
 
@@ -24,6 +29,8 @@ const SLUG = /^[a-z0-9][a-z0-9-]{0,47}$/;
 const VIDEO_EXTS = ['mp4', 'mov', 'webm', 'mkv'];
 const TRANSCRIPT_EXTS = ['vtt', 'srt'];
 const kindOf = (type: Job['type']): JobKind => type === 'lecture' ? 'lecture' : 'document';
+/** Only lectures call the model; PDF extraction is local and free. */
+const isPaid = (type: Job['type']) => kindOf(type) === 'lecture';
 
 export function createIndexingService(db: DatabaseSync, admin: AdminService, options: IndexingOptions) {
   const clock = options.clock ?? Date.now;
@@ -92,11 +99,24 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
     else await serial(() => options.runner.extractDocument({ pdfPath: documentPdf(job.courseId, job.id), outPath: documentJson(job.courseId, job.id) }));
   }
 
+  // ---- budget
+  const paidRunsUsed = () => Number((db.prepare('SELECT COUNT(*) AS n FROM indexing_runs').get() as { n: number }).n);
+  function budget() {
+    const used = paidRunsUsed(), limit = options.maxPaidRuns ?? null;
+    return { used, limit, remaining: limit === null ? null : Math.max(0, limit - used) };
+  }
+  const budgetLeft = () => budget().remaining !== 0;
+  const budgetReason = () => `The shared indexing budget is used up (${options.maxPaidRuns} paid runs). An administrator can raise INDEXING_MAX_PAID_RUNS.`;
+
   // ---- queue
   const dueJobs = () => db.prepare(`SELECT id, courseId, type, number, indexAttempts FROM submissions
     WHERE status='approved' AND indexState='queued' AND (indexNextAt IS NULL OR indexNextAt<=?) ORDER BY reviewedAt, id LIMIT 25`).all(now()) as unknown as Job[];
   function claim(job: Job): boolean {
-    return Number(db.prepare("UPDATE submissions SET indexState='indexing', indexStartedAt=? WHERE id=? AND status='approved' AND indexState='queued'").run(now(), job.id).changes) === 1;
+    if (isPaid(job.type) && !budgetLeft()) return false;
+    const claimed = Number(db.prepare("UPDATE submissions SET indexState='indexing', indexStartedAt=? WHERE id=? AND status='approved' AND indexState='queued'").run(now(), job.id).changes) === 1;
+    // Counted before the run starts: a run that fails or is cut off may still have been billed.
+    if (claimed && isPaid(job.type)) db.prepare('INSERT INTO indexing_runs (at, submissionId, courseId) VALUES (?,?,?)').run(now(), job.id, job.courseId);
+    return claimed;
   }
 
   /** Runs at most one job. Resolves to whether it did something, so callers can keep draining the queue. */
@@ -105,7 +125,10 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
     busy = true;
     try {
       let chosen: Job | undefined;
-      for (const job of dueJobs()) if ((await options.runner.readiness(kindOf(job.type))).ok) { chosen = job; break; }
+      for (const job of dueJobs()) {
+        if (isPaid(job.type) && !budgetLeft()) continue; // waits, like a missing API key, until the budget is raised
+        if ((await options.runner.readiness(kindOf(job.type))).ok) { chosen = job; break; }
+      }
       if (!chosen || !claim(chosen)) return false;
       await finish(chosen);
       return true;
@@ -165,10 +188,11 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
 
   // ---- reading and retrying
   function retry(actor: string, id: unknown): Submission {
-    const row = typeof id === 'string' ? db.prepare('SELECT id, courseId, status, indexState FROM submissions WHERE id=?').get(id) as { id: string; courseId: string; status: string; indexState: string } | undefined : undefined;
+    const row = typeof id === 'string' ? db.prepare('SELECT id, courseId, type, status, indexState FROM submissions WHERE id=?').get(id) as { id: string; courseId: string; type: Job['type']; status: string; indexState: string } | undefined : undefined;
     if (!row || row.status === 'draft' || !admin.canManage(actor, row.courseId)) throw new AdminError('not_found', 'There is no such submission.');
     if (row.status !== 'approved') throw new AdminError('conflict', 'Only approved material is indexed.');
     if (!['failed', 'done'].includes(row.indexState)) throw new AdminError('conflict', `Indexing is ${row.indexState}; nothing to retry.`);
+    if (row.type === 'lecture' && !budgetLeft()) throw new AdminError('conflict', budgetReason());
     db.prepare("UPDATE submissions SET indexState='queued', indexAttempts=0, indexNextAt=NULL, indexError=NULL WHERE id=?").run(row.id);
     admin.audit(actor, 'index.retry', row.id, { course: row.courseId });
     kick();
@@ -177,13 +201,14 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
   async function status(actor: string, courseId: unknown) {
     const course = admin.getCourse(actor, courseId);
     if (!admin.canManage(actor, course.id)) throw new AdminError('forbidden', 'Only administrators and this course\'s admins can see indexing.');
-    const [lecture, document] = await Promise.all([options.runner.readiness('lecture'), options.runner.readiness('document')]);
+    const [ready, document] = await Promise.all([options.runner.readiness('lecture'), options.runner.readiness('document')]);
+    const lecture: typeof ready = ready.ok && !budgetLeft() ? { ok: false, reason: budgetReason() } : ready;
     const rows = db.prepare(`SELECT id, type, title, number, submitter, indexState, indexAttempts, indexError, indexedAt FROM submissions WHERE courseId=? AND status='approved' ORDER BY COALESCE(number, 9999), title`).all(course.id) as unknown as
       { id: string; type: string; title: string; number: number | null; submitter: string; indexState: string; indexAttempts: number; indexError: string | null; indexedAt: number | null }[];
     const counts: Record<string, number> = { queued: 0, indexing: 0, done: 0, failed: 0 };
     for (const r of rows) counts[r.indexState] = (counts[r.indexState] ?? 0) + 1;
     return {
-      workerEnabled: enabled, lectureIndexing: lecture, documentExtraction: document, counts,
+      workerEnabled: enabled, lectureIndexing: lecture, documentExtraction: document, budget: budget(), counts,
       items: rows.map(r => ({ ...r, indexedAt: r.indexedAt === null ? null : new Date(r.indexedAt * 1000).toISOString() })),
     };
   }
@@ -193,6 +218,6 @@ export function createIndexingService(db: DatabaseSync, admin: AdminService, opt
     return { indexPath: existsSync(indexPath(courseId)) ? indexPath(courseId) : null, lecturesDir: existsSync(dir) ? dir : null, lectures: existsSync(dir) ? (await readdir(dir)).sort() : [] };
   }
 
-  return { start, stop, kick, tick, recover, retry, status, unpublish, courseFiles, setEnabled, courseDir, indexPath, documentJson };
+  return { start, stop, kick, tick, recover, retry, status, budget, unpublish, courseFiles, setEnabled, courseDir, indexPath, documentJson };
 }
 export type IndexingService = ReturnType<typeof createIndexingService>;
