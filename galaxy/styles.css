@@ -431,3 +431,29 @@ canvas { display: block; width: 100%; height: 100%; }
 }
 .view-toggle a { padding: 5px 11px; border-radius: 0; }
 .view-toggle a.on { color: var(--starlight); background: rgba(255, 255, 255, .1); }
+
+/* Choose department and study year before the planets appear */
+.gate {
+  position: fixed; inset: 0; z-index: 8;
+  display: grid; place-items: center; padding: 18px;
+  background: var(--void);
+}
+.gate[hidden] { display: none; }
+.gate-box { width: min(460px, 100%); display: grid; gap: 12px; }
+.gate-box .eyebrow { margin: 0; }
+.gate-box h1 { margin: 0; font-family: var(--display); font-size: 22px; color: var(--starlight); }
+.gate-crumbs { min-height: 0; display: flex; gap: 6px; }
+.gate-crumbs:empty { display: none; }
+.gate-list { display: grid; gap: 6px; max-height: 60dvh; overflow-y: auto; }
+.gate-option {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
+  padding: 11px 14px; text-align: left; cursor: pointer;
+  font: inherit; font-size: 14px; color: var(--starlight);
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(255, 255, 255, .12); border-radius: 6px;
+  transition: background .2s, border-color .2s;
+}
+.gate-option:hover { background: rgba(255, 255, 255, .09); border-color: var(--accent); }
+.gate-option:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.gate-count { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
+.gate-note { margin: 4px 0 0; font-size: 12px; color: var(--faint); }

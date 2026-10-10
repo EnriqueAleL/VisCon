@@ -26,7 +26,7 @@ student. Names are 3-80 characters; the id is a slug of the name and never chang
 Everything for managing courses lives under `/api/platform/` so it never collides with `GET /api/courses`, which belongs to the lecture app
 (the course list the lecture library loads).
 
-Students: `GET /api/me/roles`, `GET /api/platform/courses`, `GET /api/platform/courses/:id`, `POST /api/platform/courses/propose {name, description}`,
+Students: `GET /api/me/roles`, `GET /api/platform/courses`, `GET /api/platform/courses/:id`, `POST /api/platform/courses/propose {name, description, department, degree, studyYear, semester?}` (department is an ETH code such as `D-INFK`, degree `bsc`/`msc`, study year 1-3 / 1-2; semester `autumn`/`spring` is optional),
 `PATCH /api/platform/courses/:id {name?, description?}` (admins and that course's admins).
 
 Admins:

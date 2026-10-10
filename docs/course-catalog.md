@@ -53,3 +53,7 @@ Behind the same login as all of `/media`. Only exact names, only for an approved
 ## The galaxy front page
 
 `galaxy/` (on `main`) builds its planets, cities and houses from `/api/courses` and `/api/lectures`, so a published course shows up there with no extra work: course = planet (`color`, `shortName`), lecture = city (`episode`, `duration`), chapter = house (`title`, `start`, `end`, `summary`). A course with no lectures yet is hidden. The verified-account guard serves it at `/` and `/galaxy` (the sign-in page for everyone else); the study world is at `/world`.
+
+### Choosing a course: department, degree and study year
+
+A course carries `department`, `degree`, `studyYear` and (optionally) `semester`; a proposal must set the first three and admins or the course's admins can edit them (`PATCH /api/platform/courses/:id`). `/api/courses` returns them with every course, plus the list of departments. Both views use the same three steps: department, then degree and study year, then the course (in the galaxy the courses are the planets). Courses nobody has placed show up under "Weitere Fächer". The two views share the selected course through the browser's local storage (`viscon.selected-course.v1`), so switching between them opens the same course. The old year / semester steps of the lecture picker are gone; saved question history from before this change is dropped because it has no department.
