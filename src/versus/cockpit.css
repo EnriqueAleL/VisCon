@@ -1,0 +1,155 @@
+/* The whole viewport is the cabin. The DOM console is a single readable surface
+   over the physical instruments; it never owns the scene's layout or camera. */
+.versus-shell.immersive-cabin { height: 100dvh; min-height: 0; overflow: hidden; }
+.immersive-cabin .flight-deck { position: absolute; inset: 0; }
+.immersive-cabin .cockpit-window { position: absolute; inset: 0; background: var(--ground); }
+.immersive-cabin .cockpit-scene { display: block; width: 100%; height: 100%; cursor: grab; touch-action: none; }
+.immersive-cabin .cockpit-scene:active { cursor: grabbing; }
+.immersive-cabin .cockpit-scene:focus-visible { outline-offset: -4px; }
+.immersive-cabin .cabin-nav { position: absolute; z-index: 30; top: 22px; left: 28px; right: 28px; display: flex; align-items: flex-start; justify-content: space-between; pointer-events: none; }
+.cabin-nav > * { pointer-events: auto; }
+.cabin-nav > a, .cabin-menu > summary { background: #0d1524ed; padding: 10px 14px; min-height: 42px; border: 1px solid var(--line); border-radius: 4px; color: var(--ink); text-decoration: none; font-size: 13px; }
+.cabin-nav > a { display: flex; align-items: center; gap: 8px; }
+.cabin-menu { position: relative; }
+.cabin-menu > summary { cursor: pointer; font-family: var(--galaxy-display); }
+.cabin-menu > summary span { color: var(--muted); }
+.cabin-menu nav { position: absolute; top: 52px; right: 0; width: 220px; display: flex; flex-direction: column; padding: 8px; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 4px; max-height: calc(100dvh - 96px); overflow: auto; }
+.cabin-menu nav :is(button, a) { padding: 11px 12px; min-height: 42px; font-size: 13px; text-align: left; color: var(--ink); background: none; border: 0; text-decoration: none; }
+.cabin-menu nav :is(button, a):hover { background: var(--surface-hover); }
+.cabin-menu .profile-button { display: flex; justify-content: space-between; border-top: 1px solid var(--line); }
+.cabin-menu .profile-button strong, .cabin-menu .profile-button small { display: block; }
+.cabin-menu .profile-button small { color: var(--muted); font-size: 12px; }
+.versus-shell.immersive-cabin .page { position: absolute; top: 88px; right: 28px; width: min(440px, 42vw); max-width: none; max-height: calc(100dvh - 116px); min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: 26px; margin: 0; border: 1px solid var(--line-strong); border-radius: 6px; background: #0d1524f5; z-index: 10; scroll-padding-top: 112px; }
+.versus-shell.immersive-cabin .page[hidden] { display: none; }
+.immersive-cabin .cabin-controls { position: absolute; bottom: 28px; left: 28px; display: flex; gap: 8px; z-index: 12; }
+.cabin-controls button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 42px; min-width: 42px; background: #0d1524ed; border: 1px solid var(--line-strong); border-radius: 4px; color: var(--ink); font-size: 12px; padding: 10px 12px; }
+.cabin-controls button:hover:not(:disabled) { background: var(--surface-hover); }
+.cabin-controls button:disabled { opacity: .5; cursor: default; }
+.immersive-cabin .cabin-status { position: absolute; left: 28px; bottom: 81px; margin: 0; max-width: min(470px, 48vw); padding: 6px 9px; background: #070a12d9; color: var(--muted); font-size: 12px; line-height: 1.6; pointer-events: none; }
+.immersive-cabin .cockpit-unavailable { position: absolute; left: 10%; top: 40%; width: 30%; color: var(--muted); line-height: 1.7; font-size: 14px; }
+.cockpit-impact { position: absolute; inset: 0; pointer-events: none; }
+.flight-deck[data-pulse="incoming"] .cockpit-impact, .flight-deck[data-pulse="exchange"] .cockpit-impact { animation: cockpit-hit 1.5s ease-out; }
+@keyframes cockpit-hit { 0%, 28%, 100% { background: transparent; } 43% { background: #a44d591c; } 62% { background: transparent; } }
+.versus-shell.immersive-cabin h1 { font-size: 28px; line-height: 1.2; margin: 0 0 10px; }
+.versus-shell.immersive-cabin h2 { font-size: 20px; }
+.immersive-cabin .console-mode { color: var(--muted); font-size: 15px; font-weight: 400; margin-left: 6px; }
+.immersive-cabin .console-lead { margin: 0 0 26px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.immersive-cabin .console-label { display: block; color: var(--ink); font-size: 13px; margin-bottom: 8px; }
+.immersive-cabin #duel-subject { width: 100%; min-height: 46px; padding: 10px 12px; background: var(--ground); color: var(--ink); border: 1px solid var(--line-strong); border-radius: 4px; font: 14px var(--galaxy-body); }
+.immersive-cabin .console-note { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
+.versus-shell.immersive-cabin .create-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 22px 0 26px; }
+.versus-shell.immersive-cabin .button { min-height: 44px; padding: 10px 12px; }
+.immersive-cabin .console-disclosure { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 16px; }
+.immersive-cabin .console-disclosure > summary { cursor: pointer; font-size: 13px; line-height: 1.6; color: var(--ink); min-height: 28px; }
+.immersive-cabin .console-disclosure > summary > span { float: right; color: var(--muted); font-size: 12px; }
+.immersive-cabin .console-disclosure p { color: var(--muted); font-size: 13px; line-height: 1.75; }
+.immersive-cabin .console-disclosure form { margin-top: 16px; }
+.versus-shell.immersive-cabin .join-panel { padding-bottom: 0; }
+.immersive-cabin .console-links { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 18px; }
+.immersive-cabin .console-links button { border: 0; background: none; color: var(--muted); font-size: 12px; min-height: 40px; padding: 4px 0; }
+.immersive-cabin .console-links button:hover { color: var(--ink); text-decoration: underline; }
+.immersive-cabin .console-disclaimer { font-size: 11px; line-height: 1.6; color: var(--muted); margin: 12px 0 0; }
+.versus-shell.immersive-cabin .resume { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; padding: 14px; }
+/* Lobby opens on invite + readiness. Settings keep every existing format/control. */
+.versus-shell.immersive-cabin .lobby-layout { display: flex; flex-direction: column; gap: 0; margin-top: 24px; }
+.versus-shell.immersive-cabin .lobby-aside { order: -1; border: 0; padding: 0; }
+.versus-shell.immersive-cabin .players-panel { padding: 0; border: 0; background: none; }
+.versus-shell.immersive-cabin .players-panel .section-heading { display: none; }
+.versus-shell.immersive-cabin .player-row { padding: 10px 0; }
+.versus-shell.immersive-cabin .waiting-player { margin-top: 10px; padding: 12px 0; }
+.versus-shell.immersive-cabin .invite-panel { margin-top: 18px; padding-top: 18px; }
+.versus-shell.immersive-cabin .ready-panel { margin-top: 20px; padding: 0; border: 0; background: none; }
+.versus-shell.immersive-cabin .ready-panel p { font-size: 12px; }
+.versus-shell.immersive-cabin .connection { margin-top: 12px; }
+.versus-shell.immersive-cabin .settings-panel { border-inline: 0; border-bottom: 0; background: none; border-radius: 0; padding-inline: 0; }
+.immersive-cabin .settings-fields { margin-top: 18px; }
+.versus-shell.immersive-cabin .format-options { gap: 6px; }
+.versus-shell.immersive-cabin .format-option { padding: 10px 8px; }
+.versus-shell.immersive-cabin .format-option strong { font-size: 12px; }
+.versus-shell.immersive-cabin .format-option small { display: none; }
+.versus-shell.immersive-cabin .lobby-footer { margin-top: 22px; padding-top: 16px; gap: 12px; font-size: 12px; }
+/* One score/timer strip remains in place while the question console scrolls. */
+.immersive-cabin .duel-instruments { position: sticky; top: -26px; z-index: 3; margin: -26px -26px 18px; padding: 18px 26px 12px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.duel-instruments > div:first-child { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; font-size: 12px; }
+.duel-instruments > div:first-child > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.duel-instruments > div:first-child > span:last-child { text-align: right; }
+.duel-instruments strong { font: 500 20px var(--galaxy-mono); white-space: nowrap; }
+.duel-instruments strong span { color: var(--muted); font-size: 14px; padding: 0 4px; }
+.duel-round { display: flex; justify-content: space-between; margin-top: 12px; color: var(--muted); font-size: 12px; }
+.duel-round > span:last-child { display: flex; align-items: center; gap: 6px; font-family: var(--galaxy-mono); }
+.duel-round small { font: 11px var(--galaxy-body); }
+.duel-round .urgent { color: var(--danger); }
+.versus-shell.immersive-cabin .match-heading { margin: 0 0 18px; font-size: 12px; display: flex; gap: 10px; justify-content: space-between; }
+.versus-shell.immersive-cabin .game-layout { display: flex; flex-direction: column; align-items: stretch; gap: 20px; }
+.versus-shell.immersive-cabin :is(.question-panel, .answer-panel) { padding: 0; border: 0; min-height: 0; background: none; }
+.versus-shell.immersive-cabin .question-panel h2 { font-size: 23px; }
+.versus-shell.immersive-cabin .question-meta { margin-bottom: 14px; }
+.versus-shell.immersive-cabin .prompt { font-size: 14px; line-height: 1.7; }
+.versus-shell.immersive-cabin .question-source { margin-top: 16px; padding-top: 12px; font-size: 11px; }
+.versus-shell.immersive-cabin .answer-panel > .section-heading { display: none; }
+.versus-shell.immersive-cabin .answer-options { gap: 8px; }
+.versus-shell.immersive-cabin .answer-option { min-height: 46px; padding: 9px 12px; font-size: 14px; }
+.versus-shell.immersive-cabin .submit-area { margin-top: 16px; }
+.versus-shell.immersive-cabin .submit-area p { font-size: 11px; }
+.versus-shell.immersive-cabin .opponent-status { font-size: 12px; padding-top: 12px; margin-top: 12px; }
+.versus-shell.immersive-cabin .round-review { padding: 4px 0; }
+.versus-shell.immersive-cabin .review-icon { display: none; }
+.versus-shell.immersive-cabin .answer-summary { font-size: 13px; }
+.versus-shell.immersive-cabin .explanation { margin-block: 18px; font-size: 13px; }
+.versus-shell.immersive-cabin .result-intro { padding: 0; text-align: left; }
+.versus-shell.immersive-cabin .result-emblem { display: none; }
+.versus-shell.immersive-cabin .result-intro h1 { font-size: 28px; }
+.versus-shell.immersive-cabin .result-intro p { font-size: 14px; }
+.versus-shell.immersive-cabin .result-score { padding: 20px 0; margin-block: 24px; grid-template-columns: 1fr 1.15fr 1fr; gap: 10px; }
+.versus-shell.immersive-cabin .result-score .avatar { display: none; }
+.versus-shell.immersive-cabin .result-score .big-score { font-size: 28px; }
+.versus-shell.immersive-cabin .result-score strong { font-size: 13px; }
+.versus-shell.immersive-cabin .result-score .result-divider { grid-column: auto; grid-row: auto; padding: 0; }
+.versus-shell.immersive-cabin .result-divider > span { font-size: 16px; }
+.versus-shell.immersive-cabin .result-divider small { font-size: 11px; }
+.versus-shell.immersive-cabin .result-actions { margin-bottom: 26px; }
+.versus-shell.immersive-cabin .recap .section-heading { align-items: flex-start; flex-direction: column; gap: 4px; }
+.versus-shell.immersive-cabin .recap-row summary { padding: 14px 0; gap: 10px; }
+.versus-shell.immersive-cabin .recap-row strong { font-size: 13px; }
+.versus-shell.immersive-cabin .recap-row small { font-size: 11px; }
+@media (max-width: 780px) {
+  .immersive-cabin .cockpit-window { bottom: 54dvh; }
+  .immersive-cabin.cabin-exploring .cockpit-window { bottom: 0; }
+  .immersive-cabin .cabin-nav { top: 12px; left: 12px; right: 12px; }
+  .cabin-nav > a, .cabin-menu > summary { font-size: 12px; padding: 9px 11px; }
+  .versus-shell.immersive-cabin .page { top: 46dvh; bottom: 0; right: 0; width: 100%; max-height: none; border-radius: 0; border-inline: 0; border-bottom: 0; padding: 22px; }
+  .immersive-cabin .cabin-controls { bottom: calc(54dvh + 10px); left: 12px; gap: 6px; }
+  .immersive-cabin.cabin-exploring .cabin-controls { bottom: 18px; }
+  .cabin-controls button { min-height: 38px; min-width: 38px; font-size: 11px; padding: 8px 10px; }
+  .immersive-cabin .cabin-status { top: 65px; left: 12px; bottom: auto; max-width: calc(100vw - 24px); font-size: 11px; }
+  .immersive-cabin .cockpit-unavailable { top: 37%; left: 10%; width: 80%; text-align: center; font-size: 13px; }
+  .versus-shell.immersive-cabin h1 { font-size: 26px; }
+  .immersive-cabin .console-lead { font-size: 13px; margin-bottom: 22px; }
+  .immersive-cabin .duel-instruments { top: -22px; margin: -22px -22px 18px; padding: 14px 22px 12px; }
+  .versus-shell.immersive-cabin .two-fields { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .versus-shell.immersive-cabin .result-score { display: grid; }
+}
+@media (max-width: 370px) {
+  .versus-shell.immersive-cabin .page { padding: 18px; }
+  .immersive-cabin .duel-instruments { top: -18px; margin: -18px -18px 18px; padding-inline: 18px; }
+  .versus-shell.immersive-cabin .create-actions { gap: 8px; }
+  .versus-shell.immersive-cabin .create-actions .button { padding-inline: 8px; font-size: 12px; }
+  .duel-instruments strong { font-size: 17px; }
+  .versus-shell.immersive-cabin .result-score { gap: 6px; }
+  .versus-shell.immersive-cabin .result-score .big-score { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flight-deck *, .flight-deck *::before, .flight-deck *::after { animation: none !important; transition: none !important; }
+}
+
+.versus-shell.immersive-cabin .formula { padding: 10px 0; font-size: 16px; }
+.versus-shell.immersive-cabin :is(.badge, .tiny-tag, .difficulty, .player-info small, .player-rating small, .copy-input input) { font-size: 11px; }
+.versus-shell.immersive-cabin .lobby-footer { margin-top: 16px; }
+.versus-shell.immersive-cabin .game-layout.code-layout { width: 100%; }
+.immersive-cabin:has(.flight-deck-fallback) .cockpit-scene { visibility: hidden; }
+
+.immersive-cabin.cabin-arriving .cockpit-window { bottom: 0; }
+.immersive-cabin.cabin-arriving :is(.cabin-nav, .cabin-controls, .cabin-status) { visibility: hidden; }
+@media (max-width: 780px) and (prefers-reduced-motion: no-preference) {
+  .immersive-cabin .cockpit-window { transition: bottom .65s cubic-bezier(.16, 1, .3, 1); }
+}

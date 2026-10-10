@@ -1,193 +1,1080 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-09T21:53:47.511Z",
+  "generatedAt": "2026-10-10T12:44:23.680165+00:00",
   "title": "Design System: VisCon",
   "extensions": {
-    "sourceOfTruth": "shared/design/tokens.css",
-    "baseStyles": "shared/design/base.css",
-    "headerComponent": "shared/design/ProductHeader.tsx",
+    "scopes": {
+      "shared-workspaces": {
+        "routes": [
+          "/world",
+          "/learn",
+          "/campus"
+        ],
+        "additionalSurface": "Standalone video demo",
+        "sourceOfTruth": "shared/design/tokens.css",
+        "baseStyles": "shared/design/base.css",
+        "headerComponent": "shared/design/ProductHeader.tsx",
+        "tokenPrefix": "Unprefixed"
+      },
+      "galaxy": {
+        "routes": [
+          "/",
+          "/galaxy/"
+        ],
+        "sourceOfTruth": "galaxy/theme.css",
+        "styles": "galaxy/styles.css",
+        "fonts": "galaxy/vendor/fonts/fonts.css",
+        "tokenPrefix": "galaxy-",
+        "boarding": "galaxy/app.js",
+        "shipGeometry": "galaxy/duel-scene.js"
+      },
+      "versus": {
+        "routes": [
+          "/arena",
+          "/room/:id",
+          "/history",
+          "/leaderboard",
+          "/profile",
+          "/java"
+        ],
+        "sourceOfTruth": "galaxy/theme.css",
+        "styles": "src/versus/versus.css",
+        "selector": ":root:has(.versus-shell)",
+        "headerComponent": "src/versus/VersusHeader.tsx",
+        "canvas": "src/versus/VersusSpace.tsx",
+        "context": "src/versus/context.ts",
+        "routesComponent": "src/App.tsx",
+        "tokenPrefix": "versus-",
+        "inherits": "galaxy",
+        "cockpitComponent": "src/versus/FlightDeck.tsx",
+        "cockpitStyles": "src/versus/cockpit.css",
+        "cockpitRenderer": "galaxy/duel-scene.js",
+        "combatPresentation": "src/versus/combat.ts"
+      }
+    },
     "colorMeta": {
       "ground": {
         "role": "neutral",
         "displayName": "Charcoal Canvas",
-        "value": "#111315"
+        "tonalRamp": [
+          "oklch(15.00% 0.0052 248.11)",
+          "oklch(26.43% 0.0052 248.11)",
+          "oklch(37.86% 0.0052 248.11)",
+          "oklch(49.29% 0.0052 248.11)",
+          "oklch(60.71% 0.0052 248.11)",
+          "oklch(72.14% 0.0052 248.11)",
+          "oklch(83.57% 0.0052 248.11)",
+          "oklch(95.00% 0.0052 248.11)"
+        ]
       },
       "surface": {
         "role": "neutral",
         "displayName": "Work Surface",
-        "value": "#191c1f"
+        "tonalRamp": [
+          "oklch(15.00% 0.0074 248.16)",
+          "oklch(26.43% 0.0074 248.16)",
+          "oklch(37.86% 0.0074 248.16)",
+          "oklch(49.29% 0.0074 248.16)",
+          "oklch(60.71% 0.0074 248.16)",
+          "oklch(72.14% 0.0074 248.16)",
+          "oklch(83.57% 0.0074 248.16)",
+          "oklch(95.00% 0.0074 248.16)"
+        ]
       },
       "surface-raised": {
         "role": "neutral",
         "displayName": "Raised Neutral",
-        "value": "#22262a"
+        "tonalRamp": [
+          "oklch(15.00% 0.0095 248.18)",
+          "oklch(26.43% 0.0095 248.18)",
+          "oklch(37.86% 0.0095 248.18)",
+          "oklch(49.29% 0.0095 248.18)",
+          "oklch(60.71% 0.0095 248.18)",
+          "oklch(72.14% 0.0095 248.18)",
+          "oklch(83.57% 0.0095 248.18)",
+          "oklch(95.00% 0.0095 248.18)"
+        ]
+      },
+      "surface-hover": {
+        "role": "neutral",
+        "displayName": "Surface Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.0115 248.21)",
+          "oklch(26.43% 0.0115 248.21)",
+          "oklch(37.86% 0.0115 248.21)",
+          "oklch(49.29% 0.0115 248.21)",
+          "oklch(60.71% 0.0115 248.21)",
+          "oklch(72.14% 0.0115 248.21)",
+          "oklch(83.57% 0.0115 248.21)",
+          "oklch(95.00% 0.0115 248.21)"
+        ]
       },
       "ink": {
         "role": "neutral",
         "displayName": "Primary Text",
-        "value": "#edf0f3"
+        "tonalRamp": [
+          "oklch(15.00% 0.0052 247.88)",
+          "oklch(26.43% 0.0052 247.88)",
+          "oklch(37.86% 0.0052 247.88)",
+          "oklch(49.29% 0.0052 247.88)",
+          "oklch(60.71% 0.0052 247.88)",
+          "oklch(72.14% 0.0052 247.88)",
+          "oklch(83.57% 0.0052 247.88)",
+          "oklch(95.00% 0.0052 247.88)"
+        ]
       },
       "muted": {
         "role": "neutral",
         "displayName": "Secondary Text",
-        "value": "#a5adb7"
+        "tonalRamp": [
+          "oklch(15.00% 0.0170 253.94)",
+          "oklch(26.43% 0.0170 253.94)",
+          "oklch(37.86% 0.0170 253.94)",
+          "oklch(49.29% 0.0170 253.94)",
+          "oklch(60.71% 0.0170 253.94)",
+          "oklch(72.14% 0.0170 253.94)",
+          "oklch(83.57% 0.0170 253.94)",
+          "oklch(95.00% 0.0170 253.94)"
+        ]
+      },
+      "subtle": {
+        "role": "neutral",
+        "displayName": "Subtle",
+        "tonalRamp": [
+          "oklch(15.00% 0.0215 252.96)",
+          "oklch(26.43% 0.0215 252.96)",
+          "oklch(37.86% 0.0215 252.96)",
+          "oklch(49.29% 0.0215 252.96)",
+          "oklch(60.71% 0.0215 252.96)",
+          "oklch(72.14% 0.0215 252.96)",
+          "oklch(83.57% 0.0215 252.96)",
+          "oklch(95.00% 0.0215 252.96)"
+        ]
       },
       "line": {
         "role": "neutral",
         "displayName": "Divider",
-        "value": "#30363d"
+        "tonalRamp": [
+          "oklch(15.00% 0.0149 252.31)",
+          "oklch(26.43% 0.0149 252.31)",
+          "oklch(37.86% 0.0149 252.31)",
+          "oklch(49.29% 0.0149 252.31)",
+          "oklch(60.71% 0.0149 252.31)",
+          "oklch(72.14% 0.0149 252.31)",
+          "oklch(83.57% 0.0149 252.31)",
+          "oklch(95.00% 0.0149 252.31)"
+        ]
+      },
+      "line-strong": {
+        "role": "neutral",
+        "displayName": "Line Strong",
+        "tonalRamp": [
+          "oklch(15.00% 0.0203 251.08)",
+          "oklch(26.43% 0.0203 251.08)",
+          "oklch(37.86% 0.0203 251.08)",
+          "oklch(49.29% 0.0203 251.08)",
+          "oklch(60.71% 0.0203 251.08)",
+          "oklch(72.14% 0.0203 251.08)",
+          "oklch(83.57% 0.0203 251.08)",
+          "oklch(95.00% 0.0203 251.08)"
+        ]
       },
       "accent": {
         "role": "primary",
         "displayName": "Action Green",
-        "value": "#69c49a"
+        "tonalRamp": [
+          "oklch(15.00% 0.1077 162.27)",
+          "oklch(26.43% 0.1077 162.27)",
+          "oklch(37.86% 0.1077 162.27)",
+          "oklch(49.29% 0.1077 162.27)",
+          "oklch(60.71% 0.1077 162.27)",
+          "oklch(72.14% 0.1077 162.27)",
+          "oklch(83.57% 0.1077 162.27)",
+          "oklch(95.00% 0.1077 162.27)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Accent Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.0991 161.96)",
+          "oklch(26.43% 0.0991 161.96)",
+          "oklch(37.86% 0.0991 161.96)",
+          "oklch(49.29% 0.0991 161.96)",
+          "oklch(60.71% 0.0991 161.96)",
+          "oklch(72.14% 0.0991 161.96)",
+          "oklch(83.57% 0.0991 161.96)",
+          "oklch(95.00% 0.0991 161.96)"
+        ]
       },
       "accent-ink": {
-        "role": "neutral",
+        "role": "primary",
         "displayName": "Action Text",
-        "value": "#101e17"
+        "tonalRamp": [
+          "oklch(15.00% 0.0240 161.83)",
+          "oklch(26.43% 0.0240 161.83)",
+          "oklch(37.86% 0.0240 161.83)",
+          "oklch(49.29% 0.0240 161.83)",
+          "oklch(60.71% 0.0240 161.83)",
+          "oklch(72.14% 0.0240 161.83)",
+          "oklch(83.57% 0.0240 161.83)",
+          "oklch(95.00% 0.0240 161.83)"
+        ]
+      },
+      "accent-soft": {
+        "role": "primary",
+        "displayName": "Accent Soft",
+        "tonalRamp": [
+          "oklch(15.00% 0.0327 166.39)",
+          "oklch(26.43% 0.0327 166.39)",
+          "oklch(37.86% 0.0327 166.39)",
+          "oklch(49.29% 0.0327 166.39)",
+          "oklch(60.71% 0.0327 166.39)",
+          "oklch(72.14% 0.0327 166.39)",
+          "oklch(83.57% 0.0327 166.39)",
+          "oklch(95.00% 0.0327 166.39)"
+        ]
       },
       "focus": {
         "role": "primary",
         "displayName": "Focus Green",
-        "value": "#86d8b0"
+        "tonalRamp": [
+          "oklch(15.00% 0.0991 161.96)",
+          "oklch(26.43% 0.0991 161.96)",
+          "oklch(37.86% 0.0991 161.96)",
+          "oklch(49.29% 0.0991 161.96)",
+          "oklch(60.71% 0.0991 161.96)",
+          "oklch(72.14% 0.0991 161.96)",
+          "oklch(83.57% 0.0991 161.96)",
+          "oklch(95.00% 0.0991 161.96)"
+        ]
+      },
+      "success": {
+        "role": "secondary",
+        "displayName": "Success",
+        "tonalRamp": [
+          "oklch(15.00% 0.0931 161.15)",
+          "oklch(26.43% 0.0931 161.15)",
+          "oklch(37.86% 0.0931 161.15)",
+          "oklch(49.29% 0.0931 161.15)",
+          "oklch(60.71% 0.0931 161.15)",
+          "oklch(72.14% 0.0931 161.15)",
+          "oklch(83.57% 0.0931 161.15)",
+          "oklch(95.00% 0.0931 161.15)"
+        ]
+      },
+      "success-soft": {
+        "role": "secondary",
+        "displayName": "Success Soft",
+        "tonalRamp": [
+          "oklch(15.00% 0.0327 166.39)",
+          "oklch(26.43% 0.0327 166.39)",
+          "oklch(37.86% 0.0327 166.39)",
+          "oklch(49.29% 0.0327 166.39)",
+          "oklch(60.71% 0.0327 166.39)",
+          "oklch(72.14% 0.0327 166.39)",
+          "oklch(83.57% 0.0327 166.39)",
+          "oklch(95.00% 0.0327 166.39)"
+        ]
       },
       "danger": {
         "role": "secondary",
         "displayName": "Error",
-        "value": "#ed9494"
+        "tonalRamp": [
+          "oklch(15.00% 0.1079 19.89)",
+          "oklch(26.43% 0.1079 19.89)",
+          "oklch(37.86% 0.1079 19.89)",
+          "oklch(49.29% 0.1079 19.89)",
+          "oklch(60.71% 0.1079 19.89)",
+          "oklch(72.14% 0.1079 19.89)",
+          "oklch(83.57% 0.1079 19.89)",
+          "oklch(95.00% 0.1079 19.89)"
+        ]
+      },
+      "danger-soft": {
+        "role": "secondary",
+        "displayName": "Danger Soft",
+        "tonalRamp": [
+          "oklch(15.00% 0.0307 12.58)",
+          "oklch(26.43% 0.0307 12.58)",
+          "oklch(37.86% 0.0307 12.58)",
+          "oklch(49.29% 0.0307 12.58)",
+          "oklch(60.71% 0.0307 12.58)",
+          "oklch(72.14% 0.0307 12.58)",
+          "oklch(83.57% 0.0307 12.58)",
+          "oklch(95.00% 0.0307 12.58)"
+        ]
       },
       "ochre": {
         "role": "secondary",
         "displayName": "Opponent / Warning",
-        "value": "#e1bc7b"
+        "tonalRamp": [
+          "oklch(15.00% 0.0931 80.92)",
+          "oklch(26.43% 0.0931 80.92)",
+          "oklch(37.86% 0.0931 80.92)",
+          "oklch(49.29% 0.0931 80.92)",
+          "oklch(60.71% 0.0931 80.92)",
+          "oklch(72.14% 0.0931 80.92)",
+          "oklch(83.57% 0.0931 80.92)",
+          "oklch(95.00% 0.0931 80.92)"
+        ]
+      },
+      "warning-soft": {
+        "role": "secondary",
+        "displayName": "Warning Soft",
+        "tonalRamp": [
+          "oklch(15.00% 0.0222 84.45)",
+          "oklch(26.43% 0.0222 84.45)",
+          "oklch(37.86% 0.0222 84.45)",
+          "oklch(49.29% 0.0222 84.45)",
+          "oklch(60.71% 0.0222 84.45)",
+          "oklch(72.14% 0.0222 84.45)",
+          "oklch(83.57% 0.0222 84.45)",
+          "oklch(95.00% 0.0222 84.45)"
+        ]
       },
       "info": {
         "role": "secondary",
         "displayName": "Information",
-        "value": "#9bbde1"
+        "tonalRamp": [
+          "oklch(15.00% 0.0634 250.10)",
+          "oklch(26.43% 0.0634 250.10)",
+          "oklch(37.86% 0.0634 250.10)",
+          "oklch(49.29% 0.0634 250.10)",
+          "oklch(60.71% 0.0634 250.10)",
+          "oklch(72.14% 0.0634 250.10)",
+          "oklch(83.57% 0.0634 250.10)",
+          "oklch(95.00% 0.0634 250.10)"
+        ]
+      },
+      "info-soft": {
+        "role": "secondary",
+        "displayName": "Info Soft",
+        "tonalRamp": [
+          "oklch(15.00% 0.0309 250.71)",
+          "oklch(26.43% 0.0309 250.71)",
+          "oklch(37.86% 0.0309 250.71)",
+          "oklch(49.29% 0.0309 250.71)",
+          "oklch(60.71% 0.0309 250.71)",
+          "oklch(72.14% 0.0309 250.71)",
+          "oklch(83.57% 0.0309 250.71)",
+          "oklch(95.00% 0.0309 250.71)"
+        ]
+      },
+      "overlay": {
+        "role": "neutral",
+        "displayName": "Overlay",
+        "tonalRamp": [
+          "oklch(15.00% 0.0075 256.88)",
+          "oklch(26.43% 0.0075 256.88)",
+          "oklch(37.86% 0.0075 256.88)",
+          "oklch(49.29% 0.0075 256.88)",
+          "oklch(60.71% 0.0075 256.88)",
+          "oklch(72.14% 0.0075 256.88)",
+          "oklch(83.57% 0.0075 256.88)",
+          "oklch(95.00% 0.0075 256.88)"
+        ]
+      },
+      "galaxy-void": {
+        "role": "neutral",
+        "displayName": "Galaxy Void",
+        "tonalRamp": [
+          "oklch(15.00% 0.0183 266.78)",
+          "oklch(26.43% 0.0183 266.78)",
+          "oklch(37.86% 0.0183 266.78)",
+          "oklch(49.29% 0.0183 266.78)",
+          "oklch(60.71% 0.0183 266.78)",
+          "oklch(72.14% 0.0183 266.78)",
+          "oklch(83.57% 0.0183 266.78)",
+          "oklch(95.00% 0.0183 266.78)"
+        ]
+      },
+      "galaxy-deep": {
+        "role": "neutral",
+        "displayName": "Galaxy Deep",
+        "tonalRamp": [
+          "oklch(15.00% 0.0328 262.32)",
+          "oklch(26.43% 0.0328 262.32)",
+          "oklch(37.86% 0.0328 262.32)",
+          "oklch(49.29% 0.0328 262.32)",
+          "oklch(60.71% 0.0328 262.32)",
+          "oklch(72.14% 0.0328 262.32)",
+          "oklch(83.57% 0.0328 262.32)",
+          "oklch(95.00% 0.0328 262.32)"
+        ]
+      },
+      "galaxy-algebra": {
+        "role": "primary",
+        "displayName": "Galaxy Algebra",
+        "tonalRamp": [
+          "oklch(15.00% 0.1211 267.86)",
+          "oklch(26.43% 0.1211 267.86)",
+          "oklch(37.86% 0.1211 267.86)",
+          "oklch(49.29% 0.1211 267.86)",
+          "oklch(60.71% 0.1211 267.86)",
+          "oklch(72.14% 0.1211 267.86)",
+          "oklch(83.57% 0.1211 267.86)",
+          "oklch(95.00% 0.1211 267.86)"
+        ]
+      },
+      "galaxy-analysis": {
+        "role": "secondary",
+        "displayName": "Galaxy Analysis",
+        "tonalRamp": [
+          "oklch(15.00% 0.1072 50.12)",
+          "oklch(26.43% 0.1072 50.12)",
+          "oklch(37.86% 0.1072 50.12)",
+          "oklch(49.29% 0.1072 50.12)",
+          "oklch(60.71% 0.1072 50.12)",
+          "oklch(72.14% 0.1072 50.12)",
+          "oklch(83.57% 0.1072 50.12)",
+          "oklch(95.00% 0.1072 50.12)"
+        ]
+      },
+      "galaxy-informatics": {
+        "role": "secondary",
+        "displayName": "Galaxy Informatics",
+        "tonalRamp": [
+          "oklch(15.00% 0.0582 165.06)",
+          "oklch(26.43% 0.0582 165.06)",
+          "oklch(37.86% 0.0582 165.06)",
+          "oklch(49.29% 0.0582 165.06)",
+          "oklch(60.71% 0.0582 165.06)",
+          "oklch(72.14% 0.0582 165.06)",
+          "oklch(83.57% 0.0582 165.06)",
+          "oklch(95.00% 0.0582 165.06)"
+        ]
+      },
+      "galaxy-starlight": {
+        "role": "neutral",
+        "displayName": "Galaxy Starlight",
+        "tonalRamp": [
+          "oklch(15.00% 0.0128 266.70)",
+          "oklch(26.43% 0.0128 266.70)",
+          "oklch(37.86% 0.0128 266.70)",
+          "oklch(49.29% 0.0128 266.70)",
+          "oklch(60.71% 0.0128 266.70)",
+          "oklch(72.14% 0.0128 266.70)",
+          "oklch(83.57% 0.0128 266.70)",
+          "oklch(95.00% 0.0128 266.70)"
+        ]
+      },
+      "galaxy-dim": {
+        "role": "neutral",
+        "displayName": "Galaxy Dim",
+        "tonalRamp": [
+          "oklch(15.00% 0.0424 264.20)",
+          "oklch(26.43% 0.0424 264.20)",
+          "oklch(37.86% 0.0424 264.20)",
+          "oklch(49.29% 0.0424 264.20)",
+          "oklch(60.71% 0.0424 264.20)",
+          "oklch(72.14% 0.0424 264.20)",
+          "oklch(83.57% 0.0424 264.20)",
+          "oklch(95.00% 0.0424 264.20)"
+        ]
+      },
+      "galaxy-faint": {
+        "role": "neutral",
+        "displayName": "Galaxy Faint",
+        "tonalRamp": [
+          "oklch(15.00% 0.0433 261.95)",
+          "oklch(26.43% 0.0433 261.95)",
+          "oklch(37.86% 0.0433 261.95)",
+          "oklch(49.29% 0.0433 261.95)",
+          "oklch(60.71% 0.0433 261.95)",
+          "oklch(72.14% 0.0433 261.95)",
+          "oklch(83.57% 0.0433 261.95)",
+          "oklch(95.00% 0.0433 261.95)"
+        ]
+      },
+      "galaxy-line": {
+        "role": "neutral",
+        "displayName": "Galaxy Line",
+        "tonalRamp": [
+          "oklch(15.00% 0.0440 262.02)",
+          "oklch(26.43% 0.0440 262.02)",
+          "oklch(37.86% 0.0440 262.02)",
+          "oklch(49.29% 0.0440 262.02)",
+          "oklch(60.71% 0.0440 262.02)",
+          "oklch(72.14% 0.0440 262.02)",
+          "oklch(83.57% 0.0440 262.02)",
+          "oklch(95.00% 0.0440 262.02)"
+        ]
+      },
+      "versus-surface": {
+        "role": "neutral",
+        "displayName": "Versus Surface",
+        "tonalRamp": [
+          "oklch(15.00% 0.0328 262.32)",
+          "oklch(26.43% 0.0328 262.32)",
+          "oklch(37.86% 0.0328 262.32)",
+          "oklch(49.29% 0.0328 262.32)",
+          "oklch(60.71% 0.0328 262.32)",
+          "oklch(72.14% 0.0328 262.32)",
+          "oklch(83.57% 0.0328 262.32)",
+          "oklch(95.00% 0.0328 262.32)"
+        ]
+      },
+      "versus-surface-raised": {
+        "role": "neutral",
+        "displayName": "Versus Surface Raised",
+        "tonalRamp": [
+          "oklch(15.00% 0.0407 259.29)",
+          "oklch(26.43% 0.0407 259.29)",
+          "oklch(37.86% 0.0407 259.29)",
+          "oklch(49.29% 0.0407 259.29)",
+          "oklch(60.71% 0.0407 259.29)",
+          "oklch(72.14% 0.0407 259.29)",
+          "oklch(83.57% 0.0407 259.29)",
+          "oklch(95.00% 0.0407 259.29)"
+        ]
+      },
+      "versus-surface-hover": {
+        "role": "neutral",
+        "displayName": "Versus Surface Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.0492 259.47)",
+          "oklch(26.43% 0.0492 259.47)",
+          "oklch(37.86% 0.0492 259.47)",
+          "oklch(49.29% 0.0492 259.47)",
+          "oklch(60.71% 0.0492 259.47)",
+          "oklch(72.14% 0.0492 259.47)",
+          "oklch(83.57% 0.0492 259.47)",
+          "oklch(95.00% 0.0492 259.47)"
+        ]
+      },
+      "versus-muted": {
+        "role": "neutral",
+        "displayName": "Versus Muted",
+        "tonalRamp": [
+          "oklch(15.00% 0.0344 262.65)",
+          "oklch(26.43% 0.0344 262.65)",
+          "oklch(37.86% 0.0344 262.65)",
+          "oklch(49.29% 0.0344 262.65)",
+          "oklch(60.71% 0.0344 262.65)",
+          "oklch(72.14% 0.0344 262.65)",
+          "oklch(83.57% 0.0344 262.65)",
+          "oklch(95.00% 0.0344 262.65)"
+        ]
+      },
+      "versus-subtle": {
+        "role": "neutral",
+        "displayName": "Versus Subtle",
+        "tonalRamp": [
+          "oklch(15.00% 0.0410 259.27)",
+          "oklch(26.43% 0.0410 259.27)",
+          "oklch(37.86% 0.0410 259.27)",
+          "oklch(49.29% 0.0410 259.27)",
+          "oklch(60.71% 0.0410 259.27)",
+          "oklch(72.14% 0.0410 259.27)",
+          "oklch(83.57% 0.0410 259.27)",
+          "oklch(95.00% 0.0410 259.27)"
+        ]
+      },
+      "versus-line": {
+        "role": "neutral",
+        "displayName": "Versus Line",
+        "tonalRamp": [
+          "oklch(15.00% 0.0470 260.86)",
+          "oklch(26.43% 0.0470 260.86)",
+          "oklch(37.86% 0.0470 260.86)",
+          "oklch(49.29% 0.0470 260.86)",
+          "oklch(60.71% 0.0470 260.86)",
+          "oklch(72.14% 0.0470 260.86)",
+          "oklch(83.57% 0.0470 260.86)",
+          "oklch(95.00% 0.0470 260.86)"
+        ]
+      },
+      "versus-line-strong": {
+        "role": "neutral",
+        "displayName": "Versus Line Strong",
+        "tonalRamp": [
+          "oklch(15.00% 0.0529 260.87)",
+          "oklch(26.43% 0.0529 260.87)",
+          "oklch(37.86% 0.0529 260.87)",
+          "oklch(49.29% 0.0529 260.87)",
+          "oklch(60.71% 0.0529 260.87)",
+          "oklch(72.14% 0.0529 260.87)",
+          "oklch(83.57% 0.0529 260.87)",
+          "oklch(95.00% 0.0529 260.87)"
+        ]
+      },
+      "versus-accent": {
+        "role": "primary",
+        "displayName": "Versus Accent",
+        "tonalRamp": [
+          "oklch(15.00% 0.1007 271.54)",
+          "oklch(26.43% 0.1007 271.54)",
+          "oklch(37.86% 0.1007 271.54)",
+          "oklch(49.29% 0.1007 271.54)",
+          "oklch(60.71% 0.1007 271.54)",
+          "oklch(72.14% 0.1007 271.54)",
+          "oklch(83.57% 0.1007 271.54)",
+          "oklch(95.00% 0.1007 271.54)"
+        ]
+      },
+      "versus-accent-hover": {
+        "role": "primary",
+        "displayName": "Versus Accent Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.0701 272.40)",
+          "oklch(26.43% 0.0701 272.40)",
+          "oklch(37.86% 0.0701 272.40)",
+          "oklch(49.29% 0.0701 272.40)",
+          "oklch(60.71% 0.0701 272.40)",
+          "oklch(72.14% 0.0701 272.40)",
+          "oklch(83.57% 0.0701 272.40)",
+          "oklch(95.00% 0.0701 272.40)"
+        ]
+      },
+      "versus-accent-ink": {
+        "role": "primary",
+        "displayName": "Versus Accent Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.0431 268.59)",
+          "oklch(26.43% 0.0431 268.59)",
+          "oklch(37.86% 0.0431 268.59)",
+          "oklch(49.29% 0.0431 268.59)",
+          "oklch(60.71% 0.0431 268.59)",
+          "oklch(72.14% 0.0431 268.59)",
+          "oklch(83.57% 0.0431 268.59)",
+          "oklch(95.00% 0.0431 268.59)"
+        ]
+      },
+      "versus-accent-soft": {
+        "role": "primary",
+        "displayName": "Versus Accent Soft",
+        "tonalRamp": [
+          "oklch(15.00% 0.0527 260.83)",
+          "oklch(26.43% 0.0527 260.83)",
+          "oklch(37.86% 0.0527 260.83)",
+          "oklch(49.29% 0.0527 260.83)",
+          "oklch(60.71% 0.0527 260.83)",
+          "oklch(72.14% 0.0527 260.83)",
+          "oklch(83.57% 0.0527 260.83)",
+          "oklch(95.00% 0.0527 260.83)"
+        ]
+      },
+      "versus-focus": {
+        "role": "primary",
+        "displayName": "Versus Focus",
+        "tonalRamp": [
+          "oklch(15.00% 0.0701 272.40)",
+          "oklch(26.43% 0.0701 272.40)",
+          "oklch(37.86% 0.0701 272.40)",
+          "oklch(49.29% 0.0701 272.40)",
+          "oklch(60.71% 0.0701 272.40)",
+          "oklch(72.14% 0.0701 272.40)",
+          "oklch(83.57% 0.0701 272.40)",
+          "oklch(95.00% 0.0701 272.40)"
+        ]
+      },
+      "versus-success": {
+        "role": "secondary",
+        "displayName": "Versus Success",
+        "tonalRamp": [
+          "oklch(15.00% 0.0648 159.48)",
+          "oklch(26.43% 0.0648 159.48)",
+          "oklch(37.86% 0.0648 159.48)",
+          "oklch(49.29% 0.0648 159.48)",
+          "oklch(60.71% 0.0648 159.48)",
+          "oklch(72.14% 0.0648 159.48)",
+          "oklch(83.57% 0.0648 159.48)",
+          "oklch(95.00% 0.0648 159.48)"
+        ]
+      },
+      "versus-success-soft": {
+        "role": "secondary",
+        "displayName": "Versus Success Soft",
+        "tonalRamp": [
+          "oklch(15.00% 0.0308 178.25)",
+          "oklch(26.43% 0.0308 178.25)",
+          "oklch(37.86% 0.0308 178.25)",
+          "oklch(49.29% 0.0308 178.25)",
+          "oklch(60.71% 0.0308 178.25)",
+          "oklch(72.14% 0.0308 178.25)",
+          "oklch(83.57% 0.0308 178.25)",
+          "oklch(95.00% 0.0308 178.25)"
+        ]
+      },
+      "versus-danger": {
+        "role": "secondary",
+        "displayName": "Versus Danger",
+        "tonalRamp": [
+          "oklch(15.00% 0.0932 12.67)",
+          "oklch(26.43% 0.0932 12.67)",
+          "oklch(37.86% 0.0932 12.67)",
+          "oklch(49.29% 0.0932 12.67)",
+          "oklch(60.71% 0.0932 12.67)",
+          "oklch(72.14% 0.0932 12.67)",
+          "oklch(83.57% 0.0932 12.67)",
+          "oklch(95.00% 0.0932 12.67)"
+        ]
+      },
+      "versus-danger-soft": {
+        "role": "secondary",
+        "displayName": "Versus Danger Soft",
+        "tonalRamp": [
+          "oklch(15.00% 0.0343 339.65)",
+          "oklch(26.43% 0.0343 339.65)",
+          "oklch(37.86% 0.0343 339.65)",
+          "oklch(49.29% 0.0343 339.65)",
+          "oklch(60.71% 0.0343 339.65)",
+          "oklch(72.14% 0.0343 339.65)",
+          "oklch(83.57% 0.0343 339.65)",
+          "oklch(95.00% 0.0343 339.65)"
+        ]
+      },
+      "versus-ochre": {
+        "role": "secondary",
+        "displayName": "Versus Ochre",
+        "tonalRamp": [
+          "oklch(15.00% 0.0747 61.74)",
+          "oklch(26.43% 0.0747 61.74)",
+          "oklch(37.86% 0.0747 61.74)",
+          "oklch(49.29% 0.0747 61.74)",
+          "oklch(60.71% 0.0747 61.74)",
+          "oklch(72.14% 0.0747 61.74)",
+          "oklch(83.57% 0.0747 61.74)",
+          "oklch(95.00% 0.0747 61.74)"
+        ]
+      },
+      "versus-warning-soft": {
+        "role": "secondary",
+        "displayName": "Versus Warning Soft",
+        "tonalRamp": [
+          "oklch(15.00% 0.0199 50.13)",
+          "oklch(26.43% 0.0199 50.13)",
+          "oklch(37.86% 0.0199 50.13)",
+          "oklch(49.29% 0.0199 50.13)",
+          "oklch(60.71% 0.0199 50.13)",
+          "oklch(72.14% 0.0199 50.13)",
+          "oklch(83.57% 0.0199 50.13)",
+          "oklch(95.00% 0.0199 50.13)"
+        ]
+      },
+      "versus-info": {
+        "role": "secondary",
+        "displayName": "Versus Info",
+        "tonalRamp": [
+          "oklch(15.00% 0.0685 260.88)",
+          "oklch(26.43% 0.0685 260.88)",
+          "oklch(37.86% 0.0685 260.88)",
+          "oklch(49.29% 0.0685 260.88)",
+          "oklch(60.71% 0.0685 260.88)",
+          "oklch(72.14% 0.0685 260.88)",
+          "oklch(83.57% 0.0685 260.88)",
+          "oklch(95.00% 0.0685 260.88)"
+        ]
+      },
+      "versus-info-soft": {
+        "role": "secondary",
+        "displayName": "Versus Info Soft",
+        "tonalRamp": [
+          "oklch(15.00% 0.0475 259.94)",
+          "oklch(26.43% 0.0475 259.94)",
+          "oklch(37.86% 0.0475 259.94)",
+          "oklch(49.29% 0.0475 259.94)",
+          "oklch(60.71% 0.0475 259.94)",
+          "oklch(72.14% 0.0475 259.94)",
+          "oklch(83.57% 0.0475 259.94)",
+          "oklch(95.00% 0.0475 259.94)"
+        ]
+      },
+      "versus-overlay": {
+        "role": "neutral",
+        "displayName": "Versus Overlay",
+        "tonalRamp": [
+          "oklch(15.00% 0.0254 260.23)",
+          "oklch(26.43% 0.0254 260.23)",
+          "oklch(37.86% 0.0254 260.23)",
+          "oklch(49.29% 0.0254 260.23)",
+          "oklch(60.71% 0.0254 260.23)",
+          "oklch(72.14% 0.0254 260.23)",
+          "oklch(83.57% 0.0254 260.23)",
+          "oklch(95.00% 0.0254 260.23)"
+        ]
+      },
+      "versus-primary-hover": {
+        "role": "primary",
+        "displayName": "Versus Primary Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.1289 267.19)",
+          "oklch(26.43% 0.1289 267.19)",
+          "oklch(37.86% 0.1289 267.19)",
+          "oklch(49.29% 0.1289 267.19)",
+          "oklch(60.71% 0.1289 267.19)",
+          "oklch(72.14% 0.1289 267.19)",
+          "oklch(83.57% 0.1289 267.19)",
+          "oklch(95.00% 0.1289 267.19)"
+        ]
+      },
+      "versus-primary-ink": {
+        "role": "primary",
+        "displayName": "Versus Primary Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.0000 89.88)",
+          "oklch(26.43% 0.0000 89.88)",
+          "oklch(37.86% 0.0000 89.88)",
+          "oklch(49.29% 0.0000 89.88)",
+          "oklch(60.71% 0.0000 89.88)",
+          "oklch(72.14% 0.0000 89.88)",
+          "oklch(83.57% 0.0000 89.88)",
+          "oklch(95.00% 0.0000 89.88)"
+        ]
       }
     },
     "typographyMeta": {
       "headline": {
-        "displayName": "Page Title",
-        "purpose": "Inter 600, 28px, zero letter spacing."
+        "displayName": "Headline",
+        "purpose": "Existing shared workspace role."
       },
       "title": {
-        "displayName": "Section Title",
-        "purpose": "Inter 600, 16-18px."
+        "displayName": "Title",
+        "purpose": "Existing shared workspace role."
       },
       "body": {
-        "displayName": "Reading Text",
-        "purpose": "Inter 400, 14px."
+        "displayName": "Body",
+        "purpose": "Existing shared workspace role."
       },
       "label": {
-        "displayName": "Field Label",
-        "purpose": "Inter 500, 11-12px."
+        "displayName": "Label",
+        "purpose": "Existing shared workspace role."
       },
       "button": {
-        "displayName": "Command",
-        "purpose": "Inter 500, 12-13px."
-      },
-      "score": {
-        "displayName": "Comparable Numbers",
-        "purpose": "Tabular numerals for scores, clocks, and ratings."
+        "displayName": "Button",
+        "purpose": "Existing shared workspace role."
       },
       "code": {
         "displayName": "Code",
-        "purpose": "Platform monospace in CodeMirror."
+        "purpose": "Existing shared workspace role."
+      },
+      "galaxy-headline": {
+        "displayName": "Galaxy Headline",
+        "purpose": "Existing galaxy panel heading."
+      },
+      "versus-display": {
+        "displayName": "Versus Display",
+        "purpose": "Versus landing title; 42px below 1000px, 38px below 650px."
+      },
+      "versus-headline": {
+        "displayName": "Versus Headline",
+        "purpose": "Versus page heading; mobile title rows use 27px."
+      },
+      "versus-title": {
+        "displayName": "Versus Title",
+        "purpose": "Versus section heading."
+      },
+      "versus-body": {
+        "displayName": "Versus Body",
+        "purpose": "Versus reading text."
+      },
+      "versus-button": {
+        "displayName": "Versus Button",
+        "purpose": "Versus command text."
+      },
+      "versus-trail": {
+        "displayName": "Versus Trail",
+        "purpose": "Uppercase galaxy breadcrumb; navigation only."
+      },
+      "versus-score": {
+        "displayName": "Versus Score",
+        "purpose": "Rating; IBM Plex Mono also carries clocks, scores and room codes."
       }
     },
     "shadows": [
       {
         "name": "overlay",
         "value": "0 16px 56px #00000066",
-        "purpose": "Dialogs and popovers only."
+        "purpose": "Existing workspace overlays and inherited toasts; Versus dialogs explicitly use none."
+      },
+      {
+        "name": "versus-dialog",
+        "value": "none",
+        "purpose": "Versus dialogs use a strong border and dimmed backdrop."
       }
     ],
     "motion": [
       {
         "name": "reduced-motion",
         "value": "animation:none;transition:none;scroll-behavior:auto",
-        "purpose": "Honor the user's motion preference."
+        "purpose": "Preserve the existing shared reduced-motion behavior."
+      },
+      {
+        "name": "versus-sky",
+        "value": "opacity 0.5s",
+        "purpose": "Static canvas opacity reduces from 0.8 to 0.24 in a match; no transition under reduced motion."
+      },
+      {
+        "name": "button-state",
+        "value": "background 0.15s, border-color 0.15s",
+        "purpose": "Inherited competitive control state transitions."
+      },
+      {
+        "name": "galaxy-boarding",
+        "value": "1800ms",
+        "purpose": "Existing camera approaches the selected ship; cancel restores the prior view. Reduced motion uses a 1ms transition."
+      },
+      {
+        "name": "cockpit-combat",
+        "value": "1.5s ease-out",
+        "purpose": "Bounded laser and impact feedback for newly completed public rounds. No idle drift during countdown, play or review; pause and reduced motion suppress bursts."
       }
     ],
     "breakpoints": [
       {
-        "name": "tablet-max",
+        "name": "versus-compact-desktop",
+        "value": "1000px"
+      },
+      {
+        "name": "shared-tablet-max",
         "value": "900px"
+      },
+      {
+        "name": "versus-stack",
+        "value": "780px"
       },
       {
         "name": "phone-max",
         "value": "650px"
       }
-    ]
+    ],
+    "previewNotes": "Component snippets represent their named scope. Semantic overrides in Versus samples are local equivalents of its route selector. Fonts are inherited from the vendored sources; fallback stacks remain usable. Tonal ramps are synthesized OKLCH panel aids, not additional shipping color tokens. The cockpit sample contains its DOM status and rules, not a substitute for the procedural 3D viewport; the shipped viewport uses galaxy/duel-scene.js. Former orbital-player preview replaced by the active cockpit pattern."
   },
   "components": [
     {
-      "name": "Primary Button",
+      "name": "Workspace Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "A direct command shared across all modules.",
-      "html": "<button class=\"ds-primary\">Create a room</button>",
-      "css": ".ds-primary{font:500 13px var(--font-ui);min-height:40px;padding:10px 16px;border:1px solid var(--accent);border-radius:6px;background:var(--accent);color:var(--accent-ink)}.ds-primary:hover{background:var(--accent-hover)}.ds-primary:focus-visible{outline:2px solid var(--focus);outline-offset:3px}"
+      "description": "A direct command in the shared workspace scope.",
+      "html": "<button class=\"ds-primary\">Save changes</button>",
+      "css": ".ds-primary{font:500 12px var(--font-ui, Inter, sans-serif);min-height:38px;padding:9px 15px;border:1px solid var(--accent,#69c49a);border-radius:6px;background:var(--accent,#69c49a);color:var(--accent-ink,#101e17)}.ds-primary:hover{background:var(--accent-hover,#86d8b0)}.ds-primary:focus-visible{outline:2px solid var(--focus,#86d8b0);outline-offset:3px}"
     },
     {
-      "name": "Secondary Button",
+      "name": "Workspace Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
       "description": "A neutral secondary command.",
-      "html": "<button class=\"ds-secondary\">Practice solo</button>",
-      "css": ".ds-secondary{font:500 13px var(--font-ui);min-height:40px;padding:10px 16px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);color:var(--ink)}.ds-secondary:hover{background:var(--surface-hover)}"
+      "html": "<button class=\"ds-secondary\">Cancel</button>",
+      "css": ".ds-secondary{font:500 12px var(--font-ui, Inter, sans-serif);min-height:38px;padding:9px 15px;border:1px solid var(--line-strong,#454e58);border-radius:6px;background:var(--surface,#191c1f);color:var(--ink,#edf0f3)}.ds-secondary:hover{background:var(--surface-hover,#292e33)}.ds-secondary:focus-visible{outline:2px solid var(--focus,#86d8b0);outline-offset:3px}"
     },
     {
-      "name": "Field",
+      "name": "Workspace Field",
       "kind": "input",
       "refersTo": "field",
       "description": "A labeled neutral input with visible focus.",
-      "html": "<label class=\"ds-field\">Room code<input placeholder=\"10-character code\" /></label>",
-      "css": ".ds-field{display:grid;gap:8px;font:500 12px var(--font-ui);color:var(--muted)}.ds-field input{font:400 14px var(--font-ui);min-height:40px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);color:var(--ink)}.ds-field input:focus-visible{outline:2px solid var(--focus);outline-offset:3px}"
+      "html": "<label class=\"ds-field\">Display name<input placeholder=\"Your name\" /></label>",
+      "css": ".ds-field{display:grid;gap:8px;font:500 12px var(--font-ui, Inter, sans-serif);color:var(--muted,#a5adb7)}.ds-field input{font:400 12px var(--font-ui, Inter, sans-serif);height:40px;padding:0 12px;border:1px solid var(--line-strong,#454e58);border-radius:6px;background:var(--surface,#191c1f);color:var(--ink,#edf0f3)}.ds-field input:focus-visible{outline:2px solid var(--focus,#86d8b0);outline-offset:3px}"
+    },
+    {
+      "name": "Versus Primary Button",
+      "kind": "button",
+      "refersTo": "versus-button-primary",
+      "description": "Orbital-blue command with white text; the bright link accent is a separate role.",
+      "html": "<button class=\"ds-v-primary\">Create a room</button>",
+      "css": ".ds-v-primary{--surface:#0d1524;--surface-raised:#121e31;--surface-hover:#192840;--muted:#a3afc5;--line:#26344c;--line-strong:#40516e;--accent:#a6baff;--focus:#c0ceff;font:500 13px var(--galaxy-body,\"IBM Plex Sans\",sans-serif);min-height:42px;padding:10px 18px;border:1px solid transparent;border-radius:4px;background:var(--galaxy-algebra,#526cb7);color:#fff;cursor:pointer;transition:background .15s,border-color .15s}.ds-v-primary:hover:not(:disabled){background:#4864b3}.ds-v-primary:focus-visible{outline:2px solid var(--focus);outline-offset:3px}.ds-v-primary:disabled{opacity:.45;cursor:not-allowed}"
+    },
+    {
+      "name": "Versus Secondary Button",
+      "kind": "button",
+      "refersTo": "versus-button-secondary",
+      "description": "Neutral navy command.",
+      "html": "<button class=\"ds-v-secondary\">Practice solo</button>",
+      "css": ".ds-v-secondary{--surface:#0d1524;--surface-raised:#121e31;--surface-hover:#192840;--muted:#a3afc5;--line:#26344c;--line-strong:#40516e;--accent:#a6baff;--focus:#c0ceff;font:500 13px var(--galaxy-body,\"IBM Plex Sans\",sans-serif);min-height:42px;padding:10px 18px;border:1px solid var(--line-strong);border-radius:4px;background:var(--surface);color:var(--galaxy-starlight,#e9edf6);cursor:pointer;transition:background .15s,border-color .15s}.ds-v-secondary:hover:not(:disabled){background:var(--surface-hover)}.ds-v-secondary:focus-visible{outline:2px solid var(--focus);outline-offset:3px}.ds-v-secondary:disabled{opacity:.45;cursor:not-allowed}"
+    },
+    {
+      "name": "Versus Field",
+      "kind": "input",
+      "refersTo": "versus-field",
+      "description": "Labeled navy field with a strong border and visible focus.",
+      "html": "<label class=\"ds-v-field\">Display name<input value=\"Alex\" /></label>",
+      "css": ".ds-v-field{--surface:#0d1524;--surface-raised:#121e31;--surface-hover:#192840;--muted:#a3afc5;--line:#26344c;--line-strong:#40516e;--accent:#a6baff;--focus:#c0ceff;display:grid;gap:8px;font:500 12px var(--galaxy-body,\"IBM Plex Sans\",sans-serif);color:var(--galaxy-starlight,#e9edf6)}.ds-v-field input{min-width:0;min-height:44px;padding:0 12px;font:400 13px var(--galaxy-body,\"IBM Plex Sans\",sans-serif);background:var(--surface);color:var(--galaxy-starlight,#e9edf6);border:1px solid var(--line-strong);border-radius:4px}.ds-v-field input:focus-visible{outline:2px solid var(--focus);outline-offset:3px}"
+    },
+    {
+      "name": "Versus Navigation",
+      "kind": "nav",
+      "refersTo": "versus-navigation",
+      "description": "Existing galaxy breadcrumb above the three competitive destinations.",
+      "html": "<div class=\"ds-v-nav\"><nav class=\"ds-v-trail\" aria-label=\"Platform breadcrumb\"><a href=\"/\">Galaxy</a><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"m9 18 6-6-6-6\"/></svg><span aria-current=\"page\">Versus</span></nav><nav class=\"ds-v-tabs\" aria-label=\"Versus navigation\"><button aria-current=\"page\">Play</button><button>Match history</button><button>Leaderboard</button></nav></div>",
+      "css": ".ds-v-nav{--surface:#0d1524;--surface-raised:#121e31;--surface-hover:#192840;--muted:#a3afc5;--line:#26344c;--line-strong:#40516e;--accent:#a6baff;--focus:#c0ceff;background:var(--galaxy-void,#070a12);color:var(--muted);padding:10px 18px 0}.ds-v-trail{display:flex;align-items:center;gap:12px;font:600 12px/1.5 var(--galaxy-display,\"Chakra Petch\",sans-serif);text-transform:uppercase;letter-spacing:.06em}.ds-v-trail a{color:var(--muted);padding-block:6px;text-decoration:none}.ds-v-trail span{color:var(--accent)}.ds-v-tabs{display:flex;gap:26px;border-bottom:1px solid var(--line);margin-top:10px}.ds-v-tabs button{font:400 13px var(--galaxy-body,\"IBM Plex Sans\",sans-serif);border:0;border-bottom:2px solid transparent;padding:14px 0;background:none;color:var(--muted);cursor:pointer;white-space:nowrap}.ds-v-tabs [aria-current]{color:var(--accent);border-bottom-color:var(--accent)}.ds-v-nav a:hover,.ds-v-tabs button:hover{color:var(--galaxy-starlight,#e9edf6)}.ds-v-nav a:focus-visible,.ds-v-tabs button:focus-visible{outline:2px solid var(--focus);outline-offset:3px}"
+    },
+    {
+      "name": "Versus Mode Badge",
+      "kind": "chip",
+      "refersTo": "versus-badge",
+      "description": "The existing compact badge records mode; it is not an action.",
+      "html": "<span class=\"ds-v-badge\">Friendly</span>",
+      "css": ".ds-v-badge{--surface:#0d1524;--surface-raised:#121e31;--surface-hover:#192840;--muted:#a3afc5;--line:#26344c;--line-strong:#40516e;--accent:#a6baff;--focus:#c0ceff;display:inline-flex;align-items:center;gap:5px;padding:4px 7px;background:var(--surface-raised);border:1px solid var(--line);border-radius:4px;color:var(--muted);font:500 10px var(--galaxy-body,\"IBM Plex Sans\",sans-serif);white-space:nowrap}"
+    },
+    {
+      "name": "Versus Question Panel",
+      "kind": "card",
+      "refersTo": "versus-question-panel",
+      "description": "Bounded question reading surface; no decorative shadow.",
+      "html": "<section class=\"ds-v-question\"><h2>Question 1</h2><p>Which statement describes the instruction?</p></section>",
+      "css": ".ds-v-question{--surface:#0d1524;--surface-raised:#121e31;--surface-hover:#192840;--muted:#a3afc5;--line:#26344c;--line-strong:#40516e;--accent:#a6baff;--focus:#c0ceff;padding:24px;background:var(--surface);border:1px solid var(--line);border-radius:6px;color:var(--galaxy-starlight,#e9edf6);min-width:0}.ds-v-question h2{font:600 25px/1.35 var(--galaxy-display,\"Chakra Petch\",sans-serif);margin:0 0 12px}.ds-v-question p{font:400 15px/1.85 var(--galaxy-body,\"IBM Plex Sans\",sans-serif);max-width:65ch;margin:0}"
+    },
+    {
+      "name": "Versus Cockpit Communications",
+      "kind": "custom",
+      "description": "Textual combat result and native rules disclosure beneath the 3D window; remains available with effects paused or WebGL unavailable.",
+      "html": "<div class=\"ds-cockpit-comms\"><p role=\"status\"><span class=\"ds-comms-light\"></span>Correct answer · direct hit</p><details class=\"ds-combat-rules\"><summary>Combat rules</summary><p>A correct answer fires at the other ship. A missed answer draws return fire. If both pilots are correct, both fire. Exchanges appear after the round closes. Each correct answer still earns 1,000 points; total score decides the winner.</p></details></div>",
+      "css": ".ds-cockpit-comms{--surface:#0d1524;--muted:#a3afc5;--line-strong:#40516e;--focus:#c0ceff;display:flex;align-items:center;justify-content:space-between;gap:20px;background:var(--surface);color:var(--galaxy-starlight,#e9edf6);padding:12px 20px;min-height:47px;font-family:var(--galaxy-body,\"IBM Plex Sans\",sans-serif)}.ds-cockpit-comms>p{margin:0;font-size:13px;display:flex;align-items:center;gap:10px}.ds-comms-light{width:5px;height:5px;border-radius:50%;flex-shrink:0;background:#9ccdb1}.ds-combat-rules{position:relative;flex-shrink:0}.ds-combat-rules summary{font-size:12px;color:var(--muted);cursor:pointer}.ds-combat-rules summary:hover{color:var(--galaxy-starlight,#e9edf6)}.ds-combat-rules summary:focus-visible{outline:2px solid var(--focus);outline-offset:3px}.ds-combat-rules p{position:absolute;right:0;z-index:8;width:min(340px,78vw);border:1px solid var(--line-strong);padding:16px;background:var(--surface);color:var(--galaxy-starlight,#e9edf6);font-size:13px;line-height:1.7}@media(max-width:780px){.ds-cockpit-comms{align-items:flex-start;padding:12px 14px;gap:10px}.ds-cockpit-comms>p{font-size:12px;line-height:1.6}.ds-combat-rules summary{font-size:11px;line-height:1.7}}@media(max-width:370px){.ds-cockpit-comms{flex-wrap:wrap}.ds-combat-rules p{left:0;right:auto}}"
     }
   ],
   "narrative": {
     "northStar": "One VisCon workspace",
-    "overview": "A unified modern SaaS B2B interface, inspired by the direct NeetCode Versus matchup workflow. Charcoal neutrals, self-hosted Inter, compact controls, restrained green actions, and one shared header span Arena, Lectures, Campus, and the video demo.",
+    "overview": "VisCon connects course exploration, lecture study and competition. Its existing galaxy supplies the spatial identity for Versus: dark navy space, angular headings, readable text and precise orbital geometry. The user-authorized ship and cockpit extension gives this competitive destination a physical place in that universe: boarding approaches the ship, and completed round results drive brief combat exchanges. This continues the existing galaxy, recorded in PRODUCT.md on 10 October 2026; it does not replace the identities of the other workspaces.\n\nStudy World, Lectures, Campus controls and the standalone video demonstration retain the incumbent charcoal, Inter and green system. These workspaces keep their direct, compact study workflows and shared product header. NeetCode Versus remains a functional reference for match setup and invitations, not the visual authority for the galaxy destination.",
     "keyCharacteristics": [
-      "Work-first screens",
-      "Shared semantic tokens",
-      "Compact Inter typography",
-      "Flat layouts and fine separators",
-      "Native video and code workspaces"
+      "Existing galaxy and Versus share space, typography and course-aware navigation.",
+      "The galaxy ship and Versus cockpit share procedural geometry; confirmed results drive bounded combat effects.",
+      "Other workspaces retain charcoal neutrals, local Inter and green actions.",
+      "Clear questions, subject availability, scores and results take priority over decoration.",
+      "Fine boundaries and tonal surfaces organize compact controls.",
+      "Native video, code workspaces and accessible interaction remain intact."
     ],
     "rules": [
       {
-        "name": "One System",
-        "body": "All applications import shared/design; do not invent module-specific palettes or fonts.",
+        "name": "The Scoped Inheritance Rule",
+        "body": "Galaxy and Versus inherit `galaxy/theme.css`; Study World, Lectures, Campus controls and the video demo retain `shared/design/`. Do not spread either scope's semantic overrides into the other.",
         "section": "colors"
       },
       {
-        "name": "Stable Numbers",
+        "name": "The Stable Numbers Rule",
         "body": "Use tabular numerals and stable geometry for scores and timers.",
         "section": "typography"
       },
       {
-        "name": "Flat Workspaces",
-        "body": "Page sections are unframed. Shadows belong to overlays; corners stay at or below 8px.",
+        "name": "The Quiet Match Rule",
+        "body": "Keep the decorative page sky static and dim during questions. The separate cockpit remains still during active rounds and may show brief combat bursts only after a public round result; pause and reduced motion suppress those bursts.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Flat Workspaces Rule",
+        "body": "Ordinary workspace sections do not gain decorative shadows or nested cards. Keep scene depth in the galaxy, tonal panels in Versus and overlay elevation only where the existing component uses it.",
         "section": "elevation"
       }
     ],
     "dos": [
-      "Reuse ProductHeader and semantic tokens.",
-      "Keep normal text at 4.5:1 contrast.",
-      "Keep active timers visible on mobile.",
-      "Preserve keyboard focus and reduced motion.",
-      "Use real content imagery with attribution."
+      "Do reuse each route's established token source and navigation component.",
+      "Do keep galaxy and Versus aligned through the shared local fonts, ground and orbital blue.",
+      "Do preserve charcoal, Inter and green rules in the other workspaces.",
+      "Do keep normal content text at 4.5:1 contrast and give status a label or icon.",
+      "Do preserve keyboard focus, labeled controls, dialog focus handling and reduced motion.",
+      "Do keep active timers visible on mobile and bound code/table overflow locally.",
+      "Do keep cockpit fire tied to confirmed public results and preserve its textual status, pause and fallback states.",
+      "Do preserve course-aware return, active-room protection and honest availability labels.",
+      "Do use real content imagery with visible attribution and native playback controls."
     ],
     "donts": [
-      "Do not restore the old plum/violet or separate blue demo themes.",
-      "Do not put a marketing hero before match setup or lecture search.",
-      "Do not nest cards or decorate ordinary panels with shadows.",
-      "Do not add external font services or viewport-scaled UI text."
+      "Don't apply Versus semantic overrides to Study World, Lectures, Campus or the video demo.",
+      "Don't restore the old plum Arena palette or separate blue demo theme.",
+      "Don't add an unrelated palette, font service or navigation treatment within an existing scope.",
+      "Don't add a marketing hero before match setup or lecture search.",
+      "Don't nest cards or decorate ordinary workspace panels with shadows.",
+      "Don't animate the decorative match background or fire cockpit effects before the server publishes a completed round.",
+      "Don't turn compact galaxy HUD labels into new content-section eyebrows or use its dim text tokens for Versus form controls.",
+      "Don't scale interface text continuously with viewport width; use the established responsive steps."
     ]
   }
 }

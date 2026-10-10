@@ -8,7 +8,6 @@
   <meta name="theme-color" content="#070a12">
   <meta name="color-scheme" content="dark">
   <link rel="icon" href="/galaxy/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/galaxy/vendor/fonts/fonts.css">
   <link rel="stylesheet" href="/galaxy/styles.css">
 </head>
 <body>
@@ -16,6 +15,13 @@
   <div class="grade" aria-hidden="true"></div>
   <div class="warp" id="warp" aria-hidden="true"></div>
   <div class="tags" id="tags" aria-hidden="true"></div>
+  <button class="ship-beacon" id="board-versus" type="button" hidden aria-label="Versus-Schiff betreten">
+    <span>Versus</span><small>Cockpit betreten <span aria-hidden="true">↗</span></small>
+  </button>
+  <div class="boarding-status" id="boarding-status" hidden role="status">
+    <strong>Cockpit wird angeflogen</strong><span>Versus · Dein nächstes Duell</span>
+    <button id="cancel-boarding" type="button">Abbrechen</button>
+  </div>
 
   <div class="hud">
     <nav class="trail" id="trail" aria-label="Navigation"></nav>
@@ -25,7 +31,7 @@
         <a href="/learn" title="Normale Ansicht mit Liste und Fragen">Liste</a>
         <a href="/" aria-current="page" class="on" title="Galaxie-Ansicht">Galaxie</a>
       </span>
-      <a href="/arena">Arena</a>
+      <a href="/arena" id="versus-link">Versus</a>
       <a href="/world">Study World</a>
     </nav>
 
@@ -107,6 +113,7 @@
   <script src="/galaxy/vendor/three/three.min.js"></script>
   <script src="/galaxy/api.js"></script>
   <script src="/galaxy/documents.js"></script>
+  <script src="/galaxy/duel-scene.js"></script>
   <script src="/galaxy/app.js"></script>
 </body>
 </html>

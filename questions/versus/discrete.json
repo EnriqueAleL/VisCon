@@ -1,0 +1,902 @@
+[
+  {
+    "id": "versus-discrete-01",
+    "subject": "discrete",
+    "topic": "Sets",
+    "title": "Intersection of sets",
+    "prompt": "Let A = {1, 2, 3, 4} and B = {3, 4, 5}. What is A ∩ B?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "{3, 4}"
+      },
+      {
+        "id": "o1",
+        "text": "{1, 2, 5}"
+      },
+      {
+        "id": "o2",
+        "text": "{1, 2, 3, 4, 5}"
+      },
+      {
+        "id": "o3",
+        "text": "{5}"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "An intersection contains exactly the elements present in both sets: 3 and 4."
+  },
+  {
+    "id": "versus-discrete-02",
+    "subject": "discrete",
+    "topic": "Sets",
+    "title": "Counting a union",
+    "prompt": "If |A| = 8, |B| = 7 and |A ∩ B| = 3, what is |A ∪ B|?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "15"
+      },
+      {
+        "id": "o1",
+        "text": "18"
+      },
+      {
+        "id": "o2",
+        "text": "3"
+      },
+      {
+        "id": "o3",
+        "text": "12"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Inclusion–exclusion gives 8 + 7 − 3 = 12."
+  },
+  {
+    "id": "versus-discrete-03",
+    "subject": "discrete",
+    "topic": "Sets",
+    "title": "A power set",
+    "prompt": "How many elements are in the power set of {a, b, c}?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "6"
+      },
+      {
+        "id": "o1",
+        "text": "9"
+      },
+      {
+        "id": "o2",
+        "text": "8"
+      },
+      {
+        "id": "o3",
+        "text": "3"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Every one of the three elements is either included or excluded, giving 2³ = 8 subsets."
+  },
+  {
+    "id": "versus-discrete-04",
+    "subject": "discrete",
+    "topic": "Logic",
+    "title": "An implication",
+    "prompt": "When is the statement P → Q false?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Whenever P is false"
+      },
+      {
+        "id": "o1",
+        "text": "When P is true and Q is false"
+      },
+      {
+        "id": "o2",
+        "text": "When P and Q are both true"
+      },
+      {
+        "id": "o3",
+        "text": "When P is false and Q is true"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "An implication fails only when its premise holds but its conclusion does not."
+  },
+  {
+    "id": "versus-discrete-05",
+    "subject": "discrete",
+    "topic": "Logic",
+    "title": "De Morgan’s law",
+    "prompt": "Which expression is equivalent to ¬(P ∨ Q)?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "¬P ∧ ¬Q"
+      },
+      {
+        "id": "o1",
+        "text": "¬P ∨ ¬Q"
+      },
+      {
+        "id": "o2",
+        "text": "P ∧ Q"
+      },
+      {
+        "id": "o3",
+        "text": "P ∨ ¬Q"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Negating a disjunction requires both alternatives to be false."
+  },
+  {
+    "id": "versus-discrete-06",
+    "subject": "discrete",
+    "topic": "Logic",
+    "title": "Negating a quantified statement",
+    "prompt": "What is the negation of “Every student passed”?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "No student passed"
+      },
+      {
+        "id": "o1",
+        "text": "Exactly one student passed"
+      },
+      {
+        "id": "o2",
+        "text": "Every student failed"
+      },
+      {
+        "id": "o3",
+        "text": "At least one student did not pass"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The negation of ∀x P(x) is ∃x ¬P(x)."
+  },
+  {
+    "id": "versus-discrete-07",
+    "subject": "discrete",
+    "topic": "Counting",
+    "title": "Ordered prizes",
+    "prompt": "Five students compete for distinct gold, silver and bronze prizes. Nobody can receive two prizes. How many allocations are possible?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "15"
+      },
+      {
+        "id": "o1",
+        "text": "125"
+      },
+      {
+        "id": "o2",
+        "text": "60"
+      },
+      {
+        "id": "o3",
+        "text": "10"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Choose the recipients in order: 5 × 4 × 3 = 60."
+  },
+  {
+    "id": "versus-discrete-08",
+    "subject": "discrete",
+    "topic": "Counting",
+    "title": "Choosing a committee",
+    "prompt": "How many committees of three can be chosen from six people?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "9"
+      },
+      {
+        "id": "o1",
+        "text": "20"
+      },
+      {
+        "id": "o2",
+        "text": "120"
+      },
+      {
+        "id": "o3",
+        "text": "18"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Order does not matter, so choose 6! / (3!3!) = 20 committees."
+  },
+  {
+    "id": "versus-discrete-09",
+    "subject": "discrete",
+    "topic": "Counting",
+    "title": "Repeated letters",
+    "prompt": "How many distinct arrangements of the letters in LEVEL are possible?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "30"
+      },
+      {
+        "id": "o1",
+        "text": "120"
+      },
+      {
+        "id": "o2",
+        "text": "60"
+      },
+      {
+        "id": "o3",
+        "text": "20"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The two Ls and two Es are indistinguishable: 5! / (2!2!) = 30."
+  },
+  {
+    "id": "versus-discrete-10",
+    "subject": "discrete",
+    "topic": "Probability",
+    "title": "Two fair dice",
+    "prompt": "Two independent fair six-sided dice are rolled. What is the probability that their sum is 7?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "1/12"
+      },
+      {
+        "id": "o1",
+        "text": "1/7"
+      },
+      {
+        "id": "o2",
+        "text": "1/3"
+      },
+      {
+        "id": "o3",
+        "text": "1/6"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Six of the 36 equally likely ordered outcomes sum to 7."
+  },
+  {
+    "id": "versus-discrete-11",
+    "subject": "discrete",
+    "topic": "Probability",
+    "title": "Without replacement",
+    "prompt": "A bag has three red and two blue balls. Two balls are drawn without replacement. What is the probability both are red?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "3/5"
+      },
+      {
+        "id": "o1",
+        "text": "1/5"
+      },
+      {
+        "id": "o2",
+        "text": "3/10"
+      },
+      {
+        "id": "o3",
+        "text": "9/25"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The probability is (3/5) × (2/4) = 3/10."
+  },
+  {
+    "id": "versus-discrete-12",
+    "subject": "discrete",
+    "topic": "Probability",
+    "title": "Conditional probability",
+    "prompt": "Suppose P(A ∩ B) = 0.2 and P(B) = 0.5. What is P(A | B)?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "0.3"
+      },
+      {
+        "id": "o1",
+        "text": "0.4"
+      },
+      {
+        "id": "o2",
+        "text": "0.1"
+      },
+      {
+        "id": "o3",
+        "text": "0.7"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "By definition P(A | B) = P(A ∩ B) / P(B) = 0.2 / 0.5."
+  },
+  {
+    "id": "versus-discrete-13",
+    "subject": "discrete",
+    "topic": "Graphs",
+    "title": "Degrees and edges",
+    "prompt": "An undirected graph has vertex degrees 1, 2, 2, 3, 4. How many edges does it have?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "6"
+      },
+      {
+        "id": "o1",
+        "text": "12"
+      },
+      {
+        "id": "o2",
+        "text": "5"
+      },
+      {
+        "id": "o3",
+        "text": "4"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Each edge contributes two to the degree sum. The sum is 12, so there are 6 edges."
+  },
+  {
+    "id": "versus-discrete-14",
+    "subject": "discrete",
+    "topic": "Graphs",
+    "title": "Edges in a tree",
+    "prompt": "A finite tree has 12 vertices. How many edges does it have?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "12"
+      },
+      {
+        "id": "o1",
+        "text": "13"
+      },
+      {
+        "id": "o2",
+        "text": "24"
+      },
+      {
+        "id": "o3",
+        "text": "11"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A tree with n vertices has n − 1 edges."
+  },
+  {
+    "id": "versus-discrete-15",
+    "subject": "discrete",
+    "topic": "Graphs",
+    "title": "Bipartite cycles",
+    "prompt": "Which cycle graph is not bipartite?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "A cycle with 6 vertices"
+      },
+      {
+        "id": "o1",
+        "text": "A cycle with 8 vertices"
+      },
+      {
+        "id": "o2",
+        "text": "A cycle with 5 vertices"
+      },
+      {
+        "id": "o3",
+        "text": "A cycle with 4 vertices"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A graph is bipartite exactly when it has no odd cycle. A 5-cycle is odd."
+  },
+  {
+    "id": "versus-discrete-16",
+    "subject": "discrete",
+    "topic": "Number theory",
+    "title": "Greatest common divisor",
+    "prompt": "What is gcd(84, 30)?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "14"
+      },
+      {
+        "id": "o1",
+        "text": "6"
+      },
+      {
+        "id": "o2",
+        "text": "2"
+      },
+      {
+        "id": "o3",
+        "text": "12"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Euclid’s algorithm gives 84 mod 30 = 24, 30 mod 24 = 6, and 24 mod 6 = 0."
+  },
+  {
+    "id": "versus-discrete-17",
+    "subject": "discrete",
+    "topic": "Number theory",
+    "title": "A modular inverse",
+    "prompt": "What is the multiplicative inverse of 3 modulo 7?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "5"
+      },
+      {
+        "id": "o1",
+        "text": "2"
+      },
+      {
+        "id": "o2",
+        "text": "3"
+      },
+      {
+        "id": "o3",
+        "text": "4"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "3 × 5 = 15 ≡ 1 (mod 7)."
+  },
+  {
+    "id": "versus-discrete-18",
+    "subject": "discrete",
+    "topic": "Number theory",
+    "title": "Simultaneous congruences",
+    "prompt": "What is the smallest nonnegative integer x with x ≡ 1 (mod 3) and x ≡ 2 (mod 5)?",
+    "format": "quiz",
+    "difficulty": "challenge",
+    "options": [
+      {
+        "id": "o0",
+        "text": "2"
+      },
+      {
+        "id": "o1",
+        "text": "11"
+      },
+      {
+        "id": "o2",
+        "text": "17"
+      },
+      {
+        "id": "o3",
+        "text": "7"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The values 2, 7, 12, … satisfy the second congruence; 7 is the first also equal to 1 modulo 3."
+  },
+  {
+    "id": "versus-discrete-19",
+    "subject": "discrete",
+    "topic": "Relations",
+    "title": "An equivalence relation",
+    "prompt": "Which three properties define an equivalence relation?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Irreflexive, symmetric and transitive"
+      },
+      {
+        "id": "o1",
+        "text": "Symmetric, antisymmetric and total"
+      },
+      {
+        "id": "o2",
+        "text": "Reflexive, symmetric and transitive"
+      },
+      {
+        "id": "o3",
+        "text": "Reflexive, antisymmetric and transitive"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Equivalence relations group elements into classes using reflexivity, symmetry and transitivity."
+  },
+  {
+    "id": "versus-discrete-20",
+    "subject": "discrete",
+    "topic": "Relations",
+    "title": "Divisibility as an order",
+    "prompt": "On the positive integers, the relation a R b iff a divides b is which type of relation?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Neither reflexive nor transitive"
+      },
+      {
+        "id": "o1",
+        "text": "A partial order"
+      },
+      {
+        "id": "o2",
+        "text": "An equivalence relation"
+      },
+      {
+        "id": "o3",
+        "text": "A strict total order"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Divisibility is reflexive, antisymmetric and transitive; not every pair is comparable."
+  },
+  {
+    "id": "versus-discrete-21",
+    "subject": "discrete",
+    "topic": "Functions",
+    "title": "Injective finite maps",
+    "prompt": "How many injective functions are there from a 3-element set to a 5-element set?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "60"
+      },
+      {
+        "id": "o1",
+        "text": "125"
+      },
+      {
+        "id": "o2",
+        "text": "15"
+      },
+      {
+        "id": "o3",
+        "text": "10"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Distinct inputs must map to distinct outputs: 5 × 4 × 3 = 60."
+  },
+  {
+    "id": "versus-discrete-22",
+    "subject": "discrete",
+    "topic": "Functions",
+    "title": "Surjections onto two values",
+    "prompt": "How many surjective functions are there from a 3-element set to a 2-element set?",
+    "format": "quiz",
+    "difficulty": "challenge",
+    "options": [
+      {
+        "id": "o0",
+        "text": "8"
+      },
+      {
+        "id": "o1",
+        "text": "4"
+      },
+      {
+        "id": "o2",
+        "text": "2"
+      },
+      {
+        "id": "o3",
+        "text": "6"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "There are 2³ = 8 functions. Remove the two constant functions that omit one output."
+  },
+  {
+    "id": "versus-discrete-23",
+    "subject": "discrete",
+    "topic": "Proofs",
+    "title": "The pigeonhole principle",
+    "prompt": "Thirteen people are assigned their birth month. What must be true?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Every month occurs"
+      },
+      {
+        "id": "o1",
+        "text": "At least three share a birth month"
+      },
+      {
+        "id": "o2",
+        "text": "At least two share a birth month"
+      },
+      {
+        "id": "o3",
+        "text": "Exactly two share a birth month"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Thirteen people occupy twelve month categories, so one category has at least two people."
+  },
+  {
+    "id": "versus-discrete-24",
+    "subject": "discrete",
+    "topic": "Proofs",
+    "title": "An induction step",
+    "prompt": "In ordinary induction for a statement P(n), which implication is proved in the inductive step?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "P(k) is false for every k"
+      },
+      {
+        "id": "o1",
+        "text": "P(k) implies P(k + 1) for every allowed k"
+      },
+      {
+        "id": "o2",
+        "text": "P(k + 1) implies P(k)"
+      },
+      {
+        "id": "o3",
+        "text": "P(1) implies P(100) only"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "After the base case, the implication from each case to its successor propagates the result."
+  },
+  {
+    "id": "versus-discrete-25",
+    "subject": "discrete",
+    "topic": "Recurrences",
+    "title": "A doubling recurrence",
+    "prompt": "Let a₀ = 3 and aₙ = 2aₙ₋₁ for n ≥ 1. What is a₄?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "48"
+      },
+      {
+        "id": "o1",
+        "text": "24"
+      },
+      {
+        "id": "o2",
+        "text": "12"
+      },
+      {
+        "id": "o3",
+        "text": "81"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Repeated doubling gives 3, 6, 12, 24, 48."
+  },
+  {
+    "id": "versus-discrete-26",
+    "subject": "discrete",
+    "topic": "Recurrences",
+    "title": "A Fibonacci-type recurrence",
+    "prompt": "Let a₀ = 0, a₁ = 1 and aₙ = aₙ₋₁ + aₙ₋₂. What is a₆?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "5"
+      },
+      {
+        "id": "o1",
+        "text": "6"
+      },
+      {
+        "id": "o2",
+        "text": "13"
+      },
+      {
+        "id": "o3",
+        "text": "8"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The sequence begins 0, 1, 1, 2, 3, 5, 8."
+  },
+  {
+    "id": "versus-discrete-27",
+    "subject": "discrete",
+    "topic": "Asymptotic growth",
+    "title": "A polynomial bound",
+    "prompt": "What is the tight asymptotic order of 3n² + 7n + 4 as n grows?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Θ(n³)"
+      },
+      {
+        "id": "o1",
+        "text": "Θ(log n)"
+      },
+      {
+        "id": "o2",
+        "text": "Θ(n²)"
+      },
+      {
+        "id": "o3",
+        "text": "Θ(n)"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The quadratic term dominates lower-degree terms and constant factors."
+  },
+  {
+    "id": "versus-discrete-28",
+    "subject": "discrete",
+    "topic": "Asymptotic growth",
+    "title": "Repeated halving",
+    "prompt": "Starting with n = 2ᵏ, how many halvings are needed to reach 1?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "k²"
+      },
+      {
+        "id": "o1",
+        "text": "k"
+      },
+      {
+        "id": "o2",
+        "text": "2k"
+      },
+      {
+        "id": "o3",
+        "text": "2ᵏ"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "After j halvings the value is 2^(k−j), which equals 1 when j = k."
+  },
+  {
+    "id": "versus-discrete-29",
+    "subject": "discrete",
+    "topic": "Boolean algebra",
+    "title": "Absorption",
+    "prompt": "Which expression is equivalent to P ∨ (P ∧ Q)?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "P"
+      },
+      {
+        "id": "o1",
+        "text": "Q"
+      },
+      {
+        "id": "o2",
+        "text": "P ∧ Q"
+      },
+      {
+        "id": "o3",
+        "text": "P ∨ Q"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "If P is true the expression is true; if P is false both terms are false."
+  },
+  {
+    "id": "versus-discrete-30",
+    "subject": "discrete",
+    "topic": "Graphs",
+    "title": "Eulerian circuits",
+    "prompt": "A connected undirected graph with at least one edge has an Eulerian circuit exactly when what holds?",
+    "format": "quiz",
+    "difficulty": "challenge",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Every vertex has odd degree"
+      },
+      {
+        "id": "o1",
+        "text": "It has exactly two odd-degree vertices"
+      },
+      {
+        "id": "o2",
+        "text": "Its number of vertices is even"
+      },
+      {
+        "id": "o3",
+        "text": "Every vertex has even degree"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A closed trail using each edge once requires and, for a connected graph, is guaranteed by even degree at every vertex."
+  }
+]

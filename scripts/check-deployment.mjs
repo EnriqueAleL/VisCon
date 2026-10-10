@@ -63,7 +63,9 @@ console.log(`Checking ${base.origin} with Node ${process.versions.node}`);
 let world, catalog, puzzles;
 await check('Health endpoint', async () => assert((await json('/api/health')).ok === true, 'Health is not OK.'));
 await check('Built semester and lecture pages', async () => {
-  for (const path of ['/', '/learn']) {
+  const galaxy = await (await request('/')).text();
+  assert(galaxy.includes('id="scene"') && galaxy.includes('/galaxy/app.js') && galaxy.includes('id="versus-link"'), '/ is not the built course galaxy. Run npm run build.');
+  for (const path of ['/learn', '/arena']) {
     const body = await (await request(path)).text();
     assert(body.includes('id="root"') && /\/assets\/[^"']+\.js/.test(body), `${path} is not the production Vite page. Run npm run build.`);
   }

@@ -23,14 +23,14 @@ def capture(page, name):
 
 def recording_course(page):
     page.get_by_role('button', name='Kurse', exact=True).click()
-    page.get_by_role('button', name='Aufzeichnungen', exact=True).click()
+    page.get_by_role('group', name='Departement').get_by_role('button', name='D-INFK', exact=False).click()
+    page.get_by_role('button', name='Bachelor (BSc), 1. Studienjahr', exact=True).click()
     page.get_by_role('button', name='Digital Design & Computer Architecture', exact=True).click()
 
 
 def demo_course(page):
     page.get_by_role('button', name='Kurse', exact=True).click()
-    page.get_by_role('button', name='2026', exact=True).click()
-    page.get_by_role('button', name='Herbstsemester', exact=True).click()
+    page.get_by_role('group', name='Departement').get_by_role('button', name='D-MATH', exact=False).click()
     page.get_by_role('button', name='Bachelor (BSc), 1. Studienjahr', exact=True).click()
     page.get_by_role('button', name='Lineare Algebra I · Demo', exact=True).click()
 
@@ -82,8 +82,7 @@ with sync_playwright() as pw:
     page.get_by_role('button', name='Kurse', exact=True).hover()
     expect(page.get_by_role('dialog', name='Kursauswahl')).to_be_visible()
     capture(page, 'integration-picker-desktop.png')
-    page.get_by_role('button', name='Aufzeichnungen', exact=True).click()
-    page.get_by_role('button', name='Digital Design & Computer Architecture', exact=True).click()
+    recording_course(page)
     ask(page, 'MIPS byte addressable')
     expect(page.locator('.lecture-card')).to_have_count(1)
     capture(page, 'integration-search-desktop.png')
@@ -171,20 +170,22 @@ with sync_playwright() as pw:
     expect(page.locator('.answer-panel')).to_have_count(0)
     expect(page.get_by_label('Nachricht eingeben')).to_have_value('')
     assert page.evaluate('window.askAborted')
-    page.evaluate('window.fetch = window.originalFetch')
+    page.evaluate('() => { window.fetch = window.originalFetch; }')
     ask(page, 'Eigenwerte und Eigenvektoren')
     expect(page.locator('.lecture-title')).to_contain_text('Demo')
 
     # The new Arena icon enters the existing app and keeps its session on return.
-    page.get_by_role('link', name='Arena', exact=True).click(); settle(page)
-    expect(page.get_by_role('heading', name='Arena', exact=True)).to_be_visible()
+    page.locator('.sidebar').get_by_role('link', name='Versus', exact=True).click(); settle(page)
+    expect(page.get_by_role('heading', name='Versus', exact=False)).to_be_visible()
     profile = api.get(BASE + '/api/bootstrap').json()['profile']['id']
     page.get_by_role('button', name='Practice solo', exact=True).click()
     expect(page.get_by_text('Practice bot · Ready', exact=True)).to_be_visible()
+    page.locator('.cabin-menu > summary').click()
     page.get_by_role('link', name='Lectures', exact=True).click()
     expect(page.get_by_role('alertdialog')).to_be_visible()
     page.get_by_role('button', name='Stay here', exact=True).click()
     expect(page.get_by_role('alertdialog')).not_to_be_visible()
+    page.locator('.cabin-menu > summary').click()
     page.get_by_role('link', name='Lectures', exact=True).click()
     page.get_by_role('alertdialog').get_by_role('button', name='Leave room', exact=True).click()
     page.wait_for_url('**/learn'); settle(page)

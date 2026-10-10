@@ -54,17 +54,17 @@ with sync_playwright() as pw:
     host.request.post(BASE+'/api/profile',data={'name':'Mateo'})
     guest.request.post(BASE+'/api/profile',data={'name':'Alex'})
     a.reload();settle(a)
-    expect(a.get_by_role('heading',name='Arena',exact=True)).to_be_visible()
-    assert a.evaluate('getComputedStyle(document.body).backgroundColor') == 'rgb(17, 19, 21)'
-    assert 'Inter' in a.evaluate('getComputedStyle(document.body).fontFamily')
+    expect(a.get_by_role('heading',name='Versus',exact=False)).to_be_visible()
+    assert a.evaluate('getComputedStyle(document.body).backgroundColor') == 'rgb(7, 10, 18)'
+    assert 'IBM Plex Sans' in a.evaluate('getComputedStyle(document.body).fontFamily')
     capture(a,'home-desktop.png')
     a.get_by_role('button',name='Create a room',exact=True).click()
     a.wait_for_url('**/room/*');settle(a)
     room_url=a.url
     room_id=room_url.rsplit('/',1)[1]
     b.goto(room_url);settle(b)
-    expect(a.get_by_text('2 / 2 players',exact=True)).to_be_visible()
-    expect(a.get_by_text('Alex',exact=True)).to_be_visible()
+    expect(a.locator('.players-panel').get_by_text('Alex',exact=True)).to_be_visible()
+    a.locator('.settings-panel > summary').click()
     check_contrast(a,['.estimate-band small','.ready-panel>p'])
     capture(a,'desktop.png')
     a.set_viewport_size({'width':390,'height':844});capture(a,'mobile.png')
@@ -77,21 +77,21 @@ with sync_playwright() as pw:
     expect(b.get_by_label('Subject')).to_be_disabled()
     a.get_by_role('button',name='Ready to play',exact=True).click()
     b.get_by_role('button',name='Ready to play',exact=True).click()
-    expect(a.get_by_role('heading',name='Your answer',exact=True)).to_be_visible(timeout=10000)
-    expect(b.get_by_role('heading',name='Your answer',exact=True)).to_be_visible(timeout=10000)
+    expect(a.locator('.answer-options')).to_be_visible(timeout=10000)
+    expect(b.locator('.answer-options')).to_be_visible(timeout=10000)
     public=host.request.get(BASE+f'/api/rooms/{room_id}').json()
     for secret in ('answer','tests','explanation','tolerance'):
         assert secret not in public['question'],secret
     question=public['question']
-    n=int(re.search(r'contains (\d+)',question['prompt']).group(1))
-    correct=str(2**n)
+    fixture=next(q for q in json.loads(Path('questions/versus/discrete.json').read_text()) if q['id']==question['id'])
+    correct=next(o['text'] for o in fixture['options'] if o['id']==fixture['answer'])
     capture(a,'match-desktop.png')
-    check_contrast(a,['.question-source','.match-clock small','.question-meta','.option-letter','.round-mark'])
+    check_contrast(a,['.question-source','.duel-round','.question-meta','.option-letter'])
     a.set_viewport_size({'width':390,'height':844});capture(a,'match-mobile.png')
     a.get_by_role('button',name='Lock answer',exact=True).scroll_into_view_if_needed()
-    expect(a.locator('.mobile-match-timer')).to_be_in_viewport()
+    expect(a.locator('.duel-instruments')).to_be_in_viewport()
     expect(a.get_by_role('button',name='Lock answer',exact=True)).to_be_in_viewport()
-    assert a.locator('.mobile-match-timer').bounding_box()['y'] >= 0
+    assert a.locator('.duel-instruments').bounding_box()['y'] >= 0
     a.screenshot(path=str(OUT/'match-mobile-scrolled.png'),animations='disabled')
     a.set_viewport_size({'width':1440,'height':1000})
     for option in a.locator('.answer-option').all():
@@ -110,6 +110,8 @@ with sync_playwright() as pw:
     b.get_by_role('button',name='See results',exact=True).click()
     expect(a.get_by_role('heading',name='This round of learning is yours.')).to_be_visible()
     capture(a,'results-desktop.png')
+    a.set_viewport_size({'width':390,'height':844});capture(a,'results-mobile.png')
+    a.set_viewport_size({'width':1440,'height':1000})
     one=host.request.get(BASE+'/api/bootstrap').json();two=guest.request.get(BASE+'/api/bootstrap').json()
     assert one['profile']['rating']==1216,one
     assert two['profile']['rating']==1184,two
@@ -121,6 +123,7 @@ with sync_playwright() as pw:
     b.get_by_role('button',name='Join the rematch',exact=True).click();settle(b)
     b.wait_for_url(a.url)
     assert a.url==b.url and a.url!=room_url
+    a.locator('.settings-panel > summary').click()
     a.get_by_label('Match mode').select_option('friendly')
     a.get_by_role('button',name=re.compile('Numeric')).click()
     a.get_by_label('Number of rounds').fill('1')

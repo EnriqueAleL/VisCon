@@ -1,0 +1,902 @@
+[
+  {
+    "id": "versus-linear-01",
+    "subject": "linear",
+    "topic": "Vectors",
+    "title": "Adding vectors",
+    "prompt": "What is (2, −1, 3) + (−4, 5, 1)?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "(−2, 4, 4)"
+      },
+      {
+        "id": "o1",
+        "text": "(6, −6, 2)"
+      },
+      {
+        "id": "o2",
+        "text": "(−8, −5, 3)"
+      },
+      {
+        "id": "o3",
+        "text": "(−2, 6, 3)"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Add corresponding components: 2−4, −1+5, 3+1."
+  },
+  {
+    "id": "versus-linear-02",
+    "subject": "linear",
+    "topic": "Vectors",
+    "title": "A dot product",
+    "prompt": "What is the dot product of (1, 2, −1) and (3, 0, 4)?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "7"
+      },
+      {
+        "id": "o1",
+        "text": "3"
+      },
+      {
+        "id": "o2",
+        "text": "1"
+      },
+      {
+        "id": "o3",
+        "text": "−1"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Multiply corresponding components and add: 1×3 + 2×0 + (−1)×4 = −1."
+  },
+  {
+    "id": "versus-linear-03",
+    "subject": "linear",
+    "topic": "Vectors",
+    "title": "Euclidean length",
+    "prompt": "What is the Euclidean norm of (3, 4)?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "25"
+      },
+      {
+        "id": "o1",
+        "text": "1"
+      },
+      {
+        "id": "o2",
+        "text": "5"
+      },
+      {
+        "id": "o3",
+        "text": "7"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The norm is √(3² + 4²) = √25 = 5."
+  },
+  {
+    "id": "versus-linear-04",
+    "subject": "linear",
+    "topic": "Orthogonality",
+    "title": "Perpendicular vectors",
+    "prompt": "Which vector is perpendicular to (2, 1)?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "(0, 1)"
+      },
+      {
+        "id": "o1",
+        "text": "(1, −2)"
+      },
+      {
+        "id": "o2",
+        "text": "(2, 1)"
+      },
+      {
+        "id": "o3",
+        "text": "(1, 2)"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Their dot product is 2×1 + 1×(−2) = 0."
+  },
+  {
+    "id": "versus-linear-05",
+    "subject": "linear",
+    "topic": "Orthogonality",
+    "title": "Projection onto an axis",
+    "prompt": "What is the orthogonal projection of (3, 4) onto the x-axis?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "(3, 0)"
+      },
+      {
+        "id": "o1",
+        "text": "(0, 4)"
+      },
+      {
+        "id": "o2",
+        "text": "(3, 4)"
+      },
+      {
+        "id": "o3",
+        "text": "(0, 0)"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Projection onto the x-axis preserves the x-component and removes the y-component."
+  },
+  {
+    "id": "versus-linear-06",
+    "subject": "linear",
+    "topic": "Orthogonality",
+    "title": "An orthogonal matrix",
+    "prompt": "For a real orthogonal matrix Q, which identity holds?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "QᵀQ = 0"
+      },
+      {
+        "id": "o1",
+        "text": "Q² = 0"
+      },
+      {
+        "id": "o2",
+        "text": "Q = 0"
+      },
+      {
+        "id": "o3",
+        "text": "QᵀQ = I"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The columns of an orthogonal matrix are orthonormal, so QᵀQ is the identity."
+  },
+  {
+    "id": "versus-linear-07",
+    "subject": "linear",
+    "topic": "Matrices",
+    "title": "Matrix multiplication order",
+    "prompt": "If A is 2×3 and B is 3×4, what is the size of AB?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "4×2"
+      },
+      {
+        "id": "o1",
+        "text": "2×3"
+      },
+      {
+        "id": "o2",
+        "text": "2×4"
+      },
+      {
+        "id": "o3",
+        "text": "3×3"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The inner dimensions agree; the product has the outer dimensions 2×4."
+  },
+  {
+    "id": "versus-linear-08",
+    "subject": "linear",
+    "topic": "Matrices",
+    "title": "A matrix product entry",
+    "prompt": "A = [[1, 2], [3, 4]] and B = [[2, 0], [1, 5]]. What is the entry in row 1, column 2 of AB?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "20"
+      },
+      {
+        "id": "o1",
+        "text": "10"
+      },
+      {
+        "id": "o2",
+        "text": "2"
+      },
+      {
+        "id": "o3",
+        "text": "5"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Dot row 1 of A with column 2 of B: 1×0 + 2×5 = 10."
+  },
+  {
+    "id": "versus-linear-09",
+    "subject": "linear",
+    "topic": "Matrices",
+    "title": "Transposing a product",
+    "prompt": "Which identity holds for compatible matrices A and B?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "(AB)ᵀ = BᵀAᵀ"
+      },
+      {
+        "id": "o1",
+        "text": "(AB)ᵀ = AᵀBᵀ"
+      },
+      {
+        "id": "o2",
+        "text": "(AB)ᵀ = AB"
+      },
+      {
+        "id": "o3",
+        "text": "(AB)ᵀ = A + B"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Transposition reverses the order of factors."
+  },
+  {
+    "id": "versus-linear-10",
+    "subject": "linear",
+    "topic": "Determinants",
+    "title": "A two-by-two determinant",
+    "prompt": "What is det([[2, 1], [3, 4]])?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "11"
+      },
+      {
+        "id": "o1",
+        "text": "8"
+      },
+      {
+        "id": "o2",
+        "text": "−5"
+      },
+      {
+        "id": "o3",
+        "text": "5"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "For a 2×2 matrix, the determinant is ad−bc: 2×4 − 1×3 = 5."
+  },
+  {
+    "id": "versus-linear-11",
+    "subject": "linear",
+    "topic": "Determinants",
+    "title": "Swapping rows",
+    "prompt": "A square matrix has determinant 7. What is its determinant after swapping two distinct rows?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "14"
+      },
+      {
+        "id": "o1",
+        "text": "0"
+      },
+      {
+        "id": "o2",
+        "text": "−7"
+      },
+      {
+        "id": "o3",
+        "text": "7"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "One row swap changes the determinant’s sign."
+  },
+  {
+    "id": "versus-linear-12",
+    "subject": "linear",
+    "topic": "Determinants",
+    "title": "A triangular determinant",
+    "prompt": "An upper triangular 3×3 matrix has diagonal entries 2, −3, 4. What is its determinant?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "−5"
+      },
+      {
+        "id": "o1",
+        "text": "−24"
+      },
+      {
+        "id": "o2",
+        "text": "3"
+      },
+      {
+        "id": "o3",
+        "text": "24"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The determinant of a triangular matrix is the product of its diagonal entries."
+  },
+  {
+    "id": "versus-linear-13",
+    "subject": "linear",
+    "topic": "Linear systems",
+    "title": "Solving two equations",
+    "prompt": "Solve x + y = 5 and x − y = 1. What is x?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "3"
+      },
+      {
+        "id": "o1",
+        "text": "2"
+      },
+      {
+        "id": "o2",
+        "text": "4"
+      },
+      {
+        "id": "o3",
+        "text": "6"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Adding the equations gives 2x = 6, so x = 3."
+  },
+  {
+    "id": "versus-linear-14",
+    "subject": "linear",
+    "topic": "Linear systems",
+    "title": "An inconsistent system",
+    "prompt": "What can be said about x + y = 1 and 2x + 2y = 3?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "There is exactly one solution"
+      },
+      {
+        "id": "o1",
+        "text": "There are infinitely many solutions"
+      },
+      {
+        "id": "o2",
+        "text": "Every pair (x, y) is a solution"
+      },
+      {
+        "id": "o3",
+        "text": "There is no solution"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Doubling the first equation would give 2x + 2y = 2, contradicting the second equation."
+  },
+  {
+    "id": "versus-linear-15",
+    "subject": "linear",
+    "topic": "Linear systems",
+    "title": "A homogeneous solution",
+    "prompt": "Which vector is always a solution of Ax = 0?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Any column of A"
+      },
+      {
+        "id": "o1",
+        "text": "Only vectors with all entries equal to 1"
+      },
+      {
+        "id": "o2",
+        "text": "The zero vector"
+      },
+      {
+        "id": "o3",
+        "text": "Every vector"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Multiplying any matrix by the zero vector gives the zero vector."
+  },
+  {
+    "id": "versus-linear-16",
+    "subject": "linear",
+    "topic": "Vector spaces",
+    "title": "A subspace test",
+    "prompt": "Which subset of ℝ² is a vector subspace?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "{(x, y): x > 0}"
+      },
+      {
+        "id": "o1",
+        "text": "{(x, y): y = 2x}"
+      },
+      {
+        "id": "o2",
+        "text": "{(x, y): y = 2x + 1}"
+      },
+      {
+        "id": "o3",
+        "text": "{(x, y): x² + y² = 1}"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The line y = 2x passes through zero and is closed under addition and scalar multiplication."
+  },
+  {
+    "id": "versus-linear-17",
+    "subject": "linear",
+    "topic": "Vector spaces",
+    "title": "Linear dependence",
+    "prompt": "Are (1, 2) and (2, 4) linearly independent?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "No, the second is twice the first"
+      },
+      {
+        "id": "o1",
+        "text": "Yes, they are different vectors"
+      },
+      {
+        "id": "o2",
+        "text": "Yes, both are nonzero"
+      },
+      {
+        "id": "o3",
+        "text": "No, because their dot product is zero"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "One vector is a scalar multiple of the other, so a nontrivial linear combination is zero."
+  },
+  {
+    "id": "versus-linear-18",
+    "subject": "linear",
+    "topic": "Vector spaces",
+    "title": "Dimension of a basis",
+    "prompt": "Every basis of ℝ³ contains how many vectors?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "2"
+      },
+      {
+        "id": "o1",
+        "text": "4"
+      },
+      {
+        "id": "o2",
+        "text": "Infinitely many"
+      },
+      {
+        "id": "o3",
+        "text": "3"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The number of vectors in a basis is the dimension of the space."
+  },
+  {
+    "id": "versus-linear-19",
+    "subject": "linear",
+    "topic": "Rank and nullity",
+    "title": "Rank–nullity",
+    "prompt": "A 3×5 matrix has rank 3. What is the dimension of its null space?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "3"
+      },
+      {
+        "id": "o1",
+        "text": "5"
+      },
+      {
+        "id": "o2",
+        "text": "2"
+      },
+      {
+        "id": "o3",
+        "text": "0"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Rank plus nullity equals the number of columns: nullity = 5 − 3."
+  },
+  {
+    "id": "versus-linear-20",
+    "subject": "linear",
+    "topic": "Rank and nullity",
+    "title": "Dependent rows",
+    "prompt": "What is the rank of [[1, 2], [2, 4]]?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "4"
+      },
+      {
+        "id": "o1",
+        "text": "1"
+      },
+      {
+        "id": "o2",
+        "text": "0"
+      },
+      {
+        "id": "o3",
+        "text": "2"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "There is one nonzero independent row; the second row is twice the first."
+  },
+  {
+    "id": "versus-linear-21",
+    "subject": "linear",
+    "topic": "Inverses",
+    "title": "When an inverse exists",
+    "prompt": "A square real matrix A is invertible exactly when which condition holds?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "det(A) ≠ 0"
+      },
+      {
+        "id": "o1",
+        "text": "det(A) = 0"
+      },
+      {
+        "id": "o2",
+        "text": "Every entry is nonzero"
+      },
+      {
+        "id": "o3",
+        "text": "A has a zero row"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A nonzero determinant is equivalent to full rank and invertibility."
+  },
+  {
+    "id": "versus-linear-22",
+    "subject": "linear",
+    "topic": "Inverses",
+    "title": "Inverting a diagonal matrix",
+    "prompt": "What is the inverse of diag(2, 4)?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "diag(−2, −4)"
+      },
+      {
+        "id": "o1",
+        "text": "diag(4, 2)"
+      },
+      {
+        "id": "o2",
+        "text": "diag(1/4, 1/2)"
+      },
+      {
+        "id": "o3",
+        "text": "diag(1/2, 1/4)"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The inverse of an invertible diagonal matrix takes the reciprocal of each diagonal entry."
+  },
+  {
+    "id": "versus-linear-23",
+    "subject": "linear",
+    "topic": "Eigenvalues",
+    "title": "Eigenvalues of a diagonal matrix",
+    "prompt": "What are the eigenvalues of diag(2, 5)?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "1/2 and 1/5"
+      },
+      {
+        "id": "o1",
+        "text": "10 and 0"
+      },
+      {
+        "id": "o2",
+        "text": "2 and 5"
+      },
+      {
+        "id": "o3",
+        "text": "0 and 7"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The standard basis vectors are eigenvectors; their eigenvalues are the diagonal entries."
+  },
+  {
+    "id": "versus-linear-24",
+    "subject": "linear",
+    "topic": "Eigenvalues",
+    "title": "Checking an eigenvector",
+    "prompt": "For A = [[2, 1], [0, 3]], which eigenvalue corresponds to v = (1, 1)?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "4"
+      },
+      {
+        "id": "o1",
+        "text": "3"
+      },
+      {
+        "id": "o2",
+        "text": "1"
+      },
+      {
+        "id": "o3",
+        "text": "2"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Av = (3, 3) = 3v."
+  },
+  {
+    "id": "versus-linear-25",
+    "subject": "linear",
+    "topic": "Eigenvalues",
+    "title": "Trace and eigenvalues",
+    "prompt": "A real 2×2 matrix has eigenvalues 2 and 7. What is its trace?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "9"
+      },
+      {
+        "id": "o1",
+        "text": "14"
+      },
+      {
+        "id": "o2",
+        "text": "5"
+      },
+      {
+        "id": "o3",
+        "text": "−9"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The trace equals the sum of eigenvalues counted with algebraic multiplicity."
+  },
+  {
+    "id": "versus-linear-26",
+    "subject": "linear",
+    "topic": "Diagonalization",
+    "title": "Distinct eigenvalues",
+    "prompt": "Which statement is guaranteed for a real 3×3 matrix with three distinct real eigenvalues?",
+    "format": "quiz",
+    "difficulty": "challenge",
+    "options": [
+      {
+        "id": "o0",
+        "text": "It is orthogonal"
+      },
+      {
+        "id": "o1",
+        "text": "It is symmetric"
+      },
+      {
+        "id": "o2",
+        "text": "All its eigenvalues are positive"
+      },
+      {
+        "id": "o3",
+        "text": "It is diagonalizable over ℝ"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Eigenvectors for distinct eigenvalues are independent, giving a basis of three eigenvectors."
+  },
+  {
+    "id": "versus-linear-27",
+    "subject": "linear",
+    "topic": "Linear transformations",
+    "title": "A planar rotation",
+    "prompt": "A counterclockwise rotation by 90° maps (1, 0) to which vector?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "(−1, 0)"
+      },
+      {
+        "id": "o1",
+        "text": "(1, 1)"
+      },
+      {
+        "id": "o2",
+        "text": "(0, 1)"
+      },
+      {
+        "id": "o3",
+        "text": "(0, −1)"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A positive quarter turn takes the positive x-axis to the positive y-axis."
+  },
+  {
+    "id": "versus-linear-28",
+    "subject": "linear",
+    "topic": "Linear transformations",
+    "title": "The kernel of a projection",
+    "prompt": "For T(x, y, z) = (x, y), what is ker(T)?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Only (1, 1, 1)"
+      },
+      {
+        "id": "o1",
+        "text": "{(0, 0, z): z ∈ ℝ}"
+      },
+      {
+        "id": "o2",
+        "text": "{(x, y, 0): x, y ∈ ℝ}"
+      },
+      {
+        "id": "o3",
+        "text": "{(x, 0, 0): x ∈ ℝ}"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "T sends a vector to zero precisely when its x- and y-components are zero."
+  },
+  {
+    "id": "versus-linear-29",
+    "subject": "linear",
+    "topic": "Least squares",
+    "title": "Fitting a constant",
+    "prompt": "What constant c minimizes (c−1)² + (c−3)² + (c−5)²?",
+    "format": "quiz",
+    "difficulty": "challenge",
+    "options": [
+      {
+        "id": "o0",
+        "text": "3"
+      },
+      {
+        "id": "o1",
+        "text": "1"
+      },
+      {
+        "id": "o2",
+        "text": "5"
+      },
+      {
+        "id": "o3",
+        "text": "9"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The least-squares constant is the arithmetic mean, (1+3+5)/3 = 3."
+  },
+  {
+    "id": "versus-linear-30",
+    "subject": "linear",
+    "topic": "Symmetric matrices",
+    "title": "A positive quadratic form",
+    "prompt": "For A = diag(2, 3), which statement holds for every nonzero real vector x?",
+    "format": "quiz",
+    "difficulty": "challenge",
+    "options": [
+      {
+        "id": "o0",
+        "text": "xᵀAx = 0"
+      },
+      {
+        "id": "o1",
+        "text": "xᵀAx < 0"
+      },
+      {
+        "id": "o2",
+        "text": "xᵀAx = 1"
+      },
+      {
+        "id": "o3",
+        "text": "xᵀAx > 0"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Writing x = (u, v) gives xᵀAx = 2u² + 3v², which is positive unless both components are zero."
+  }
+]

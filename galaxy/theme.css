@@ -1,0 +1,18 @@
+@import "./vendor/fonts/fonts.css";
+
+/* Shared by the galaxy and its Versus destination. Other workspaces keep their
+   own semantic tokens; these names never change their colors or typography. */
+:root {
+  --galaxy-void: #070a12;
+  --galaxy-deep: #0d1524;
+  --galaxy-algebra: #526cb7;
+  --galaxy-analysis: #bd754b;
+  --galaxy-informatics: #5f8c78;
+  --galaxy-starlight: #e9edf6;
+  --galaxy-dim: #78859f;
+  --galaxy-faint: #5a6881;
+  --galaxy-line: #1e2a40;
+  --galaxy-display: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+  --galaxy-body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --galaxy-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+}

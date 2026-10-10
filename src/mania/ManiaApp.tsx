@@ -101,12 +101,12 @@ export default function ManiaApp() {
 
   return <div className="mania">
     <ProductHeader module="World" actions={<div className="header-actions"><span className={`connection-label ${connected ? 'online' : ''}`}><i />{connected ? 'Together, live' : demo ? 'Demo world' : 'Connecting'}</span><button className={`demo-toggle ${demo ? 'on' : ''}`} onClick={() => { setDemo(d => !d); setCityId(null); setWorkspaceOpen(false); }}>{demo ? 'Demo history on' : 'Try demo history'}</button><div className="profile-badge"><span className="profile-avatar">{snapshot?.profile.name.slice(0, 2).toUpperCase() ?? 'ST'}</span><span>{snapshot?.profile.name ?? 'Your world'}</span></div></div>}>
-      <a href="/world" className="active">Study world</a><a href="/arena">Play</a><a href="/history">Match history</a><a href="/leaderboard">Leaderboard</a><a href="/learn">Lectures</a><a href="/campus">Campus</a>
+      <a href="/world" className="active">Study world</a><a href="/arena">Versus</a><a href="/history">Match history</a><a href="/leaderboard">Leaderboard</a><a href="/learn">Lectures</a><a href="/campus">Campus</a>
     </ProductHeader>
     <nav className="mania-rail" aria-label="Main navigation">
       <div className="mania-brand" aria-label="The Mania"><svg viewBox="0 0 40 40" fill="none"><path d="M6 29L14 10L20 23L26 10L34 29" stroke="currentColor" strokeWidth="2.3" strokeLinejoin="round" /><circle cx="20" cy="33" r="2" fill="currentColor" /></svg></div>
       {[{ id: 'world', icon: Map, label: 'Your semester' }, { id: 'expedition', icon: Route, label: 'Daily expedition' }, { id: 'puzzles', icon: Trophy, label: 'Cursed puzzles' }, { id: 'tables', icon: Users, label: 'Study tables' }].map(item => <button key={item.id} className={view === item.id ? 'active' : ''} title={item.label} aria-label={item.label} onClick={() => setView(item.id as View)}><item.icon size={21} /></button>)}
-      <a href="/learn" aria-label="Lecture library" title="Lecture library"><BookOpen size={21} /></a><a href="/arena" aria-label="1v1 Arena" title="1v1 Arena"><Swords size={21} /></a>
+      <a href="/learn" aria-label="Lecture library" title="Lecture library"><BookOpen size={21} /></a><a href="/arena" aria-label="1v1 Versus" title="1v1 Versus"><Swords size={21} /></a>
       <div className="rail-bottom"><a href="/campus" aria-label="Campus globe" title="Campus globe"><Globe2 size={20} /></a><button aria-label="Exam settings" title="Exam settings" onClick={() => setSettings(s => !s)}><Settings2 size={20} /></button></div>
     </nav>
     <div className="mania-main">

@@ -13,10 +13,10 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def run_suite(env):
-    scripts = {'lectures': 'lecture_browser.py', 'arena': 'browser_flow.py', 'globe': 'globe_browser.py', 'mania': 'mania_browser.py'}
+    scripts = {'lectures': 'lecture_browser.py', 'arena': 'browser_flow.py', 'globe': 'globe_browser.py', 'mania': 'mania_browser.py', 'versus': 'versus_browser.py', 'versus-lifecycle': 'versus_lifecycle_browser.py', 'cockpit': 'cockpit_browser.py'}
     selected = env.get('BROWSER_SUITES', ','.join(scripts)).split(',')
     if any(name not in scripts for name in selected):
-        raise ValueError('BROWSER_SUITES must contain lectures, arena, globe, and/or mania.')
+        raise ValueError('BROWSER_SUITES must contain lectures, arena, globe, mania, versus, versus-lifecycle, and/or cockpit.')
     for name in selected:
         script = scripts[name]
         subprocess.run([sys.executable, str(ROOT / 'tests' / script)], cwd=ROOT, env=env, check=True)
@@ -24,7 +24,7 @@ def run_suite(env):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--suites', help='Comma-separated lectures, arena, globe, and/or mania.')
+    parser.add_argument('--suites', help='Comma-separated lectures, arena, globe, mania, versus, versus-lifecycle, and/or cockpit.')
     args = parser.parse_args()
     env = os.environ.copy()
     if args.suites:

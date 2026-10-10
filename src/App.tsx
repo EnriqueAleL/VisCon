@@ -5,6 +5,7 @@ import {
   lazy,
   Suspense,
   type ReactNode,
+  type MouseEvent,
 } from "react";
 import { io, type Socket } from "socket.io-client";
 import {
@@ -57,6 +58,11 @@ import { api } from "./api";
 import { ProductHeader } from "../shared/design/ProductHeader";
 import { GlobeArrival } from "./GlobeArrival";
 import { watchSocketAccess } from "../shared/auth/socketAccess";
+import { VersusHeader } from "./versus/VersusHeader";
+import { VersusSpace } from "./versus/VersusSpace";
+import { FlightDeck } from "./versus/FlightDeck";
+import { courseSubjects, loadVersusContext, type VersusContext } from "./versus/context";
+import "./versus/versus.css";
 
 const JavaEditorImpl = lazy(() => import("./JavaEditor"));
 function JavaEditor(props: React.ComponentProps<typeof JavaEditorImpl>) {
@@ -89,10 +95,21 @@ const formats: Record<
   },
   java: { name: "Java", description: "Write a short solution", icon: Code2 },
 };
-function usePath() {
+function usePath(onPop: (destination: string, from: string) => boolean) {
   const [path, setPath] = useState(location.pathname);
+  const onPopRef = useRef(onPop);
+  const currentUrl = useRef(location.pathname + location.search + location.hash);
+  onPopRef.current = onPop;
   useEffect(() => {
-    const fn = () => setPath(location.pathname);
+    const fn = () => {
+      const destination = location.pathname + location.search + location.hash;
+      if (!onPopRef.current(destination, currentUrl.current)) {
+        history.pushState({}, "", currentUrl.current);
+        return;
+      }
+      currentUrl.current = destination;
+      setPath(location.pathname);
+    };
     window.addEventListener("popstate", fn);
     return () => window.removeEventListener("popstate", fn);
   }, []);
@@ -101,7 +118,8 @@ function usePath() {
     (p: string) => {
       if (p === "/") p = "/arena";
       history.pushState({}, "", p);
-      setPath(p);
+      currentUrl.current = p;
+      setPath(location.pathname);
       window.scrollTo(0, 0);
     },
   ] as const;
@@ -206,8 +224,8 @@ function QuestionContent({ q }: { q: Question }) {
 }
 
 export default function App() {
-  const [leaveTo, setLeaveTo] = useState("/");
-  const [path, navigate] = usePath();
+  const [leaveTo, setLeaveTo] = useState("/arena");
+  const [versusContext] = useState(loadVersusContext);
   const [data, setData] = useState<Bootstrap | null>(null);
   const [room, setRoom] = useState<RoomView | null>(null);
   const [error, setError] = useState("");
@@ -216,12 +234,40 @@ export default function App() {
   const [connected, setConnected] = useState(false);
   const [toast, setToast] = useState("");
   const [confirmLeave, setConfirmLeave] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [leaveError, setLeaveError] = useState("");
+  const leaveViaBack = useRef(false);
+  const allowConfirmedBack = useRef(false);
+  const [path, navigate] = usePath((destination, from) => {
+    if (allowConfirmedBack.current) { allowConfirmedBack.current = false; return true; }
+    if (from.startsWith("/room/") && room && !["finished", "cancelled"].includes(room.state)) {
+      leaveViaBack.current = true;
+      setLeaveTo(destination);
+      setLeaveError("");
+      setConfirmLeave(true);
+      return false;
+    }
+    return true;
+  });
+  const [consoleOpen, setConsoleOpen] = useState(true);
+  const [arriving, setArriving] = useState(() => Boolean(document.getElementById('boarding-frame')));
+  const [cabinReady, setCabinReady] = useState(false);
+  useEffect(() => {
+    if (!cabinReady && !error) return;
+    const frame = document.getElementById('boarding-frame');
+    const raf = requestAnimationFrame(() => frame?.remove());
+    const timer = setTimeout(() => setArriving(false), matchMedia('(prefers-reduced-motion: reduce)').matches || error ? 0 : 900);
+    return () => { cancelAnimationFrame(raf); clearTimeout(timer); };
+  }, [cabinReady, error]);
+  useEffect(() => { setConsoleOpen(true); }, [path, room?.round, room?.state]);
   const socket = useRef<Socket | null>(null);
   const roomIdRef = useRef<string | null>(null);
   const currentRoom = path.startsWith("/room/")
     ? path.split("/")[2]?.toUpperCase()
     : null;
   roomIdRef.current = currentRoom;
+  const closeLeave = () => { if (leaving) return; setConfirmLeave(false); setLeaveError(""); leaveViaBack.current = false; };
+  const requestLeave = () => { leaveViaBack.current = false; setLeaveTo("/arena"); setLeaveError(""); setConfirmLeave(true); };
   const refresh = async () => {
     const d = await api<Bootstrap>("/bootstrap");
     setData(d);
@@ -230,6 +276,9 @@ export default function App() {
   useEffect(() => {
     refresh().catch((e) => setError(e.message));
   }, []);
+  useEffect(() => {
+    document.title = path === "/campus" ? "Campus · VisCon" : "Versus · VisCon";
+  }, [path]);
   useEffect(() => {
     if (!data?.profile.id) return;
     const s = io({ autoConnect: true });
@@ -273,7 +322,7 @@ export default function App() {
   }, [currentRoom, data?.profile.id]);
   useEffect(() => {
     if (!confirmLeave) {
-      setLeaveTo("/");
+      setLeaveTo("/arena");
       return;
     }
     const previous = document.activeElement as HTMLElement | null;
@@ -281,7 +330,7 @@ export default function App() {
     const buttons = dialog?.querySelectorAll<HTMLButtonElement>("button");
     buttons?.[0]?.focus();
     const key = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setConfirmLeave(false);
+      if (event.key === "Escape") closeLeave();
       if (event.key === "Tab" && buttons?.length) {
         const first = buttons[0],
           last = buttons[buttons.length - 1];
@@ -363,18 +412,30 @@ export default function App() {
     }
   }
   async function leave() {
-    if (!room) return;
+    if (!room || leaving) return;
+    setLeaving(true);
+    setLeaveError("");
     try {
       await api(`/rooms/${room.id}/leave`, {});
       setConfirmLeave(false);
-      if (leaveTo === "/learn") {
-        location.assign("/learn");
+      const viaBack = leaveViaBack.current;
+      leaveViaBack.current = false;
+      if (viaBack) {
+        allowConfirmedBack.current = true;
+        history.back();
+        await refresh();
         return;
       }
-      navigate("/arena");
+      if (leaveTo === "/" || leaveTo.startsWith("/#") || ["/learn", "/world", "/galaxy"].includes(leaveTo)) {
+        location.assign(leaveTo);
+        return;
+      }
+      navigate(leaveTo);
       await refresh();
     } catch (e) {
-      setError((e as Error).message);
+      setLeaveError((e as Error).message);
+    } finally {
+      setLeaving(false);
     }
   }
   async function rematch() {
@@ -391,9 +452,9 @@ export default function App() {
   }
   if (!data)
     return (
-      <div className="boot">
+      <div className="versus-shell"><VersusSpace /><div className="boot">
         <div className="wordmark">
-          VisCon <span>Arena</span>
+          VisCon <span>Versus</span>
         </div>
         {error ? (
           <>
@@ -406,78 +467,55 @@ export default function App() {
             <p>Getting your study space ready…</p>
           </>
         )}
-      </div>
+      </div></div>
     );
   const inMatch =
     room && ["playing", "review", "countdown"].includes(room.state);
-  const safeNavigate = (p: string) => {
-    if (inMatch) {
+  const activeRoom = room && !["finished", "cancelled"].includes(room.state);
+  const safeNavigate = (destination: string) => {
+    if (activeRoom) {
+      leaveViaBack.current = false;
+      setLeaveTo(destination === "/" ? "/arena" : destination);
+      setLeaveError("");
       setConfirmLeave(true);
       return;
     }
-    navigate(p);
+    navigate(destination);
   };
+  const followPlatformLink = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (activeRoom) {
+      event.preventDefault();
+      leaveViaBack.current = false;
+      setLeaveTo(href);
+      setLeaveError("");
+      setConfirmLeave(true);
+    }
+  };
+  const immersive = path === "/arena" || Boolean(currentRoom);
+  const profileAction = <button
+    className={`profile-button ${path === "/profile" ? "active" : ""}`}
+    onClick={() => safeNavigate("/profile")}
+    aria-label="Your profile"
+  >
+    <span><strong>{data.profile.name}</strong><small>{number(data.profile.rating)} Elo</small></span>
+    <Avatar player={data.profile} />
+  </button>;
   return (
-    <>
-      <a className="skip-link" href="#main">
-        Skip to content
-      </a>
-      <ProductHeader
-        module={path === "/campus" ? "Campus" : "Arena"}
-        onHome={() => safeNavigate("/")}
-        actions={
-          <button
-            className={`profile-button ${path === "/profile" ? "active" : ""}`}
-            onClick={() => safeNavigate("/profile")}
-            aria-label="Your profile"
-          >
-            <span>
-              <strong>{data.profile.name}</strong>
-              <small>{number(data.profile.rating)} Elo</small>
-            </span>
-            <Avatar player={data.profile} />
-          </button>
-        }
-      >
-        <button
-          className={path === "/" || path === "/arena" || currentRoom ? "active" : ""}
-          onClick={() => safeNavigate("/")}
-        >
-          Play
-        </button>
-        <button
-          className={path === "/history" ? "active" : ""}
-          onClick={() => safeNavigate("/history")}
-        >
-          Match history
-        </button>
-        <button
-          className={path === "/leaderboard" ? "active" : ""}
-          onClick={() => safeNavigate("/leaderboard")}
-        >
-          Leaderboard
-        </button>
-        <a
-          href="/learn"
-          onClick={(event) => {
-            if (room && !["finished", "cancelled"].includes(room.state)) {
-              event.preventDefault();
-              setLeaveTo("/learn");
-              setConfirmLeave(true);
-            }
-          }}
-        >
-          Lectures
-        </a>
-        <button
-          className={path === "/campus" ? "active" : ""}
-          onClick={() => safeNavigate("/campus")}
-        >
-          Campus
-        </button>
-      </ProductHeader>
+    <div className={path === "/campus" ? "campus-shell" : `versus-shell ${immersive ? "immersive-cabin" : ""} ${!consoleOpen ? "cabin-exploring" : ""} ${arriving ? "cabin-arriving" : ""} ${inMatch ? "versus-in-match" : ""}`}>
+      {path !== "/campus" && !immersive && <VersusSpace />}
+      {immersive && <FlightDeck room={currentRoom ? room : null} me={data.profile} consoleOpen={consoleOpen && !arriving} onReady={() => setCabinReady(true)} onConsole={() => { if (arriving) { setArriving(false); setConsoleOpen(true); } else setConsoleOpen(value => !value); }} />}
+      <a className="skip-link" href="#main" onClick={() => setConsoleOpen(true)}>Skip to content</a>
+      {path === "/campus" ? <ProductHeader module="Campus" actions={profileAction}>
+        <button onClick={() => safeNavigate("/arena")}>Versus</button>
+        <button onClick={() => safeNavigate("/history")}>Match history</button>
+        <a href="/learn">Lectures</a><a href="/world">Study world</a>
+        <button className="active">Campus</button>
+      </ProductHeader> : <VersusHeader
+        immersive={immersive} path={path} inRoom={Boolean(currentRoom)} galaxyHref={versusContext.returnTo}
+        actions={profileAction} navigate={safeNavigate} onPlatformLink={followPlatformLink}
+      />}
       <main
-        id="main"
+        id="main" hidden={immersive && (!consoleOpen || arriving)} tabIndex={-1}
         className={`page ${inMatch ? "match-page" : ""} ${path === "/campus" ? "campus-page" : ""}`}
       >
         {error && (
@@ -524,8 +562,8 @@ export default function App() {
                     })
                   }
                   onCopy={copyInvite}
-                  onLeave={() => setConfirmLeave(true)}
-                  onJava={() => navigate("/java")}
+                  onLeave={requestLeave}
+                  onJava={() => safeNavigate("/java")}
                 />
               )}
               {inMatch && (
@@ -537,7 +575,7 @@ export default function App() {
                   busy={busy}
                   onAnswer={(value) => action("answer", { value })}
                   onNext={() => action("next")}
-                  onLeave={() => setConfirmLeave(true)}
+                  onLeave={requestLeave}
                 />
               )}
               {room.state === "finished" && (
@@ -577,6 +615,7 @@ export default function App() {
           />
         ) : (
           <Home
+            context={versusContext}
             data={data}
             busy={busy}
             onCreate={createRoom}
@@ -587,9 +626,9 @@ export default function App() {
           />
         )}
       </main>
-      <footer className="site-footer">
+      {!immersive && <footer className="site-footer">
         <span>
-          VisCon <span className="footer-dot" /> Arena
+          VisCon <span className="footer-dot" /> Versus
         </span>
         <span>
           {room?.settings.subject === "ddca"
@@ -598,7 +637,7 @@ export default function App() {
             ? "Demo and DDCA lecture practice · Independent of ETH Zürich"
             : "Lecture question bank"}
         </span>
-      </footer>
+      </footer>}
       {toast && (
         <div className="toast" role="status">
           <CheckCircle2 size={18} />
@@ -606,7 +645,7 @@ export default function App() {
         </div>
       )}
       {confirmLeave && (
-        <div className="modal-backdrop" onClick={() => setConfirmLeave(false)}>
+        <div className="modal-backdrop" onClick={closeLeave}>
           <section
             className="dialog"
             role="alertdialog"
@@ -622,22 +661,24 @@ export default function App() {
                 ? "Leaving ends the match as a forfeit. In Ranked, your Elo will change."
                 : "You can create or join another room afterwards."}
             </p>
+            {leaveError && <Notice error>{leaveError}</Notice>}
             <div className="dialog-actions">
-              <Button secondary onClick={() => setConfirmLeave(false)}>
+              <Button secondary disabled={leaving} onClick={closeLeave}>
                 Stay here
               </Button>
-              <Button onClick={leave}>
-                Leave {inMatch ? "match" : "room"}
+              <Button disabled={leaving} onClick={leave}>
+                {leaving ? "Leaving…" : `Leave ${inMatch ? "match" : "room"}`}
               </Button>
             </div>
           </section>
         </div>
       )}
-    </>
+    </div>
   );
 }
 
 function Home({
+  context,
   data,
   busy,
   onCreate,
@@ -646,6 +687,7 @@ function Home({
   onJava,
   onHistory,
 }: {
+  context: VersusContext;
   data: Bootstrap;
   busy: boolean;
   onCreate: (s?: string, p?: boolean) => void;
@@ -654,7 +696,8 @@ function Home({
   onJava: () => void;
   onHistory: () => void;
 }) {
-  const [subject, setSubject] = useState(data.subjects[0].id),
+  const requestedSubject = courseSubjects[context.course];
+  const [subject, setSubject] = useState(data.subjects.find(s => s.id === requestedSubject)?.id || data.subjects[0].id),
     [invite, setInvite] = useState(""),
     [invalid, setInvalid] = useState("");
   function join() {
@@ -668,225 +711,41 @@ function Home({
   }
   const selectedSubject = data.subjects.find((item) => item.id === subject)!;
   return (
-    <>
-      <div id="arena-start" className="home-heading">
-        <div>
-          <p className="page-kicker">WORKSPACE / ARENA</p>
-          <h1>
-            Arena
-            <span className="badge" aria-hidden="true">
-              1v1
-            </span>
-          </h1>
-          <p>
-            {selectedSubject.name}
-            <span className="footer-dot" />
-            Private matches
-          </p>
-        </div>
-        <button
-          className="secondary button"
-          onClick={onHistory}
-          aria-label="Open match history"
-        >
-          <Clock size={15} />
-          Match history
-        </button>
+    <div className="versus-home" data-subject={subject}>
+      <h1>Versus <span className="console-mode">1v1</span></h1>
+      <p className="console-lead">Choose your subject. Challenge a pilot.</p>
+      {data.activeRoom && <div className="resume"><strong>You have an open room.</strong><Button secondary onClick={() => onJoin(data.activeRoom!)}>Return to room <ArrowRight size={16} /></Button></div>}
+      {context.course && !requestedSubject && <Notice>This course has no Versus question bank yet. Choose an available subject below.</Notice>}
+      <label className="console-label" htmlFor="duel-subject">Subject</label>
+      <select id="duel-subject" value={subject} onChange={event => setSubject(event.target.value)}>
+        {data.subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+      </select>
+      <p className="console-note">{selectedSubject.count} questions · {subject === "ddca" ? "DDCA practice" : data.demoContent ? "Authored practice" : "Imported questions"}</p>
+      <div className="create-actions">
+        <Button disabled={busy || !!data.activeRoom} onClick={() => onCreate(subject)}>Create a room <ArrowRight size={16} /></Button>
+        <Button secondary disabled={busy || !!data.activeRoom} onClick={() => onCreate(subject, true)}>Practice solo</Button>
       </div>
-      {data.activeRoom && (
-        <div className="resume">
-          <div>
-            <Play size={18} />
-            <strong>You have an open room.</strong>
+      <details className="console-disclosure join-panel">
+        <summary>Join a room</summary>
+        <form onSubmit={event => { event.preventDefault(); join(); }}>
+          <label htmlFor="invite">Invitation link or room code</label>
+          <div className="join-input">
+            <input id="invite" value={invite} onChange={event => { setInvite(event.target.value); setInvalid(""); }} placeholder="Paste link or room code" autoComplete="off" />
+            <button type="submit" aria-label="Join room"><ArrowRight size={18} /></button>
           </div>
-          <Button secondary onClick={() => onJoin(data.activeRoom!)}>
-            Return to room <ArrowRight size={16} />
-          </Button>
-        </div>
-      )}
-      <section className="match-preview" aria-label="Match preview">
-        <div>
-          <Avatar player={data.profile} />
-          <span>
-            <strong>{data.profile.name}</strong>
-            <small>You · {number(data.profile.rating)} Elo</small>
-          </span>
-        </div>
-        <span className="versus-mark">VS</span>
-        <div>
-          <span className="avatar vacant">
-            <Users size={20} />
-          </span>
-          <span>
-            <strong>Your opponent</strong>
-            <small>Invite a friend or practise solo</small>
-          </span>
-        </div>
-      </section>
-      <div className="home-layout">
-        <section className="course-panel">
-          <div className="section-heading">
-            <h2>Set up a match</h2>
-            <span className="text-muted">Subject</span>
-          </div>
-          <div className="course-list">
-            {data.subjects.map((s, i) => {
-              const Icon = [Sigma, Hash, Braces][i % 3];
-              return (
-                <button
-                  key={s.id}
-                  className={`course-row ${subject === s.id ? "selected" : ""}`}
-                  onClick={() => setSubject(s.id)}
-                  aria-pressed={subject === s.id}
-                >
-                  <span className={`course-icon tone-${i}`}>
-                    <Icon size={20} />
-                  </span>
-                  <span className="course-copy">
-                    <strong>{s.name}</strong>
-                    <span>{s.topics.join(" · ")}</span>
-                    <small>
-                      {s.formats.map((f) => formats[f].name).join(" / ")}
-                    </small>
-                  </span>
-                  <span className="radio-marker">
-                    {subject === s.id && <span />}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-          <div className="match-format-summary">
-            <span className="text-muted">Available formats</span>
-            <div>
-              {selectedSubject.formats.map((format) => {
-                const Icon = formats[format].icon;
-                return (
-                  <span key={format}>
-                    <Icon size={14} />
-                    {formats[format].name}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-          <div className="create-actions">
-            <Button
-              disabled={busy || !!data.activeRoom}
-              onClick={() => onCreate(subject)}
-            >
-              <Plus size={17} />
-              Create a room
-            </Button>
-            <Button
-              secondary
-              disabled={busy || !!data.activeRoom}
-              onClick={() => onCreate(subject, true)}
-            >
-              <Play size={15} />
-              Practice solo
-            </Button>
-          </div>
-        </section>
-        <aside className="home-aside">
-          <section className="join-panel">
-            <div className="section-heading">
-              <h2>Join a room</h2>
-              <Link size={17} />
-            </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                join();
-              }}
-            >
-              <label htmlFor="invite">Invitation link or room code</label>
-              <div className="join-input">
-                <input
-                  id="invite"
-                  value={invite}
-                  onChange={(e) => {
-                    setInvite(e.target.value);
-                    setInvalid("");
-                  }}
-                  placeholder="Paste link or room code"
-                  autoComplete="off"
-                />
-                <button type="submit" aria-label="Join room">
-                  <ArrowRight size={18} />
-                </button>
-              </div>
-              {invalid && (
-                <p className="field-error" role="alert">
-                  {invalid}
-                </p>
-              )}
-            </form>
-          </section>
-          <section className="personal-panel">
-            <div className="section-heading">
-              <h2>Your rating</h2>
-              <button className="text-button" onClick={onProfile}>
-                Profile <ChevronRight size={15} />
-              </button>
-            </div>
-            <div className="rating-line">
-              <Avatar player={data.profile} />
-              <div>
-                <strong>{data.profile.name}</strong>
-                <p>{data.history.length} matches played</p>
-              </div>
-              <span className="rating-value">
-                {number(data.profile.rating)}
-                <small>Elo</small>
-              </span>
-            </div>
-            <div className="personal-bottom">
-              <span>
-                <span className="status-dot" />
-                Ranked rating
-              </span>
-            </div>
-          </section>
-          <button className="java-link" onClick={onJava}>
-            <Code2 size={19} />
-            <span>
-              <strong>Java workspace</strong>
-            </span>
-            <ArrowUpRight size={16} />
-          </button>
-        </aside>
-      </div>
-      <section className="recent">
-        <div className="section-heading">
-          <h2>Recent matches</h2>
-          {data.history.length > 0 && (
-            <button className="text-button" onClick={onHistory}>
-              View history <ArrowRight size={16} />
-            </button>
-          )}
-        </div>
-        {data.history.length ? (
-          <HistoryTable
-            entries={data.history.slice(0, 3)}
-            subjects={data.subjects}
-          />
-        ) : (
-          <div className="empty-inline">
-            <span className="empty-symbol">
-              <Trophy size={23} />
-            </span>
-            <div>
-              <strong>Your next match is your first.</strong>
-              <p>
-                Create a room or try a practice round. Your results will show up
-                here.
-              </p>
-            </div>
-          </div>
-        )}
-      </section>
-    </>
+          {invalid && <p className="field-error" role="alert">{invalid}</p>}
+        </form>
+      </details>
+      <details className="console-disclosure">
+        <summary>Subject & combat details</summary>
+        <p>{selectedSubject.description}</p>
+        <p>{selectedSubject.topics.join(' · ')}</p>
+        <p>Formats: {selectedSubject.formats.map(f => formats[f].name).join(', ')}.</p>
+        <p>A correct answer fires at the other ship; a missed answer draws return fire. Both pilots can fire. Exchanges appear after the round closes. Each correct answer earns 1,000 points; total score decides the winner.</p>
+      </details>
+      <div className="console-links"><button onClick={onHistory}>Match history</button><button onClick={onProfile}>Your profile</button><button onClick={onJava}>Java workspace</button></div>
+      <p className="console-disclaimer">{data.demoContent ? "Demo and DDCA lecture practice" : "Lecture question bank"} · Independent of ETH Zürich</p>
+    </div>
   );
 }
 
@@ -954,32 +813,12 @@ function Lobby({
   }
   return (
     <>
-      <div className="breadcrumb">
-        <button onClick={onLeave}>Play</button>
-        <ChevronRight size={13} />
-        <span>{isPractice ? "Practice room" : "Private room"}</span>
-        <span className="room-code">{room.id}</span>
-      </div>
-      <div className="title-row">
-        <div>
-          <h1>Your next challenge.</h1>
-          <p className="subtitle">
-            Set the rules, invite a friend, and put your knowledge to the test.
-          </p>
-        </div>
-        <span className="badge">
-          {isPractice ? "Practice bot" : "1v1 room"}
-          {settings.subject === "ddca" ? " · DDCA lecture practice" : data.demoContent ? " · Demo questions" : ""}
-        </span>
-      </div>
+      <h1>{isPractice ? "Practice flight" : "Invite your opponent"}</h1>
+      <p className="console-lead">{course.name} · {room.settings.rounds} rounds · {room.settings.seconds}s</p>
+      <span className="badge">{settings.subject === "ddca" ? "DDCA practice" : data.demoContent ? "Authored practice" : "Question bank"} · {room.settings.ranked ? "Ranked" : "Friendly"}</span>
       <div className="lobby-layout">
-        <section className="settings-panel">
-          <div className="section-heading">
-            <h2>Match settings</h2>
-            <span className="text-muted">
-              {host ? "You are the host" : "Your host chooses the rules"}
-            </span>
-          </div>
+        <details className="settings-panel console-disclosure">
+          <summary>Match settings <span>{dirty ? "Unsaved changes" : host ? "Edit rules" : "View rules"}</span></summary>
           <fieldset disabled={!host || busy} className="settings-fields">
             <div className="two-fields">
               <Field label="Subject" id="subject">
@@ -1139,7 +978,7 @@ function Lobby({
               again.
             </p>
           )}
-        </section>
+        </details>
         <aside className="lobby-aside">
           <section className="players-panel">
             <div className="section-heading">
@@ -1213,24 +1052,6 @@ function Lobby({
                 ? "Share the link to bring your opponent in."
                 : "The match starts when both players are ready."}
             </p>
-          </div>
-          <div className="room-facts">
-            <div>
-              <Target size={17} />
-              <span>Same questions for both players</span>
-            </div>
-            <div>
-              <CheckCircle2 size={17} />
-              <span>1,000 points per correct answer</span>
-            </div>
-            <div>
-              <Trophy size={17} />
-              <span>
-                {settings.ranked
-                  ? "Your Elo changes after the match"
-                  : "Friendly matches keep your Elo safe"}
-              </span>
-            </div>
           </div>
           <div className={`connection ${connected ? "" : "offline"}`}>
             {connected ? <Wifi size={15} /> : <WifiOff size={15} />}{" "}
@@ -1354,104 +1175,16 @@ function Match({
   const latest = room.completed[room.round];
   return (
     <>
-      <div className="match-heading">
-        <button className="text-button muted" onClick={onLeave}>
-          <Flag size={16} />
-          Leave match
-        </button>
-        <span>
-          {room.settings.ranked ? "Ranked" : "Friendly"} match{" "}
-          <span className="footer-dot" />
-          {formats[room.settings.format].name}
-        </span>
-        <span className="badge">
-          {room.state === "countdown"
-            ? "Starting soon"
-            : `Round ${room.round + 1} of ${room.settings.rounds}`}
-        </span>
-      </div>
-      {room.state !== "countdown" && (
-        <div
-          className={`mobile-match-timer ${seconds < 10 && !reviewing ? "urgent" : ""}`}
-          role="timer"
-          aria-live="off"
-        >
-          <span>
-            Round {room.round + 1} / {room.settings.rounds}
-          </span>
-          <span>
-            <Clock size={15} />
-            <strong>{duration(seconds)}</strong>
-            {reviewing ? "Next round" : "Remaining"}
-          </span>
-        </div>
-      )}
-      <section className="scoreboard" aria-label="Live score">
-        <div className="score-player">
-          <Avatar player={mine} />
-          <div>
-            <strong>
-              {mine.name}
-              <span className="tiny-tag">You</span>
-            </strong>
-            <small>{number(mine.rating)} Elo</small>
-          </div>
-          <b>{number(mine.score)}</b>
-        </div>
-        <div
-          className={`match-clock ${seconds < 10 && !reviewing ? "urgent" : ""}`}
-        >
-          <Clock size={17} />
-          <strong>
-            {room.state === "countdown" ? seconds : duration(seconds)}
-          </strong>
-          <small>{reviewing ? "Next round" : "Remaining"}</small>
-        </div>
-        <div className="score-player opponent">
-          <b>{number(opponent.score)}</b>
-          <div>
-            <strong>{opponent.name}</strong>
-            <small>
-              {opponent.bot ? "Practice bot" : `${number(opponent.rating)} Elo`}
-            </small>
-          </div>
-          <Avatar player={opponent} opponent />
-        </div>
+      <section className="duel-instruments" aria-label="Live score">
+        <div><span>{mine.name}</span><strong>{number(mine.score)} <span>:</span> {number(opponent.score)}</strong><span>{opponent.name}{opponent.bot ? ' · Bot' : ''}</span></div>
+        <div className="duel-round"><span>Round {room.round + 1} / {room.settings.rounds}</span><span className={seconds < 10 && !reviewing ? "urgent" : ""} role="timer" aria-live="off"><Clock size={14} />{duration(seconds)}{reviewing && <small>Next</small>}</span></div>
       </section>
-      <div className="paired-progress">
-        {[mine, opponent].map((p, i) => (
-          <div className={`progress-row ${i ? "other" : ""}`} key={p.id}>
-            <span>{p.id === me.id ? "You" : opponent.name}</span>
-            <div>
-              {Array.from({ length: room.settings.rounds }, (_, r) => {
-                const result = room.completed[r]?.answers[p.id];
-                return (
-                  <span
-                    key={r}
-                    className={`round-mark ${result ? (result.correct ? "correct" : "incorrect") : r === room.round ? "current" : ""}`}
-                    title={`Round ${r + 1}: ${result ? (result.correct ? "correct" : "incorrect") : "not completed"}`}
-                  >
-                    {result ? (
-                      result.correct ? (
-                        <Check size={12} />
-                      ) : (
-                        <X size={12} />
-                      )
-                    ) : (
-                      r + 1
-                    )}
-                  </span>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
+      <div className="match-heading"><span>{room.settings.ranked ? "Ranked" : "Friendly"} · {formats[room.settings.format].name}</span><button className="text-button muted" onClick={onLeave}>Leave match</button></div>
       {room.state === "countdown" ? (
         <div className="countdown-stage">
           <span className="countdown-number">{seconds || "Go"}</span>
-          <h1>Meet you at the first question.</h1>
-          <p>Same challenge. Two different minds.</p>
+          <h1>Prepare for the first exchange.</h1>
+          <p>Same question. Two ships. Your answers power the duel.</p>
         </div>
       ) : (
         q && (
