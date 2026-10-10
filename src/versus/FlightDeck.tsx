@@ -4,7 +4,7 @@ import type { Profile, RoomView } from '../../shared/types';
 import { combatExchange, type CombatExchange } from './combat';
 import './cockpit.css';
 
-type Universe = { origin?: number[]; rotation?: number[]; courses: { id: string; name: string; color: number; position?: number[] }[]; nearRotation?: number[]; farRotation?: number[] };
+type Universe = { origin?: number[]; rotation?: number[]; cabinOffset?: number[]; courses: { id: string; name: string; color: number; position?: number[] }[]; nearRotation?: number[]; farRotation?: number[] };
 type SceneOptions = { reduced: boolean; paused: boolean; battle: boolean; reviewing: boolean; universe?: Universe };
 type CockpitScene = { look: (x: number, y: number) => void; reset: () => void; update: (options: SceneOptions) => void; fire: (event: CombatExchange) => void; dispose: () => void };
 declare global {
@@ -35,7 +35,7 @@ async function loadUniverse(): Promise<Universe> {
     const vector = (v: unknown, length: number) => Array.isArray(v) && v.length === length && v.every(n => typeof n === 'number' && Number.isFinite(n));
     if (value && vector(value.origin, 3) && vector(value.rotation, 4) && Array.isArray(value.courses)
       && value.courses.length <= 50 && value.courses.every((c: Universe['courses'][number]) => typeof c.id === 'string' && Number.isFinite(c.color) && vector(c.position, 3))) {
-      return { ...value, nearRotation: vector(value.nearRotation, 3) ? value.nearRotation : undefined, farRotation: vector(value.farRotation, 3) ? value.farRotation : undefined };
+      return { ...value, cabinOffset: vector(value.cabinOffset, 3) ? value.cabinOffset : undefined, nearRotation: vector(value.nearRotation, 3) ? value.nearRotation : undefined, farRotation: vector(value.farRotation, 3) ? value.farRotation : undefined };
     }
   } catch { /* The live course catalogue is also a direct-entry fallback. */ }
   try { return { courses: (await window.GalaxyAPI!.load()).courses }; } catch { return { courses: [] }; }
@@ -116,7 +116,7 @@ export function FlightDeck({ room, me, consoleOpen, onConsole, onReady }: { room
       aria-label="Ship cockpit" aria-busy={available && !ready} data-renderer={!available ? 'fallback' : ready ? 'webgl' : 'loading'} data-combat={review ? exchange.kind : 'idle'} data-pulse={pulse}>
       <div className="cockpit-window">
         <canvas ref={canvas} className="cockpit-scene" role="img" tabIndex={available ? 0 : -1}
-          aria-label="Inside the ship, behind the seated pilot. Drag or use arrow keys to look around. Press Home to reset the view."
+          aria-label="Inside the Falcon-inspired freighter cockpit, behind Darth Vader at the controls. Drag or use arrow keys to look around. Press Home to reset the view."
           onKeyDown={event => {
             const moves: Record<string, [number, number]> = { ArrowLeft: [-.5, 0], ArrowRight: [.5, 0], ArrowUp: [0, .4], ArrowDown: [0, -.4] };
             if (moves[event.key]) { event.preventDefault(); scene.current?.look(...moves[event.key]); }

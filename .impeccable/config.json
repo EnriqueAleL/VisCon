@@ -14,6 +14,15 @@
         "value": "inter",
         "createdAt": "2026-10-09T21:23:15.438Z",
         "reason": "Use one consistent Inter family across Arena, Lectures, Campus, and the video demo, as documented in DESIGN.md."
+      },
+      {
+        "rule": "radial-halo",
+        "value": "*",
+        "files": [
+          "galaxy/index.html"
+        ],
+        "createdAt": "2026-10-10T18:40:53.617Z",
+        "reason": "Agent: .grade is a neutral radial vignette with a transparent center and darkened edges for scene readability, not a saturated center halo."
       }
     ]
   }
