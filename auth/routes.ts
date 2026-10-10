@@ -5,6 +5,7 @@ import { createAccountService, type Account, type AccountOptions } from './accou
 import { optionalMailerFromEnv, type Mailer } from './mailer';
 import { createVerificationService, type VerificationOptions } from './service';
 import { reverifyDaysFromEnv } from './guard';
+import { windowLimiter } from './limiter';
 
 export interface AuthPlayer { id: string; name: string; rating: number; createdAt: string }
 export interface MountAuthDeps {
@@ -28,17 +29,6 @@ const STATUS: Record<AuthError['code'], number> = {
   account_exists: 409, already_linked: 409, rate_limited: 429, too_many_attempts: 429, mail_unavailable: 503,
 };
 const COOKIE = 'ba_session';
-
-/** In-memory sliding window, per process. */
-function windowLimiter(max: number, windowMs: number, clock: () => number) {
-  const hits = new Map<string, number[]>();
-  return (key: string) => {
-    const now = clock(), recent = (hits.get(key) ?? []).filter(at => now - at < windowMs);
-    if (recent.length >= max) { hits.set(key, recent); throw new AuthError('rate_limited', 'Too many requests. Try again later.', Math.ceil((recent[0] + windowMs - now) / 1000)); }
-    recent.push(now); hits.set(key, recent);
-    if (hits.size > 20_000) for (const [k, v] of hits) if (!v.some(at => now - at < windowMs)) hits.delete(k);
-  };
-}
 
 export function mountAuth(app: Express, deps: MountAuthDeps) {
   const clock = deps.clock ?? Date.now;

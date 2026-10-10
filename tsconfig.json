@@ -24,6 +24,7 @@
     "server",
     "shared",
     "auth",
+    "admin",
     "tests",
     "vite.config.ts",
     "web-interface/src"

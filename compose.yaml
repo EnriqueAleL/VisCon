@@ -42,6 +42,8 @@ services:
       AUTH_MAIL_DOMAIN: ${AUTH_MAIL_DOMAIN:-student.ethz.ch}
       AUTH_CLIENT_IP_HEADER: ${AUTH_CLIENT_IP_HEADER:-}
       AUTH_REVERIFY_DAYS: ${AUTH_REVERIFY_DAYS:-180}
+      # Bootstrap administrators (ETH usernames, comma separated). Everyone else is promoted from inside the app.
+      AUTH_ADMINS: ${AUTH_ADMINS:-riordache}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

@@ -21,7 +21,7 @@ export interface AccountOptions {
   /** Called when every session of a player was invalidated (revoked, password reset, deleted): close their live connections. */
   onRevoked?: (playerId: string) => void;
   /** Called after an account was deleted, so app data keyed to the player can be made anonymous. */
-  onDeleted?: (playerId: string) => void;
+  onDeleted?: (playerId: string, username: string) => void;
 }
 export const defaultAccountOptions: AccountOptions = {
   sessionDays: 30, reverifyDays: 180, failureWindowSeconds: 900, maxFailuresPerUserAndClient: 5, maxFailuresPerUser: 30, maxFailuresPerClient: 30,
@@ -188,7 +188,7 @@ export function createAccountService(db: DatabaseSync, verification: Verificatio
       db.prepare('DELETE FROM auth_failures WHERE key LIKE ?').run(`%${username}%`);
       db.exec('COMMIT');
     } catch (error) { db.exec('ROLLBACK'); throw error; }
-    options.onDeleted?.(playerId);
+    options.onDeleted?.(playerId, username);
     options.onRevoked?.(playerId);
   }
   /** Self-service: the account owner confirms with the password. */

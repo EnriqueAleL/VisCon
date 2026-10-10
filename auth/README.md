@@ -74,6 +74,10 @@ from the command line, an expired session or an expired verification also ends l
 Responses carry `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN` and `Referrer-Policy: same-origin`, plus
 HSTS when `COOKIE_SECURE=true`. The server warns at startup if it runs in production without `COOKIE_SECURE=true`.
 
+## Roles and courses
+
+See [`../admin/README.md`](../admin/README.md): admins (`AUTH_ADMINS`), course admins and courses.
+
 ## Rules
 
 - Passwords: 10-128 characters, scrypt (N=32768) with a per-password salt, never stored or logged in clear.

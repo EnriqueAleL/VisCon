@@ -6,6 +6,8 @@ import type { BankQuestion,Settings,Player,RoomView,RoundResult,Outcome,Profile,
 import { subjects,eligible,publicQuestion,correct,answerLabel,demoContent,numericValue,registerCourseQuestions } from './questions';
 import { db,profile,session,createPlayer,rename,history,leaderboard,saveMatch,adoptAccount,anonymizePlayer } from './store';
 import { mountAuth } from '../auth/routes';
+import { mountAdmin, rootAdminsFromEnv } from '../admin/routes';
+import type { AdminService } from '../admin/service';
 import { createVerifiedGuard } from '../auth/guard';
 import { mountStatic } from './static';
 import { eloDelta } from './rating';
@@ -99,10 +101,14 @@ app.get('/api/health',(_req,res)=>res.json({ok:true}));
 // Everything below needs a confirmed ETH student email: the API, lecture media, and both Socket.IO namespaces.
 const guard=createVerifiedGuard({db,playerFromCookie:session});
 if(!guard.enabled)console.warn('AUTH_REQUIRE_VERIFIED=false: the API is open to unverified visitors. Never use this in production.');
-mountAuth(app,{db,required:guard.enabled,playerFromCookie:session,createPlayer,secureCookies:process.env.COOKIE_SECURE==='true',clientIpHeader:process.env.AUTH_CLIENT_IP_HEADER?.toLowerCase(),accountOptions:{onVerified:account=>adoptAccount(account.playerId,account.username),onDeleted:anonymizePlayer,onRevoked:dropConnections}});
+let admin:AdminService|undefined;
+const accountsService=mountAuth(app,{db,required:guard.enabled,playerFromCookie:session,createPlayer,secureCookies:process.env.COOKIE_SECURE==='true',clientIpHeader:process.env.AUTH_CLIENT_IP_HEADER?.toLowerCase(),accountOptions:{onVerified:account=>adoptAccount(account.playerId,account.username),onDeleted:(playerId,username)=>{anonymizePlayer(playerId);admin?.forgetUser(username);},onRevoked:dropConnections}});
 app.use(['/api','/media'],guard.http);
 io.use(guard.socket);
 io.of('/study').use(guard.socket);
+const rootAdmins=rootAdminsFromEnv();
+if(!rootAdmins.size)console.warn('AUTH_ADMINS is empty: nobody can administer courses or other admins. Set AUTH_ADMINS=<eth username>.');
+admin=mountAdmin(app,{db,playerFromCookie:session,accounts:accountsService,rootAdmins});
 // A revoke done from the command line (another process), an expired session or an expired verification must also end
 // connections that are already open, so every open socket is re-checked against the guard on a timer.
 const recheckSeconds=Number(process.env.AUTH_SOCKET_RECHECK_SECONDS||30);

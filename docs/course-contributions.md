@@ -1,6 +1,6 @@
 # Course contributions: decisions so far
 
-Not built yet. The security work (accounts, guard, SMTP) comes first; this records what the team decided so it is not lost.
+Roles, courses and course admins are built (see `admin/README.md`). Material submission, review and indexing are not built yet. This records what the team decided.
 
 ## Roles
 - **Admin**: creates courses, other admins and course admins, and can review anything. The first admin is `riordache`
@@ -18,8 +18,7 @@ Not built yet. The security work (accounts, guard, SMTP) comes first; this recor
 6. Material types for now: lecture video + transcript, lecture slides, course script.
 
 ## Open points for later
-- A newly proposed course should probably need admin approval before it is featured, even though its proposer is already
-  its course admin; otherwise anyone can create public courses.
+- Done: a proposed course is hidden until an admin approves it, although its proposer is its course admin straight away.
 - A submitter should not approve their own submission; if a course has one course admin, an admin reviews theirs.
 - Uploads need size and type limits, per-user quotas, storage outside the web folder and outside git, and an admin action
   to unpublish or delete.

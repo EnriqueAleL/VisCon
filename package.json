@@ -9,7 +9,7 @@
     "start": "tsx server/index.ts",
     "start:production": "node --import tsx server/index.ts",
     "check:deployment": "node scripts/check-deployment.mjs",
-    "test": "node --import tsx --test tests/*.test.ts auth/*.test.ts video-pull-up/test/*.test.mjs",
+    "test": "node --import tsx --test tests/*.test.ts auth/*.test.ts admin/*.test.ts video-pull-up/test/*.test.mjs",
     "test:ui": ".venv/bin/python tests/run_browser.py",
     "auth": "tsx auth/cli.ts"
   },
