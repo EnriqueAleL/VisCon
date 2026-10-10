@@ -442,6 +442,8 @@ export function App() {
           <a href="/campus">Campus</a>
         </ProductHeader>
 
+        <div id="audio-controls-slot" className="audio-controls-slot" />
+
         <main id="main" className={`main-content ${isQuestionLanding ? 'chat-landing' : ''} ${view === 'documents' ? 'document-content' : ''}`}>
           {view !== 'documents' && catalogLoading && (
             <p className="connection-status" role="status">

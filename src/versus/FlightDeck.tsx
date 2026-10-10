@@ -8,7 +8,7 @@ type Universe = { origin?: number[]; rotation?: number[]; courses: { id: string;
 type SceneOptions = { reduced: boolean; paused: boolean; battle: boolean; reviewing: boolean; universe?: Universe };
 type CockpitScene = { look: (x: number, y: number) => void; reset: () => void; update: (options: SceneOptions) => void; fire: (event: CombatExchange) => void; dispose: () => void };
 declare global {
-  interface Window { GalaxyAPI?: { load: () => Promise<{ courses: Universe["courses"] }> }; VisConDuel?: { createCockpit: (canvas: HTMLCanvasElement, options: SceneOptions) => CockpitScene }; }
+  interface Window { GalaxyAPI?: { load: () => Promise<{ courses: Universe["courses"] }> }; VisConDuel?: { createCockpit: (canvas: HTMLCanvasElement, options: SceneOptions) => CockpitScene }; VisConAudio?: { playCombat: (event: CombatExchange) => void }; }
 }
 let library: Promise<void> | undefined;
 function script(src: string) {
@@ -99,6 +99,7 @@ export function FlightDeck({ room, me, consoleOpen, onConsole, onReady }: { room
     seen.current.count = count;
     if (!isNew || !latest || !review || reduced || paused) return;
     scene.current?.fire(exchange);
+    window.VisConAudio?.playCombat(exchange);
     setPulse(exchange.kind);
     const timer = setTimeout(() => setPulse('idle'), 1700);
     return () => clearTimeout(timer);
