@@ -19,11 +19,11 @@ interface IconSidebarProps {
   courses: Course[];
   departments: Department[];
   lectures: Lecture[];
-  view: 'questions' | 'library' | 'saved' | 'documents';
+  view: 'questions' | 'library' | 'saved' | 'versus';
   selectedCourse: CourseSelection | null;
   pickerRequest: number;
   history: QuestionHistoryEntry[];
-  onNavigate: (view: 'questions' | 'library' | 'saved' | 'documents') => void;
+  onNavigate: (view: 'questions' | 'library' | 'saved' | 'versus') => void;
   onNewChat: () => void;
   onSelectCourse: (selection: CourseSelection) => void;
   onClearCourse: () => void;
@@ -268,17 +268,14 @@ export function IconSidebar({
           <Bookmark size={20} />
         </button>
         <button
-          className={`rail-button ${view === 'documents' ? 'active' : ''}`}
-          title="Dokumente"
-          aria-label="Dokumente"
-          aria-current={view === 'documents' ? 'page' : undefined}
-          onClick={() => navigate('documents')}
+          className={`rail-button ${view === 'versus' ? 'active' : ''}`}
+          title="Versus"
+          aria-label="Versus"
+          aria-current={view === 'versus' ? 'page' : undefined}
+          onClick={() => navigate('versus')}
         >
-          <BookOpen size={20} />
-        </button>
-        <a className="rail-button" href="/arena" title="Versus" aria-label="Versus">
           <ArenaIcon />
-        </a>
+        </button>
       </nav>
       <div className="rail-bottom">
         <button

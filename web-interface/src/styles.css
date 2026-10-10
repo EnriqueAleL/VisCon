@@ -2266,3 +2266,26 @@ textarea::placeholder {
   background: var(--surface-raised);
   color: inherit;
 }
+
+/* ---------------------------------------------------------------
+   Liste wears the galaxy's sky. The shared tokens stay as they are
+   for Arena and Campus; these only re-point the neutrals inside the
+   Lernraum, so both views of the same material feel like one place.
+   Hues are taken straight from galaxy/styles.css.
+   --------------------------------------------------------------- */
+.app-shell {
+  --ground: #070a12;         /* galaxy --void */
+  --surface: #0d1524;        /* galaxy --deep */
+  --surface-raised: #121d30;
+  --surface-hover: #182540;
+  --ink: #e9edf6;            /* galaxy --starlight */
+  --muted: #78859f;          /* galaxy --dim */
+  --subtle: #5a6881;         /* galaxy --faint */
+  --line: #1e2a40;           /* galaxy --line */
+  --line-strong: #2b3a55;
+  --accent-soft: #14283a;
+  --success-soft: #14283a;
+
+  background: var(--ground);
+  color: var(--ink);
+}

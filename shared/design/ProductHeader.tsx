@@ -3,6 +3,8 @@ import { BookOpen } from "lucide-react";
 
 interface ProductHeaderProps {
   module: "Arena" | "Lectures" | "Campus" | "World";
+  /** Where the wordmark goes. Defaults to the galaxy; Liste sends it back to Liste. */
+  homeHref?: string;
   children: ReactNode;
   actions?: ReactNode;
   onHome?: () => void;
@@ -10,6 +12,7 @@ interface ProductHeaderProps {
 
 export function ProductHeader({
   module,
+  homeHref = "/",
   children,
   actions,
   onHome,
@@ -33,7 +36,7 @@ export function ProductHeader({
             {brand}
           </button>
         ) : (
-          <a className="product-brand" href="/" aria-label="VisCon home">
+          <a className="product-brand" href={homeHref} aria-label="VisCon home">
             {brand}
           </a>
         )}

@@ -18,7 +18,11 @@ import {
 } from 'lucide-react';
 import { IconSidebar } from './components/IconSidebar';
 import { ProductHeader } from '../../shared/design/ProductHeader';
-import { DocumentViewer } from './components/DocumentViewer';
+import ArenaApp from '../../src/App';
+import 'katex/dist/katex.min.css';
+import '../../src/styles.css';
+import './versus-hosted.css';
+import { CourseBrowser } from './components/CourseBrowser';
 import {
   isCourseSelection,
   sameCourseSelection,
@@ -40,13 +44,19 @@ import type {
   Segment,
 } from './types';
 
-type View = 'questions' | 'library' | 'saved' | 'documents';
+type View = 'questions' | 'library' | 'saved' | 'versus';
 type Sort = 'relevance' | 'newest' | 'shortest';
 const viewNames: Record<View, string> = {
   questions: 'Chat',
   library: 'Meine Vorlesungen',
   saved: 'Gespeicherte Stellen',
-  documents: 'Dokumente',
+  versus: 'Versus',
+};
+/* Versus keeps its own route under the hash (#versus/room/ABC), so the view is
+   the first segment, not the whole hash. */
+const viewFromHash = (): View | null => {
+  const name = decodeURIComponent(location.hash.slice(1)).split('/')[0];
+  return ['questions', 'saved', 'versus', 'library'].includes(name) ? (name as View) : null;
 };
 const isStringArray = (value: unknown): value is string[] =>
   Array.isArray(value) && value.every((item) => typeof item === 'string');
@@ -75,11 +85,7 @@ const isSegmentMap = (value: unknown): value is Record<string, Segment> =>
   );
 
 export function App() {
-  const [view, setView] = useState<View>(() =>
-    ['library', 'saved'].includes(location.hash.slice(1))
-      ? (location.hash.slice(1) as View)
-      : 'questions',
-  );
+  const [view, setView] = useState<View>(() => viewFromHash() ?? 'library');
   const [courses, setCourses] = useState<Course[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [lectures, setLectures] = useState<Lecture[]>([]);
@@ -231,7 +237,7 @@ export function App() {
     0,
   );
 
-  const navigate = (nextView: View, nextCourse: CourseId = 'all') => {
+  const navigate = (nextView: View, nextCourse: CourseId = 'all', hash: string = nextView) => {
     searchRequest.current?.abort();
     playerRequest.current?.abort();
     setAsking(false);
@@ -244,7 +250,10 @@ export function App() {
       setSubmittedQuestion('');
     }
     setView(nextView);
-    window.history.replaceState(null, '', `#${nextView}`);
+    // Versus routes off the hash, so moving between its own pages has to be a
+    // real hash change it can hear; every other view just records where it is.
+    if (view === 'versus' && nextView === 'versus') location.hash = hash;
+    else window.history.replaceState(null, '', `#${hash}`);
     setCourseId(nextCourse);
     setLibrarySearch('');
   };
@@ -405,9 +414,10 @@ export function App() {
         onHelp={() => setHelpOpen(true)}
       />
 
-      <div className={`main-shell ${view === 'documents' ? 'documents-shell' : ''}`}>
+      <div className={"main-shell"}>
         <ProductHeader
           module="Lectures"
+          homeHref="/learn"
           actions={
             <>
               <span className="view-toggle" role="group" aria-label="Ansicht">
@@ -427,23 +437,41 @@ export function App() {
             </>
           }
         >
-          <a href="/arena">Versus</a>
-          <a href="/history">Match history</a>
-          <a href="/leaderboard">Leaderboard</a>
-          <a href="/learn" className="active" aria-current="page">
+          {/* Versus runs here rather than sending anyone to the cockpit. */}
+          <button
+            className={view === 'versus' ? 'active' : ''}
+            aria-current={view === 'versus' ? 'page' : undefined}
+            onClick={() => navigate('versus')}
+          >
+            Versus
+          </button>
+          <button onClick={() => navigate('versus', 'all', 'versus/history')}>Match history</button>
+          <button onClick={() => navigate('versus', 'all', 'versus/leaderboard')}>Leaderboard</button>
+          <button
+            className={view !== 'versus' ? 'active' : ''}
+            aria-current={view !== 'versus' ? 'page' : undefined}
+            onClick={() => navigate('library')}
+          >
             Lectures
-          </a>
+          </button>
           <a href="/campus">Campus</a>
         </ProductHeader>
 
-        <main id="main" className={`main-content ${isQuestionLanding ? 'chat-landing' : ''} ${view === 'documents' ? 'document-content' : ''}`}>
-          {view !== 'documents' && catalogLoading && (
+        <main
+          id="main"
+          className={`main-content ${isQuestionLanding ? 'chat-landing' : ''}`}
+        >
+          {/* The same match the galaxy runs — same questions, answers and Elo
+              animation — without the cockpit around it. */}
+          {view === 'versus' && <ArenaApp hosted />}
+          {view !== 'versus' && (<>
+          {catalogLoading && (
             <p className="connection-status" role="status">
               <LoaderCircle size={18} className="loading-spin" />
               Vorlesungen werden geladen…
             </p>
           )}
-          {view !== 'documents' && catalogError && (
+          {catalogError && (
             <div className="service-error" role="alert">
               <p>{catalogError}</p>
               <button
@@ -454,20 +482,18 @@ export function App() {
               </button>
             </div>
           )}
-          {view !== 'documents' && opening && (
+          {opening && (
             <p className="connection-status" role="status">
               <LoaderCircle size={18} className="loading-spin" />
               Vorlesung wird geöffnet…
             </p>
           )}
-          {view !== 'documents' && playerError && (
+          {playerError && (
             <p className="service-error" role="alert">
               {playerError}
             </p>
           )}
-          {view === 'documents' ? (
-            <DocumentViewer />
-          ) : view === 'questions' ? (
+          {view === 'questions' ? (
             <div className="question-workspace">
               <div className="workspace-heading">
                 <p className="page-kicker">WORKSPACE / LECTURES</p>
@@ -599,65 +625,43 @@ export function App() {
             </div>
           ) : (
             <>
-              <div className="page-heading library-heading">
-                <div>
-                  <h1>{viewNames[view]}</h1>
-                  <p className="heading-context">
-                    {view === 'library'
-                      ? `${lectures.filter((item) => !item.demo).length} Aufzeichnungen und ${lectures.filter((item) => item.demo).length} Demo-Videos · Kapitel und Transkripte`
-                      : `${savedIds.length} gespeicherte ${savedIds.length === 1 ? 'Stelle' : 'Stellen'} · Deine persönliche Merkliste`}
-                  </p>
-                </div>
-                <span className="heading-mark" aria-hidden="true">
-                  {view === 'saved' ? (
-                    <Bookmark size={29} strokeWidth={1.3} />
-                  ) : (
-                    <Layers3 size={29} strokeWidth={1.3} />
-                  )}
-                </span>
-              </div>
-              <div className="library-search">
-                <Search size={18} />
-                <input
-                  aria-label="Vorlesungen durchsuchen"
-                  value={librarySearch}
-                  onChange={(event) => setLibrarySearch(event.target.value)}
-                  placeholder="Vorlesungen durchsuchen …"
+              {view === 'library' ? (
+                <CourseBrowser
+                  courses={courses}
+                  lectures={lectures}
+                  savedIds={savedIds}
+                  onSave={(_id, segment) => toggleSaved(segment)}
+                  onOpenSegment={(item, segment) => void openLecture(item, segment)}
+                  selectedCourseId={selectedCourse?.courseId ?? null}
+                  onSelectCourse={(id) => {
+                    const next = courses.find((item) => item.id === id);
+                    if (next) setSelectedCourse({
+                      department: next.department ?? 'other',
+                      degree: next.degree,
+                      studyYear: next.studyYear,
+                      courseId: next.id,
+                    });
+                  }}
                 />
-                {librarySearch && (
-                  <button
-                    className="icon-button"
-                    title="Suche zurücksetzen"
-                    aria-label="Suche zurücksetzen"
-                    onClick={() => setLibrarySearch('')}
-                  >
-                    <X size={17} />
-                  </button>
-                )}
-              </div>
-              <div className="course-filters" aria-label="Kursfilter">
-                <button
-                  className={courseId === 'all' ? 'active' : ''}
-                  onClick={() => setCourseId('all')}
-                >
-                  Alle Kurse<span>{lectures.length}</span>
-                </button>
-                {courses.map((course) => (
-                  <button
-                    className={courseId === course.id ? 'active' : ''}
-                    key={course.id}
-                    onClick={() => setCourseId(course.id)}
-                  >
-                    <span className="course-dot" style={{ background: course.color }} />
-                    {course.name}
-                    <span>{course.videoCount}</span>
-                  </button>
-                ))}
-              </div>
+              ) : (
+                <>
+                  <div className="page-heading library-heading">
+                    <div>
+                      <h1>{viewNames[view]}</h1>
+                      <p className="heading-context">
+                        {`${savedIds.length} gespeicherte ${savedIds.length === 1 ? 'Stelle' : 'Stellen'} · Deine persönliche Merkliste`}
+                      </p>
+                    </div>
+                    <span className="heading-mark" aria-hidden="true">
+                      <Bookmark size={29} strokeWidth={1.3} />
+                    </span>
+                  </div>
+                </>
+              )}
             </>
           )}
 
-          {view !== 'documents' && !catalogLoading && !catalogError &&
+          {view !== 'library' && !catalogLoading && !catalogError &&
           (view !== 'questions' || answer?.sources.length) ? (
             <section
               className="results-section"
@@ -666,11 +670,7 @@ export function App() {
               <div className="results-toolbar">
                 <div className="results-heading">
                   <h2>
-                    {view === 'questions'
-                      ? 'Passende Vorlesungen'
-                      : view === 'library'
-                        ? 'Alle Vorlesungen'
-                        : 'Deine Merkliste'}
+                    {view === 'questions' ? 'Passende Vorlesungen' : 'Deine Merkliste'}
                   </h2>
                   <span className="result-count">{results.length}</span>
                 </div>
@@ -780,6 +780,7 @@ export function App() {
               )}
             </section>
           ) : null}
+          </>)}
         </main>
       </div>
 

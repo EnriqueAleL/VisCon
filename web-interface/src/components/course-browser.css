@@ -1,0 +1,295 @@
+/* The galaxy's hierarchy in list form. Shares the Lernraum surface and tokens;
+   the only borrowed idea is the structure, not the night sky. */
+
+.browser {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ---------- trail and back ---------- */
+
+.browser-trail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+}
+.browser-crumb {
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.browser-crumb:hover:not(:disabled) { background: var(--surface-hover); }
+.browser-crumb:disabled,
+.browser-crumb.current { color: var(--ink); cursor: default; font-weight: 600; }
+.browser-crumb:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.browser-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12.5px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px 2px;
+}
+.browser-back:hover { color: var(--ink); }
+
+/* ---------- heading ---------- */
+
+.browser-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.browser-eyebrow {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.browser-head h1 {
+  margin: 0 0 6px;
+  font-size: 26px;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.browser-sub { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+.browser-mark { color: var(--muted); opacity: .5; flex-shrink: 0; }
+
+/* ---------- filter ---------- */
+
+.browser-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--muted);
+}
+.browser-filter input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+  padding: 11px 0;
+}
+.browser-filter input:focus { outline: none; }
+.browser-filter:focus-within { border-color: var(--accent); }
+
+/* ---------- level 1: courses ---------- */
+
+.browser-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.course-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+  padding: 16px 16px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--tile-accent, var(--accent));
+  border-radius: 12px;
+  background: var(--surface-raised);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color .18s, transform .18s, box-shadow .18s;
+}
+.course-tile:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(0, 0, 0, .35); }
+.course-tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.course-tile.selected { border-color: var(--accent); }
+
+.course-tile-top { display: flex; align-items: center; gap: 8px; }
+.course-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.course-tile-programme {
+  font-size: 11px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.course-tile-name { font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--ink); }
+.course-tile-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.course-tile-meta b { color: var(--ink); font-weight: 600; }
+
+/* ---------- documents (they belong to the course, like in the galaxy) ---------- */
+
+.course-docs { display: flex; flex-direction: column; gap: 10px; }
+.course-docs-head {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.course-docs-head span {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 1px 7px;
+  letter-spacing: 0;
+}
+.course-docs-empty { margin: 0; font-size: 12.5px; color: var(--subtle, var(--muted)); }
+.course-docs-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+
+.course-doc {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-align: left;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-raised);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color .18s, background .18s;
+}
+.course-doc:hover { border-color: var(--accent); background: var(--surface-hover); }
+.course-doc:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.course-doc-symbol { display: grid; place-items: center; color: var(--accent); flex-shrink: 0; }
+.course-doc-identity { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.course-doc-identity small { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.course-doc-identity strong { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+.course-doc-arrow { color: var(--muted); flex-shrink: 0; }
+
+/* The reader takes the whole window, as it does in the galaxy. */
+.course-doc-reader {
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh;
+  max-height: 100vh;
+  border: 0;
+  padding: 0;
+  background: var(--ground, #070a12);
+}
+.course-doc-reader::backdrop { background: rgba(4, 7, 14, .82); }
+.course-doc-reader iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+/* ---------- levels 2 and 3: rows ---------- */
+
+.browser-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+
+.row-tile {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-raised);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color .18s, background .18s;
+}
+button.row-tile:hover { border-color: var(--accent); }
+button.row-tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.row-index {
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.row-title { font-size: 14px; line-height: 1.35; color: var(--ink); }
+.row-note { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.row-tail { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.row-chevron { color: var(--muted); flex-shrink: 0; }
+
+/* A chapter row carries an open button and a bookmark, so it is a container */
+.row-tile.chapter { padding: 0; cursor: default; gap: 0; }
+.chapter-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  padding: 13px 8px 13px 14px;
+  cursor: pointer;
+  border-radius: 10px 0 0 10px;
+}
+.chapter-open:hover { background: var(--surface-hover); }
+.chapter-open:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* The galaxy makes a long chapter a tall building; here it makes a long bar. */
+.chapter-bar {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+.chapter-bar-fill { display: block; height: 100%; border-radius: 2px; opacity: .85; }
+
+.chapter-play {
+  display: grid;
+  place-items: center;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.chapter-open:hover .chapter-play { background: var(--accent); color: var(--accent-ink); }
+
+.chapter-save {
+  width: 42px;
+  align-self: stretch;
+  border: 0;
+  border-left: 1px solid var(--line);
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 0 10px 10px 0;
+}
+.chapter-save:hover { background: var(--surface); color: var(--ink); }
+.chapter-save.on { color: var(--accent); }
+.chapter-save:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+@media (max-width: 620px) {
+  .browser-head { flex-direction: column; gap: 10px; }
+  .browser-head h1 { font-size: 21px; }
+  .browser-grid { grid-template-columns: 1fr; }
+}
