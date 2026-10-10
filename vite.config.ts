@@ -18,7 +18,7 @@ export default defineConfig({
   plugins: [react(), {
     name: 'viscon-learn-route',
     configureServer(server) {
-      server.middlewares.use((req, res, next) => {
+      server.middlewares.use(async (req, res, next) => {
         const url = req.url || '';
         if (/^\/learn\/?(?:\?|$)/.test(url)) {
           req.url = url.replace(/^\/learn\/?/, '/learn.html');
@@ -31,6 +31,24 @@ export default defineConfig({
         // works whether it is reached at / or at /galaxy/.
         const [rawPath] = url.split('?');
         const isGalaxyPage = rawPath === '/' || rawPath === '/galaxy' || rawPath === '/galaxy/';
+        if (isGalaxyPage) {
+          try {
+            const response = await fetch('http://127.0.0.1:3001/api/auth/me', {
+              headers: { cookie: req.headers.cookie || '' },
+              signal: AbortSignal.timeout(5000),
+            });
+            if (!response.ok) throw new Error('Account service unavailable');
+            const status = await response.json() as { required: boolean; account: { verified: boolean } | null };
+            if (status.required && !status.account?.verified) {
+              req.url = '/auth.html';
+              return next();
+            }
+          } catch {
+            res.statusCode = 503;
+            res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+            return res.end('Der Lernraum ist vorübergehend nicht erreichbar. Bitte starte den API-Server und lade die Seite neu.');
+          }
+        }
         if (isGalaxyPage || /^\/galaxy\//.test(rawPath)) {
           const relative = isGalaxyPage ? 'galaxy/index.html' : decodeURIComponent(rawPath).slice(1);
           const file = resolve(relative);
