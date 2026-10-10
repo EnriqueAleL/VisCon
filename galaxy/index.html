@@ -58,8 +58,14 @@
       <p class="ask-status" id="ask-status" role="status"></p>
     </form>
 
+    <nav class="hop" id="hop" aria-label="Nachbarvorlesungen" hidden>
+      <button type="button" id="hop-prev"></button>
+      <button type="button" id="hop-next"></button>
+    </nav>
+
     <div class="hint">
       <div>Ziehen zum Umsehen · Scrollen zum Zoomen</div>
+      <div class="hint-city"><kbd>WASD</kbd> gehen · <kbd>Q</kbd><kbd>E</kbd> drehen · Rechtsklick ziehen · Doppelklick: hingehen</div>
       <div><kbd>Esc</kbd> eine Ebene zurück</div>
     </div>
   </div>
@@ -75,6 +81,10 @@
       </div>
       <video id="player-video" controls playsinline preload="metadata"></video>
       <p class="player-note" id="player-note"></p>
+      <div class="player-nav">
+        <button type="button" id="player-prev"></button>
+        <button type="button" id="player-next"></button>
+      </div>
     </div>
   </div>
 
@@ -107,6 +117,8 @@
   <script src="/galaxy/vendor/three/three.min.js"></script>
   <script src="/galaxy/api.js"></script>
   <script src="/galaxy/documents.js"></script>
+  <script src="/galaxy/themes.js"></script>
+  <script src="/galaxy/city.js"></script>
   <script src="/galaxy/app.js"></script>
 </body>
 </html>

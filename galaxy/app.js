@@ -169,6 +169,8 @@
   function start(DATA, context) {
 
   var REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // One look per course, shared by its planet and its cities (themes.js)
+  var THEMES = window.GalaxyThemes.assign(DATA);
 
   var mmss = function (s) { return Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0"); };
   var mins = function (s) { return Math.round(s / 60) + " min"; };
@@ -201,31 +203,6 @@
   }
   var STAR_TEX = discTexture("rgba(255,255,255,1)", "rgba(255,255,255,.35)");
   var GLOW_TEX = discTexture("rgba(255,255,255,.95)", "rgba(255,255,255,.22)");
-
-  // A grid of lit and dark windows, used as an emissive map. Far cheaper than
-  // modelling floors, and it is what makes a box read as an inhabited tower.
-  function windowTexture(litChance, cssColour) {
-    var c = document.createElement("canvas");
-    c.width = 64; c.height = 128;
-    var ctx = c.getContext("2d");
-    ctx.fillStyle = "#05080f";
-    ctx.fillRect(0, 0, 64, 128);
-    var cols = 6, rows = 15, pad = 3;
-    var w = (64 - pad * (cols + 1)) / cols;
-    var h = (128 - pad * (rows + 1)) / rows;
-    for (var r = 0; r < rows; r++) {
-      for (var q = 0; q < cols; q++) {
-        if (Math.random() > litChance) continue;
-        ctx.globalAlpha = 0.35 + Math.random() * 0.65;
-        ctx.fillStyle = Math.random() < 0.22 ? "#ffffff" : cssColour;
-        ctx.fillRect(pad + q * (w + pad), pad + r * (h + pad), w, h * (Math.random() < 0.15 ? 0.5 : 1));
-      }
-    }
-    ctx.globalAlpha = 1;
-    var tex = new THREE.CanvasTexture(c);
-    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    return tex;
-  }
 
   /* ============================================================
      GALAXY
@@ -268,20 +245,6 @@
     sky.add(sp);
   });
 
-  var WINDOW_POOL = null;
-  function windowSkin(courseCss, variant, repeatX, repeatY) {
-    if (!WINDOW_POOL) {
-      WINDOW_POOL = [
-        windowTexture(0.52, courseCss), windowTexture(0.4, courseCss),
-        windowTexture(0.3, courseCss), windowTexture(0.2, courseCss)
-      ];
-    }
-    var tex = WINDOW_POOL[variant % WINDOW_POOL.length].clone();
-    tex.needsUpdate = true;
-    tex.repeat.set(repeatX, repeatY);
-    return tex;
-  }
-
   var PLANET_VERT = [
     "varying vec3 vN; varying vec3 vP; varying vec3 vV;",
     "void main() {",
@@ -295,6 +258,9 @@
 
   var PLANET_FRAG = [
     "uniform vec3 uColor; uniform float uTime;",
+    // Theme surface: oceans below the sea level, land rising to highlands, polar ice, dune bands
+    "uniform vec3 uOcean; uniform vec3 uLand; uniform vec3 uHigh;",
+    "uniform float uSea; uniform float uIce; uniform float uBands;",
     "varying vec3 vN; varying vec3 vP; varying vec3 vV;",
     "float hash(vec3 p){ return fract(sin(dot(p, vec3(12.9898,78.233,45.164))) * 43758.5453); }",
     "float noise(vec3 p){",
@@ -313,12 +279,20 @@
     "void main() {",
     "  vec3 n = normalize(vN), v = normalize(vV);",
     "  float fres = pow(1.0 - max(dot(n, v), 0.0), 2.6);",
-    "  float band = fbm(vec3(vP.x * 0.8, vP.y * 2.6 + uTime * 0.015, vP.z * 0.8));",
-    "  float fine = fbm(vP * 4.5);",
-    "  vec3 base = uColor * (0.30 + 0.62 * band + 0.22 * fine);",
+    "  vec3 p = normalize(vP);",
+    "  float h = fbm(p * 2.2 + vec3(3.1)) * 0.75 + fbm(p * 6.0) * 0.25;",
+    "  h = mix(h, h * 0.55 + 0.45 * (0.5 + 0.5 * sin(p.y * 18.0 + fbm(p * 3.0) * 6.0)), uBands);",
+    // Soft coast and ice edges: hard cut-offs on value noise show its grid as blocks
+    "  vec3 water = mix(uOcean * 0.55, uOcean, smoothstep(uSea - 0.25, uSea, h));",
+    "  vec3 land = mix(uLand, uHigh, smoothstep(uSea + 0.05, uSea + 0.32, h));",
+    "  vec3 surf = mix(water, land, smoothstep(uSea - 0.02, uSea + 0.02, h));",
+    "  float lat = abs(p.y) + (fbm(p * 4.0 + vec3(7.3)) - 0.5) * 0.22;",
+    "  surf = mix(surf, vec3(0.93, 0.96, 0.98), step(0.001, uIce) * smoothstep(0.9 - uIce, 1.1 - uIce, lat));",
+    "  float wisps = smoothstep(0.58, 0.78, fbm(p * 3.4 + vec3(uTime * 0.02, 0.0, uTime * 0.01)));",
+    "  surf = mix(surf, vec3(1.0), wisps * 0.5);",
     "  float lam = max(dot(n, normalize(vec3(0.55, 0.78, 0.45))), 0.0);",
-    "  vec3 col = base * (0.20 + 1.00 * lam);",
-    "  col += uColor * fres * 1.05;",
+    "  vec3 col = surf * (0.18 + 1.00 * lam);",
+    "  col += uColor * fres * 0.85;",
     "  col += vec3(0.04, 0.05, 0.08) * fres;",
     "  gl_FragColor = vec4(col, 1.0);",
     "}"
@@ -349,12 +323,32 @@
     pivot.add(body);
     sky.add(pivot);
 
+    var look = THEMES[i].planet;
     var mat = new THREE.ShaderMaterial({
       vertexShader: PLANET_VERT, fragmentShader: PLANET_FRAG,
-      uniforms: { uColor: { value: new THREE.Color(course.color) }, uTime: { value: 0 } }
+      uniforms: {
+        uColor: { value: new THREE.Color(course.color) }, uTime: { value: 0 },
+        uOcean: { value: new THREE.Color(look.ocean) }, uLand: { value: new THREE.Color(look.land) },
+        uHigh: { value: new THREE.Color(look.high) },
+        uSea: { value: look.sea }, uIce: { value: look.ice }, uBands: { value: look.bands }
+      }
     });
     var globe = new THREE.Mesh(new THREE.SphereGeometry(PLANET_R, 64, 48), mat);
     body.add(globe);
+
+    // Some worlds wear a ring; it sits on the body, so it tilts but does not spin with the globe
+    var belt = null;
+    if (look.ring) {
+      belt = new THREE.Mesh(
+        new THREE.RingGeometry(PLANET_R * 1.45, PLANET_R * 2.1, 96),
+        new THREE.MeshBasicMaterial({
+          color: new THREE.Color(look.high).lerp(new THREE.Color(look.land), 0.4),
+          transparent: true, opacity: 0.5, side: THREE.DoubleSide, depthWrite: false
+        })
+      );
+      belt.rotation.set(-Math.PI / 2 + 0.38, 0, 0.2);
+      body.add(belt);
+    }
 
     var atmo = new THREE.Mesh(
       new THREE.SphereGeometry(PLANET_R * 1.16, 48, 32),
@@ -417,9 +411,10 @@
       var blockCount = 44;
       var blocks = new THREE.InstancedMesh(
         new THREE.BoxGeometry(1, 1, 1),
+        // Building colours from the course theme, lit only faintly in the course colour
         new THREE.MeshStandardMaterial({
-          color: 0x14203a, roughness: 0.85, metalness: 0.2,
-          emissive: new THREE.Color(course.color), emissiveIntensity: 0.9
+          color: THEMES[i].city.walls[j % THEMES[i].city.walls.length], roughness: 0.85, metalness: 0.1,
+          emissive: new THREE.Color(course.color), emissiveIntensity: 0.25
         }),
         blockCount
       );
@@ -479,7 +474,7 @@
 
     planets.push({
       course: course, pivot: pivot, body: body, globe: globe,
-      halo: halo, ring: ring, mat: mat, cities: cities, index: i
+      halo: halo, ring: ring, belt: belt, mat: mat, cities: cities, index: i
     });
   });
 
@@ -507,219 +502,16 @@
     houses.length = 0;
   }
 
+  // The city itself -- street grid, chapter buildings, people and traffic -- lives
+  // in city.js; this keeps the hand-off to the camera, picking and labels.
+  var cityView = null;
   function buildCity(courseIndex, lectureIndex) {
     clearCity();
-    var course = DATA[courseIndex];
-    var lecture = course.lectures[lectureIndex];
-    var hue = new THREE.Color(course.color);
-    // Towers are 8 wide, so the ring has to grow with the number of chapters
-    var ringRadius = lecture.segs.length <= 1 ? 0 : Math.max(17, lecture.segs.length * 1.95);
-    var plazaRadius = ringRadius + 95;
-    var groundRadius = plazaRadius * 2.4;
-
-    cityRoot.add(new THREE.AmbientLight(0x6b7993, 0.9));
-    var key = new THREE.DirectionalLight(0xcdd9ec, 0.5);
-    key.position.set(24, 40, 18);
-    cityRoot.add(key);
-    var fill = new THREE.PointLight(course.color, 2.6, 240);
-    fill.position.set(0, 16, 0);
-    cityRoot.add(fill);
-
-    var floor = new THREE.Mesh(
-      new THREE.CircleGeometry(groundRadius, 96),
-      new THREE.MeshStandardMaterial({ color: 0x070c16, roughness: 1, metalness: 0 })
-    );
-    floor.rotation.x = -Math.PI / 2;
-    cityRoot.add(floor);
-
-    var grid = new THREE.GridHelper(plazaRadius * 2, 38, course.color, 0x152134);
-    grid.material.transparent = true;
-    grid.material.opacity = 0.12;
-    grid.position.y = 0.02;
-    cityRoot.add(grid);
-
-    // Streets: a ring road through the chapter houses and a spoke out to each one,
-    // so the layout of the city is the structure of the lecture.
-    if (ringRadius > 0) {
-      var ringRoad = new THREE.Mesh(
-        new THREE.RingGeometry(ringRadius - 1.4, ringRadius + 1.4, 128),
-        new THREE.MeshBasicMaterial({
-          color: hue, transparent: true, opacity: 0.3, side: THREE.DoubleSide
-        })
-      );
-      ringRoad.rotation.x = -Math.PI / 2;
-      ringRoad.position.y = 0.05;
-      cityRoot.add(ringRoad);
-
-      lecture.segs.forEach(function (_seg, i) {
-        var a = (i / lecture.segs.length) * Math.PI * 2 - Math.PI / 2;
-        var spoke = new THREE.Mesh(
-          new THREE.PlaneGeometry(ringRadius, 1.6),
-          new THREE.MeshBasicMaterial({ color: hue, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
-        );
-        spoke.rotation.x = -Math.PI / 2;
-        spoke.rotation.z = -a;
-        spoke.position.set(Math.cos(a) * ringRadius / 2, 0.04, Math.sin(a) * ringRadius / 2);
-        cityRoot.add(spoke);
-      });
-    }
-
-    // Central plaza
-    var plaza = new THREE.Mesh(
-      new THREE.CircleGeometry(Math.max(6, ringRadius * 0.22), 48),
-      new THREE.MeshBasicMaterial({ color: hue, transparent: true, opacity: 0.17 })
-    );
-    plaza.rotation.x = -Math.PI / 2;
-    plaza.position.y = 0.06;
-    cityRoot.add(plaza);
-
-    // The surrounding skyline. Scenery, not data -- but it carries the same window
-    // texture at a fraction of the brightness, so the horizon reads as a real city
-    // rather than a field of blocks. One instanced mesh keeps it to a single draw call.
-    var sceneryCount = 420;
-    var sceneryTex = windowSkin(course.css, 3, 2, 4);
-    var scenery = new THREE.InstancedMesh(
-      new THREE.BoxGeometry(1, 1, 1),
-      new THREE.MeshStandardMaterial({
-        color: 0x0e1829, roughness: 0.92, metalness: 0.12,
-        emissive: hue, emissiveIntensity: 0.95, emissiveMap: sceneryTex, map: sceneryTex
-      }),
-      sceneryCount
-    );
-    var m4 = new THREE.Matrix4();
-    var quat = new THREE.Quaternion();
-    var pos = new THREE.Vector3();
-    var scl = new THREE.Vector3();
-    for (var i = 0; i < sceneryCount; i++) {
-      var ang = Math.random() * Math.PI * 2;
-      // Density falls off outwards, so the city thins towards the horizon
-      var t01 = Math.pow(Math.random(), 0.65);
-      var rad = ringRadius + 24 + t01 * (plazaRadius - ringRadius - 26);
-      // Taller towers downtown, low sprawl further out; a few landmarks anywhere
-      var tall = Math.random() < 0.06;
-      var bh = (tall ? 26 + Math.random() * 22 : 3 + (1 - t01) * 20 * Math.random() + 2);
-      var bw = 2.6 + Math.random() * 4.4;
-      pos.set(Math.cos(ang) * rad, bh / 2, Math.sin(ang) * rad);
-      quat.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.random() * Math.PI);
-      scl.set(bw, bh, bw * (0.7 + Math.random() * 0.6));
-      m4.compose(pos, quat, scl);
-      scenery.setMatrixAt(i, m4);
-    }
-    scenery.instanceMatrix.needsUpdate = true;
-    cityRoot.add(scenery);
-
-    // Chapter houses. Height is the chapter's real running time, and the tower is
-    // built in parts -- plinth, setback shaft, parapet, rooftop plant, mast -- so a
-    // short chapter and a long one read as different buildings, not scaled boxes.
-    var n = lecture.segs.length;
-    lecture.segs.forEach(function (seg, i) {
-      var h = 7 + ((seg.b - seg.a) / 60) * 1.5;
-      var ang = (i / n) * Math.PI * 2 - Math.PI / 2;
-
-      var grp = new THREE.Group();
-      grp.position.set(Math.cos(ang) * ringRadius, 0, Math.sin(ang) * ringRadius);
-      grp.rotation.y = -ang - Math.PI / 2;   // entrance faces the plaza
-      cityRoot.add(grp);
-
-      var shaftMat = new THREE.MeshStandardMaterial({
-        color: 0x16233a, roughness: 0.62, metalness: 0.22,
-        emissive: hue, emissiveIntensity: 0.34
-      });
-
-      // Plinth
-      var plinth = new THREE.Mesh(
-        new THREE.BoxGeometry(9.4, 1.1, 9.4),
-        new THREE.MeshStandardMaterial({ color: 0x080e1c, roughness: 0.95, metalness: 0.05 })
-      );
-      plinth.position.y = 0.55;
-      grp.add(plinth);
-
-      // Shaft in setbacks: taller chapters step inwards as they rise
-      var sections = h > 24 ? 3 : h > 14 ? 2 : 1;
-      var remaining = h - 1.1;
-      var bottom = 1.1;
-      var width = 8;
-      for (var sIdx = 0; sIdx < sections; sIdx++) {
-        var share = sections === 1 ? 1 : (sIdx === 0 ? 0.56 : sIdx === 1 ? 0.3 : 0.14);
-        var segH = remaining * share;
-        var tex = windowSkin(course.css, i + sIdx,
-          Math.max(1, Math.round(width / 3)), Math.max(1, Math.round(segH / 3)));
-        var mat = sIdx === 0 ? shaftMat : shaftMat.clone();
-        mat.emissiveMap = tex;
-        mat.map = tex;
-        var part = new THREE.Mesh(new THREE.BoxGeometry(width, segH, width), mat);
-        part.position.y = bottom + segH / 2;
-        grp.add(part);
-
-        // Parapet lip at the top of each setback
-        var lip = new THREE.Mesh(
-          new THREE.BoxGeometry(width + 0.22, 0.16, width + 0.22),
-          new THREE.MeshStandardMaterial({
-            color: 0x070d1a, roughness: 0.95, metalness: 0.05,
-            emissive: hue, emissiveIntensity: 0.3
-          })
-        );
-        lip.position.y = bottom + segH;
-        grp.add(lip);
-
-        bottom += segH;
-        width *= 0.72;
-      }
-
-      // Rooftop plant: a couple of service blocks so the top is not a flat lid
-      for (var u = 0; u < 2; u++) {
-        var box = new THREE.Mesh(
-          new THREE.BoxGeometry(width * 0.4, 0.5 + Math.random() * 0.8, width * 0.4),
-          new THREE.MeshStandardMaterial({ color: 0x0d1526, roughness: 0.9, metalness: 0.1 })
-        );
-        box.position.set((u - 0.5) * width * 0.5, bottom + 0.4, (Math.random() - 0.5) * width * 0.4);
-        grp.add(box);
-      }
-
-      // Mast with a lamp that blinks in the frame loop
-      var mast = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.07, 0.11, 2.6, 6),
-        new THREE.MeshStandardMaterial({ color: 0x27384f, roughness: 0.6, metalness: 0.5 })
-      );
-      mast.position.y = bottom + 1.3;
-      grp.add(mast);
-
-      var lamp = new THREE.Mesh(
-        new THREE.SphereGeometry(0.22, 10, 8),
-        new THREE.MeshBasicMaterial({ color: 0xffd9a8 })
-      );
-      lamp.position.y = bottom + 2.7;
-      grp.add(lamp);
-
-      // Lit entrance, so the ground floor reads as a way in
-      var door = new THREE.Mesh(
-        new THREE.PlaneGeometry(2.6, 1.5),
-        new THREE.MeshBasicMaterial({ color: hue, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
-      );
-      door.position.set(0, 0.78, 4.73);
-      grp.add(door);
-
-      var beacon = new THREE.Sprite(new THREE.SpriteMaterial({
-        map: GLOW_TEX, color: course.color, transparent: true, opacity: 0.7,
-        depthWrite: false, blending: THREE.AdditiveBlending
-      }));
-      beacon.scale.set(16, 16, 1);
-      beacon.position.y = bottom + 2.7;
-      grp.add(beacon);
-
-      // One generous invisible target rather than raycasting each part
-      var hit = new THREE.Mesh(
-        new THREE.BoxGeometry(9.6, h + 3, 9.6),
-        new THREE.MeshBasicMaterial({ visible: false })
-      );
-      hit.position.y = (h + 3) / 2;
-      grp.add(hit);
-
-      houses.push({
-        grp: grp, hit: hit, shaftMat: shaftMat, beacon: beacon, lamp: lamp,
-        seg: seg, height: bottom + 2.7, base: 0
-      });
+    cityView = window.GalaxyCity.build({
+      root: cityRoot, scene: ground, renderer: renderer, reduced: REDUCED, theme: THEMES[courseIndex],
+      course: DATA[courseIndex], lecture: DATA[courseIndex].lectures[lectureIndex]
     });
+    cityView.houses.forEach(function (h) { houses.push(h); });
   }
 
   /* ============================================================
@@ -904,6 +696,7 @@
   }
 
   function renderPanel() {
+    syncHop();
     el.list.replaceChildren();
     document.getElementById("panel").classList.toggle("has-course", state.course !== null);
     window.dispatchEvent(new CustomEvent("viscon:course-documents", { detail: { courseId: state.course === null ? null : DATA[state.course].id } }));
@@ -992,9 +785,11 @@
 
     b.append(i, t, a);
     b.addEventListener("click", onClick);
-    b.addEventListener("mouseenter", function () { setHover(hoverKey); });
+    // Marked as coming from the list, so the planet can turn that city towards you
+    var fromList = Object.assign({ fromList: true }, hoverKey);
+    b.addEventListener("mouseenter", function () { setHover(fromList); });
     b.addEventListener("mouseleave", function () { setHover(null); });
-    b.addEventListener("focus", function () { setHover(hoverKey); });
+    b.addEventListener("focus", function () { setHover(fromList); });
     b.addEventListener("blur", function () { setHover(null); });
     return b;
   }
@@ -1097,6 +892,7 @@
     state.level = "galaxy"; state.course = null; state.lecture = null; state.segment = null;
     accent("#526cb7");
     activeScene = sky;
+    document.body.classList.remove("daylight");
     planets.forEach(function (p) { p.cities.forEach(function (c) { c.node.visible = false; }); });
     flyTo(new THREE.Vector3(0, 0, 0), GALAXY_DIST, orbitYaw, GALAXY_PITCH, 1500);
     renderTrail(); renderPanel(); syncURL();
@@ -1109,6 +905,7 @@
     state.level = "planet"; state.course = i; state.lecture = null; state.segment = null;
     accent(p.course.css);
     activeScene = sky;
+    document.body.classList.remove("daylight");
     p.cities.forEach(function (c) { c.node.visible = true; });
 
     var land = new THREE.Vector3();
@@ -1131,6 +928,7 @@
     state.segment = null;
     buildCity(courseIndex, lectureIndex);
     activeScene = ground;
+    document.body.classList.add("daylight");   // the city is in daylight; the HUD follows
     var framing = Math.max(95, DATA[courseIndex].lectures[lectureIndex].segs.length * 5.6);
     anchor.set(0, 7, 0);
     orbitDist = instant ? framing : framing * 2.5;
@@ -1202,9 +1000,8 @@
   async function openPlayer(lecture, seg) {
     var token = ++playerToken;
     playerEl.hidden = false;
-    document.getElementById("player-eyebrow").textContent =
-      "Vorlesung " + lecture.ep + " · ab " + mmss(seg.a);
-    document.getElementById("player-title").textContent = seg.t;
+    followTime = false;
+    showChapter(lecture, seg);
     playerNote.textContent = "Vorlesung wird geladen …";
     videoEl.removeAttribute("src");
 
@@ -1232,6 +1029,109 @@
 
   document.getElementById("player-close").addEventListener("click", closePlayer);
   playerEl.addEventListener("pointerdown", function (e) { if (e.target === playerEl) closePlayer(); });
+
+  /* ============================================================
+     MOVING ON — chapter to chapter in the player, lecture to lecture in the city
+     ============================================================ */
+  var prevBtn = document.getElementById("player-prev");
+  var nextBtn = document.getElementById("player-next");
+  var hopEl = document.getElementById("hop");
+  var hopPrev = document.getElementById("hop-prev");
+  var hopNext = document.getElementById("hop-next");
+  var followTime = false;   // only track playback once the first seek has landed
+
+  function showChapter(lecture, seg) {
+    document.getElementById("player-eyebrow").textContent =
+      "Vorlesung " + lecture.ep + " · ab " + mmss(seg.a);
+    document.getElementById("player-title").textContent = seg.t;
+    if (seg.summary) playerNote.textContent = seg.summary;
+    syncPlayerNav();
+  }
+
+  // One step back or forward from the current chapter: the neighbouring chapter in
+  // this recording, or across into the previous or next lecture
+  function neighbour(delta) {
+    if (state.course === null || state.lecture === null || state.segment === null) return null;
+    var lectures = DATA[state.course].lectures;
+    var k = state.segment + delta;
+    if (k >= 0 && k < lectures[state.lecture].segs.length) return { lecture: state.lecture, segment: k };
+    var li = state.lecture + delta;
+    if (li < 0 || li >= lectures.length || !lectures[li].segs.length) return null;
+    return { lecture: li, segment: delta > 0 ? 0 : lectures[li].segs.length - 1 };
+  }
+
+  function labelStep(btn, target, delta) {
+    btn.disabled = !target;
+    btn.title = "";
+    if (!target) { btn.textContent = delta < 0 ? "‹ Anfang des Kurses" : "Ende des Kurses ›"; return; }
+    var lec = DATA[state.course].lectures[target.lecture];
+    var text = target.lecture === state.lecture
+      ? "Kapitel " + String(target.segment + 1).padStart(2, "0")
+      : "Vorlesung " + lec.ep;
+    btn.textContent = delta < 0 ? "‹ " + text : text + " ›";
+    btn.title = lec.segs[target.segment].t;
+  }
+
+  function syncPlayerNav() {
+    labelStep(prevBtn, neighbour(-1), -1);
+    labelStep(nextBtn, neighbour(1), 1);
+  }
+
+  function stepChapter(delta) {
+    var target = neighbour(delta);
+    if (!target || locked) return;
+    var lecture = DATA[state.course].lectures[state.lecture];
+    if (target.lecture === state.lecture) {
+      // Same recording: seek in place instead of reloading the video
+      selectHouse(target.segment, false);
+      showChapter(lecture, lecture.segs[target.segment]);
+      videoEl.currentTime = lecture.segs[target.segment].a;
+      return;
+    }
+    closePlayer();
+    hopToCity(state.course, target.lecture, function () { selectHouse(target.segment, true); });
+  }
+  prevBtn.addEventListener("click", function () { stepChapter(-1); });
+  nextBtn.addEventListener("click", function () { stepChapter(1); });
+
+  // The recording plays on past the chapter it was opened at; keep title, list and URL in step
+  videoEl.addEventListener("seeked", function () { followTime = true; });
+  videoEl.addEventListener("timeupdate", function () {
+    if (!followTime || playerEl.hidden || state.level !== "city" || state.segment === null) return;
+    var lecture = DATA[state.course].lectures[state.lecture], now = videoEl.currentTime, segs = lecture.segs;
+    if (now >= segs[state.segment].a && now < segs[state.segment].b) return;
+    for (var k = 0; k < segs.length; k++) {
+      if (now >= segs[k].a && now < segs[k].b) {
+        state.segment = k;
+        renderPanel(); syncURL(true);
+        showChapter(lecture, segs[k]);
+        return;
+      }
+    }
+  });
+
+  // Straight from one lecture city to another on the same planet, without flying out
+  function hopToCity(courseIndex, lectureIndex, done) {
+    if (locked) return;
+    if (activeScene !== ground) { toCity(courseIndex, lectureIndex, false, done); return; }
+    if (REDUCED) { settleInCity(courseIndex, lectureIndex, true, done); return; }
+    locked = true;
+    warp(DATA[courseIndex].css, 950);
+    setTimeout(function () { settleInCity(courseIndex, lectureIndex, false, done); }, 260);
+  }
+
+  function syncHop() {
+    hopEl.hidden = state.level !== "city";
+    if (hopEl.hidden) return;
+    var lectures = DATA[state.course].lectures;
+    var before = lectures[state.lecture - 1], after = lectures[state.lecture + 1];
+    hopPrev.hidden = !before;
+    hopNext.hidden = !after;
+    if (before) hopPrev.textContent = "‹ VL " + before.ep + " · " + before.title;
+    if (after) hopNext.textContent = "VL " + after.ep + " · " + after.title + " ›";
+  }
+  hopPrev.addEventListener("click", function () { hopToCity(state.course, state.lecture - 1); });
+  hopNext.addEventListener("click", function () { hopToCity(state.course, state.lecture + 1); });
 
   /* ============================================================
      ASK — the same lecture Q&A the rest of VisCon uses, flown to
@@ -1342,8 +1242,29 @@
     return null;
   }
 
+  /* In the city the camera can also travel: right-drag or shift-drag pans across the
+     streets, WASD / arrow keys walk, Q / E turn, and a double-click goes to that spot.
+     The anchor is kept over the street grid so you cannot wander off into the fog. */
+  var panning = false;
+  var heldKeys = {};
+
+  function roam(forward, right) {
+    var fx = -Math.sin(orbitYaw), fz = -Math.cos(orbitYaw);
+    anchor.x += fx * forward + Math.cos(orbitYaw) * right;
+    anchor.z += fz * forward - Math.sin(orbitYaw) * right;
+    if (cityView) {
+      anchor.x = Math.max(-cityView.halfX, Math.min(cityView.halfX, anchor.x));
+      anchor.z = Math.max(-cityView.halfZ, Math.min(cityView.halfZ, anchor.z));
+    }
+  }
+
+  canvas.addEventListener("contextmenu", function (e) {
+    if (activeScene === ground) e.preventDefault();
+  });
+
   canvas.addEventListener("pointerdown", function (e) {
     dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY;
+    panning = activeScene === ground && (e.button === 1 || e.button === 2 || e.shiftKey);
     canvas.setPointerCapture(e.pointerId);
   });
 
@@ -1352,8 +1273,15 @@
       var dx = e.clientX - lastX, dy = e.clientY - lastY;
       lastX = e.clientX; lastY = e.clientY;
       moved += Math.abs(dx) + Math.abs(dy);
-      orbitYaw -= dx * 0.005;
-      orbitPitch = Math.max(-0.35, Math.min(1.35, orbitPitch + dy * 0.004));
+      if (panning && !locked) {
+        var perPixel = orbitDist * 0.0018;
+        roam(dy * perPixel, -dx * perPixel);
+      } else {
+        orbitYaw -= dx * 0.005;
+        // In the city the camera stays above the street
+        var lowest = activeScene === ground ? 0.06 : -0.35;
+        orbitPitch = Math.max(lowest, Math.min(1.35, orbitPitch + dy * 0.004));
+      }
       tween = null;
     } else {
       setHover(pick(e));
@@ -1362,7 +1290,9 @@
 
   canvas.addEventListener("pointerup", function (e) {
     dragging = false;
-    if (moved > 7 || locked) return;
+    var wasPan = panning;
+    panning = false;
+    if (moved > 7 || locked || (wasPan && e.button !== 0)) return;
     var hit = pick(e);
     if (!hit) return;
     if (hit.kind === "planet") toPlanet(hit.index);
@@ -1372,12 +1302,44 @@
 
   canvas.addEventListener("wheel", function (e) {
     e.preventDefault();
-    var min = activeScene === ground ? 20 : (state.level === "planet" ? 13 : 70);
+    var min = activeScene === ground ? 12 : (state.level === "planet" ? 13 : 70);
     var cityMax = Math.max(165, houses.length * 9);
     var max = activeScene === ground ? cityMax : (state.level === "planet" ? 90 : GALAXY_DIST * 2.4);
     orbitDist = Math.max(min, Math.min(max, orbitDist * (1 + Math.sign(e.deltaY) * 0.09)));
     tween = null;
   }, { passive: false });
+
+  // Movement keys only count while the city is on screen and nobody is typing
+  var ROAM_KEYS = { w: 1, a: 1, s: 1, d: 1, q: 1, e: 1, arrowup: 1, arrowdown: 1, arrowleft: 1, arrowright: 1 };
+  function typing(e) { return /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable; }
+  window.addEventListener("keydown", function (e) {
+    var k = e.key.toLowerCase();
+    if (activeScene !== ground || !playerEl.hidden || typing(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (ROAM_KEYS[k]) {
+      heldKeys[k] = true;
+      e.preventDefault();
+    } else if ((k === "[" || k === "]") && !locked) {
+      // Previous / next lecture city
+      var to = state.lecture + (k === "]" ? 1 : -1);
+      if (to >= 0 && to < DATA[state.course].lectures.length) hopToCity(state.course, to);
+    }
+  });
+  window.addEventListener("keyup", function (e) { delete heldKeys[e.key.toLowerCase()]; });
+  window.addEventListener("blur", function () { heldKeys = {}; });
+
+  canvas.addEventListener("dblclick", function (e) {
+    if (activeScene !== ground || locked || pick(e)) return;
+    var r = canvas.getBoundingClientRect();
+    ndc.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+    ndc.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+    ray.setFromCamera(ndc, camera);
+    var spot = new THREE.Vector3();
+    if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), spot) || !cityView) return;
+    spot.x = Math.max(-cityView.halfX, Math.min(cityView.halfX, spot.x));
+    spot.z = Math.max(-cityView.halfZ, Math.min(cityView.halfZ, spot.z));
+    spot.y = anchor.y;
+    flyTo(spot, Math.min(orbitDist, 70), orbitYaw, Math.min(orbitPitch, 0.45), 900);
+  });
 
   window.addEventListener("keydown", function (e) {
     if (document.getElementById("document-workspace").open || e.key !== "Escape") return;
@@ -1416,7 +1378,8 @@
     if (!REDUCED) {
       planets.forEach(function (p, i) {
         p.mat.uniforms.uTime.value = t;
-        p.globe.rotation.y += dt * (0.045 - i * 0.008);
+        // The planet you are standing over holds still, so its cities stay where you saw them
+        if (!(state.level === "planet" && state.course === i)) p.globe.rotation.y += dt * (0.045 - i * 0.008);
         if (!(state.level !== "galaxy" && state.course === i)) {
           p.pivot.rotation.y += dt * (0.016 / (i + 1));
         }
@@ -1427,15 +1390,35 @@
       });
       starNear.rotation.y += dt * 0.004;
       starFar.rotation.y -= dt * 0.0016;
+    }
 
-      houses.forEach(function (h, k) {
-        var hot = (hovered && hovered.kind === "house" && hovered.index === k) || state.segment === k;
-        h.grp.position.y += ((hot ? 1.6 : 0) - h.grp.position.y) * 0.12;
-        h.shaftMat.emissiveIntensity += ((hot ? 0.95 : 0.34) - h.shaftMat.emissiveIntensity) * 0.12;
-        var bs = (hot ? 24 : 16) * (1 + Math.sin(t * 2.4 + k) * 0.05);
-        h.beacon.scale.set(bs, bs, 1);
-        // Aircraft warning lamps, each on its own offbeat
-        h.lamp.material.color.setScalar(0.55 + 0.45 * Math.abs(Math.sin(t * 1.7 + k * 1.3)));
+    // Pointing at a lecture in the list turns its city to face you
+    if (state.level === "planet" && activeScene === sky && hovered && hovered.kind === "city" && hovered.fromList && !tween) {
+      var fp = planets[state.course];
+      var spot = fp.cities[hovered.index].node.position;
+      fp.body.getWorldPosition(worldTmp);
+      var facing = Math.atan2(camera.position.x - worldTmp.x, camera.position.z - worldTmp.z);
+      var turnBy = facing - Math.atan2(spot.x, spot.z) - fp.pivot.rotation.y - fp.globe.rotation.y;
+      fp.globe.rotation.y += Math.atan2(Math.sin(turnBy), Math.cos(turnBy)) * Math.min(1, dt * 4);
+    }
+
+    // Walking the city with the keyboard: speed scales with how far out the camera is
+    if (activeScene === ground && !locked) {
+      var step = Math.max(14, orbitDist * 0.45) * dt;
+      var fwd = (heldKeys.w || heldKeys.arrowup ? 1 : 0) - (heldKeys.s || heldKeys.arrowdown ? 1 : 0);
+      var side = (heldKeys.d || heldKeys.arrowright ? 1 : 0) - (heldKeys.a || heldKeys.arrowleft ? 1 : 0);
+      var turn = (heldKeys.e ? 1 : 0) - (heldKeys.q ? 1 : 0);
+      if (fwd || side || turn) {
+        tween = null;
+        roam(fwd * step, side * step);
+        orbitYaw -= turn * dt * 1.4;
+      }
+    }
+
+    // Highlights always follow the pointer; people and traffic stay put under reduced motion
+    if (cityView && activeScene === ground) {
+      cityView.animate(t, dt, function (k) {
+        return (hovered && hovered.kind === "house" && hovered.index === k) || state.segment === k;
       });
     }
 
@@ -1447,6 +1430,11 @@
       p.halo.material.opacity += ((hot ? 0.62 : 0.42) - p.halo.material.opacity) * 0.1;
       var wantRing = state.level === "galaxy" ? (hot ? 0.4 : 0.16) : 0.05;
       p.ring.material.opacity += (wantRing - p.ring.material.opacity) * 0.08;
+      // A planet's own ring fades back once you are down at its cities
+      if (p.belt) {
+        var wantBelt = state.level === "planet" && state.course === i ? 0.12 : 0.5;
+        p.belt.material.opacity += (wantBelt - p.belt.material.opacity) * 0.08;
+      }
     });
 
     // Keep following a planet while it continues along its orbit

@@ -486,3 +486,63 @@ canvas { display: block; width: 100%; height: 100%; }
 .gate-option:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .gate-count { font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); white-space: nowrap; }
 .gate-note { margin: 4px 0 0; font-size: 12px; color: var(--faint); }
+
+/* ---------- Daylight city ---------- */
+
+/* The lecture city is a bright street scene, so the labels and trail that float over it
+   need a solid backing to stay legible. */
+body.daylight .tag {
+  background: rgba(9, 14, 25, .82);
+  border-color: rgba(255, 255, 255, .22);
+  text-shadow: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+}
+body.daylight .trail,
+body.daylight .elsewhere,
+body.daylight .hint {
+  width: max-content; max-width: calc(100vw - 36px);
+  background: rgba(9, 14, 25, .78);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  border-radius: 4px; padding: 2px 6px 2px 2px;
+}
+body.daylight .hint { padding: 6px 10px; }
+.hint-city { display: none; }
+body.daylight .hint-city { display: block; }
+
+/* ---------- Moving on: chapter steps in the player, lecture hops in the city ---------- */
+
+.player-nav {
+  display: flex; justify-content: space-between; gap: 10px;
+  padding: 0 16px 14px;
+}
+.player-nav button,
+.hop button {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+  color: var(--starlight); cursor: pointer;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid var(--line); border-radius: 6px;
+  padding: 8px 12px; max-width: 48%;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: border-color .2s, background .2s;
+}
+.player-nav button:hover:not(:disabled),
+.hop button:hover { border-color: var(--accent); background: rgba(255, 255, 255, .09); }
+.player-nav button:disabled { opacity: .35; cursor: default; }
+.player-nav button:focus-visible,
+.hop button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.hop {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  display: flex; gap: 8px; max-width: min(640px, calc(100vw - 720px));
+}
+.hop[hidden] { display: none; }
+.hop button {
+  max-width: 300px;
+  background: rgba(9, 14, 25, .82);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+.hop button[hidden] { display: none; }
+@media (max-width: 1100px) {
+  .hop { left: 18px; right: 18px; transform: none; max-width: none; bottom: auto; top: calc(64px + env(safe-area-inset-top, 0px)); }
+}
