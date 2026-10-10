@@ -140,6 +140,9 @@ app.post('/api/mania/cities/:id/duel', route((req, res, p) => {
 mountSocial(app, io);
 await mountManiaAnswers(app);
 app.use('/api',(_req,res)=>res.status(404).json({error:'API route not found.'}));
-if(existsSync('dist/index.html')){app.get(['/learn','/learn/'],(_req,res)=>res.sendFile(resolve('dist/learn.html')));app.use(express.static('dist'));app.get('/{*path}',(_req,res)=>res.sendFile(resolve('dist/index.html')));}
+if(existsSync('dist/index.html')){app.get(['/learn','/learn/'],(_req,res)=>res.sendFile(resolve('dist/learn.html')));
+// The galaxy is the front page; it must answer before express.static serves dist/index.html for '/'.
+app.get(['/','/galaxy','/galaxy/'],(_req,res)=>res.sendFile(resolve('dist/galaxy/index.html')));
+app.use(express.static('dist'));app.get('/{*path}',(_req,res)=>res.sendFile(resolve('dist/index.html')));}
 app.use((err:any,_req:express.Request,res:express.Response,_next:express.NextFunction)=>res.status(Number.isInteger(err.status)&&err.status>=400&&err.status<600?err.status:500).json({error:err.status===404?'File not found.':'The request could not be read.'}));
 http.listen(port,process.env.HOST||'0.0.0.0',()=>console.log(`VisCon + Basis Arena ready on http://localhost:${port}`));
