@@ -1,13 +1,14 @@
 # Shared frontend integration
 
-Baseline: `ce8e44b` (course selection and hover navigation). Basis Arena remains at
-`/`, including its existing `/room/:id`, `/profile`, `/history`, `/leaderboard` and
+The original API integration used `ce8e44b`; the galaxy is now the front page at
+`/`. Versus (the existing Arena) lives at `/arena`, including its `/room/:id`, `/profile`, `/history`, `/leaderboard` and
 `/java` routes. The imported VisCon interface is at `/learn` with `#questions`,
-`#library` and `#saved` state. Its Arena icon links to the working Arena app.
+`#library` and `#saved` state. Its Versus icon links to the working multiplayer app.
 
-Vite builds `index.html` and `learn.html` together. Both entries share the local
-Inter fonts, semantic tokens, base styles, and product header in `shared/design/`.
-Page-specific styles handle layout; [DESIGN.md](../DESIGN.md) is the visual contract.
+Vite builds `index.html` and `learn.html` together and copies the galaxy assets.
+Versus inherits the galaxy through the shared `galaxy/theme.css` and a scoped
+presentation layer. Other workspaces keep `shared/design/`.
+[DESIGN.md](../DESIGN.md) is the visual contract; [Versus notes](versus.md) document course-aware entry and return.
 The preserved satellite scene is available at `/campus`.
 In development, `/learn` maps to `learn.html`; `/api`, `/media` and
 `/socket.io` reach the shared server. Production Express serves both HTML entries.

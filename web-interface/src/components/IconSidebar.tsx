@@ -276,7 +276,7 @@ export function IconSidebar({
         >
           <BookOpen size={20} />
         </button>
-        <a className="rail-button" href="/arena" title="Arena" aria-label="Arena">
+        <a className="rail-button" href="/arena" title="Versus" aria-label="Versus">
           <ArenaIcon />
         </a>
       </nav>

@@ -208,26 +208,7 @@
      GALAXY
      ============================================================ */
   function starfield(count, spread, size, opacity) {
-    var pos = new Float32Array(count * 3);
-    var col = new Float32Array(count * 3);
-    var tint = new THREE.Color();
-    for (var i = 0; i < count; i++) {
-      var r = spread * (0.55 + Math.random() * 0.45);
-      var th = Math.random() * Math.PI * 2;
-      var ph = Math.acos(2 * Math.random() - 1);
-      pos[i * 3] = r * Math.sin(ph) * Math.cos(th);
-      pos[i * 3 + 1] = r * Math.cos(ph) * 0.65;
-      pos[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
-      tint.setHSL(0.55 + Math.random() * 0.12, 0.3 + Math.random() * 0.4, 0.72 + Math.random() * 0.28);
-      col[i * 3] = tint.r; col[i * 3 + 1] = tint.g; col[i * 3 + 2] = tint.b;
-    }
-    var geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
-    return new THREE.Points(geo, new THREE.PointsMaterial({
-      size: size, map: STAR_TEX, vertexColors: true, transparent: true,
-      opacity: opacity, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true
-    }));
+    return window.VisConDuel.starfield(THREE, count, spread, size, opacity, STAR_TEX);
   }
 
   var starNear = starfield(1400, 420, 2.4, 0.95);
@@ -244,6 +225,114 @@
     sp.scale.set(560 + i * 40, 560 + i * 40, 1);
     sky.add(sp);
   });
+
+  var duelShip = window.VisConDuel.createShip(THREE, 0x8daaff);
+  var shipOrbitX = -122 + Math.random() * 8;
+  var shipHome = new THREE.Vector3(shipOrbitX * Math.min(1, Math.pow(innerWidth / 800, 2)), 66, 14);
+  duelShip.position.copy(shipHome); duelShip.quaternion.setFromRotationMatrix(new THREE.Matrix4().lookAt(shipHome, new THREE.Vector3(), new THREE.Vector3(0, 1, 0))); duelShip.scale.setScalar(2.5);
+  sky.add(duelShip);
+  var shipHit = new THREE.Mesh(new THREE.SphereGeometry(7.5, 12, 8), new THREE.MeshBasicMaterial({visible: false}));
+  duelShip.add(shipHit);
+  var shipLight = new THREE.PointLight(0xdde8ff, 2.5, 130);
+  shipLight.position.set(-105, 100, 60); sky.add(shipLight);
+  var shipButton = document.getElementById("board-versus");
+  var boardingStatus = document.getElementById("boarding-status");
+  var boarding = false, beforeBoarding = null, boardingFlight = null, shipCabin = null, boardingArrived = false;
+
+  // A distant, self-contained skirmish gives the course system some life. It is
+  // scenery only: the selectable Versus ship and live match state stay separate.
+  var ambience = new THREE.Group();
+  sky.add(ambience);
+  var patrols = [0x8daaff, 0xe2b48d].map(function (color) {
+    var ship = window.VisConDuel.createShip(THREE, color);
+    ship.scale.setScalar(1.55);
+    ambience.add(ship);
+    return ship;
+  });
+  var patrolCentre = new THREE.Vector3(innerWidth < 600 ? 28 : 110, -10, -110);
+  var patrolLight = new THREE.PointLight(0xdce7ff, 4.5, 140);
+  patrolLight.position.set(0, 24, 45);
+  ambience.add(patrolLight);
+  var patrolAim = new THREE.Matrix4();
+  var patrolUp = new THREE.Vector3(0, 1, 0);
+  var laserColors = [0xaec5ff, 0xffc696];
+  var laserTmp = new THREE.Vector3();
+  var laserEnd = new THREE.Vector3();
+  var lasers = patrols.map(function (_, i) {
+    var positions = new Float32Array(6);
+    var geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    var line = new THREE.Line(geometry, new THREE.LineBasicMaterial({
+      color: laserColors[i], transparent: true, opacity: 0,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    }));
+    line.frustumCulled = false;
+    ambience.add(line);
+    var spark = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: GLOW_TEX, color: laserColors[i], transparent: true, opacity: 0,
+      depthWrite: false, blending: THREE.AdditiveBlending
+    }));
+    spark.scale.set(7, 7, 1);
+    ambience.add(spark);
+    return { line: line, positions: positions, spark: spark };
+  });
+  var travellers = [];
+  var travellerPositions = new Float32Array(12 * 6);
+  for (var travellerIndex = 0; travellerIndex < 12; travellerIndex++) {
+    travellers.push({
+      phase: (travellerIndex * 0.61803398875) % 1,
+      speed: 0.018 + (travellerIndex % 4) * 0.006,
+      y: -35 + ((travellerIndex * 79) % 190),
+      z: -220 - (travellerIndex % 4) * 55
+    });
+  }
+  var travellerGeometry = new THREE.BufferGeometry();
+  travellerGeometry.setAttribute("position", new THREE.BufferAttribute(travellerPositions, 3));
+  var travellerLines = new THREE.LineSegments(travellerGeometry, new THREE.LineBasicMaterial({
+    color: 0xa8c8ef, transparent: true, opacity: 0.58,
+    depthWrite: false, blending: THREE.AdditiveBlending
+  }));
+  travellerLines.frustumCulled = false;
+  ambience.add(travellerLines);
+
+  function moveAmbience(t) {
+    patrolLight.position.set(patrolCentre.x, patrolCentre.y + 28, patrolCentre.z + 45);
+    patrols[0].position.set(patrolCentre.x - 22 + Math.sin(t * .42) * 12,
+      patrolCentre.y + Math.sin(t * .78) * 8, patrolCentre.z + Math.cos(t * .42) * 10);
+    patrols[1].position.set(patrolCentre.x + 22 + Math.cos(t * .48) * 12,
+      patrolCentre.y + Math.cos(t * .69) * 9, patrolCentre.z - Math.sin(t * .48) * 11);
+    patrols.forEach(function (ship, i) {
+      ship.quaternion.setFromRotationMatrix(patrolAim.lookAt(ship.position, patrols[1 - i].position, patrolUp));
+      ship.rotateZ(Math.sin(t * 1.1 + i * 2) * .16);
+      ship.userData.engines.forEach(function (engine, j) {
+        engine.scale.y = .72 + Math.sin(t * 9 + i * 3 + j) * .15;
+      });
+    });
+    lasers.forEach(function (shot, i) {
+      var phase = ((t * .75 + i * .52) % 1 + 1) % 1;
+      shot.line.material.opacity = phase < .22 ? Math.sin(phase / .22 * Math.PI) * .9 : 0;
+      shot.spark.material.opacity = shot.line.material.opacity * .8;
+      if (phase >= .22) return;
+      laserTmp.copy(patrols[i].position).lerp(patrols[1 - i].position, phase / .22 * .82);
+      laserEnd.copy(patrols[i].position).lerp(patrols[1 - i].position, Math.min(1, phase / .22 * .82 + .14));
+      shot.spark.position.copy(laserEnd);
+      shot.positions.set([laserTmp.x, laserTmp.y, laserTmp.z, laserEnd.x, laserEnd.y, laserEnd.z]);
+      shot.line.geometry.attributes.position.needsUpdate = true;
+    });
+    travellers.forEach(function (star, i) {
+      var progress = (star.phase + t * star.speed) % 1;
+      var x = -350 + progress * 700;
+      var y = star.y + Math.sin(progress * Math.PI * 2 + i) * 9;
+      var at = i * 6;
+      travellerPositions[at] = x - 9;
+      travellerPositions[at + 1] = y - 2;
+      travellerPositions[at + 2] = star.z;
+      travellerPositions[at + 3] = x;
+      travellerPositions[at + 4] = y;
+      travellerPositions[at + 5] = star.z;
+    });
+    travellerGeometry.attributes.position.needsUpdate = true;
+  }
 
   var PLANET_VERT = [
     "varying vec3 vN; varying vec3 vP; varying vec3 vV;",
@@ -653,6 +742,12 @@
   }
 
   function renderTrail() {
+    var versusLink = document.getElementById("versus-link");
+    if (versusLink) {
+      var versusParams = new URLSearchParams({ returnTo: "/#" + routeOf(state) });
+      if (state.course !== null) versusParams.set("course", DATA[state.course].id);
+      versusLink.href = "/arena?" + versusParams.toString();
+    }
     el.trail.replaceChildren();
 
     var brand = document.createElement("div");
@@ -882,6 +977,88 @@
   /* ============================================================
      NAVIGATION
      ============================================================ */
+  function boardVersus() {
+    if (boarding || locked) return;
+    beforeBoarding = { anchor: anchor.clone(), distance: orbitDist, yaw: orbitYaw, pitch: orbitPitch };
+    boarding = true; dragging = false; locked = true; tween = null;
+    document.body.classList.add("boarding"); boardingStatus.hidden = false; shipButton.hidden = true;
+    activeScene = sky;
+    if (!shipCabin) {
+      shipCabin = window.VisConDuel.createCabin(THREE,.45);
+      shipCabin.scale.setScalar(.18); shipCabin.position.set(0,.35,-1.05);duelShip.add(shipCabin);
+    }
+    shipCabin.visible = true;shipLight.visible = false;
+    // Lift the canopy to expose the rear hatch. The same physical cabin and
+    // astronaut are visible before navigation; the camera never crosses the nose.
+    duelShip.userData.canopy.visible = false;
+    sky.updateMatrixWorld(true);
+    var pose = window.VisConDuel.cabinPose(THREE, innerWidth);
+    var eye = shipCabin.localToWorld(pose.eye.clone());
+    var aim = shipCabin.localToWorld(pose.aim.clone());
+    var rear = shipCabin.localToWorld(new THREE.Vector3(pose.eye.x,pose.eye.y,95));
+    var up = new THREE.Vector3(0,1,0).applyQuaternion(duelShip.quaternion);
+    var rearQ = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(rear,aim,up));
+    boardingFlight={at:performance.now(),from:camera.position.clone(),rotation:camera.quaternion.clone(),rear:rear,eye:eye,aim:aim,up:up,rearQ:rearQ,fov:pose.fov};
+    camera.near=.02;camera.updateProjectionMatrix();
+    // Warm the next document while the current scene carries the entire move.
+    var preload=document.createElement('link');preload.rel='prefetch';preload.href='/arena';document.head.append(preload);
+  }
+  function stepBoarding(now) {
+    if (!boardingFlight) return;
+    var flight=boardingFlight, t=REDUCED?1:Math.min(1,(now-flight.at)/3600);
+    if(t<.5){
+      var align=easeInOut(t*2);
+      camera.position.lerpVectors(flight.from,flight.rear,align);
+      camera.quaternion.slerpQuaternions(flight.rotation,flight.rearQ,align);
+      canvas.dataset.boardingPhase='align-rear';
+    } else {
+      var enter=easeInOut((t-.5)*2);
+      camera.position.lerpVectors(flight.rear,flight.eye,enter);
+      camera.up.copy(flight.up);camera.lookAt(flight.aim);
+      camera.fov=52+(flight.fov-52)*enter;camera.updateProjectionMatrix();
+      canvas.dataset.boardingPhase=enter>.96?'seated':'enter-rear';
+      // DOM chrome clears before the camera reaches the seated pilot.
+      boardingStatus.style.opacity=String(1-Math.min(1,enter*1.8));
+    }
+    if(t===1 && (REDUCED || now-flight.at>4050))boardingArrived=true;
+  }
+  function finishBoarding() {
+    boardingArrived=false;boardingFlight=null;
+    sky.updateMatrixWorld(true);
+    try {
+      sessionStorage.setItem('viscon-cabin-universe', JSON.stringify({
+        origin:duelShip.position.toArray(),rotation:duelShip.quaternion.toArray(),
+        courses:planets.map(function(p){return {id:p.course.id,name:p.course.short,color:p.course.color,position:p.body.getWorldPosition(new THREE.Vector3()).toArray(),spin:p.globe.rotation.y,time:p.mat.uniforms.uTime.value};}),
+        nearRotation:starNear.rotation.toArray().slice(0,3),farRotation:starFar.rotation.toArray().slice(0,3)
+      }));
+      // Hold this exact rendered frame across the document load, then reveal the
+      // already-ready matching camera. It is a transient frame, not a shipped asset.
+      sessionStorage.setItem('viscon-boarding-frame',JSON.stringify({at:Date.now(),image:canvas.toDataURL('image/jpeg',.88)}));
+    } catch (_) { /* Storage restrictions must never block boarding. */ }
+    var destination=new URL(document.getElementById('versus-link').href);destination.searchParams.set('entry','ship');
+    location.assign(destination.pathname+destination.search);
+  }
+  function cancelBoarding() {
+    if (!boarding) return;
+    boarding = false; locked = false; tween = null; boardingFlight=null;boardingArrived=false;
+    camera.up.set(0,1,0);camera.near=.1;camera.fov=52;camera.updateProjectionMatrix();
+    if(shipCabin)shipCabin.visible=false;shipLight.visible=true;duelShip.userData.canopy.visible=true;
+    boardingStatus.style.opacity='';delete canvas.dataset.boardingPhase;
+    document.body.classList.remove("boarding"); boardingStatus.hidden = true;
+    activeScene = state.level === "city" ? ground : sky;
+    if (beforeBoarding) flyTo(beforeBoarding.anchor, beforeBoarding.distance, beforeBoarding.yaw, beforeBoarding.pitch, 700);
+    shipButton.hidden = state.level !== "galaxy";
+    shipButton.focus({preventScroll: true});
+  }
+  shipButton.addEventListener("click", boardVersus);
+  document.getElementById("cancel-boarding").addEventListener("click", cancelBoarding);
+  document.getElementById("versus-link").addEventListener("click", function(e) {
+    if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+    // Planet/chapter navigation keeps its exact route context; scene entry is in galaxy view.
+    if (state.level === "galaxy") {e.preventDefault(); boardVersus();}
+  });
+  window.addEventListener("pageshow", function(e){ if(e.persisted) cancelBoarding(); });
+
   function setHover(h) {
     hovered = h;
     document.body.style.cursor = h ? "pointer" : "default";
@@ -976,7 +1153,7 @@
       to.y = h.height * 0.55;
       flyTo(to, 30, Math.atan2(h.grp.position.x, h.grp.position.z) + 0.9, 0.22, 1100);
     }
-    renderPanel(); syncURL();
+    renderTrail(); renderPanel(); syncURL();
     if (play && h && state.course !== null && state.lecture !== null) {
       openPlayer(DATA[state.course].lectures[state.lecture], h.seg);
     }
@@ -1222,6 +1399,7 @@
     var hits, i;
     if (activeScene === sky) {
       if (state.level === "galaxy") {
+        if (ray.intersectObject(shipHit, false).length) return {kind: "ship"};
         hits = ray.intersectObjects(planets.map(function (p) { return p.globe; }), false);
         if (hits.length) {
           for (i = 0; i < planets.length; i++) if (planets[i].globe === hits[0].object) return { kind: "planet", index: i };
@@ -1263,6 +1441,7 @@
   });
 
   canvas.addEventListener("pointerdown", function (e) {
+    if (boarding) return;
     dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY;
     panning = activeScene === ground && (e.button === 1 || e.button === 2 || e.shiftKey);
     canvas.setPointerCapture(e.pointerId);
@@ -1295,13 +1474,15 @@
     if (moved > 7 || locked || (wasPan && e.button !== 0)) return;
     var hit = pick(e);
     if (!hit) return;
-    if (hit.kind === "planet") toPlanet(hit.index);
+    if (hit.kind === "ship") boardVersus();
+    else if (hit.kind === "planet") toPlanet(hit.index);
     else if (hit.kind === "city") toCity(hit.course, hit.index);
     else if (hit.kind === "house") selectHouse(hit.index, true);
   });
 
   canvas.addEventListener("wheel", function (e) {
     e.preventDefault();
+    if (boarding) return;
     var min = activeScene === ground ? 12 : (state.level === "planet" ? 13 : 70);
     var cityMax = Math.max(165, houses.length * 9);
     var max = activeScene === ground ? cityMax : (state.level === "planet" ? 90 : GALAXY_DIST * 2.4);
@@ -1342,7 +1523,9 @@
   });
 
   window.addEventListener("keydown", function (e) {
-    if (document.getElementById("document-workspace").open || e.key !== "Escape") return;
+    if (e.key !== "Escape") return;
+    if (boarding) { cancelBoarding(); return; }
+    if (document.getElementById("document-workspace").open) return;
     if (!playerEl.hidden) closePlayer();
     else back();
   });
@@ -1353,6 +1536,9 @@
 
   function resize() {
     var w = window.innerWidth, h = window.innerHeight;
+    shipHome.x = shipOrbitX * Math.min(1, Math.pow(w / 800, 2));
+    patrolCentre.x = w < 600 ? 28 : 110;
+    if (!boarding) duelShip.position.x = shipHome.x;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
@@ -1366,9 +1552,22 @@
   var clock = new THREE.Clock();
   var scaleTmp = new THREE.Vector3();
   var worldTmp = new THREE.Vector3();
+  var frameHandle = 0;
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) {
+      cancelAnimationFrame(frameHandle);
+      frameHandle = 0;
+    } else if (!frameHandle) {
+      clock.oldTime = performance.now();
+      frameHandle = requestAnimationFrame(frame);
+    }
+  });
 
   function frame() {
-    requestAnimationFrame(frame);
+    frameHandle = 0;
+    if (document.hidden) return;
+    frameHandle = requestAnimationFrame(frame);
     var dt = Math.min(clock.getDelta(), 0.05);
     var t = clock.elapsedTime;
     if (document.getElementById("document-workspace").open) return;
@@ -1438,14 +1637,31 @@
     });
 
     // Keep following a planet while it continues along its orbit
-    if (state.level === "planet" && !tween) {
+    if (state.level === "planet" && !tween && !boarding) {
       planets[state.course].body.getWorldPosition(worldTmp);
       anchor.lerp(worldTmp, 0.2);
     }
 
-    applyCamera();
+    if (!boarding && !REDUCED) {
+      duelShip.position.y = shipHome.y + Math.sin(t * .32) * 2;
+      duelShip.position.x = shipHome.x + Math.sin(t * .12) * 4;
+      duelShip.rotation.z = -.12 + Math.sin(t * .35) * .035;
+    }
+    ambience.visible = !REDUCED && !boarding && state.level === "galaxy" && activeScene === sky;
+    if (ambience.visible) moveAmbience(t);
+    if(boarding)stepBoarding(performance.now());else applyCamera();
+    var shipPoint = duelShip.position.clone(); shipPoint.y += 13; shipPoint.project(camera);
+    var showShip = !boarding && state.level === "galaxy" && shipPoint.z < 1 && Math.abs(shipPoint.x) < .9 && Math.abs(shipPoint.y) < .85;
+    shipButton.hidden = !showShip;
+    if (showShip) {
+      var halfBeacon = shipButton.offsetWidth / 2 + 12;
+      var projectedX = (shipPoint.x * .5 + .5) * innerWidth;
+      shipButton.style.left = Math.max(halfBeacon, Math.min(innerWidth - halfBeacon, projectedX)) + "px";
+      shipButton.style.top = ((-shipPoint.y * .5 + .5) * innerHeight) + "px";
+    }
     syncTags();
     renderer.render(activeScene, camera);
+    if(boardingArrived)finishBoarding();
   }
 
   /* ============================================================

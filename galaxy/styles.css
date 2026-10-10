@@ -2,21 +2,23 @@
    A galaxy has no light mode, so every colour is painted explicitly
    and nothing is left to the host's theme. */
 
+@import "./theme.css";
+
 :root {
-  --void: #070a12;
-  --deep: #0d1524;
-  --algebra: #526cb7;
-  --analysis: #bd754b;
-  --informatics: #5f8c78;
-  --starlight: #e9edf6;
-  --dim: #78859f;
-  --faint: #5a6881;
-  --line: #1e2a40;
+  --void: var(--galaxy-void);
+  --deep: var(--galaxy-deep);
+  --algebra: var(--galaxy-algebra);
+  --analysis: var(--galaxy-analysis);
+  --informatics: var(--galaxy-informatics);
+  --starlight: var(--galaxy-starlight);
+  --dim: var(--galaxy-dim);
+  --faint: var(--galaxy-faint);
+  --line: var(--galaxy-line);
   --accent: var(--algebra);
 
-  --display: "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
-  --body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+  --display: var(--galaxy-display);
+  --body: var(--galaxy-body);
+  --mono: var(--galaxy-mono);
 }
 
 * { box-sizing: border-box; }
@@ -545,4 +547,23 @@ body.daylight .hint-city { display: block; }
 .hop button[hidden] { display: none; }
 @media (max-width: 1100px) {
   .hop { left: 18px; right: 18px; transform: none; max-width: none; bottom: auto; top: calc(64px + env(safe-area-inset-top, 0px)); }
+}
+
+/* A scene-anchored entry, shared with the visible spacecraft. */
+.ship-beacon { position: fixed; z-index: 8; transform: translate(-50%, -100%); background: #0d1524ed; color: #e9edf6; border: 1px solid #6b86c6; border-radius: 4px; padding: 9px 14px; text-align: left; cursor: pointer; min-height: 44px; }
+.ship-beacon > span { font: 600 15px var(--display); }
+.ship-beacon small { display: block; font: 11px/1.7 var(--body); color: #bdcbee; }
+.ship-beacon:hover { background: #243555; border-color: #c0ceff; }
+.ship-beacon:focus-visible, .boarding-status button:focus-visible { outline: 2px solid #c0ceff; outline-offset: 4px; }
+.ship-beacon[hidden], .boarding-status[hidden] { display: none; }
+.boarding .hud, .boarding .tags { opacity: 0; pointer-events: none; transition: opacity .45s; }
+.boarding-status { position: fixed; z-index: 12; bottom: 8%; left: 50%; transform: translateX(-50%); text-align: center; width: min(90%, 420px); color: #e9edf6; background: #070a12df; padding: 20px; border: 1px solid #40516e; }
+.boarding-status strong { display: block; font: 600 22px var(--display); }
+.boarding-status > span { display: block; font-size: 13px; color: #a3afc5; margin: 8px 0 16px; }
+.boarding-status button { font: 13px var(--body); padding: 10px 18px; color: #c0ceff; border: 1px solid #40516e; background: #0d1524; border-radius: 4px; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .boarding .hud, .boarding .tags { transition: none; } }
+
+/* Avoid opposing top/bottom insets stretching the mobile form over the ship. */
+@media (max-width: 620px) {
+  .ask { top: auto; height: auto; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
 }

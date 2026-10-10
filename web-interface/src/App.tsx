@@ -427,7 +427,7 @@ export function App() {
             </>
           }
         >
-          <a href="/arena">Play</a>
+          <a href="/arena">Versus</a>
           <a href="/history">Match history</a>
           <a href="/leaderboard">Leaderboard</a>
           <a href="/learn" className="active" aria-current="page">

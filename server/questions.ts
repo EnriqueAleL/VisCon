@@ -33,9 +33,14 @@ export function validateBank(value: unknown): BankQuestion[] {
   }
   return value;
 }
+/** Private, authored quizzes; never imported by a frontend bundle. */
+export const authoredBank=validateBank(['discrete','linear','programming','ddca'].flatMap(subject =>
+  JSON.parse(readFileSync(new URL(`../questions/versus/${subject}.json`, import.meta.url), 'utf8'))));
 export const demoContent=!process.env.QUESTION_BANK_PATH;
-export const bank=validateBank(process.env.QUESTION_BANK_PATH?JSON.parse(readFileSync(process.env.QUESTION_BANK_PATH,'utf8')):sample);
-const names:Record<string,{name:string;description:string}>={discrete:{name:'Discrete Mathematics',description:'Sets, counting, and the logic behind it all.'},linear:{name:'Linear Algebra',description:'Matrices, vectors, and a different perspective.'},programming:{name:'Introduction to Programming',description:'Think through a loop. Write a little Java.'}};
+// Preserve numeric and executable Java practice while replacing repeated quiz
+// templates. An explicitly configured external bank still takes precedence.
+export const bank=validateBank(process.env.QUESTION_BANK_PATH?JSON.parse(readFileSync(process.env.QUESTION_BANK_PATH,'utf8')):[...authoredBank,...sample.filter(q=>q.format!=='quiz')]);
+const names:Record<string,{name:string;description:string}>={discrete:{name:'Discrete Mathematics',description:'Logic, sets, counting, probability, graphs and number theory.'},linear:{name:'Linear Algebra',description:'Vectors, matrices, systems, eigenvalues and linear transformations.'},programming:{name:'Introduction to Programming',description:'Java, algorithms, data structures and complexity.'},ddca:{name:'DDCA · Computer Architecture',description:'Digital logic, processors, memory and architecture practice.'}};
 export const subjects:Subject[]=[...new Set(bank.map(q=>q.subject))].map(id=>({id,...(names[id]||{name:id,description:'Imported course questions.'}),topics:[...new Set(bank.filter(q=>q.subject===id).map(q=>q.topic))],formats:[...new Set(bank.filter(q=>q.subject===id).map(q=>q.format))],count:bank.filter(q=>q.subject===id).length}));
 /** Add the grounded city recall bank without replacing existing imported questions. */
 export function registerCourseQuestions(questions: BankQuestion[], meta: { id: string; name: string; description: string }) {

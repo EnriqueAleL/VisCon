@@ -1,0 +1,902 @@
+[
+  {
+    "id": "versus-ddca-01",
+    "subject": "ddca",
+    "topic": "Number representation",
+    "title": "Unsigned binary",
+    "prompt": "What decimal value does the unsigned binary number 101101₂ represent?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "45"
+      },
+      {
+        "id": "o1",
+        "text": "43"
+      },
+      {
+        "id": "o2",
+        "text": "46"
+      },
+      {
+        "id": "o3",
+        "text": "53"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The set bits contribute 32 + 8 + 4 + 1 = 45."
+  },
+  {
+    "id": "versus-ddca-02",
+    "subject": "ddca",
+    "topic": "Number representation",
+    "title": "Two’s complement range",
+    "prompt": "What is the representable range of an 8-bit two’s complement integer?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "−127 to 128"
+      },
+      {
+        "id": "o1",
+        "text": "0 to 255"
+      },
+      {
+        "id": "o2",
+        "text": "−255 to 255"
+      },
+      {
+        "id": "o3",
+        "text": "−128 to 127"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "An n-bit two’s complement integer ranges from −2^(n−1) to 2^(n−1)−1."
+  },
+  {
+    "id": "versus-ddca-03",
+    "subject": "ddca",
+    "topic": "Number representation",
+    "title": "Two’s complement decoding",
+    "prompt": "What decimal integer does 11111100₂ represent in 8-bit two’s complement?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "−3"
+      },
+      {
+        "id": "o1",
+        "text": "4"
+      },
+      {
+        "id": "o2",
+        "text": "−4"
+      },
+      {
+        "id": "o3",
+        "text": "252"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The unsigned value is 252; with the sign bit set, subtract 256 to get −4."
+  },
+  {
+    "id": "versus-ddca-04",
+    "subject": "ddca",
+    "topic": "Boolean logic",
+    "title": "A NAND output",
+    "prompt": "For inputs A = 1 and B = 1, what does a two-input NAND gate output?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "An undefined value"
+      },
+      {
+        "id": "o1",
+        "text": "0"
+      },
+      {
+        "id": "o2",
+        "text": "1"
+      },
+      {
+        "id": "o3",
+        "text": "A clock pulse"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "NAND negates AND. Since 1 AND 1 is 1, its negation is 0."
+  },
+  {
+    "id": "versus-ddca-05",
+    "subject": "ddca",
+    "topic": "Boolean logic",
+    "title": "An XOR condition",
+    "prompt": "A two-input XOR gate outputs 1 exactly when what holds?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "The inputs differ"
+      },
+      {
+        "id": "o1",
+        "text": "Both inputs are 1"
+      },
+      {
+        "id": "o2",
+        "text": "Both inputs are 0"
+      },
+      {
+        "id": "o3",
+        "text": "At least one input is 1"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Exclusive OR is true for (0,1) and (1,0), but false for equal inputs."
+  },
+  {
+    "id": "versus-ddca-06",
+    "subject": "ddca",
+    "topic": "Combinational circuits",
+    "title": "A multiplexer select",
+    "prompt": "How many select bits does a standard 8-to-1 multiplexer need?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "2"
+      },
+      {
+        "id": "o1",
+        "text": "4"
+      },
+      {
+        "id": "o2",
+        "text": "8"
+      },
+      {
+        "id": "o3",
+        "text": "3"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Three bits encode 2³ = 8 possible inputs."
+  },
+  {
+    "id": "versus-ddca-07",
+    "subject": "ddca",
+    "topic": "Combinational circuits",
+    "title": "A full-adder carry",
+    "prompt": "A full adder receives A = 1, B = 1 and carry-in = 1. What are its sum bit and carry-out?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Sum 1, carry-out 0"
+      },
+      {
+        "id": "o1",
+        "text": "Sum 0, carry-out 0"
+      },
+      {
+        "id": "o2",
+        "text": "Sum 1, carry-out 1"
+      },
+      {
+        "id": "o3",
+        "text": "Sum 0, carry-out 1"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "1 + 1 + 1 = 3 = 11₂: the low bit is the sum and the high bit is carry-out."
+  },
+  {
+    "id": "versus-ddca-08",
+    "subject": "ddca",
+    "topic": "Combinational circuits",
+    "title": "A decoder’s outputs",
+    "prompt": "How many outputs does a standard binary 3-to-8 decoder have?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "9"
+      },
+      {
+        "id": "o1",
+        "text": "8"
+      },
+      {
+        "id": "o2",
+        "text": "3"
+      },
+      {
+        "id": "o3",
+        "text": "6"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Three binary input bits select one of eight outputs."
+  },
+  {
+    "id": "versus-ddca-09",
+    "subject": "ddca",
+    "topic": "Sequential circuits",
+    "title": "Edge-triggered storage",
+    "prompt": "When does a positive-edge-triggered D flip-flop sample its D input?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "At the rising clock edge"
+      },
+      {
+        "id": "o1",
+        "text": "Continuously while the clock is high"
+      },
+      {
+        "id": "o2",
+        "text": "At every change of D"
+      },
+      {
+        "id": "o3",
+        "text": "Only when power is removed"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "An edge-triggered flip-flop samples at its designated clock edge, subject to timing requirements."
+  },
+  {
+    "id": "versus-ddca-10",
+    "subject": "ddca",
+    "topic": "Sequential circuits",
+    "title": "Setup time",
+    "prompt": "What does a flip-flop’s setup-time requirement specify?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "How long Q must be high"
+      },
+      {
+        "id": "o1",
+        "text": "How many instructions a processor executes"
+      },
+      {
+        "id": "o2",
+        "text": "How long D must be stable after the edge only"
+      },
+      {
+        "id": "o3",
+        "text": "How long D must be stable before the active clock edge"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Setup time concerns stability before the edge; hold time concerns stability after it."
+  },
+  {
+    "id": "versus-ddca-11",
+    "subject": "ddca",
+    "topic": "Sequential circuits",
+    "title": "Finite-state-machine state bits",
+    "prompt": "What is the minimum number of binary state bits needed to encode 10 distinct states?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "5"
+      },
+      {
+        "id": "o1",
+        "text": "10"
+      },
+      {
+        "id": "o2",
+        "text": "4"
+      },
+      {
+        "id": "o3",
+        "text": "3"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Three bits encode only 8 states; four bits encode 16."
+  },
+  {
+    "id": "versus-ddca-12",
+    "subject": "ddca",
+    "topic": "Memory",
+    "title": "Byte addressing",
+    "prompt": "In a byte-addressable memory, consecutive byte addresses differ by how much?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "32"
+      },
+      {
+        "id": "o1",
+        "text": "1"
+      },
+      {
+        "id": "o2",
+        "text": "4"
+      },
+      {
+        "id": "o3",
+        "text": "8"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Each address identifies one byte, so the next byte is at address + 1."
+  },
+  {
+    "id": "versus-ddca-13",
+    "subject": "ddca",
+    "topic": "Memory",
+    "title": "Address-space size",
+    "prompt": "A byte-addressable system has 16-bit addresses. How many bytes can it address?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "65,536"
+      },
+      {
+        "id": "o1",
+        "text": "16,384"
+      },
+      {
+        "id": "o2",
+        "text": "32,768"
+      },
+      {
+        "id": "o3",
+        "text": "131,072"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "There are 2¹⁶ distinct addresses, each naming one byte."
+  },
+  {
+    "id": "versus-ddca-14",
+    "subject": "ddca",
+    "topic": "Memory",
+    "title": "Little-endian storage",
+    "prompt": "A 32-bit value 0x12345678 is stored in little-endian order. Which byte is at the lowest address?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "0x12"
+      },
+      {
+        "id": "o1",
+        "text": "0x34"
+      },
+      {
+        "id": "o2",
+        "text": "0x56"
+      },
+      {
+        "id": "o3",
+        "text": "0x78"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Little-endian layout places the least significant byte at the lowest address."
+  },
+  {
+    "id": "versus-ddca-15",
+    "subject": "ddca",
+    "topic": "Instruction sets",
+    "title": "Load/store architecture",
+    "prompt": "In a classic load/store instruction-set architecture, which instructions directly transfer data between registers and memory?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Only branch instructions"
+      },
+      {
+        "id": "o1",
+        "text": "Only multiply instructions"
+      },
+      {
+        "id": "o2",
+        "text": "Load and store instructions"
+      },
+      {
+        "id": "o3",
+        "text": "Every arithmetic instruction"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Arithmetic generally operates on registers; explicit loads and stores access data memory."
+  },
+  {
+    "id": "versus-ddca-16",
+    "subject": "ddca",
+    "topic": "Instruction sets",
+    "title": "The program counter",
+    "prompt": "What does the program counter primarily track?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "The value of the most recent arithmetic result"
+      },
+      {
+        "id": "o1",
+        "text": "An instruction address"
+      },
+      {
+        "id": "o2",
+        "text": "The number of available registers"
+      },
+      {
+        "id": "o3",
+        "text": "The size of the data cache"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The program counter tracks the instruction-fetch position. Exact update timing depends on the processor design."
+  },
+  {
+    "id": "versus-ddca-17",
+    "subject": "ddca",
+    "topic": "Instruction sets",
+    "title": "A register destination",
+    "prompt": "A register-register instruction computes R3 ← R1 + R2. Which register receives the result?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "R3"
+      },
+      {
+        "id": "o1",
+        "text": "R1"
+      },
+      {
+        "id": "o2",
+        "text": "R2"
+      },
+      {
+        "id": "o3",
+        "text": "The program counter"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "R3 is the destination named on the left side of the assignment."
+  },
+  {
+    "id": "versus-ddca-18",
+    "subject": "ddca",
+    "topic": "Performance",
+    "title": "CPU execution time",
+    "prompt": "A program executes 1,000 instructions with average CPI 2 on a 1 GHz processor. What is its CPU execution time?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "1 microsecond"
+      },
+      {
+        "id": "o1",
+        "text": "2 milliseconds"
+      },
+      {
+        "id": "o2",
+        "text": "500 nanoseconds"
+      },
+      {
+        "id": "o3",
+        "text": "2 microseconds"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Time = instruction count × CPI / frequency = 2000 / 10⁹ seconds = 2 microseconds."
+  },
+  {
+    "id": "versus-ddca-19",
+    "subject": "ddca",
+    "topic": "Performance",
+    "title": "Clock period",
+    "prompt": "What is the clock period of a 2 GHz clock?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "0.5 microseconds"
+      },
+      {
+        "id": "o1",
+        "text": "4 nanoseconds"
+      },
+      {
+        "id": "o2",
+        "text": "0.5 nanoseconds"
+      },
+      {
+        "id": "o3",
+        "text": "2 nanoseconds"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The period is 1 / frequency = 1 / (2×10⁹) seconds."
+  },
+  {
+    "id": "versus-ddca-20",
+    "subject": "ddca",
+    "topic": "Performance",
+    "title": "Amdahl’s law",
+    "prompt": "Half of a program’s original execution time is accelerated by a factor of 2; the other half is unchanged. What is the overall speedup?",
+    "format": "quiz",
+    "difficulty": "challenge",
+    "options": [
+      {
+        "id": "o0",
+        "text": "4"
+      },
+      {
+        "id": "o1",
+        "text": "4/3"
+      },
+      {
+        "id": "o2",
+        "text": "2"
+      },
+      {
+        "id": "o3",
+        "text": "3/2"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The new normalized time is 0.5 + 0.5/2 = 0.75, so speedup is 1/0.75 = 4/3."
+  },
+  {
+    "id": "versus-ddca-21",
+    "subject": "ddca",
+    "topic": "Pipelining",
+    "title": "A data dependency",
+    "prompt": "Instruction I1 writes register R1; the immediately following instruction I2 reads R1. What dependency is present?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Read after write (RAW)"
+      },
+      {
+        "id": "o1",
+        "text": "Write after read (WAR)"
+      },
+      {
+        "id": "o2",
+        "text": "Write after write (WAW)"
+      },
+      {
+        "id": "o3",
+        "text": "No dependency"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "I2 needs the value produced by I1. Whether a stall is needed depends on forwarding and pipeline timing."
+  },
+  {
+    "id": "versus-ddca-22",
+    "subject": "ddca",
+    "topic": "Pipelining",
+    "title": "A structural hazard",
+    "prompt": "What causes a structural hazard in a pipeline?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "A branch always predicts correctly"
+      },
+      {
+        "id": "o1",
+        "text": "An instruction reads a constant"
+      },
+      {
+        "id": "o2",
+        "text": "Two instructions use different independent resources"
+      },
+      {
+        "id": "o3",
+        "text": "Two operations need the same unavailable hardware resource at the same time"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A structural hazard is a conflict over hardware resources."
+  },
+  {
+    "id": "versus-ddca-23",
+    "subject": "ddca",
+    "topic": "Pipelining",
+    "title": "Ideal pipeline cycles",
+    "prompt": "An ideal 5-stage pipeline starts empty and issues one instruction per cycle, with no stalls. How many cycles finish 10 instructions?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "15"
+      },
+      {
+        "id": "o1",
+        "text": "50"
+      },
+      {
+        "id": "o2",
+        "text": "14"
+      },
+      {
+        "id": "o3",
+        "text": "10"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The first instruction takes 5 cycles; the remaining 9 complete one per cycle: 5 + 9 = 14."
+  },
+  {
+    "id": "versus-ddca-24",
+    "subject": "ddca",
+    "topic": "Caches",
+    "title": "Cache-line offset",
+    "prompt": "How many byte-offset bits are needed for a 64-byte cache line in a byte-addressable system?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "8"
+      },
+      {
+        "id": "o1",
+        "text": "6"
+      },
+      {
+        "id": "o2",
+        "text": "4"
+      },
+      {
+        "id": "o3",
+        "text": "5"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Six bits select one of 2⁶ = 64 bytes."
+  },
+  {
+    "id": "versus-ddca-25",
+    "subject": "ddca",
+    "topic": "Caches",
+    "title": "Direct-mapped sets",
+    "prompt": "A direct-mapped cache stores 1 KiB of data in 64-byte lines. How many sets does it have?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "16"
+      },
+      {
+        "id": "o1",
+        "text": "64"
+      },
+      {
+        "id": "o2",
+        "text": "8"
+      },
+      {
+        "id": "o3",
+        "text": "1024"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "There are 1024 / 64 = 16 lines; a direct-mapped cache has one line per set."
+  },
+  {
+    "id": "versus-ddca-26",
+    "subject": "ddca",
+    "topic": "Caches",
+    "title": "Average memory access time",
+    "prompt": "A cache lookup takes 1 ns. The miss rate is 5%, and a miss adds 40 ns beyond the lookup. What is the average access time?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "2 ns"
+      },
+      {
+        "id": "o1",
+        "text": "41 ns"
+      },
+      {
+        "id": "o2",
+        "text": "0.05 ns"
+      },
+      {
+        "id": "o3",
+        "text": "3 ns"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Average time = hit/lookup time + miss rate × extra penalty = 1 + 0.05×40 = 3 ns."
+  },
+  {
+    "id": "versus-ddca-27",
+    "subject": "ddca",
+    "topic": "Caches",
+    "title": "Write-back behavior",
+    "prompt": "In a write-back cache, when is a modified line normally written to the next memory level?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Only after every read"
+      },
+      {
+        "id": "o1",
+        "text": "It is never written back"
+      },
+      {
+        "id": "o2",
+        "text": "When the dirty line is evicted or explicitly flushed"
+      },
+      {
+        "id": "o3",
+        "text": "Immediately after every write"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A write-back cache marks a modified line dirty and defers propagation until eviction or a required flush."
+  },
+  {
+    "id": "versus-ddca-28",
+    "subject": "ddca",
+    "topic": "Virtual memory",
+    "title": "Page offset bits",
+    "prompt": "With 4 KiB pages and byte addressing, how many bits form the page offset?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "16"
+      },
+      {
+        "id": "o1",
+        "text": "12"
+      },
+      {
+        "id": "o2",
+        "text": "10"
+      },
+      {
+        "id": "o3",
+        "text": "11"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "4 KiB = 4096 bytes = 2¹² bytes, requiring 12 offset bits."
+  },
+  {
+    "id": "versus-ddca-29",
+    "subject": "ddca",
+    "topic": "Virtual memory",
+    "title": "The TLB’s role",
+    "prompt": "What does a translation lookaside buffer (TLB) cache?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Recent virtual-to-physical address translations"
+      },
+      {
+        "id": "o1",
+        "text": "Only instruction opcodes"
+      },
+      {
+        "id": "o2",
+        "text": "Only arithmetic results"
+      },
+      {
+        "id": "o3",
+        "text": "All data stored on disk"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A TLB accelerates address translation by caching page translations and associated permissions."
+  },
+  {
+    "id": "versus-ddca-30",
+    "subject": "ddca",
+    "topic": "Virtual memory",
+    "title": "A page fault",
+    "prompt": "What can cause a page fault when a process accesses virtual memory?",
+    "format": "quiz",
+    "difficulty": "challenge",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Any cache miss"
+      },
+      {
+        "id": "o1",
+        "text": "Every TLB miss"
+      },
+      {
+        "id": "o2",
+        "text": "Every access to a different cache line"
+      },
+      {
+        "id": "o3",
+        "text": "The referenced page is not currently mapped as resident and accessible"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A missing/nonresident page or a disallowed access can raise a page fault. A TLB miss alone may be resolved by a page-table walk."
+  }
+]

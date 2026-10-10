@@ -57,6 +57,10 @@ Decizii deschise pentru extindere: specializarea și materiile reale, limba înt
 
 ## Brand Commitments
 
+La 10 octombrie 2026, utilizatorul a cerut ca Versus să fie o continuare vizuală a galaxiei existente din `galaxy/`. Acest reper înlocuiește aspectul anterior al modulului competitiv: același spațiu bleumarin, Chakra Petch și IBM Plex, navigare înapoi către cursul explorat. Modificarea privește Versus și legăturile sale; comportamentul meciurilor, identitatea jucătorului și celelalte module se păstrează.
+
+Ulterior, utilizatorul a ales intrarea în Versus printr-o navă din galaxie, apropierea camerei de cockpit și un duel între nave bazat pe răspunsuri. A confirmat păstrarea punctajului și a regulilor existente: lupta reprezintă rezultatele rundelor, fără puncte de viață sau finalizare anticipată prin distrugere. Răspunsurile rămân private până când serverul închide runda.
+
 NeetCode Versus este referința funcțională pentru competiție și invitații. „Basis Arena” rămâne numele de lucru. Utilizatorul a selectat direcția Campus scorebook prin pagina de decizie (2d2cd69e), apoi a cerut continuarea implementării.
 
 ## Evidence on Hand
@@ -69,3 +73,5 @@ Aplicația se găsește în src/, web-interface/ și server/. Repository-ul furn
 - Ratingul face progresul competitiv vizibil pentru fiecare jucător.
 - Intrarea în aceeași cameră trebuie să fie simplă printr-un link distribuit.
 - Formatul de integrare trebuie să permită lucrul în paralel la interfață și la pregătirea întrebărilor.
+
+The cockpit refinement uses a camera behind a seated astronaut in a full-screen physical cabin, with one compact task console and progressively disclosed setup. Boarding approaches from the rear and continues into that same cabin before the route handoff. The opposing ship appears only during an active duel (including explicitly labelled bot practice), never as a waiting-room decoration.

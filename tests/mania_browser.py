@@ -96,7 +96,7 @@ with sync_playwright() as pw:
     a, b = host.new_page(), guest.new_page()
     track(a); track(b)
     api, other = host.request, guest.request
-    a.goto(BASE); settle(a)
+    a.goto(BASE + '/world'); settle(a)
     expect(a.get_by_role('heading', name='Your semester, made visible.')).to_be_visible()
     expect(a.locator('.semester-map')).to_have_class('semester-map galaxy')
     world = api.get(BASE + '/api/mania/world').json()
@@ -315,7 +315,7 @@ with sync_playwright() as pw:
         a.get_by_role('button', name='Create study table', exact=True).click()
     table = reply.value.json()['table']
     expect(a.get_by_role('button', name='Step together', exact=True)).to_be_enabled()
-    b.goto(BASE + f'/?table={table["id"]}&city=pipelining'); settle(b)
+    b.goto(BASE + f'/world?table={table["id"]}&city=pipelining'); settle(b)
     expect(b.locator('.study-invite')).to_be_visible()
     b.locator('.study-invite').get_by_role('button', name='Join table', exact=True).click()
     expect(b.get_by_role('button', name='Following host', exact=True)).to_be_disabled()
@@ -342,18 +342,18 @@ with sync_playwright() as pw:
     room = api.get(BASE + '/api/rooms/' + a.url.rsplit('/', 1)[1]).json()
     assert room['settings']['subject'] == 'ddca' and room['settings']['topic'] == 'Pipeline City'
     assert room['settings']['rounds'] == 3 and not room['settings']['ranked']
-    expect(a.get_by_role('heading', name='Your next challenge.', exact=True)).to_be_visible()
+    expect(a.get_by_role('heading', name='Invite your opponent', exact=True)).to_be_visible()
     checks.append('city-scoped duel enters retained Arena with three friendly DDCA rounds')
 
     # Phone layouts cover the core world and every large workspace.
     a.set_viewport_size({'width': 390, 'height': 844})
     for path, visible, label in [
-        ('/', '.semester-map', 'galaxy-mobile'),
-        ('/?planet=1&city=pipelining&tab=landmark', '.pipeline-visualizer', 'pipeline-mobile'),
-        ('/?planet=1&city=caches&tab=landmark', '.cache-viz', 'cache-mobile'),
-        ('/?planet=1&city=virtual-memory&tab=landmark', '.vm-viz', 'virtual-memory-mobile'),
-        ('/?puzzle=pipeline-reorder', '.puzzle-hub', 'puzzle-mobile'),
-        (f'/?table={table["id"]}&city=pipelining', '.study-panel', 'table-mobile'),
+        ('/world', '.semester-map', 'galaxy-mobile'),
+        ('/world?planet=1&city=pipelining&tab=landmark', '.pipeline-visualizer', 'pipeline-mobile'),
+        ('/world?planet=1&city=caches&tab=landmark', '.cache-viz', 'cache-mobile'),
+        ('/world?planet=1&city=virtual-memory&tab=landmark', '.vm-viz', 'virtual-memory-mobile'),
+        ('/world?puzzle=pipeline-reorder', '.puzzle-hub', 'puzzle-mobile'),
+        (f'/world?table={table["id"]}&city=pipelining', '.study-panel', 'table-mobile'),
     ]:
         a.goto(BASE + path); settle(a)
         expect(a.locator(visible)).to_be_visible()

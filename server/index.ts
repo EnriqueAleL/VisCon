@@ -181,7 +181,7 @@ registerCourseQuestions(learning.bundle.bank.map(question => ({
   title: question.source.title, prompt: question.prompt, options: question.options,
   answer: question.answer, explanation: `${question.explanation} · ${question.source.lectureId.toUpperCase()} at ${Math.floor(question.source.start / 60)}:${String(Math.floor(question.source.start % 60)).padStart(2, '0')}`,
   format: 'quiz' as const, difficulty: 'standard' as const, source: `DDCA lecture-grounded practice · ${question.source.lectureId.toUpperCase()} · ${question.source.title}`,
-})), { id: 'ddca', name: 'DDCA · Your knowledge world', description: 'Lecture-grounded recall across 24 cities. Challenge a friend on your current concept.' });
+})), { id: 'ddca', name: 'DDCA · Your knowledge world', description: 'Authored architecture practice and lecture-grounded recall across 24 cities.' });
 app.post('/api/mania/cities/:id/duel', route((req, res, p) => {
   const city = learning.bundle.world.cities.find(item => item.id === req.params.id);
   if (!city) throw new Error('That study city was not found.');

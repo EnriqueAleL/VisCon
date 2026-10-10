@@ -1,0 +1,902 @@
+[
+  {
+    "id": "versus-programming-01",
+    "subject": "programming",
+    "topic": "Java values",
+    "title": "Integer division",
+    "prompt": "In Java, what is the value of the expression 7 / 2 when both operands are int?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "3"
+      },
+      {
+        "id": "o1",
+        "text": "3.5"
+      },
+      {
+        "id": "o2",
+        "text": "4"
+      },
+      {
+        "id": "o3",
+        "text": "2"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Integer division discards the fractional part, truncating toward zero."
+  },
+  {
+    "id": "versus-programming-02",
+    "subject": "programming",
+    "topic": "Java values",
+    "title": "Remainder",
+    "prompt": "In Java, what is 17 % 5?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "3"
+      },
+      {
+        "id": "o1",
+        "text": "5"
+      },
+      {
+        "id": "o2",
+        "text": "12"
+      },
+      {
+        "id": "o3",
+        "text": "2"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "17 = 3×5 + 2, so the remainder is 2."
+  },
+  {
+    "id": "versus-programming-03",
+    "subject": "programming",
+    "topic": "Java values",
+    "title": "Operator precedence",
+    "prompt": "In Java, what is 2 + 3 * 4?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "24"
+      },
+      {
+        "id": "o1",
+        "text": "9"
+      },
+      {
+        "id": "o2",
+        "text": "14"
+      },
+      {
+        "id": "o3",
+        "text": "20"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Multiplication has higher precedence than addition: 2 + 12 = 14."
+  },
+  {
+    "id": "versus-programming-04",
+    "subject": "programming",
+    "topic": "Control flow",
+    "title": "Short-circuit evaluation",
+    "prompt": "Assume x is 0. Does Java evaluate 10 / x in the expression x != 0 && 10 / x > 1?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "No; Java always skips the right operand of &&"
+      },
+      {
+        "id": "o1",
+        "text": "No; && stops after the false left operand"
+      },
+      {
+        "id": "o2",
+        "text": "Yes; the expression throws ArithmeticException"
+      },
+      {
+        "id": "o3",
+        "text": "Yes; division by zero produces 0"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Logical AND evaluates its right operand only when its left operand is true."
+  },
+  {
+    "id": "versus-programming-05",
+    "subject": "programming",
+    "topic": "Control flow",
+    "title": "A loop boundary",
+    "prompt": "How many times does this Java loop execute its body?\nfor (int i = 0; i < 5; i++) { /* body */ }",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "5"
+      },
+      {
+        "id": "o1",
+        "text": "4"
+      },
+      {
+        "id": "o2",
+        "text": "6"
+      },
+      {
+        "id": "o3",
+        "text": "0"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The body runs for i = 0, 1, 2, 3, 4."
+  },
+  {
+    "id": "versus-programming-06",
+    "subject": "programming",
+    "topic": "Control flow",
+    "title": "Breaking a loop",
+    "prompt": "What does break do when used directly inside a Java for loop, without a label?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Skips only the current iteration"
+      },
+      {
+        "id": "o1",
+        "text": "Exits the entire program"
+      },
+      {
+        "id": "o2",
+        "text": "Restarts the loop"
+      },
+      {
+        "id": "o3",
+        "text": "Exits the nearest enclosing loop"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "An unlabeled break exits the nearest enclosing loop or switch; here it exits the for loop."
+  },
+  {
+    "id": "versus-programming-07",
+    "subject": "programming",
+    "topic": "Arrays",
+    "title": "Array indexes",
+    "prompt": "For a Java array with length 6, what is the largest valid index?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "7"
+      },
+      {
+        "id": "o1",
+        "text": "1"
+      },
+      {
+        "id": "o2",
+        "text": "5"
+      },
+      {
+        "id": "o3",
+        "text": "6"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Array indexes run from 0 through length − 1."
+  },
+  {
+    "id": "versus-programming-08",
+    "subject": "programming",
+    "topic": "Arrays",
+    "title": "New array contents",
+    "prompt": "What value is initially stored in each element of new int[3] in Java?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "An unspecified value"
+      },
+      {
+        "id": "o1",
+        "text": "0"
+      },
+      {
+        "id": "o2",
+        "text": "null"
+      },
+      {
+        "id": "o3",
+        "text": "1"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Java initializes primitive integer array elements to zero."
+  },
+  {
+    "id": "versus-programming-09",
+    "subject": "programming",
+    "topic": "Arrays",
+    "title": "Aliasing an array",
+    "prompt": "After int[] a = {1, 2}; int[] b = a; b[0] = 9; what is a[0]?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "9"
+      },
+      {
+        "id": "o1",
+        "text": "1"
+      },
+      {
+        "id": "o2",
+        "text": "2"
+      },
+      {
+        "id": "o3",
+        "text": "0"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Both variables refer to the same array object; modifying it through b is visible through a."
+  },
+  {
+    "id": "versus-programming-10",
+    "subject": "programming",
+    "topic": "Strings",
+    "title": "Comparing string contents",
+    "prompt": "For two non-null Java strings a and b, which expression tests whether their contents are equal?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "a == b"
+      },
+      {
+        "id": "o1",
+        "text": "a = b"
+      },
+      {
+        "id": "o2",
+        "text": "a.compareTo(b) == 1"
+      },
+      {
+        "id": "o3",
+        "text": "a.equals(b)"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "String.equals compares contents. == compares object references."
+  },
+  {
+    "id": "versus-programming-11",
+    "subject": "programming",
+    "topic": "Strings",
+    "title": "String immutability",
+    "prompt": "After String s = \"cat\"; s.toUpperCase(); what is the value of s?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "\"Cat\""
+      },
+      {
+        "id": "o1",
+        "text": "null"
+      },
+      {
+        "id": "o2",
+        "text": "\"cat\""
+      },
+      {
+        "id": "o3",
+        "text": "\"CAT\""
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Strings are immutable. toUpperCase returns a new value, and that return value was not assigned."
+  },
+  {
+    "id": "versus-programming-12",
+    "subject": "programming",
+    "topic": "Strings",
+    "title": "Concatenation order",
+    "prompt": "What does System.out.print(\"x\" + 1 + 2); print in Java?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "x 1 2"
+      },
+      {
+        "id": "o1",
+        "text": "x12"
+      },
+      {
+        "id": "o2",
+        "text": "x3"
+      },
+      {
+        "id": "o3",
+        "text": "3x"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "+ is evaluated left to right. After \"x\" + 1 produces a string, the next + concatenates 2."
+  },
+  {
+    "id": "versus-programming-13",
+    "subject": "programming",
+    "topic": "Methods",
+    "title": "Primitive arguments",
+    "prompt": "If a Java method receives an int parameter and reassigns that parameter, what happens to the caller’s int variable?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "It is unchanged"
+      },
+      {
+        "id": "o1",
+        "text": "It gets the new value"
+      },
+      {
+        "id": "o2",
+        "text": "It becomes zero"
+      },
+      {
+        "id": "o3",
+        "text": "It becomes null"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Java passes argument values by value. Reassigning the local parameter does not reassign the caller’s variable."
+  },
+  {
+    "id": "versus-programming-14",
+    "subject": "programming",
+    "topic": "Methods",
+    "title": "Method overloading",
+    "prompt": "Which pair of methods can be overloaded in the same Java class?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "int f(int x) and double f(int x)"
+      },
+      {
+        "id": "o1",
+        "text": "f(int x) and f(int y)"
+      },
+      {
+        "id": "o2",
+        "text": "public f(int x) and private f(int x)"
+      },
+      {
+        "id": "o3",
+        "text": "f(int x) and f(double x)"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Overloading requires different parameter lists; return type, parameter names and access modifiers alone do not distinguish signatures."
+  },
+  {
+    "id": "versus-programming-15",
+    "subject": "programming",
+    "topic": "Recursion",
+    "title": "A recursion base case",
+    "prompt": "Why does a recursive method usually need a reachable base case?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "To allocate a new array"
+      },
+      {
+        "id": "o1",
+        "text": "To force Java to use iteration"
+      },
+      {
+        "id": "o2",
+        "text": "To stop the recursive calls"
+      },
+      {
+        "id": "o3",
+        "text": "To make every call execute in constant time"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A reachable base case supplies a result without another recursive call, allowing the recursion to terminate."
+  },
+  {
+    "id": "versus-programming-16",
+    "subject": "programming",
+    "topic": "Recursion",
+    "title": "Recursive factorial",
+    "prompt": "Let f(0) = 1 and f(n) = n * f(n−1) for positive integers n. What is f(4)?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "4"
+      },
+      {
+        "id": "o1",
+        "text": "24"
+      },
+      {
+        "id": "o2",
+        "text": "16"
+      },
+      {
+        "id": "o3",
+        "text": "10"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "f(4) = 4×3×2×1×f(0) = 24."
+  },
+  {
+    "id": "versus-programming-17",
+    "subject": "programming",
+    "topic": "Algorithms",
+    "title": "Binary search prerequisite",
+    "prompt": "Which condition is required by standard binary search on an array?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "The array is sorted according to the comparison used"
+      },
+      {
+        "id": "o1",
+        "text": "All elements are distinct"
+      },
+      {
+        "id": "o2",
+        "text": "The array length is a power of two"
+      },
+      {
+        "id": "o3",
+        "text": "All elements are positive"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The ordering lets binary search discard the half that cannot contain the target."
+  },
+  {
+    "id": "versus-programming-18",
+    "subject": "programming",
+    "topic": "Algorithms",
+    "title": "Linear search worst case",
+    "prompt": "In the worst case, how many equality checks does ordinary linear search need to determine that a value is absent from an array of n elements?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "1"
+      },
+      {
+        "id": "o1",
+        "text": "⌈log₂ n⌉"
+      },
+      {
+        "id": "o2",
+        "text": "n²"
+      },
+      {
+        "id": "o3",
+        "text": "n"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Every array element must be checked when the target is absent."
+  },
+  {
+    "id": "versus-programming-19",
+    "subject": "programming",
+    "topic": "Algorithms",
+    "title": "Insertion sort on sorted input",
+    "prompt": "For standard insertion sort on an already sorted array of n elements, what is the running time?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Θ(n²)"
+      },
+      {
+        "id": "o1",
+        "text": "Θ(n log n)"
+      },
+      {
+        "id": "o2",
+        "text": "Θ(n)"
+      },
+      {
+        "id": "o3",
+        "text": "Θ(log n)"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Each new element needs only a constant-time comparison to discover it is already in place."
+  },
+  {
+    "id": "versus-programming-20",
+    "subject": "programming",
+    "topic": "Data structures",
+    "title": "Stack removal order",
+    "prompt": "Push A, then B, then C onto an initially empty stack. Which item does the next pop return?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "All three"
+      },
+      {
+        "id": "o1",
+        "text": "C"
+      },
+      {
+        "id": "o2",
+        "text": "A"
+      },
+      {
+        "id": "o3",
+        "text": "B"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A stack follows last in, first out."
+  },
+  {
+    "id": "versus-programming-21",
+    "subject": "programming",
+    "topic": "Data structures",
+    "title": "Queue removal order",
+    "prompt": "Enqueue A, then B, then C into an initially empty FIFO queue. Which item does the next dequeue return?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "A"
+      },
+      {
+        "id": "o1",
+        "text": "C"
+      },
+      {
+        "id": "o2",
+        "text": "B"
+      },
+      {
+        "id": "o3",
+        "text": "No item"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A FIFO queue removes the earliest enqueued item."
+  },
+  {
+    "id": "versus-programming-22",
+    "subject": "programming",
+    "topic": "Data structures",
+    "title": "A set insertion",
+    "prompt": "An initially empty mathematical set receives the values 2, 2, 3. How many distinct elements does it contain?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "3"
+      },
+      {
+        "id": "o1",
+        "text": "1"
+      },
+      {
+        "id": "o2",
+        "text": "0"
+      },
+      {
+        "id": "o3",
+        "text": "2"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Sets retain distinct values only: {2, 3}."
+  },
+  {
+    "id": "versus-programming-23",
+    "subject": "programming",
+    "topic": "Objects",
+    "title": "Instance fields",
+    "prompt": "In Java, how is a non-static instance field normally stored across two different objects of the same class?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Only the first object has the field"
+      },
+      {
+        "id": "o1",
+        "text": "The field cannot be changed"
+      },
+      {
+        "id": "o2",
+        "text": "Each object has its own field value"
+      },
+      {
+        "id": "o3",
+        "text": "Both objects must share one value"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Instance fields belong to individual objects; static fields belong to the class."
+  },
+  {
+    "id": "versus-programming-24",
+    "subject": "programming",
+    "topic": "Objects",
+    "title": "Dynamic dispatch",
+    "prompt": "In Java, a variable of type Animal refers to a Dog object. Dog overrides the non-static method speak(). Which implementation runs for animal.speak()?",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Neither; the call cannot compile"
+      },
+      {
+        "id": "o1",
+        "text": "Dog.speak()"
+      },
+      {
+        "id": "o2",
+        "text": "Animal.speak() always"
+      },
+      {
+        "id": "o3",
+        "text": "Both methods automatically"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Overridden instance methods are dynamically dispatched according to the runtime object type."
+  },
+  {
+    "id": "versus-programming-25",
+    "subject": "programming",
+    "topic": "Objects",
+    "title": "Constructor purpose",
+    "prompt": "What is a Java constructor primarily used for?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Initializing a newly created object"
+      },
+      {
+        "id": "o1",
+        "text": "Declaring a package"
+      },
+      {
+        "id": "o2",
+        "text": "Destroying an object"
+      },
+      {
+        "id": "o3",
+        "text": "Choosing the program’s exit code"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "A constructor runs during object creation to initialize the new instance."
+  },
+  {
+    "id": "versus-programming-26",
+    "subject": "programming",
+    "topic": "Exceptions",
+    "title": "Null dereference",
+    "prompt": "Assume String s = null. What happens when s.length() is evaluated?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "It returns 0"
+      },
+      {
+        "id": "o1",
+        "text": "It returns −1"
+      },
+      {
+        "id": "o2",
+        "text": "It returns null"
+      },
+      {
+        "id": "o3",
+        "text": "A NullPointerException is thrown"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "An instance method cannot be invoked through a null reference."
+  },
+  {
+    "id": "versus-programming-27",
+    "subject": "programming",
+    "topic": "Exceptions",
+    "title": "Bounds checking",
+    "prompt": "For int[] a = new int[3], what happens when a[3] is read?",
+    "format": "quiz",
+    "difficulty": "foundation",
+    "options": [
+      {
+        "id": "o0",
+        "text": "It reads the last element"
+      },
+      {
+        "id": "o1",
+        "text": "It grows the array"
+      },
+      {
+        "id": "o2",
+        "text": "An ArrayIndexOutOfBoundsException is thrown"
+      },
+      {
+        "id": "o3",
+        "text": "It returns 0"
+      }
+    ],
+    "answer": "o2",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The only valid indexes are 0, 1 and 2; Java checks bounds at runtime."
+  },
+  {
+    "id": "versus-programming-28",
+    "subject": "programming",
+    "topic": "Complexity",
+    "title": "Nested loops",
+    "prompt": "For positive n, how often does work() run?\nfor (int i = 0; i < n; i++)\n    for (int j = 0; j < n; j++)\n        work();",
+    "format": "quiz",
+    "difficulty": "standard",
+    "options": [
+      {
+        "id": "o0",
+        "text": "n(n−1)/2"
+      },
+      {
+        "id": "o1",
+        "text": "n²"
+      },
+      {
+        "id": "o2",
+        "text": "n"
+      },
+      {
+        "id": "o3",
+        "text": "2n"
+      }
+    ],
+    "answer": "o1",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "For each of n outer iterations there are n inner iterations."
+  },
+  {
+    "id": "versus-programming-29",
+    "subject": "programming",
+    "topic": "Complexity",
+    "title": "A doubling loop",
+    "prompt": "For n = 2ᵏ with k ≥ 0, how often does the body run?\nfor (int i = 1; i < n; i *= 2) { /* body */ }\nAssume no integer overflow.",
+    "format": "quiz",
+    "difficulty": "challenge",
+    "options": [
+      {
+        "id": "o0",
+        "text": "k"
+      },
+      {
+        "id": "o1",
+        "text": "k + 1"
+      },
+      {
+        "id": "o2",
+        "text": "2ᵏ"
+      },
+      {
+        "id": "o3",
+        "text": "2k"
+      }
+    ],
+    "answer": "o0",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "The values before the body are 1, 2, …, 2^(k−1); after k doublings i equals n."
+  },
+  {
+    "id": "versus-programming-30",
+    "subject": "programming",
+    "topic": "Recursion",
+    "title": "A recursive call count",
+    "prompt": "A recursive function makes two calls on inputs of size n/2 and does Θ(n) additional work. For T(n) = 2T(n/2) + Θ(n), what is T(n)? Assume a constant-size base case.",
+    "format": "quiz",
+    "difficulty": "challenge",
+    "options": [
+      {
+        "id": "o0",
+        "text": "Θ(n)"
+      },
+      {
+        "id": "o1",
+        "text": "Θ(log n)"
+      },
+      {
+        "id": "o2",
+        "text": "Θ(n²)"
+      },
+      {
+        "id": "o3",
+        "text": "Θ(n log n)"
+      }
+    ],
+    "answer": "o3",
+    "source": "VisCon authored practice · not an ETH exam",
+    "explanation": "Each recursion level costs Θ(n), and there are Θ(log n) levels."
+  }
+]

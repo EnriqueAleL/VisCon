@@ -1,10 +1,15 @@
-# The Mania — See the lecture
+# VisCon — Explore, learn, play
+
+The course galaxy is the front page at `/`. **Versus** at `/arena` continues its
+space, typography and navigation through setup, rooms, matches and results.
+Entering from a planet or chapter keeps that place for the return journey and
+selects a corresponding question bank when one exists. See [Versus integration](docs/versus.md).
 
 An interactive DDCA study world built from the existing 24 recordings and chapter
 index: 24 course cities, cited video answers, recall and spaced review, daily
 expeditions, pipeline/cache/virtual-memory visualizers, timed mixed exams,
 optimization puzzles, live boards, and shared study tables.
-The main app is `/`; the preserved Arena is `/arena`, lectures are `/learn`, and
+The study world is `/world`; Versus is `/arena`, lectures are `/learn`, and
 the campus view is `/campus`. Demo study history is explicitly labelled and separate
 from real progress and public leaderboards. Other subject planets are placeholders.
 
@@ -85,9 +90,10 @@ from their original locations, with byte-range seeking, rather than copied into
 | `qa/viscon_qa/`              | Optional model-based Q&A provider; existing CLI remains available             |
 
 The root `npm install`, `npm run dev`, and `npm run build` are sufficient for the
-combined app. All frontends share the design system in `shared/design/`: colors,
-self-hosted Inter, base styles, and the product header. Page-specific CSS handles
-layout, not independent themes. See [DESIGN.md](DESIGN.md). The backend API and media routes are proxied in development
+combined app. The galaxy and Versus share `galaxy/theme.css` and the galaxy's
+self-hosted fonts. The lecture, Study World and Campus workspaces retain the
+compact system in `shared/design/`. See [DESIGN.md](DESIGN.md).
+The backend API and media routes are proxied in development
 and served on the same origin in production.
 
 ## Search and optional Q&A
