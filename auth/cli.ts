@@ -1,15 +1,25 @@
 import { AuthError } from './errors';
-import { mailerFromEnv } from './mailer';
+import { mailerFromEnv, verifySmtp } from './mailer';
 import { createVerificationService, openAuthDatabase } from './service';
 
 const usage = `Usage:
   npm run auth -- request <username|email>     email a one-time code
   npm run auth -- verify  <username|email> <code>
   npm run auth -- status  <username|email>     is this person verified?
-  npm run auth -- list                         all verified students`;
+  npm run auth -- list                         all verified students
+  npm run auth -- smtp-check [to]              test the SMTP login; with <to>, also send a test email`;
 
 async function main() {
   const [command, identifier, code] = process.argv.slice(2);
+  if (command === 'smtp-check') {
+    console.log(await verifySmtp());
+    if (identifier) {
+      if (!/^[^\s@]+@[^\s@]+$/.test(identifier)) throw new Error('Give a full email address to send the test to.');
+      await mailerFromEnv().send({ to: identifier, subject: 'VIScon test email', text: 'This is a test from VIScon. If you can read it, verification emails can be delivered.\n' });
+      console.log(`Test email sent to ${identifier}. Check the inbox and the spam folder.`);
+    }
+    return;
+  }
   const db = openAuthDatabase();
   const mailerNeeded = command === 'request';
   const service = createVerificationService(db, mailerNeeded ? mailerFromEnv() : { send: async () => { throw new Error('mail not configured'); } }, {

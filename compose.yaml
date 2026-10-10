@@ -31,6 +31,16 @@ services:
       JUDGE0_URL: ${JUDGE0_URL:-}
       JUDGE0_JAVA_LANGUAGE_ID: ${JUDGE0_JAVA_LANGUAGE_ID:-}
       JUDGE0_API_KEY: ${JUDGE0_API_KEY:-}
+      # ETH email verification. AUTH_REQUIRE_VERIFIED is deliberately not passed through: the guard stays on.
+      AUTH_MAIL_FROM: ${AUTH_MAIL_FROM:-}
+      AUTH_SMTP_HOST: ${AUTH_SMTP_HOST:-}
+      AUTH_SMTP_PORT: ${AUTH_SMTP_PORT:-587}
+      AUTH_SMTP_SECURE: ${AUTH_SMTP_SECURE:-}
+      AUTH_SMTP_USER: ${AUTH_SMTP_USER:-}
+      AUTH_SMTP_PASSWORD: ${AUTH_SMTP_PASSWORD:-}
+      AUTH_SMTP_URL: ${AUTH_SMTP_URL:-}
+      AUTH_MAIL_DOMAIN: ${AUTH_MAIL_DOMAIN:-student.ethz.ch}
+      AUTH_CLIENT_IP_HEADER: ${AUTH_CLIENT_IP_HEADER:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

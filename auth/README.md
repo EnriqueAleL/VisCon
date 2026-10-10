@@ -82,8 +82,9 @@ Production needs `AUTH_SMTP_URL` and `AUTH_MAIL_FROM` (see `.env.example`). From
 ## Not done yet
 
 - **Screens are a first version.** `shared/auth/AuthGate.tsx` (English and German, styled with the shared tokens) wraps the study world, Arena and lecture app. It shows log in / create account / code / forgot-password screens until the account is verified, re-shows them if the session ends, and adds a small "Signed in as" pill with log out. Expect to restyle it.
-- **Needs SMTP.** Without `AUTH_SMTP_URL` + `AUTH_MAIL_FROM` the server starts (with a warning) but cannot
-  send codes. Use `AUTH_MAIL_TRANSPORT=console` in development to print them.
+- **Needs SMTP.** Set `AUTH_MAIL_FROM` and `AUTH_SMTP_HOST` (+ `_PORT`, `_USER`, `_PASSWORD`) or `AUTH_SMTP_URL`; test with
+  `npm run auth -- smtp-check [recipient]`. Without them the server starts with a warning but cannot send codes.
+  `AUTH_MAIL_TRANSPORT=console` prints codes in development and is refused when `NODE_ENV=production`.
 - A nonexistent mailbox just never receives the code; we cannot tell.
 - Verification never expires, and there is no account deletion or e-mail change yet.
 - Guest profiles still exist. Logging in on a device abandons that device's guest profile.
