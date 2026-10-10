@@ -23,6 +23,7 @@
     "src",
     "server",
     "shared",
+    "auth",
     "tests",
     "vite.config.ts",
     "web-interface/src"
