@@ -6,7 +6,8 @@ import { resolve } from 'node:path';
 import { Server } from 'socket.io';
 import type { BankQuestion,Settings,Player,RoomView,RoundResult,Outcome,Profile,HistoryEntry } from '../shared/types';
 import { subjects,eligible,publicQuestion,correct,answerLabel,demoContent,numericValue,registerCourseQuestions } from './questions';
-import { profile,session,createPlayer,rename,history,leaderboard,saveMatch } from './store';
+import { db,profile,session,createPlayer,rename,history,leaderboard,saveMatch,adoptAccountName } from './store';
+import { mountAuth } from '../auth/routes';
 import { eloDelta } from './rating';
 import { javaAvailable,judge } from './judge';
 import { mountLectures } from './lectures';
@@ -87,6 +88,7 @@ function leave(r:Room,p:Profile){
 }
 const route=(handler:(req:express.Request,res:express.Response,p:Profile)=>unknown)=>async(req:express.Request,res:express.Response)=>{try{const p=user(req,res);limit(p.id);await handler(req,res,p);}catch(e){res.status(400).json({error:e instanceof Error?e.message:'Something went wrong. Try again.'});}};
 app.get('/api/health',(_req,res)=>res.json({ok:true}));
+mountAuth(app,{db,playerFromCookie:session,createPlayer,secureCookies:process.env.COOKIE_SECURE==='true',clientIpHeader:process.env.AUTH_CLIENT_IP_HEADER?.toLowerCase(),accountOptions:{onVerified:account=>adoptAccountName(account.playerId,account.username)}});
 app.get('/api/bootstrap',route((_req,res,p)=>res.json({profile:p,subjects,history:history(p.id),leaderboard:leaderboard(),javaAvailable,activeRoom:active.get(p.id)||null,demoContent})));
 app.post('/api/profile',route((req,res,p)=>{const name=typeof req.body.name==='string'?req.body.name.trim():'';if(name.length<2||name.length>24||/[\x00-\x1f<>]/.test(name))throw new Error('Use a name with 2–24 characters.');const updated=rename(p.id,name);for(const r of rooms.values()){const player=r.players.find(x=>x.id===p.id);if(player){player.name=name;broadcast(r);}}res.json(updated);}));
 app.post('/api/rooms',route((req,res,p)=>{limit(`create:${p.id}`,15);const settings=validateSettings({...defaultsFor(req.body.settings?.subject),...req.body.settings});const r=newRoom(p,settings);if(req.body.practice){r.settings.ranked=false;r.players.push({id:`bot-${r.id}`,name:'Study partner',rating:1200,createdAt:new Date().toISOString(),bot:true,online:true,ready:true,score:0});}res.json(view(r));}));

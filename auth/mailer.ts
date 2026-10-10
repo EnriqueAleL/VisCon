@@ -25,3 +25,12 @@ export function mailerFromEnv(env: NodeJS.ProcessEnv = process.env): Mailer {
   if (env.AUTH_SMTP_URL && env.AUTH_MAIL_FROM) return createSmtpMailer(env.AUTH_SMTP_URL, env.AUTH_MAIL_FROM);
   throw new Error('No mail transport configured. Set AUTH_SMTP_URL and AUTH_MAIL_FROM, or AUTH_MAIL_TRANSPORT=console for development.');
 }
+
+/** For the app server: starts without mail configured, and sending then fails with `mail_unavailable`. */
+export function optionalMailerFromEnv(env: NodeJS.ProcessEnv = process.env): Mailer {
+  try { return mailerFromEnv(env); }
+  catch {
+    console.warn('auth: no mail transport configured (AUTH_SMTP_URL / AUTH_MAIL_FROM); email verification is disabled.');
+    return { async send() { throw new AuthError('mail_unavailable', 'Email verification is not available right now.'); } };
+  }
+}

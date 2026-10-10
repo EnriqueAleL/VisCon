@@ -5,6 +5,7 @@ import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto
 import { AuthError } from './errors';
 import { maskEmail, parseEthIdentifier } from './identifier';
 import type { Mailer } from './mailer';
+import { AUTH_SCHEMA_SQL } from './schema';
 
 export interface VerificationOptions {
   /** Domain the code is mailed to. A student.ethz.ch mailbox is what proves the person studies at ETH. */
@@ -27,13 +28,8 @@ const sha256 = (value: string) => createHash('sha256').update(value).digest();
 export function openAuthDatabase(file = process.env.AUTH_DB_PATH || '.data/auth.sqlite'): DatabaseSync {
   if (file !== ':memory:') mkdirSync(dirname(file), { recursive: true });
   const db = new DatabaseSync(file);
-  db.exec(`PRAGMA journal_mode=WAL;
-    CREATE TABLE IF NOT EXISTS email_challenges (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL, salt TEXT NOT NULL, codeHash TEXT NOT NULL,
-      createdAt INTEGER NOT NULL, expiresAt INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, consumedAt INTEGER);
-    CREATE INDEX IF NOT EXISTS email_challenges_user ON email_challenges (username, createdAt);
-    CREATE TABLE IF NOT EXISTS verified_students (
-      username TEXT PRIMARY KEY, email TEXT NOT NULL, verifiedAt INTEGER NOT NULL, lastVerifiedAt INTEGER NOT NULL);`);
+  db.exec('PRAGMA journal_mode=WAL;');
+  db.exec(AUTH_SCHEMA_SQL);
   return db;
 }
 

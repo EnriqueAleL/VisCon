@@ -15,6 +15,7 @@ COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/dist ./dist
 COPY --from=build --chown=node:node /app/server ./server
 COPY --from=build --chown=node:node /app/shared ./shared
+COPY --from=build --chown=node:node /app/auth ./auth
 COPY --from=build --chown=node:node /app/video-pull-up/src ./video-pull-up/src
 COPY --from=build --chown=node:node /app/video-pull-up/data ./video-pull-up/data
 COPY --from=build --chown=node:node /app/video-pull-up/client ./video-pull-up/client
