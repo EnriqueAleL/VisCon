@@ -2,35 +2,42 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowDownUp,
   ArrowRight,
-  ArrowUpRight,
   BookOpen,
   Bookmark,
   Check,
   ChevronDown,
-  ChevronRight,
   GraduationCap,
   Grid2X2,
   Layers3,
   LayoutList,
   MessageCircle,
+  Play,
   Search,
+  LoaderCircle,
   X,
 } from 'lucide-react';
-import { LectureCard } from './components/LectureCard';
-import { LectureViewer } from './components/LectureViewer';
 import { IconSidebar } from './components/IconSidebar';
+import { ProductHeader } from '../../shared/design/ProductHeader';
 import { DocumentViewer } from './components/DocumentViewer';
-import { courses, lectures, searchLectureMatches, searchLectures } from './data/lectures';
 import {
   isCourseSelection,
-  lectureMatchesSelection,
   sameCourseSelection,
-  selectionForLecture,
-  degreeNames,
-  semesterNames,
+  lectureMatchesSelection,
+  selectionLabel,
 } from './data/courseSelection';
+import { LectureCard } from './components/LectureCard';
+import { LectureViewer } from './components/LectureViewer';
+import { askLecture, type AnswerResult } from '../../video-pull-up/client/client.mjs';
+import { getJSON, formatTime } from './api';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import type { CourseId, CourseSelection, Lecture, QuestionHistoryEntry, Segment } from './types';
+import type {
+  Course,
+  CourseId,
+  CourseSelection,
+  QuestionHistoryEntry,
+  Lecture,
+  Segment,
+} from './types';
 
 type View = 'questions' | 'library' | 'saved' | 'documents';
 type Sort = 'relevance' | 'newest' | 'shortest';
@@ -46,53 +53,52 @@ const isQuestionHistory = (value: unknown): value is QuestionHistoryEntry[] =>
   Array.isArray(value) &&
   value.every(
     (item) =>
-      isCourseSelection(item) &&
-      'question' in item &&
-      typeof item.question === 'string' &&
-      Boolean(item.question.trim()),
+      isCourseSelection(item) && typeof (item as QuestionHistoryEntry).question === 'string',
+  );
+const isSegmentMap = (value: unknown): value is Record<string, Segment> =>
+  Boolean(
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    Object.values(value).every(
+      (item) =>
+        item &&
+        typeof item.id === 'string' &&
+        typeof item.title === 'string' &&
+        typeof item.transcript === 'string' &&
+        Number.isFinite(item.start) &&
+        Number.isFinite(item.end) &&
+        item.start >= 0 &&
+        item.end > item.start,
+    ),
   );
 
-function readLegacyQuestionHistory(): QuestionHistoryEntry[] {
-  try {
-    const courseHistory = localStorage.getItem('viscon.question-history.v3');
-    const entries: unknown = JSON.parse(
-      courseHistory ?? localStorage.getItem('viscon.question-history.v2') ?? '[]',
-    );
-    if (!Array.isArray(entries)) return [];
-    const migrated = entries.flatMap((entry) => {
-      if (!entry || typeof entry.question !== 'string' || !entry.question.trim()) return [];
-      if (courseHistory !== null) {
-        const course = courses.find((item) => item.id === entry.courseId);
-        if (!course) return [];
-        const selection = {
-          courseId: course.id,
-          year: entry.year,
-          semester: entry.semester,
-          degree: course.degree,
-          studyYear: course.studyYear,
-        };
-        return isCourseSelection(selection) ? [{ question: entry.question, ...selection }] : [];
-      }
-      const lecture = lectures.find((item) => item.id === entry.lectureId);
-      return lecture ? [{ question: entry.question, ...selectionForLecture(lecture) }] : [];
-    });
-    return migrated.filter(
-      (entry, index) =>
-        migrated.findIndex(
-          (other) => other.question === entry.question && sameCourseSelection(other, entry),
-        ) === index,
-    );
-  } catch {
-    return [];
-  }
-}
-
 export function App() {
-  const [view, setView] = useState<View>('questions');
+  const [view, setView] = useState<View>(() =>
+    ['library', 'saved'].includes(location.hash.slice(1))
+      ? (location.hash.slice(1) as View)
+      : 'questions',
+  );
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [lectures, setLectures] = useState<Lecture[]>([]);
+  const [catalogLoading, setCatalogLoading] = useState(true);
+  const [catalogError, setCatalogError] = useState('');
+  const [catalogAttempt, setCatalogAttempt] = useState(0);
+  const [answer, setAnswer] = useState<AnswerResult | null>(null);
+  const [asking, setAsking] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [opening, setOpening] = useState(false);
+  const [playerError, setPlayerError] = useState('');
+  const searchRequest = useRef<AbortController | null>(null);
+  const playerRequest = useRef<AbortController | null>(null);
   const [question, setQuestion] = useState('');
   const [submittedQuestion, setSubmittedQuestion] = useState('');
   const [courseId, setCourseId] = useState<CourseId>('all');
-  const [selectedCourse, setSelectedCourse] = useState<CourseSelection | null>(null);
+  const [selectedCourse, setSelectedCourse] = useLocalStorage<CourseSelection | null>(
+    'viscon.selected-course.v1',
+    null,
+    (value): value is CourseSelection | null => value === null || isCourseSelection(value),
+  );
   const [pickerRequest, setPickerRequest] = useState(0);
   const [layout, setLayout] = useState<'grid' | 'list'>('grid');
   const [sort, setSort] = useState<Sort>('relevance');
@@ -101,10 +107,14 @@ export function App() {
     [],
     isStringArray,
   );
-  const legacyHistory = useMemo(readLegacyQuestionHistory, []);
+  const [savedSegments, setSavedSegments] = useLocalStorage<Record<string, Segment>>(
+    'viscon.saved-segment-details.v1',
+    {},
+    isSegmentMap,
+  );
   const [history, setHistory] = useLocalStorage<QuestionHistoryEntry[]>(
     'viscon.question-history.v4',
-    legacyHistory,
+    [],
     isQuestionHistory,
   );
   const [activeLecture, setActiveLecture] = useState<{ lecture: Lecture; segment: Segment } | null>(
@@ -119,6 +129,37 @@ export function App() {
   const selectedCourseDetails = courses.find((course) => course.id === selectedCourse?.courseId);
 
   useEffect(() => {
+    const controller = new AbortController();
+    setCatalogLoading(true);
+    setCatalogError('');
+    Promise.all([
+      getJSON<{ courses: Course[] }>('/api/courses', controller.signal),
+      getJSON<{ lectures: Lecture[] }>('/api/lectures', controller.signal),
+    ])
+      .then(([courseData, lectureData]) => {
+        if (!controller.signal.aborted) {
+          setCourses(courseData.courses);
+          setLectures(lectureData.lectures);
+        }
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) setCatalogError(error.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setCatalogLoading(false);
+      });
+    return () => controller.abort();
+  }, [catalogAttempt]);
+
+  useEffect(
+    () => () => {
+      searchRequest.current?.abort();
+      playerRequest.current?.abort();
+    },
+    [],
+  );
+
+  useEffect(() => {
     if (!toast) return;
     const timeout = window.setTimeout(() => setToast(''), 2600);
     return () => window.clearTimeout(timeout);
@@ -130,22 +171,54 @@ export function App() {
   }, [helpOpen]);
 
   const results = useMemo(() => {
-    let items =
+    let items: Lecture[] =
       view === 'questions'
-        ? submittedQuestion && selectedCourse
-          ? searchLectureMatches(submittedQuestion, selectedCourse.courseId).filter((lecture) =>
-              lectureMatchesSelection(lecture, selectedCourse),
-            )
-          : []
-        : searchLectures(librarySearch, courseId);
-    if (view === 'saved')
+        ? (answer?.videos ?? []).flatMap((video) => {
+            const metadata = lectures.find((item) => item.id === video.id);
+            return metadata ? [{ ...metadata, segments: video.segments }] : [];
+          })
+        : lectures.map((lecture) => ({
+            ...lecture,
+            segments:
+              view === 'saved'
+                ? [...(lecture.chapters ?? []), ...lecture.segments]
+                    .filter((segment) => savedIds.includes(segment.id))
+                    .map((segment) => savedSegments[segment.id] ?? segment)
+                : lecture.chapters?.length
+                  ? lecture.chapters
+                  : lecture.segments,
+          }));
+    if (view === 'questions' && selectedCourse)
+      items = items.filter((item) => lectureMatchesSelection(item, selectedCourse, courses));
+    if (view !== 'questions' && courseId !== 'all')
+      items = items.filter((item) => item.courseId === courseId);
+    if (view === 'saved') items = items.filter((item) => item.segments.length);
+    if (view !== 'questions' && librarySearch.trim()) {
+      const terms = librarySearch.toLowerCase().trim().split(/\s+/);
       items = items.filter((item) =>
-        item.segments.some((segment) => savedIds.includes(segment.id)),
+        terms.every((term) =>
+          `${item.title} ${item.keywords.join(' ')} ${item.segments.map((segment) => segment.title).join(' ')}`
+            .toLowerCase()
+            .includes(term),
+        ),
       );
-    if (sort === 'newest') items = [...items].sort((a, b) => b.date.localeCompare(a.date));
+    }
+    if (sort === 'newest')
+      items = [...items].sort((a, b) => b.date.localeCompare(a.date) || b.episode - a.episode);
     if (sort === 'shortest') items = [...items].sort((a, b) => a.duration - b.duration);
     return items;
-  }, [view, submittedQuestion, selectedCourse, courseId, librarySearch, sort, savedIds]);
+  }, [
+    view,
+    answer,
+    lectures,
+    courseId,
+    librarySearch,
+    sort,
+    savedIds,
+    savedSegments,
+    selectedCourse,
+    courses,
+  ]);
 
   const segmentCount = results.reduce(
     (total, lecture) =>
@@ -156,14 +229,26 @@ export function App() {
   );
 
   const navigate = (nextView: View, nextCourse: CourseId = 'all') => {
+    searchRequest.current?.abort();
+    playerRequest.current?.abort();
+    setAsking(false);
+    setOpening(false);
+    setSearchError('');
+    setPlayerError('');
+    setActiveLecture(null);
+    if (nextView !== 'questions' || nextCourse !== courseId) {
+      setAnswer(null);
+      setSubmittedQuestion('');
+    }
     setView(nextView);
+    window.history.replaceState(null, '', `#${nextView}`);
     setCourseId(nextCourse);
     setLibrarySearch('');
   };
 
-  const submitQuestion = (nextQuestion: string = question) => {
-    if (!selectedCourse) {
-      setPickerRequest((current) => current + 1);
+  const submitQuestion = async (nextQuestion: string = question, selection = selectedCourse) => {
+    if (!selection) {
+      setPickerRequest((value) => value + 1);
       return;
     }
     const trimmed = nextQuestion.trim();
@@ -173,63 +258,126 @@ export function App() {
     }
     setQuestion(trimmed);
     setSubmittedQuestion(trimmed);
+    searchRequest.current?.abort();
+    playerRequest.current?.abort();
+    const controller = new AbortController();
+    searchRequest.current = controller;
+    setAnswer(null);
+    setAsking(true);
+    setSearchError('');
+    setPlayerError('');
+    setOpening(false);
+    setActiveLecture(null);
     setView('questions');
+    window.history.replaceState(null, '', '#questions');
     setSort('relevance');
     setHistory((current) =>
       [
-        { question: trimmed, ...selectedCourse },
+        { question: trimmed, ...selection },
         ...current.filter(
-          (item) => item.question !== trimmed || !sameCourseSelection(item, selectedCourse),
+          (item) => item.question !== trimmed || !sameCourseSelection(item, selection),
         ),
       ].slice(0, 8),
     );
+    try {
+      const result = await askLecture(
+        { question: trimmed, courseId: selection.courseId, limit: 3 },
+        { signal: controller.signal },
+      );
+      if (!controller.signal.aborted) setAnswer(result);
+    } catch (error) {
+      if (!controller.signal.aborted)
+        setSearchError(
+          error instanceof Error
+            ? error.message
+            : 'Die Suche ist fehlgeschlagen. Bitte versuche es erneut.',
+        );
+    } finally {
+      if (!controller.signal.aborted) setAsking(false);
+    }
   };
 
-  const toggleSaved = (id: string) => {
+  const toggleSaved = (segment: Segment) => {
+    const id = segment.id;
     const removing = savedIds.includes(id);
     setSavedIds((current) => (removing ? current.filter((item) => item !== id) : [...current, id]));
+    setSavedSegments((current) => {
+      const next = { ...current };
+      if (removing) delete next[id];
+      else next[id] = segment;
+      return next;
+    });
     setToast(
       removing ? 'Stelle aus deiner Merkliste entfernt' : 'Stelle in deiner Merkliste gespeichert',
     );
+  };
+
+  const openLecture = async (lecture: Lecture, segment: Segment) => {
+    playerRequest.current?.abort();
+    const controller = new AbortController();
+    playerRequest.current = controller;
+    setOpening(true);
+    setPlayerError('');
+    try {
+      const detail = await getJSON<{ lecture: Lecture }>(
+        `/api/lectures/${encodeURIComponent(lecture.id)}`,
+        controller.signal,
+      );
+      if (!controller.signal.aborted) setActiveLecture({ lecture: detail.lecture, segment });
+    } catch (error) {
+      if (!controller.signal.aborted)
+        setPlayerError(
+          error instanceof Error ? error.message : 'Die Vorlesung konnte nicht geladen werden.',
+        );
+    } finally {
+      if (!controller.signal.aborted) setOpening(false);
+    }
+  };
+
+  const openSource = (id: string) => {
+    const source = answer?.sources.find((item) => item.id === id);
+    const lecture = lectures.find((item) => item.id === source?.lectureId);
+    if (source && lecture)
+      void openLecture(lecture, {
+        id: source.segmentId,
+        start: source.start,
+        end: source.end,
+        title: source.title,
+        transcript: source.transcript,
+      });
   };
 
   const newQuestion = () => {
     navigate('questions');
     setQuestion('');
     setSubmittedQuestion('');
-    setActiveLecture(null);
+    setAnswer(null);
     window.setTimeout(() => textareaRef.current?.focus(), 0);
   };
 
   const clearCourse = () => {
+    searchRequest.current?.abort();
+    playerRequest.current?.abort();
     setSelectedCourse(null);
     setQuestion('');
     setSubmittedQuestion('');
+    setAnswer(null);
     setActiveLecture(null);
+    setAsking(false);
+    setOpening(false);
+    setSearchError('');
+    setPlayerError('');
   };
-
   const selectCourse = (selection: CourseSelection) => {
+    clearCourse();
     setSelectedCourse(selection);
-    setQuestion('');
-    setSubmittedQuestion('');
-    setActiveLecture(null);
     setView('questions');
+    window.history.replaceState(null, '', '#questions');
     window.setTimeout(() => textareaRef.current?.focus(), 0);
   };
-
   const restoreQuestion = (entry: QuestionHistoryEntry) => {
-    setSelectedCourse({
-      year: entry.year,
-      semester: entry.semester,
-      degree: entry.degree,
-      studyYear: entry.studyYear,
-      courseId: entry.courseId,
-    });
-    setQuestion(entry.question);
-    setSubmittedQuestion(entry.question);
-    setView('questions');
-    setSort('relevance');
-    setActiveLecture(null);
+    setSelectedCourse(entry);
+    void submitQuestion(entry.question, entry);
   };
 
   return (
@@ -239,6 +387,8 @@ export function App() {
       </a>
       <IconSidebar
         view={view}
+        courses={courses}
+        lectures={lectures}
         selectedCourse={selectedCourse}
         pickerRequest={pickerRequest}
         history={history}
@@ -252,27 +402,65 @@ export function App() {
       />
 
       <div className={`main-shell ${view === 'documents' ? 'documents-shell' : ''}`}>
-        <header className="topbar">
-          <div className="breadcrumbs">
-            <span>Lernraum</span>
-            <ChevronRight size={14} />
-            <strong>{viewNames[view]}</strong>
-          </div>
-          <div className="topbar-right">
-            <div className="avatar" title="Studentisches Demo-Profil">
+        <ProductHeader
+          module="Lectures"
+          actions={
+            <div className="avatar" title="Lernraum">
               DU
             </div>
-          </div>
-        </header>
+          }
+        >
+          <a href="/arena">Play</a>
+          <a href="/history">Match history</a>
+          <a href="/leaderboard">Leaderboard</a>
+          <a href="/learn" className="active" aria-current="page">
+            Lectures
+          </a>
+          <a href="/campus">Campus</a>
+        </ProductHeader>
 
         <main id="main" className={`main-content ${isQuestionLanding ? 'chat-landing' : ''} ${view === 'documents' ? 'document-content' : ''}`}>
+          {view !== 'documents' && catalogLoading && (
+            <p className="connection-status" role="status">
+              <LoaderCircle size={18} className="loading-spin" />
+              Vorlesungen werden geladen…
+            </p>
+          )}
+          {view !== 'documents' && catalogError && (
+            <div className="service-error" role="alert">
+              <p>{catalogError}</p>
+              <button
+                className="secondary-button"
+                onClick={() => setCatalogAttempt((value) => value + 1)}
+              >
+                Verbindung erneut versuchen
+              </button>
+            </div>
+          )}
+          {view !== 'documents' && opening && (
+            <p className="connection-status" role="status">
+              <LoaderCircle size={18} className="loading-spin" />
+              Vorlesung wird geöffnet…
+            </p>
+          )}
+          {view !== 'documents' && playerError && (
+            <p className="service-error" role="alert">
+              {playerError}
+            </p>
+          )}
           {view === 'documents' ? (
             <DocumentViewer />
           ) : view === 'questions' ? (
             <div className="question-workspace">
-              {selectedCourseDetails && (
-                <h1 className="chat-prompt">Stell eine Frage zu {selectedCourseDetails.name}</h1>
-              )}
+              <div className="workspace-heading">
+                <p className="page-kicker">WORKSPACE / LECTURES</p>
+                <h1 className="chat-prompt">{selectedCourseDetails?.name ?? 'Vorlesungen'}</h1>
+                <p className="workspace-context">
+                  {selectedCourse
+                    ? selectionLabel(selectedCourse)
+                    : `${lectures.length} Vorlesungen · ${courses.length} Kurse`}
+                </p>
+              </div>
               <form
                 className="question-box"
                 onSubmit={(event) => {
@@ -306,12 +494,8 @@ export function App() {
                     className={`lecture-context ${selectedCourse ? 'selected' : ''}`}
                     type="button"
                     aria-label={selectedCourse ? 'Fach wechseln' : 'Fach auswählen'}
-                    title={
-                      selectedCourse
-                        ? `${selectedCourseDetails?.name} · ${semesterNames[selectedCourse.semester]} ${selectedCourse.year} · ${degreeNames[selectedCourse.degree]}, ${selectedCourse.studyYear}. Studienjahr`
-                        : undefined
-                    }
-                    onClick={() => setPickerRequest((current) => current + 1)}
+                    title={selectedCourse ? selectionLabel(selectedCourse) : undefined}
+                    onClick={() => setPickerRequest((value) => value + 1)}
                   >
                     <GraduationCap size={16} />
                     <span>{selectedCourseDetails?.name ?? 'Fach auswählen'}</span>
@@ -321,13 +505,79 @@ export function App() {
                   <button
                     className="primary-button"
                     type="submit"
-                    disabled={!selectedCourse || !question.trim()}
+                    disabled={
+                      !selectedCourse || !question.trim() || catalogLoading || !!catalogError
+                    }
                   >
-                    Frage stellen
-                    <ArrowRight size={17} />
+                    {asking ? 'Erneut suchen' : 'Frage stellen'}
+                    {asking ? (
+                      <LoaderCircle size={17} className="loading-spin" />
+                    ) : (
+                      <ArrowRight size={17} />
+                    )}
                   </button>
                 </div>
               </form>
+
+              {asking && (
+                <p className="connection-status" role="status">
+                  Passende Transkriptstellen werden gesucht…
+                </p>
+              )}
+              {searchError && (
+                <div className="service-error" role="alert">
+                  <p>{searchError}</p>
+                  <button
+                    className="secondary-button"
+                    onClick={() => void submitQuestion(submittedQuestion)}
+                  >
+                    Suche erneut versuchen
+                  </button>
+                </div>
+              )}
+              {answer && (
+                <section className="answer-panel" aria-label="Antwort">
+                  <h2>
+                    {answer.status === 'no_match'
+                      ? 'Keine passende Stelle gefunden'
+                      : answer.status === 'insufficient_context'
+                        ? 'Ähnliche Stellen gefunden'
+                        : answer.answer.mode === 'generated'
+                          ? 'Antwort aus deinen Vorlesungen'
+                          : 'Aus dem Transkript'}
+                  </h2>
+                  <p className="answer-notice">{answer.answer.notice}</p>
+                  {answer.answer.paragraphs.map((paragraph, index) => (
+                    <div className="answer-paragraph" key={index}>
+                      <p>
+                        {paragraph.text.length > 380
+                          ? `${paragraph.text.slice(0, 380).replace(/\s+\S*$/, '')}…`
+                          : paragraph.text}
+                      </p>
+                      {paragraph.text.length > 380 && (
+                        <details className="transcript-excerpt">
+                          <summary>Vollständigen Ausschnitt lesen</summary>
+                          <p>{paragraph.text}</p>
+                        </details>
+                      )}
+                      <div className="answer-citations">
+                        {paragraph.sourceIds.map((id) => {
+                          const source = answer.sources.find((item) => item.id === id);
+                          return source ? (
+                            <button key={id} onClick={() => openSource(id)}>
+                              <Play size={14} />
+                              <span>
+                                {source.lectureTitle} · {formatTime(source.start)}
+                                {source.demo ? ' · Demo' : ''}
+                              </span>
+                            </button>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </section>
+              )}
               {submittedQuestion && <div className="results-divider" />}
             </div>
           ) : (
@@ -337,7 +587,7 @@ export function App() {
                   <h1>{viewNames[view]}</h1>
                   <p className="heading-context">
                     {view === 'library'
-                      ? `${lectures.length} Vorlesungen in ${courses.length} Kursen · Herbstsemester 2026`
+                      ? `${lectures.filter((item) => !item.demo).length} Aufzeichnungen und ${lectures.filter((item) => item.demo).length} Demo-Videos · Kapitel und Transkripte`
                       : `${savedIds.length} gespeicherte ${savedIds.length === 1 ? 'Stelle' : 'Stellen'} · Deine persönliche Merkliste`}
                   </p>
                 </div>
@@ -390,7 +640,8 @@ export function App() {
             </>
           )}
 
-          {view !== 'documents' && (view !== 'questions' || submittedQuestion) && (
+          {view !== 'documents' && !catalogLoading && !catalogError &&
+          (view !== 'questions' || answer?.sources.length) ? (
             <section
               className="results-section"
               aria-label={view === 'questions' ? 'Passende Vorlesungen' : viewNames[view]}
@@ -415,7 +666,7 @@ export function App() {
                       onChange={(event) => setSort(event.target.value as Sort)}
                     >
                       <option value="relevance">Relevanz</option>
-                      <option value="newest">Neueste zuerst</option>
+                      <option value="newest">Letzte Vorlesung zuerst</option>
                       <option value="shortest">Kürzeste zuerst</option>
                     </select>
                     <ChevronDown size={13} />
@@ -464,10 +715,11 @@ export function App() {
                     <LectureCard
                       key={lecture.id}
                       lecture={lecture}
+                      course={courses.find((course) => course.id === lecture.courseId)!}
                       showBestMatch={view === 'questions' && sort === 'relevance' && index === 0}
                       savedIds={savedIds}
                       onSave={toggleSaved}
-                      onOpen={(item, segment) => setActiveLecture({ lecture: item, segment })}
+                      onOpen={(item, segment) => void openLecture(item, segment)}
                       savedOnly={view === 'saved'}
                       compact={layout === 'list'}
                     />
@@ -492,53 +744,25 @@ export function App() {
                       ? 'Deine gespeicherten Zeitstellen erscheinen hier.'
                       : view === 'questions' && !submittedQuestion
                         ? 'Lineare Algebra, Analysis oder Informatik.'
-                        : view === 'questions'
-                          ? 'Versuche einen anderen Begriff oder wähle eine andere Vorlesung.'
-                          : 'Versuche einen anderen Begriff oder wähle alle Kurse.'}
+                        : 'Versuche einen anderen Begriff oder wähle alle Kurse.'}
                   </p>
                   <button
                     className="secondary-button"
                     onClick={() =>
                       view === 'saved'
                         ? navigate('library')
-                        : view === 'questions'
-                          ? setPickerRequest((current) => current + 1)
-                          : (setCourseId('all'), setLibrarySearch(''))
+                        : (setCourseId('all'),
+                          setLibrarySearch(''),
+                          setPickerRequest((value) => value + 1))
                     }
                   >
-                    {view === 'saved'
-                      ? 'Vorlesungen ansehen'
-                      : view === 'questions'
-                        ? 'Vorlesung wechseln'
-                        : 'Suche zurücksetzen'}
+                    {view === 'saved' ? 'Vorlesungen ansehen' : 'Fach auswählen'}
                     <ArrowRight size={16} />
                   </button>
                 </div>
               )}
             </section>
-          )}
-
-          {view === 'questions' && results.length > 0 && (
-            <section className="topic-note">
-              <span className="topic-note-icon">
-                <BookOpen size={19} />
-              </span>
-              <div>
-                <p>Aus der Vorlesung</p>
-                <blockquote>{results[0].segments[0].transcript}</blockquote>
-              </div>
-              <button
-                className="icon-button"
-                title="Zur zitierten Stelle"
-                aria-label="Zur zitierten Stelle"
-                onClick={() =>
-                  setActiveLecture({ lecture: results[0], segment: results[0].segments[0] })
-                }
-              >
-                <ArrowUpRight size={21} />
-              </button>
-            </section>
-          )}
+          ) : null}
         </main>
       </div>
 
@@ -546,6 +770,7 @@ export function App() {
         <LectureViewer
           key={`${activeLecture.lecture.id}-${activeLecture.segment.id}`}
           lecture={activeLecture.lecture}
+          course={courses.find((course) => course.id === activeLecture.lecture.courseId)!}
           segment={activeLecture.segment}
           savedIds={savedIds}
           onSave={toggleSaved}
@@ -576,16 +801,17 @@ export function App() {
         </div>
         <h2 id="help-title">Dein VisCon Lernraum</h2>
         <p>
-          Dies ist die erste Interface-Version mit acht Beispielvorlesungen. Kurse, Namen und
-          Transkripte sind fiktiv. Die Vorschaubilder stammen aus öffentlichen Lehrvideos.
+          Hier findest du die Vorlesungsaufzeichnungen mit ihren Transkripten, Kapiteln und
+          vorhandenen Lernnotizen. Die drei kurzen Beispielvideos sind als Demo gekennzeichnet.
         </p>
         <p>
-          Echte Vorlesungsvideos, Videosuche und ETH-Anmeldung werden später angebunden. Deine
-          gespeicherten Stellen und Fragen bleiben in diesem Browser.
+          Die Suche zeigt passende Transkriptstellen. Gespeicherte Momente und Fragen bleiben in
+          diesem Browser. Über Basis Arena kannst du weiterhin gemeinsam spielen und deinen
+          Elo-Fortschritt verfolgen. Die Arena verwendet eine separate Fragenbank.
         </p>
         <span className="help-status">
           <Check size={15} />
-          Interface-Vorschau · v0.1
+          Vorlesungen und Basis Arena verbunden
         </span>
         <button className="primary-button" onClick={() => setHelpOpen(false)}>
           Zurück zum Lernraum

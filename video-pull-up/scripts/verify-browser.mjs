@@ -17,6 +17,9 @@ try {
   page.setDefaultTimeout(15000);
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(`${process.env.DEMO_URL ?? 'http://127.0.0.1:8787'}/demo`);
+  await page.evaluate(() => document.fonts.ready);
+  assert.equal(await page.evaluate(() => getComputedStyle(document.body).backgroundColor), 'rgb(17, 19, 21)');
+  assert.match(await page.evaluate(() => getComputedStyle(document.body).fontFamily), /Inter/);
   await page.getByText('Erklärung aus Transkriptquellen', { exact: true }).waitFor();
   await page.getByRole('button', { name: 'Erklären & Video öffnen', exact: true }).click();
   await page.getByText('Bereit ab 0:30. Mit Play starten. Stummes Demo-Video.', { exact: true }).waitFor();

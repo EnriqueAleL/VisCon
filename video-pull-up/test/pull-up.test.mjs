@@ -200,6 +200,15 @@ test('HTTP API, validation, CORS, byte-range seeking and path traversal protecti
   assert.equal((await fetch(`${base}/media/%2e%2e%2fpackage.json`)).status, 404);
   assert.equal((await fetch(`${base}/demo`)).status, 200);
   assert.equal((await fetch(`${base}/client.mjs`)).status, 200);
+  const tokens = await fetch(`${base}/design/tokens.css`);
+  assert.equal(tokens.status, 200);
+  assert.match(tokens.headers.get('content-type'), /^text\/css/);
+  assert.match(await tokens.text(), /--ground:\s*#111315/);
+  const font = await fetch(`${base}/design/fonts/inter-latin-400-normal.woff2`);
+  assert.equal(font.status, 200);
+  assert.equal(font.headers.get('content-type'), 'font/woff2');
+  assert.equal((await fetch(`${base}/design/ProductHeader.tsx`)).status, 404);
+  assert.equal((await fetch(`${base}/design/%2e%2e%2fpackage.json`)).status, 404);
 });
 
 class FakeVideo extends EventTarget {

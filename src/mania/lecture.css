@@ -1,0 +1,631 @@
+.lecture-moment-panel {
+  color: var(--ink);
+  min-width: 0;
+}
+.lecture-moment-panel button,
+.lecture-moment-panel a {
+  -webkit-tap-highlight-color: transparent;
+}
+.lm-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(265px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.lm-watch,
+.lm-index {
+  min-width: 0;
+}
+.lm-player-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 0 0 11px;
+  letter-spacing: 0;
+}
+.lm-player-heading span {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.lm-player {
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  display: grid;
+  align-items: center;
+}
+.lm-player video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--surface);
+}
+.lm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  color: var(--muted);
+  gap: 12px;
+  font-size: 12px;
+}
+.lm-empty p {
+  max-width: 360px;
+  line-height: 1.65;
+}
+.lm-empty > svg {
+  color: var(--muted);
+}
+.lm-empty strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+.lm-empty button,
+.lm-error button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: var(--danger-soft);
+  border: 1px solid var(--line);
+  color: var(--danger);
+  padding: 7px 11px;
+  border-radius: 5px;
+  font-size: 11px;
+}
+.lm-current {
+  padding: 19px 0 0;
+}
+.mania .lm-current h3 {
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.45;
+  letter-spacing: 0;
+}
+.mania .lm-current > p {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 9px;
+  line-height: 1.8;
+}
+.lm-exploration {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+  font-size: 11px;
+}
+.lm-exploration > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+}
+.lm-exploration button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+}
+.lm-coverage {
+  width: 13px;
+  height: 13px;
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--surface);
+  position: relative;
+}
+.lm-coverage::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+.lm-visualize {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-top: 21px;
+  animation: lm-reveal 0.3s ease-out;
+}
+.lm-landmark-icon {
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--surface-raised);
+  flex-shrink: 0;
+}
+.lm-visualize > div {
+  flex: 1;
+  min-width: 0;
+}
+.lm-visualize strong {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.mania .lm-visualize p {
+  font-size: 11px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.lm-visualize button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: var(--surface);
+  color: var(--muted);
+  border: 0;
+  padding: 8px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.lm-tabs {
+  display: flex;
+  gap: 16px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 5px;
+}
+.lm-tabs button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  padding: 0 0 10px;
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.lm-tabs button.active {
+  border-bottom-color: var(--accent);
+  color: var(--muted);
+}
+.lm-tabs button span {
+  font-size: 11px;
+  padding: 0 4px;
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: 3px;
+}
+.lm-chapters {
+  max-height: 500px;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #3a5748 transparent;
+}
+.lm-chapter {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 8px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 5px;
+  text-align: left;
+  color: var(--muted);
+  transition: background 0.2s;
+}
+.lm-chapter:hover {
+  background: var(--surface-raised);
+}
+.lm-chapter.active {
+  background: var(--accent-soft);
+  color: var(--muted);
+}
+.lm-chapter > span:nth-child(2) {
+  flex: 1;
+  min-width: 0;
+}
+.lm-chapter strong {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.55;
+}
+.lm-chapter small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.lm-chapter-state {
+  display: grid;
+  place-items: center;
+  width: 23px;
+  height: 23px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.lm-chapter-state.explored {
+  background: var(--surface);
+  color: var(--muted);
+}
+.lm-chapter > svg {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.lm-index-footer {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 13px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.lm-index-footer button,
+.lm-index-footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+.mania .lm-transcript-notice {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+  padding: 13px 5px;
+}
+.lm-transcript {
+  border-bottom: 1px solid var(--line);
+  padding: 13px 6px;
+}
+.lm-transcript button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  padding: 0;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.mania .lm-transcript p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.85;
+  margin-top: 7px;
+}
+.lm-error {
+  border: 1px solid var(--line);
+  color: var(--danger);
+  background: var(--danger-soft);
+  padding: 11px 13px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.65;
+  margin-top: 12px;
+}
+.lm-error button {
+  margin-top: 9px;
+}
+.lm-book-bridge {
+  border-top: 1px solid var(--line);
+  margin-top: 28px;
+  padding-top: 20px;
+}
+.lm-book-bridge > summary {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+  color: var(--muted);
+  list-style: none;
+}
+.lm-book-bridge > summary::-webkit-details-marker {
+  display: none;
+}
+.lm-book-bridge > summary > span {
+  font-size: 12px;
+  flex: 1;
+  font-weight: 500;
+}
+.lm-book-bridge > summary small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+.lm-book-bridge[open] > summary > svg:last-child {
+  transform: rotate(45deg);
+}
+.lm-bridge-body {
+  padding-top: 21px;
+}
+.lm-bridge-copy {
+  max-width: 650px;
+}
+.lm-bridge-copy h4 {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 8px;
+}
+.mania .lm-bridge-copy p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.lm-pdf-upload {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  padding: 7px 10px;
+  color: var(--muted);
+  font-size: 11px;
+  cursor: pointer;
+  margin-top: 14px;
+}
+.lm-pdf-upload input {
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  opacity: 0;
+}
+.lm-pdf-upload:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.lm-pdf-note {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.8;
+  margin-top: 8px;
+}
+.lm-pdf {
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  overflow: hidden;
+  margin-top: 18px;
+}
+.lm-pdf > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  padding: 9px 12px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.lm-pdf > div > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-wrap: anywhere;
+}
+.lm-pdf button {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  padding: 0;
+}
+.lm-pdf iframe {
+  display: block;
+  width: 100%;
+  height: 430px;
+  border: 0;
+  background: var(--surface);
+}
+.lm-pdf > a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+}
+.lm-bridge-form {
+  margin-top: 20px;
+}
+.lm-bridge-form > label {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 8px;
+}
+.lm-bridge-form textarea {
+  display: block;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.8;
+  resize: vertical;
+}
+.lm-bridge-form textarea::placeholder {
+  color: var(--muted);
+}
+.lm-bridge-form > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 9px;
+}
+.lm-bridge-form > div > span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.lm-bridge-form button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  background: var(--surface);
+  border: 0;
+  border-radius: 5px;
+  padding: 9px 12px;
+  font-size: 11px;
+}
+.lm-bridge-results {
+  margin-top: 19px;
+}
+.mania .lm-bridge-notice {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.75;
+}
+.mania .lm-bridge-answer {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.9;
+  white-space: pre-line;
+  margin-top: 12px;
+}
+.lm-source {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--line);
+  padding: 14px;
+  margin-top: 10px;
+  border-radius: 7px;
+  background: var(--surface);
+}
+.lm-source > div {
+  flex: 1;
+  min-width: 0;
+}
+.lm-source span {
+  color: var(--muted);
+  font-size: 11px;
+  display: block;
+}
+.lm-source strong {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  display: block;
+  margin-top: 6px;
+}
+.mania .lm-source p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.75;
+  margin-top: 6px;
+}
+.lm-source button {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 5px;
+  color: var(--muted);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.lm-spin {
+  animation: lm-spin 1s linear infinite;
+}
+@keyframes lm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes lm-reveal {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@media (max-width: 1000px) {
+  .lm-grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(240px, 1fr);
+    gap: 18px;
+  }
+  .lm-visualize {
+    flex-wrap: wrap;
+  }
+  .lm-visualize button {
+    margin-left: 46px;
+  }
+  .lm-exploration {
+    font-size: 11px;
+  }
+}
+@media (max-width: 720px) {
+  .lm-grid {
+    grid-template-columns: 1fr;
+  }
+  .lm-chapters {
+    max-height: 330px;
+  }
+  .lm-index {
+    margin-top: 4px;
+  }
+  .lm-current h3 {
+    font-size: 15px;
+  }
+  .lm-source {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .lm-pdf iframe {
+    height: 350px;
+  }
+  .lm-player-heading {
+    font-size: 11px;
+    letter-spacing: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lecture-moment-panel * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

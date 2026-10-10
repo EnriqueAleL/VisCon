@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-09T21:53:47.511Z",
+  "title": "Design System: VisCon",
+  "extensions": {
+    "sourceOfTruth": "shared/design/tokens.css",
+    "baseStyles": "shared/design/base.css",
+    "headerComponent": "shared/design/ProductHeader.tsx",
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Charcoal Canvas",
+        "value": "#111315"
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Work Surface",
+        "value": "#191c1f"
+      },
+      "surface-raised": {
+        "role": "neutral",
+        "displayName": "Raised Neutral",
+        "value": "#22262a"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Primary Text",
+        "value": "#edf0f3"
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Secondary Text",
+        "value": "#a5adb7"
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Divider",
+        "value": "#30363d"
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Action Green",
+        "value": "#69c49a"
+      },
+      "accent-ink": {
+        "role": "neutral",
+        "displayName": "Action Text",
+        "value": "#101e17"
+      },
+      "focus": {
+        "role": "primary",
+        "displayName": "Focus Green",
+        "value": "#86d8b0"
+      },
+      "danger": {
+        "role": "secondary",
+        "displayName": "Error",
+        "value": "#ed9494"
+      },
+      "ochre": {
+        "role": "secondary",
+        "displayName": "Opponent / Warning",
+        "value": "#e1bc7b"
+      },
+      "info": {
+        "role": "secondary",
+        "displayName": "Information",
+        "value": "#9bbde1"
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Page Title",
+        "purpose": "Inter 600, 28px, zero letter spacing."
+      },
+      "title": {
+        "displayName": "Section Title",
+        "purpose": "Inter 600, 16-18px."
+      },
+      "body": {
+        "displayName": "Reading Text",
+        "purpose": "Inter 400, 14px."
+      },
+      "label": {
+        "displayName": "Field Label",
+        "purpose": "Inter 500, 11-12px."
+      },
+      "button": {
+        "displayName": "Command",
+        "purpose": "Inter 500, 12-13px."
+      },
+      "score": {
+        "displayName": "Comparable Numbers",
+        "purpose": "Tabular numerals for scores, clocks, and ratings."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Platform monospace in CodeMirror."
+      }
+    },
+    "shadows": [
+      {
+        "name": "overlay",
+        "value": "0 16px 56px #00000066",
+        "purpose": "Dialogs and popovers only."
+      }
+    ],
+    "motion": [
+      {
+        "name": "reduced-motion",
+        "value": "animation:none;transition:none;scroll-behavior:auto",
+        "purpose": "Honor the user's motion preference."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tablet-max",
+        "value": "900px"
+      },
+      {
+        "name": "phone-max",
+        "value": "650px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "A direct command shared across all modules.",
+      "html": "<button class=\"ds-primary\">Create a room</button>",
+      "css": ".ds-primary{font:500 13px var(--font-ui);min-height:40px;padding:10px 16px;border:1px solid var(--accent);border-radius:6px;background:var(--accent);color:var(--accent-ink)}.ds-primary:hover{background:var(--accent-hover)}.ds-primary:focus-visible{outline:2px solid var(--focus);outline-offset:3px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "A neutral secondary command.",
+      "html": "<button class=\"ds-secondary\">Practice solo</button>",
+      "css": ".ds-secondary{font:500 13px var(--font-ui);min-height:40px;padding:10px 16px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);color:var(--ink)}.ds-secondary:hover{background:var(--surface-hover)}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "A labeled neutral input with visible focus.",
+      "html": "<label class=\"ds-field\">Room code<input placeholder=\"10-character code\" /></label>",
+      "css": ".ds-field{display:grid;gap:8px;font:500 12px var(--font-ui);color:var(--muted)}.ds-field input{font:400 14px var(--font-ui);min-height:40px;padding:10px 12px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);color:var(--ink)}.ds-field input:focus-visible{outline:2px solid var(--focus);outline-offset:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "One VisCon workspace",
+    "overview": "A unified modern SaaS B2B interface, inspired by the direct NeetCode Versus matchup workflow. Charcoal neutrals, self-hosted Inter, compact controls, restrained green actions, and one shared header span Arena, Lectures, Campus, and the video demo.",
+    "keyCharacteristics": [
+      "Work-first screens",
+      "Shared semantic tokens",
+      "Compact Inter typography",
+      "Flat layouts and fine separators",
+      "Native video and code workspaces"
+    ],
+    "rules": [
+      {
+        "name": "One System",
+        "body": "All applications import shared/design; do not invent module-specific palettes or fonts.",
+        "section": "colors"
+      },
+      {
+        "name": "Stable Numbers",
+        "body": "Use tabular numerals and stable geometry for scores and timers.",
+        "section": "typography"
+      },
+      {
+        "name": "Flat Workspaces",
+        "body": "Page sections are unframed. Shadows belong to overlays; corners stay at or below 8px.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Reuse ProductHeader and semantic tokens.",
+      "Keep normal text at 4.5:1 contrast.",
+      "Keep active timers visible on mobile.",
+      "Preserve keyboard focus and reduced motion.",
+      "Use real content imagery with attribution."
+    ],
+    "donts": [
+      "Do not restore the old plum/violet or separate blue demo themes.",
+      "Do not put a marketing hero before match setup or lecture search.",
+      "Do not nest cards or decorate ordinary panels with shadows.",
+      "Do not add external font services or viewport-scaled UI text."
+    ]
+  }
+}

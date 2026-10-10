@@ -8,7 +8,7 @@ import { InputError, loadCatalog } from './catalog.mjs';
 import { createAnswerService, createOllamaExplainer } from './answers.mjs';
 
 export const ROOT = fileURLToPath(new URL('../', import.meta.url));
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mp4': 'video/mp4', '.webm': 'video/webm', '.vtt': 'text/vtt; charset=utf-8' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.webm': 'video/webm', '.vtt': 'text/vtt; charset=utf-8' };
 
 function json(res, status, value) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -89,6 +89,8 @@ export function createServer({ catalog, explain = null, mediaRoot = path.join(RO
         json(res, 200, await ask(await body(req)));
       } else if (['GET', 'HEAD'].includes(req.method) && url.pathname.startsWith('/media/')) {
         await serveFile(req, res, mediaRoot, decodeURIComponent(url.pathname.slice('/media/'.length)));
+      } else if (['GET', 'HEAD'].includes(req.method) && /^\/design\/(?:tokens\.css|base\.css|fonts\.css|fonts\/inter-latin-(?:400|500|600|700)-normal\.woff2)$/.test(url.pathname)) {
+        await serveFile(req, res, path.resolve(ROOT, '../shared/design'), url.pathname.slice('/design/'.length));
       } else if (['GET', 'HEAD'].includes(req.method) && ['/', '/demo', '/demo.js', '/demo.css', '/client.mjs'].includes(url.pathname)) {
         const relative = { '/': 'index.html', '/demo': 'index.html', '/client.mjs': '../client/client.mjs' }[url.pathname] ?? url.pathname.slice(1);
         if (url.pathname === '/client.mjs') await serveFile(req, res, path.join(ROOT, 'client'), 'client.mjs');

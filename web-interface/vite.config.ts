@@ -1,14 +1,30 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// The embedded document viewer (public/translation/, an iframe at the same origin) calls
-// /api/translate with relative paths. Proxy those to the standalone translation backend
-// (`cd ../translation && .venv/bin/python -m viscon_translate serve`) instead of letting
-// Vite 404 them -- that process still owns the PDF translation pipeline and its own data/.
-const translationApiProxy = { '/api': 'http://127.0.0.1:8788' };
+// Two backends sit behind this dev server. The app server owns /api; the standalone
+// translation service (`cd ../translation && .venv/bin/python -m viscon_translate serve`)
+// gets its own /translate-api prefix, rewritten back to /api on the way out, so the two
+// never collide over route names.
+const translationProxy = {
+  target: 'http://127.0.0.1:8788',
+  rewrite: (path: string) => path.replace(/^\/translate-api/, '/api'),
+};
 
 export default defineConfig({
+  resolve: { dedupe: ['react', 'react-dom'] },
   plugins: [react()],
-  server: { proxy: translationApiProxy },
-  preview: { proxy: translationApiProxy },
+  server: {
+    proxy: {
+      '/translate-api': translationProxy,
+      '/api': 'http://127.0.0.1:3001',
+      '/media': 'http://127.0.0.1:3001',
+    },
+  },
+  preview: {
+    proxy: {
+      '/translate-api': translationProxy,
+      '/api': 'http://127.0.0.1:3001',
+      '/media': 'http://127.0.0.1:3001',
+    },
+  },
 });

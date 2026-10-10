@@ -1,0 +1,368 @@
+.globe-arrival {
+  position: relative;
+  isolation: isolate;
+  min-height: 620px;
+  height: calc(100dvh - var(--header-height));
+  overflow: hidden;
+  background: var(--ground);
+  color: var(--ink);
+}
+.arrival-map,
+.arrival-stars,
+.arrival-shade,
+.arrival-placeholder {
+  position: absolute;
+  inset: 0;
+}
+.arrival-stars {
+  background-image:
+    radial-gradient(1px 1px at 12% 17%, #91a5c080 98%, transparent),
+    radial-gradient(1px 1px at 84% 22%, #c1d2e480 98%, transparent),
+    radial-gradient(1px 1px at 31% 67%, #9cafc46b 98%, transparent),
+    radial-gradient(1px 1px at 67% 39%, #c1d2e46b 98%, transparent);
+  background-size:
+    223px 193px,
+    277px 239px,
+    311px 281px,
+    347px 317px;
+}
+.arrival-map {
+  transition: opacity 0.6s;
+}
+.arrival-shade {
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, #080c12ed, #080c1250 30%, transparent 57%),
+    linear-gradient(
+      0deg,
+      #080c12bc,
+      transparent 25%,
+      transparent 84%,
+      #080c1270
+    );
+}
+.arrival-placeholder {
+  display: grid;
+  place-items: center;
+  padding-left: 250px;
+}
+.arrival-placeholder > div {
+  width: min(480px, 65vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 30% 27%,
+      transparent 24%,
+      #080c1280 66%,
+      #080c12f5 94%
+    ),
+    url("/globe/earth-preview.jpg") 52% 47% / 170% 100%;
+  box-shadow:
+    0 0 26px #789ecd3d,
+    inset 0 0 16px #a0c1e56b;
+}
+.arrival-map.is-hidden,
+.arrival-placeholder.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.arrival-topline {
+  position: absolute;
+  top: 28px;
+  left: 32px;
+  right: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+.arrival-topline > span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+.arrival-topline button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 7px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-size: 12px;
+}
+.arrival-topline button:hover {
+  background: var(--surface-hover);
+}
+.arrival-copy {
+  position: absolute;
+  left: 38px;
+  top: 50%;
+  transform: translateY(-42%);
+  width: 360px;
+}
+.arrival-eyebrow {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0;
+  font-weight: 500;
+}
+.arrival-copy h2 {
+  color: var(--ink);
+  font-size: 48px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1.15;
+  margin-top: 20px;
+}
+.arrival-copy p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.75;
+  margin-top: 20px;
+}
+.arrival-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  margin-top: 30px;
+}
+.arrival-actions a {
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  min-height: 40px;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.arrival-actions .arrival-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.arrival-actions .arrival-primary:hover {
+  background: var(--accent-hover);
+}
+.arrival-actions .arrival-secondary {
+  color: var(--ink);
+  padding: 5px 0;
+  min-height: 32px;
+  font-size: 12px;
+}
+.arrival-secondary:hover {
+  text-decoration: underline;
+}
+.arrival-location {
+  position: absolute;
+  left: 38px;
+  bottom: 33px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 12px;
+  color: var(--ink);
+  pointer-events: none;
+}
+.arrival-location small {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.arrival-location-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.arrival-campus-pin {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  opacity: 0;
+  transition: opacity 0.6s;
+}
+.arrival-campus-pin.is-visible {
+  opacity: 1;
+}
+.arrival-pin-dot {
+  display: block;
+  width: 12px;
+  height: 12px;
+  border: 3px solid var(--ink);
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 9px var(--accent-soft);
+}
+.arrival-pin-label {
+  display: block;
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  white-space: nowrap;
+  color: var(--ink);
+}
+.arrival-pin-label strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+}
+.arrival-pin-label small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.globe-arrival .maplibregl-ctrl-attrib {
+  background: #080c12df;
+  color: #acb8c5;
+  font-size: 9px;
+  padding: 4px 8px;
+  line-height: 1.6;
+  max-width: 550px;
+}
+.globe-arrival .maplibregl-ctrl-attrib a {
+  color: #c3ced8;
+}
+.arrival-fallback-credit {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  max-width: 70%;
+  font-size: 9px;
+  padding: 5px 9px;
+  color: #acb8c5;
+  background: #080c12df;
+}
+.arrival-fallback-credit a {
+  color: #c3ced8;
+}
+#arena-start {
+  scroll-margin-top: 28px;
+}
+@media (max-width: 900px) {
+  .globe-arrival {
+    min-height: 580px;
+  }
+  .arrival-copy {
+    left: 28px;
+    width: 270px;
+  }
+  .arrival-copy h2 {
+    font-size: 42px;
+  }
+  .arrival-location {
+    left: 28px;
+  }
+}
+@media (max-width: 700px) {
+  .globe-arrival {
+    min-height: 720px;
+  }
+  .arrival-topline {
+    left: 20px;
+    right: 20px;
+    top: 18px;
+  }
+  .arrival-topline > span {
+    font-size: 11px;
+  }
+  .arrival-topline button {
+    font-size: 11px;
+    padding: 6px 9px;
+  }
+  .arrival-placeholder {
+    padding: 0 0 260px;
+  }
+  .arrival-placeholder > div {
+    width: min(360px, 90vw);
+  }
+  .arrival-shade {
+    background: linear-gradient(
+      0deg,
+      #080c12 3%,
+      #080c12f0 24%,
+      #080c1230 56%,
+      transparent 75%,
+      #080c1233
+    );
+  }
+  .arrival-copy {
+    left: 24px;
+    top: auto;
+    bottom: 105px;
+    transform: none;
+    width: calc(100% - 48px);
+  }
+  .arrival-copy h2 {
+    font-size: 36px;
+    margin-top: 10px;
+  }
+  .arrival-copy h2 br {
+    display: none;
+  }
+  .arrival-copy p {
+    font-size: 12px;
+    margin-top: 12px;
+  }
+  .arrival-copy p br {
+    display: none;
+  }
+  .arrival-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+  }
+  .arrival-actions a {
+    gap: 10px;
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+  .arrival-actions .arrival-secondary {
+    padding: 5px 0;
+    font-size: 12px;
+  }
+  .arrival-location {
+    left: 24px;
+    bottom: 47px;
+    font-size: 11px;
+  }
+  .globe-arrival .maplibregl-ctrl-attrib {
+    font-size: 8px;
+    max-width: 100%;
+  }
+  .arrival-fallback-credit {
+    max-width: 100%;
+    font-size: 8px;
+  }
+  .arrival-pin-label {
+    left: auto;
+    right: 24px;
+    padding: 8px 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .globe-arrival *,
+  .globe-arrival *::before,
+  .globe-arrival *::after {
+    transition: none !important;
+  }
+}

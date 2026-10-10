@@ -8,7 +8,7 @@ import {
   semesterNames,
   studyYears,
 } from '../data/courseSelection';
-import type { CourseSelection, Degree, Semester, StudyYear } from '../types';
+import type { Course, CourseSelection, Degree, Lecture, Semester, StudyYear } from '../types';
 
 const stepTitles = {
   year: 'Jahr auswählen',
@@ -18,13 +18,15 @@ const stepTitles = {
 };
 
 interface CoursePickerProps {
+  courses: Course[];
+  lectures: Lecture[];
   selectedCourse: CourseSelection | null;
   onSelect: (selection: CourseSelection) => void;
   onClear: () => void;
   onClose: () => void;
 }
 
-export function CoursePicker({ selectedCourse, onSelect, onClear, onClose }: CoursePickerProps) {
+export function CoursePicker({ courses, lectures, selectedCourse, onSelect, onClear, onClose }: CoursePickerProps) {
   const [step, setStep] = useState<keyof typeof stepTitles>('year');
   const [year, setYear] = useState(selectedCourse?.year ?? '');
   const [semester, setSemester] = useState<Semester | null>(selectedCourse?.semester ?? null);
@@ -33,7 +35,7 @@ export function CoursePicker({ selectedCourse, onSelect, onClear, onClose }: Cou
   const optionsRef = useRef<HTMLDivElement>(null);
   const focusNextStep = useRef(false);
   const availableCourses =
-    semester && degree && studyYear ? coursesForStudyYear(year, semester, degree, studyYear) : [];
+    semester && degree && studyYear !== null ? coursesForStudyYear(year, semester, degree, studyYear, lectures, courses) : [];
 
   useEffect(() => {
     if (!focusNextStep.current) return;
@@ -65,9 +67,9 @@ export function CoursePicker({ selectedCourse, onSelect, onClear, onClose }: Cou
               setStep('year');
             }}
           >
-            {year}
+            {year === 'archive' ? 'Aufzeichnungen' : year}
           </button>
-          {(step === 'study' || step === 'course') && semester && (
+          {(step === 'study' || step === 'course') && semester && semester !== 'unknown' && (
             <>
               <ChevronRight size={12} aria-hidden="true" />
               <button
@@ -82,7 +84,7 @@ export function CoursePicker({ selectedCourse, onSelect, onClear, onClose }: Cou
               </button>
             </>
           )}
-          {step === 'course' && degree && studyYear && (
+          {step === 'course' && degree && studyYear !== null && studyYear > 0 && (
             <>
               <ChevronRight size={12} aria-hidden="true" />
               <button
@@ -115,7 +117,7 @@ export function CoursePicker({ selectedCourse, onSelect, onClear, onClose }: Cou
         }
       >
         {step === 'year' &&
-          availableYears.map((item) => (
+          availableYears(lectures, courses).map((item) => (
             <button
               className="picker-option picker-year"
               type="button"
@@ -126,11 +128,12 @@ export function CoursePicker({ selectedCourse, onSelect, onClear, onClose }: Cou
                 setSemester(null);
                 setDegree(null);
                 setStudyYear(null);
-                setStep('semester');
+                if (item === 'archive') { setSemester('unknown'); setDegree('unspecified'); setStudyYear(0); setStep('course'); }
+                else setStep('semester');
                 onClear();
               }}
             >
-              <span>{item}</span>
+              <span>{item === 'archive' ? 'Aufzeichnungen' : item}</span>
               <ChevronRight size={16} aria-hidden="true" />
             </button>
           ))}
@@ -189,7 +192,7 @@ export function CoursePicker({ selectedCourse, onSelect, onClear, onClose }: Cou
         {step === 'course' &&
           semester &&
           degree &&
-          studyYear &&
+          studyYear !== null &&
           availableCourses.map((course) => (
             <button
               className="picker-option"
