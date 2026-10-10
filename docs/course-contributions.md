@@ -1,6 +1,6 @@
 # Course contributions: decisions so far
 
-Roles, courses and course admins are built (`admin/README.md`), material submission and review (`submissions/README.md`) and background indexing (`indexing/README.md`). Serving the indexed courses in the app is not built yet. This records what the team decided.
+Roles, courses and course admins are built (`admin/README.md`), material submission and review (`submissions/README.md`) and background indexing (`indexing/README.md`). and serving the indexed courses in the lecture app (`docs/course-catalog.md`). This records what the team decided.
 
 ## Roles
 - **Admin**: creates courses, other admins and course admins, and can review anything. The first admin is `riordache`
@@ -22,5 +22,5 @@ Roles, courses and course admins are built (`admin/README.md`), material submiss
 - Done: a course admin cannot approve their own submission; an administrator reviews it (administrators can approve their own).
 - Done: size and type limits, per-user quotas, storage outside the web folder, an admin action to remove approved material.
   Still to decide: keep uploaded files out of git for good (the repo already tracks the DDCA lectures).
-- Done: per-course folders and indexes, the background job, PDF text extraction. Still to do: the Python image on the VM, a catalog and Q&A that
-  read every course's index, and using slides and scripts in answers.
+- Done: per-course folders and indexes, the background job, PDF text extraction. Also done: a catalogue and Q&A that read every course's index. Still to do: the Python image on the VM, the study world for new courses,
+  and using slides and scripts in answers.

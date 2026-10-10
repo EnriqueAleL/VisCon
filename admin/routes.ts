@@ -44,10 +44,10 @@ export function mountAdmin(app: Express, deps: MountAdminDeps): AdminService {
   };
   // ---- any verified student
   app.get('/api/me/roles', handle(actor => admin.rolesOf(actor)));
-  app.get('/api/courses', handle(actor => ({ courses: admin.listCourses(actor) })));
-  app.get('/api/courses/:id', handle((actor, req) => admin.getCourse(actor, param(req, 'id'))));
-  app.post('/api/courses/propose', handle((actor, req, res) => res.status(201).json(admin.proposeCourse(actor, body(req)))));
-  app.patch('/api/courses/:id', handle((actor, req) => admin.updateCourse(actor, param(req, 'id'), body(req))));
+  app.get('/api/platform/courses', handle(actor => ({ courses: admin.listCourses(actor) })));
+  app.get('/api/platform/courses/:id', handle((actor, req) => admin.getCourse(actor, param(req, 'id'))));
+  app.post('/api/platform/courses/propose', handle((actor, req, res) => res.status(201).json(admin.proposeCourse(actor, body(req)))));
+  app.patch('/api/platform/courses/:id', handle((actor, req) => admin.updateCourse(actor, param(req, 'id'), body(req))));
 
   // ---- administrators
   app.get('/api/admin/admins', handle(actor => { admin.listAudit(actor, 1); return { admins: admin.listAdmins() }; }));

@@ -116,7 +116,7 @@ managed URL: the proxy in front of the VM may cap request size or duration, and 
 
 Approved lectures are indexed with an LLM and approved PDFs are text-extracted, in the background (`indexing/README.md`). That needs Python, so build the
 Python image (`DOCKER_TARGET=qa-runtime` in `.env`; it installs `qa/requirements.txt`) and set `OPENAI_API_KEY` and `QA_INDEX_MODEL`. Without them
-approvals still work and items simply wait; `GET /api/courses/<id>/index` shows why. Check Python with
+approvals still work and items simply wait; `GET /api/platform/courses/<id>/index` shows why. Check Python with
 `docker compose exec app /opt/qa-venv/bin/python -c "import openai, pypdf"`. Published material and indexes live under `/app/.data/courses`.
 
 ## Trust the managed identity explicitly

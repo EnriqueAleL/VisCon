@@ -23,8 +23,11 @@ student. Names are 3-80 characters; the id is a slug of the name and never chang
 
 ## API (all need a verified login; all JSON)
 
-Students: `GET /api/me/roles`, `GET /api/courses`, `GET /api/courses/:id`, `POST /api/courses/propose {name, description}`,
-`PATCH /api/courses/:id {name?, description?}` (admins and that course's admins).
+Everything for managing courses lives under `/api/platform/` so it never collides with `GET /api/courses`, which belongs to the lecture app
+(the course list the lecture library loads).
+
+Students: `GET /api/me/roles`, `GET /api/platform/courses`, `GET /api/platform/courses/:id`, `POST /api/platform/courses/propose {name, description}`,
+`PATCH /api/platform/courses/:id {name?, description?}` (admins and that course's admins).
 
 Admins:
 

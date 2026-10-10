@@ -37,7 +37,7 @@ export function mountSubmissions(app: Express, deps: MountSubmissionsDeps): Subm
   };
 
   // ---- submitting
-  app.post('/api/courses/:id/submissions', handle((actor, req, res) => res.status(201).json(service.create(actor, param(req, 'id'), body(req)))));
+  app.post('/api/platform/courses/:id/submissions', handle((actor, req, res) => res.status(201).json(service.create(actor, param(req, 'id'), body(req)))));
   app.get('/api/me/submissions', handle(actor => ({ submissions: service.listMine(actor) })));
   app.get('/api/submissions/:id', handle((actor, req) => service.get(actor, param(req, 'id'))));
   app.post('/api/submissions/:id/submit', handle((actor, req) => service.submit(actor, param(req, 'id'))));
@@ -85,7 +85,7 @@ export function mountSubmissions(app: Express, deps: MountSubmissionsDeps): Subm
   });
 
   // ---- reviewing (administrators and the course's admins)
-  app.get('/api/courses/:id/submissions', handle((actor, req) => ({ submissions: service.listForCourse(actor, param(req, 'id'), req.query.status) })));
+  app.get('/api/platform/courses/:id/submissions', handle((actor, req) => ({ submissions: service.listForCourse(actor, param(req, 'id'), req.query.status) })));
   app.post('/api/submissions/:id/approve', handle((actor, req) => service.approve(actor, param(req, 'id'), body(req).note)));
   app.post('/api/submissions/:id/reject', handle((actor, req) => service.reject(actor, param(req, 'id'), body(req).note)));
   app.post('/api/admin/submissions/:id/remove', handle((actor, req) => service.remove(actor, param(req, 'id'), body(req).reason)));

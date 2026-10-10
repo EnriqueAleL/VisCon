@@ -21,7 +21,7 @@ export function mountIndexing(app: Express, deps: MountIndexingDeps): IndexingSe
     try { res.setHeader('Cache-Control', 'no-store'); res.json(await fn(actorOf(req), req)); } catch (error) { sendError(res, error, 'indexing'); }
   };
   // Indexing state of a course's approved material (administrators and that course's admins).
-  app.get('/api/courses/:id/index', handle((actor, req) => service.status(actor, String(req.params.id))));
+  app.get('/api/platform/courses/:id/index', handle((actor, req) => service.status(actor, String(req.params.id))));
   // Run it again after a failure (or after the model or transcript was fixed).
   app.post('/api/submissions/:id/reindex', handle((actor, req) => service.retry(actor, String(req.params.id))));
   return service;

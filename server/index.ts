@@ -117,6 +117,7 @@ io.of('/study').use(guard.socket);
 const rootAdmins=rootAdminsFromEnv();
 if(!rootAdmins.size)console.warn('AUTH_ADMINS is empty: nobody can administer courses or other admins. Set AUTH_ADMINS=<eth username>.');
 admin=mountAdmin(app,{db,playerFromCookie:session,accounts:accountsService,rootAdmins});
+const coursesDir=process.env.COURSES_DIR||'.data/courses';
 // Lecture numbers of the original DDCA recordings (they live outside the submission system and must not be replaced by it).
 const originalLectures=new Set<number>();
 try{for(const key of Object.keys(JSON.parse(readFileSync('qa/data/index.json','utf8')).lectures??{}))originalLectures.add(Number(key));}catch{/* no original recordings on this machine */}
@@ -127,7 +128,7 @@ const submissions=mountSubmissions(app,{db,playerFromCookie:session,admin,upload
 submissions.purgeStaleDrafts();
 setInterval(()=>submissions.purgeStaleDrafts(),3_600_000).unref();
 // Approved material is indexed in the background, one item at a time, with the Python tool in qa/.
-indexing=mountIndexing(app,{db,playerFromCookie:session,admin,submissions,coursesDir:process.env.COURSES_DIR||'.data/courses',
+indexing=mountIndexing(app,{db,playerFromCookie:session,admin,submissions,coursesDir,
   runner:createPythonRunner(pythonConfigFromEnv(fileURLToPath(new URL('../',import.meta.url)))),
   enabled:process.env.INDEXING_ENABLED!=='false',maxAttempts:Number(process.env.INDEXING_MAX_ATTEMPTS)||3,
   maxPaidRuns:process.env.INDEXING_MAX_PAID_RUNS?Math.max(0,Number(process.env.INDEXING_MAX_PAID_RUNS)||0):50});
@@ -172,7 +173,7 @@ io.on('connection',socket=>{
   socket.on('disconnect',()=>{connections.get(id)?.delete(socket.id);if(connections.get(id)?.size)return;connections.delete(id);for(const r of rooms.values()){const p=r.players.find(x=>x.id===id);if(p){p.online=false;broadcast(r);}}const timer=setTimeout(()=>{const r=rooms.get(active.get(id)||'');if(!r)return;if(r.state==='lobby')leave(r,profile(id));else if(r.players.filter(p=>!p.bot).every(p=>!p.online))cancel(r,'Both players disconnected. No Elo changed.');else finish(r,'Opponent disconnected for over 60 seconds',id);},60000);disconnects.set(id,timer);});
 });
 setInterval(()=>{for(const [key,value]of rates)if(Date.now()-value.at>120000)rates.delete(key);for(const [key,r]of rooms)if(Date.now()-r.createdAt>4*3600000){if(!['finished','cancelled'].includes(r.state))cancel(r,'This room expired. Create a new challenge.');rooms.delete(key);}},60000).unref();
-await mountLectures(app);
+await mountLectures(app,{db,coursesDir});
 const learning = await mountMania(app, io);
 registerCourseQuestions(learning.bundle.bank.map(question => ({
   id: `ddca-${question.id}`, subject: 'ddca', topic: learning.bundle.world.cities.find(city => city.id === question.cityId)!.name,

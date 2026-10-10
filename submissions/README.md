@@ -15,7 +15,7 @@ Transcripts come from the web (the student supplies them); the server never tran
 
 ## Flow
 
-1. `POST /api/courses/:id/submissions {type, title, number?, notes?}` creates a **draft** (course must be `active`).
+1. `POST /api/platform/courses/:id/submissions {type, title, number?, notes?}` creates a **draft** (course must be `active`).
 2. `PUT /api/submissions/:id/files/:slot` uploads one file as the raw request body: `Content-Type: application/octet-stream`,
    a `Content-Length` (required), optional `X-Filename`. Replace a file by uploading the slot again.
 3. `POST /api/submissions/:id/submit` -> **pending**. Needs every required file, a lecture number that is not already
@@ -27,7 +27,7 @@ Transcripts come from the web (the student supplies them); the server never tran
 Status: `draft -> pending -> approved | rejected | withdrawn`, and `approved -> removed`. Rejected, withdrawn and removed submissions lose their
 files (the record and the reason stay). Drafts nobody finishes within 24 hours are purged hourly.
 
-Reading: `GET /api/me/submissions`, `GET /api/submissions/:id` (submitter or reviewer), `GET /api/courses/:id/submissions?status=pending`
+Reading: `GET /api/me/submissions`, `GET /api/submissions/:id` (submitter or reviewer), `GET /api/platform/courses/:id/submissions?status=pending`
 (reviewers; also `approved|rejected|withdrawn|removed`), `GET /api/submissions/:id/files/:slot` (download, always as an attachment).
 
 ## Who may do what

@@ -56,7 +56,7 @@ async function upload(as: string, id: string, slot: string, data: Buffer, name =
   const res = await fetch(`${base}/api/submissions/${id}/files/${slot}`, { method: 'PUT', headers: { cookie: cookies.get(as)!, 'content-type': 'application/octet-stream', 'x-filename': name }, body: new Uint8Array(data) });
   return { status: res.status, body: await res.json().catch(() => null) as any };
 }
-const newSubmission = async (as: string, course: string, input: object) => (await call(as, 'POST', `/api/courses/${course}/submissions`, input)).body.id as string;
+const newSubmission = async (as: string, course: string, input: object) => (await call(as, 'POST', `/api/platform/courses/${course}/submissions`, input)).body.id as string;
 /** A complete, pending lecture submission. */
 async function pendingLecture(as: string, course: string, number: number, extra: { video?: Buffer } = {}) {
   const id = await newSubmission(as, course, { type: 'lecture', title: `Lecture ${number}`, number });
@@ -71,7 +71,7 @@ const rawPut = (path: string, as: string, headers: Record<string, string>, write
 });
 
 test('anonymous visitors cannot touch any submission route', async () => {
-  for (const [method, path] of [['POST', '/api/courses/computer-architecture/submissions'], ['GET', '/api/me/submissions'], ['GET', '/api/submissions/x'], ['POST', '/api/submissions/x/approve']])
+  for (const [method, path] of [['POST', '/api/platform/courses/computer-architecture/submissions'], ['GET', '/api/me/submissions'], ['GET', '/api/submissions/x'], ['POST', '/api/submissions/x/approve']])
     assert.equal((await call(null, method, path, method === 'GET' ? undefined : {})).status, 401, path);
   assert.equal((await fetch(`${base}/api/submissions/x/files/video`, { method: 'PUT', body: 'x' })).status, 401);
 });
@@ -95,8 +95,8 @@ test('full flow: draft, upload with checks, submit, review, approve, download', 
   assert.equal((await call('cara', 'GET', `/api/submissions/${id}`)).status, 404, 'other students cannot see it');
   assert.equal((await call('cara', 'GET', `/api/submissions/${id}/files/video`)).status, 404);
   assert.equal((await call('ben', 'POST', `/api/submissions/${id}/approve`, {})).status, 404, 'the submitter cannot review');
-  assert.equal((await call('anna', 'GET', '/api/courses/computer-architecture/submissions')).status, 403, 'a course admin of another course cannot list it');
-  const pending = (await call('riordache', 'GET', '/api/courses/computer-architecture/submissions')).body.submissions;
+  assert.equal((await call('anna', 'GET', '/api/platform/courses/computer-architecture/submissions')).status, 403, 'a course admin of another course cannot list it');
+  const pending = (await call('riordache', 'GET', '/api/platform/courses/computer-architecture/submissions')).body.submissions;
   assert.deepEqual(pending.map((s: { id: string }) => s.id), [id]);
 
   const dl = await fetch(`${base}/api/submissions/${id}/files/video`, { headers: { cookie: cookies.get('riordache')! } });
@@ -136,7 +136,7 @@ test('a course admin reviews only their course, never their own submission; an a
   const bens = await newSubmission('ben', 'physics', { type: 'slides', title: 'Physics slides', number: 1 });
   await upload('ben', bens, 'slides', PDF(), 's.pdf');
   await call('ben', 'POST', `/api/submissions/${bens}/submit`);
-  assert.equal((await call('anna', 'GET', '/api/courses/physics/submissions')).body.submissions.length, 2);
+  assert.equal((await call('anna', 'GET', '/api/platform/courses/physics/submissions')).body.submissions.length, 2);
   assert.equal((await call('anna', 'POST', `/api/submissions/${bens}/approve`, {})).body.status, 'approved', 'the physics course admin reviews physics');
   assert.equal((await call('riordache', 'POST', `/api/submissions/${mine}/approve`, {})).body.status, 'approved', 'an administrator can approve a course admin\'s own');
 
@@ -194,7 +194,7 @@ test('bad uploads are stopped early, answered properly, and leave nothing behind
 test('quotas, limits per student, other students\' drafts and stale drafts', async () => {
   const ids = [];
   for (let i = 0; i < 5; i++) ids.push(await newSubmission('ben', 'computer-architecture', { type: 'script', title: `Draft ${i}` }));
-  const sixth = await call('ben', 'POST', '/api/courses/computer-architecture/submissions', { type: 'script', title: 'Draft six' });
+  const sixth = await call('ben', 'POST', '/api/platform/courses/computer-architecture/submissions', { type: 'script', title: 'Draft six' });
   assert.deepEqual([sixth.status, sixth.body.code], [429, 'rate_limited']);
   assert.equal((await call('riordache', 'GET', `/api/submissions/${ids[0]}`)).status, 404, 'even administrators do not see other people\'s drafts');
   assert.equal((await call('ben', 'GET', '/api/me/submissions')).body.submissions.filter((s: { status: string }) => s.status === 'draft').length, 5);
@@ -238,7 +238,7 @@ test("a draft is purged a day after its last activity, never while an upload is 
 });
 
 test('input is validated: types, titles, numbers, courses that are not active', async () => {
-  const bad = (input: object, course = 'computer-architecture') => call('cara', 'POST', `/api/courses/${course}/submissions`, input);
+  const bad = (input: object, course = 'computer-architecture') => call('cara', 'POST', `/api/platform/courses/${course}/submissions`, input);
   assert.equal((await bad({ type: 'exam', title: 'Nope' })).status, 400);
   assert.equal((await bad({ type: 'lecture', title: 'No number' })).status, 400);
   assert.equal((await bad({ type: 'lecture', title: 'Bad number', number: 0 })).status, 400);
@@ -248,7 +248,7 @@ test('input is validated: types, titles, numbers, courses that are not active', 
   assert.equal((await bad({ type: 'slides', title: 'ab' })).status, 400);
   assert.equal((await bad({ type: 'slides', title: 'Fine title', notes: 'n'.repeat(1001) })).status, 400);
   assert.equal((await bad({ type: 'slides', title: 'Fine title' }, 'no-such-course')).status, 404);
-  const proposed = (await call('ben', 'POST', '/api/courses/propose', { name: 'Chemistry' })).body;
+  const proposed = (await call('ben', 'POST', '/api/platform/courses/propose', { name: 'Chemistry' })).body;
   assert.equal(proposed.status, 'proposed');
-  assert.equal((await call('ben', 'POST', '/api/courses/chemistry/submissions', { type: 'script', title: 'Early script' })).status, 409, 'not before the course is approved');
+  assert.equal((await call('ben', 'POST', '/api/platform/courses/chemistry/submissions', { type: 'script', title: 'Early script' })).status, 409, 'not before the course is approved');
 });

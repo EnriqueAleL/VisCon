@@ -31,6 +31,13 @@ const DEFAULT_TIMEOUTS = { lecture: 20 * 60_000, document: 5 * 60_000, unindex: 
 /** Only these variables reach the Python process: no cookies, session secrets or SMTP passwords. */
 const PASS_THROUGH = ['PATH', 'LANG', 'LC_ALL', 'TMPDIR', 'SYSTEMROOT', 'HOME', 'OPENAI_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_ORG_ID', 'QA_INDEX_MODEL', 'QA_ANSWER_MODEL', 'HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY', 'SSL_CERT_FILE', 'REQUESTS_CA_BUNDLE'];
 
+/** The environment for a Python child: only what it needs, plus job-specific values. Shared with the Q&A bridge. */
+export function buildPythonEnv(source: NodeJS.ProcessEnv, extra: Record<string, string> = {}, passThrough: readonly string[] = PASS_THROUGH): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { PYTHONDONTWRITEBYTECODE: '1', PYTHONIOENCODING: 'utf-8', PYTHONUNBUFFERED: '1' };
+  for (const key of passThrough) if (source[key]) env[key] = source[key];
+  return { ...env, ...extra };
+}
+
 export function pythonConfigFromEnv(root: string, env: NodeJS.ProcessEnv = process.env): PythonRunnerConfig {
   const local = join(root, '.venv/bin/python');
   return { python: env.QA_PYTHON || (existsSync(local) ? local : 'python3'), qaDir: join(root, 'qa'), env };
@@ -45,11 +52,7 @@ export function summarizeFailure(stderr: string): string {
 
 export function createPythonRunner(config: PythonRunnerConfig): IndexRunner {
   const timeouts = { ...DEFAULT_TIMEOUTS, ...config.timeouts };
-  const baseEnv = () => {
-    const env: NodeJS.ProcessEnv = { PYTHONDONTWRITEBYTECODE: '1', PYTHONIOENCODING: 'utf-8', PYTHONUNBUFFERED: '1' };
-    for (const key of PASS_THROUGH) if (config.env[key]) env[key] = config.env[key];
-    return env;
-  };
+  const baseEnv = () => buildPythonEnv(config.env);
 
   function run(args: string[], extraEnv: Record<string, string>, timeoutMs: number): Promise<{ code: number | null; stdout: string; stderr: string; timedOut: boolean }> {
     return new Promise((resolve, reject) => {

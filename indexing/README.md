@@ -31,8 +31,8 @@ numbers (1-24) cannot be taken by a submission.
   (3). A file that can never work (a password-protected or image-only PDF) fails at once with a clear reason.
 - **Shared budget:** all courses together get at most `INDEXING_MAX_PAID_RUNS` (50) paid lecture-indexing runs, counted in `indexing_runs`.
   Every attempt counts, retries and re-indexes included, because each one is billed. When it is used up, lectures wait, `reindex` of a lecture
-  is refused, and `GET /api/courses/:id/index` says why; PDF extraction is free and goes on. Raise the setting and restart to continue.
-- If the API key, model or Python packages are missing, lectures simply **wait** (they do not burn attempts) and `GET /api/courses/:id/index`
+  is refused, and `GET /api/platform/courses/:id/index` says why; PDF extraction is free and goes on. Raise the setting and restart to continue.
+- If the API key, model or Python packages are missing, lectures simply **wait** (they do not burn attempts) and `GET /api/platform/courses/:id/index`
   says why; documents need no key and still run.
 - After a crash or restart, items that were `indexing` are put back in the queue.
 - Removing approved material (administrator) takes the lecture out of the index (`unindex`), deletes its chapter markers, summary and published files.
@@ -42,7 +42,7 @@ numbers (1-24) cannot be taken by a submission.
 
 ## API (administrators and that course's admins)
 
-- `GET /api/courses/:id/index`: whether lecture indexing and PDF extraction are ready (and why not), counts per state, and every approved item with its state.
+- `GET /api/platform/courses/:id/index`: whether lecture indexing and PDF extraction are ready (and why not), counts per state, and every approved item with its state.
 - `POST /api/submissions/:id/reindex`: queue it again (after a failure, or to rebuild an index). Submissions also report `indexState`, `indexError` and `indexedAt`.
 
 ## Settings
@@ -57,11 +57,12 @@ messages), `race.test.ts` (removal at every moment of a run), and `e2e.test.ts`,
 against a local fake of the OpenAI API (`fake-openai.ts`); it skips itself unless Python with `qa/requirements.txt` is available
 (`QA_PYTHON=/path/to/python npm test`). The Python side has its own tests in `qa/tests`.
 
+## What reads the indexes
+
+The lecture app and its Q&A: see [`../docs/course-catalog.md`](../docs/course-catalog.md).
+
 ## Not done yet
 
-- **Nothing reads these indexes yet.** `server/lecture-catalog.ts`, the Q&A endpoints and the study world still only know the original DDCA data.
-  The next step is a catalog that merges every course's `qa/index.json` and media, plus per-course Q&A (the tool already takes the folders from its
-  environment) and a media route for published files.
 - Slides and scripts are extracted but not used for answers or matched to lecture chapters (see `TODO.md`).
 - Summaries are not generated automatically (still on demand via `qa summary`).
 - If the server is killed while Python runs, that Python process may finish on its own; the job is re-queued on the next start.
