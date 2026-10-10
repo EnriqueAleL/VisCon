@@ -56,6 +56,7 @@ import type {
 import { api } from "./api";
 import { ProductHeader } from "../shared/design/ProductHeader";
 import { GlobeArrival } from "./GlobeArrival";
+import { watchSocketAccess } from "../shared/auth/socketAccess";
 
 const JavaEditorImpl = lazy(() => import("./JavaEditor"));
 function JavaEditor(props: React.ComponentProps<typeof JavaEditorImpl>) {
@@ -239,6 +240,7 @@ export default function App() {
         s.emit("watch", { id: roomIdRef.current }, () => {});
     });
     s.on("disconnect", () => setConnected(false));
+    watchSocketAccess(s);
     s.on("connect_error", () => setConnected(false));
     s.on("room", (r: RoomView) => {
       if (r.id === roomIdRef.current) setRoom(r);

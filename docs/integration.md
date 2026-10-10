@@ -20,7 +20,7 @@ its full transcript. Restart the server after importing/reindexing lecture data.
 
 | Route | Response |
 | --- | --- |
-| `GET /api/courses` | Available courses, including labelled demos |
+| `GET /api/courses` | Available courses: the original recordings, the labelled demos and every published course (see [course-catalog.md](course-catalog.md)) |
 | `GET /api/lectures?courseId=...` | Library metadata, chapter outlines and segment IDs |
 | `GET /api/lectures/:id` | One lecture with complete transcript windows |
 | `GET /api/lectures/:id/summary` | Cached notes, or `summary: null` |

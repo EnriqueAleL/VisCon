@@ -66,13 +66,12 @@ export default defineConfig({
       });
     },
   }],
-  build: { rollupOptions: { input: { arena: resolve('index.html'), learn: resolve('learn.html') } } },
+  // `auth` is the only entry served to anonymous visitors; the manifest lets the server tell its files from the app's.
+  build: { manifest: true, rollupOptions: { input: { arena: resolve('index.html'), learn: resolve('learn.html'), auth: resolve('auth.html') } } },
   server: { port: 5173, strictPort: true, proxy: {
-    // The app server owns /api. The standalone translation service gets its own
-    // prefix, rewritten back to /api on the way out, so the two never collide.
+    // The Node gateway verifies the account before forwarding document requests to Python.
     '/translate-api': {
-      target: 'http://127.0.0.1:8788',
-      rewrite: (path: string) => path.replace(/^\/translate-api/, '/api'),
+      target: 'http://127.0.0.1:3001',
       configure(proxy) {
         proxy.on('error', (_error, _req, res) => {
           if ('writeHead' in res && !res.headersSent) {

@@ -34,6 +34,7 @@ import type {
   Course,
   CourseId,
   CourseSelection,
+  Department,
   QuestionHistoryEntry,
   Lecture,
   Segment,
@@ -80,6 +81,7 @@ export function App() {
       : 'questions',
   );
   const [courses, setCourses] = useState<Course[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [lectures, setLectures] = useState<Lecture[]>([]);
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [catalogError, setCatalogError] = useState('');
@@ -133,12 +135,13 @@ export function App() {
     setCatalogLoading(true);
     setCatalogError('');
     Promise.all([
-      getJSON<{ courses: Course[] }>('/api/courses', controller.signal),
+      getJSON<{ courses: Course[]; departments?: Department[] }>('/api/courses', controller.signal),
       getJSON<{ lectures: Lecture[] }>('/api/lectures', controller.signal),
     ])
       .then(([courseData, lectureData]) => {
         if (!controller.signal.aborted) {
           setCourses(courseData.courses);
+          setDepartments(courseData.departments ?? []);
           setLectures(lectureData.lectures);
         }
       })
@@ -189,7 +192,7 @@ export function App() {
                   : lecture.segments,
           }));
     if (view === 'questions' && selectedCourse)
-      items = items.filter((item) => lectureMatchesSelection(item, selectedCourse, courses));
+      items = items.filter((item) => lectureMatchesSelection(item, selectedCourse));
     if (view !== 'questions' && courseId !== 'all')
       items = items.filter((item) => item.courseId === courseId);
     if (view === 'saved') items = items.filter((item) => item.segments.length);
@@ -388,6 +391,7 @@ export function App() {
       <IconSidebar
         view={view}
         courses={courses}
+        departments={departments}
         lectures={lectures}
         selectedCourse={selectedCourse}
         pickerRequest={pickerRequest}
@@ -405,9 +409,22 @@ export function App() {
         <ProductHeader
           module="Lectures"
           actions={
-            <div className="avatar" title="Lernraum">
-              DU
-            </div>
+            <>
+              <span className="view-toggle" role="group" aria-label="Ansicht">
+                <a href="/learn" className="on" aria-current="page" title="Normale Ansicht">
+                  Liste
+                </a>
+                <a
+                  href={selectedCourse ? `/#/${selectedCourse.courseId}` : '/'}
+                  title="Galaxie-Ansicht"
+                >
+                  Galaxie
+                </a>
+              </span>
+              <div className="avatar" title="Lernraum">
+                DU
+              </div>
+            </>
           }
         >
           <a href="/arena">Play</a>

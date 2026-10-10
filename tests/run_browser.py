@@ -37,7 +37,7 @@ def main():
         port = sock.getsockname()[1]
     with tempfile.TemporaryDirectory(prefix='viscon-browser-') as folder:
         url = f'http://127.0.0.1:{port}'
-        env.update(PORT=str(port), HOST='127.0.0.1', DATABASE_PATH=str(Path(folder) / 'arena.sqlite'), ALLOWED_ORIGINS=url, TEST_URL=url, LECTURE_QA_PROVIDER='local', MANIA_TRUST_PROXY='false', COOKIE_SECURE='false')
+        env.update(PORT=str(port), HOST='127.0.0.1', DATABASE_PATH=str(Path(folder) / 'arena.sqlite'), ALLOWED_ORIGINS=url, TEST_URL=url, LECTURE_QA_PROVIDER='local', MANIA_TRUST_PROXY='false', COOKIE_SECURE='false', AUTH_REQUIRE_VERIFIED='false')
         env.pop('OLLAMA_MODEL', None)
         env.pop('QUESTION_BANK_PATH', None)
         with open(Path(folder) / 'server.log', 'w+') as log:

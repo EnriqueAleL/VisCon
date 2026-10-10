@@ -2248,3 +2248,21 @@ textarea::placeholder {
   height: 100%;
   border: 0;
 }
+
+.view-toggle {
+  display: inline-flex;
+  margin-right: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  font-size: 12px;
+}
+.view-toggle a {
+  padding: 5px 12px;
+  color: var(--muted);
+  text-decoration: none;
+}
+.view-toggle a.on {
+  background: var(--surface-raised);
+  color: inherit;
+}

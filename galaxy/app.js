@@ -37,18 +37,136 @@
   }
 
   loadingText.textContent = "Lernraum wird geladen";
-  window.GalaxyAPI.load().then(function (courses) {
+  /* The Liste view (/learn) keeps its selection under this key, so both views open on the same course. */
+  var SELECTION_KEY = "viscon.selected-course.v1";
+  var PROGRAMME_KEY = "viscon.galaxy-programme.v1";
+  function readStored(key) {
+    try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; }
+  }
+  function writeStored(key, value) {
     try {
-      start(courses);
-    } catch (err) {
-      fail("Die Galaxie konnte nicht aufgebaut werden: " + err.message);
-      throw err;
+      if (value === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) { /* private mode: the choice just isn't remembered */ }
+  }
+  function programmeOf(course) {
+    return { department: course.department, degree: course.degree, studyYear: course.studyYear };
+  }
+  function inProgramme(course, p) {
+    return !!p && course.department === p.department && course.degree === p.degree && course.studyYear === p.studyYear;
+  }
+  function programmeLabel(p, departments) {
+    if (p.department === "other") return "Weitere Fächer";
+    return p.department + " · " + (p.degree === "msc" ? "MSc" : "BSc") + " · " + p.studyYear + ". Jahr";
+  }
+
+  window.GalaxyAPI.load().then(function (loaded) {
+    var all = loaded.courses, departments = loaded.departments;
+    var hashCourse = String(location.hash || "").replace(/^#\/?/, "").split("/")[0];
+    var linked = all.filter(function (c) { return c.id === hashCourse; })[0];
+    var remembered = [readStored(PROGRAMME_KEY), readStored(SELECTION_KEY)].filter(function (p) {
+      return p && all.some(function (c) { return inProgramme(c, p); });
+    })[0];
+    var programme = linked ? programmeOf(linked) : remembered ? { department: remembered.department, degree: remembered.degree, studyYear: remembered.studyYear } : null;
+
+    function begin(chosen) {
+      writeStored(PROGRAMME_KEY, chosen);
+      try {
+        start(all.filter(function (c) { return inProgramme(c, chosen); }), {
+          programme: chosen,
+          label: programmeLabel(chosen, departments),
+          change: function () { writeStored(PROGRAMME_KEY, null); history.replaceState(null, "", location.pathname); location.reload(); }
+        });
+      } catch (err) {
+        fail("Die Galaxie konnte nicht aufgebaut werden: " + err.message);
+        throw err;
+      }
     }
+
+    var options = [];
+    all.forEach(function (c) {
+      if (!options.some(function (p) { return inProgramme(c, p); })) options.push(programmeOf(c));
+    });
+    if (programme) begin(programme);
+    else if (options.length === 1) begin(options[0]);
+    else chooseProgramme(all, departments, options, begin);
   }).catch(function (err) {
     fail(err.message || "Der Lernraum ist gerade nicht erreichbar.");
   });
 
-  function start(DATA) {
+  /* Step 1: department, step 2: degree and study year. The planets (the actual courses) are step 3. */
+  function chooseProgramme(all, departments, options, done) {
+    var gate = document.getElementById("gate");
+    var title = document.getElementById("gate-title");
+    var crumbs = document.getElementById("gate-crumbs");
+    var list = document.getElementById("gate-list");
+    var department = null;
+
+    function deptName(id) {
+      if (id === "other") return "Weitere Fächer";
+      var found = departments.filter(function (d) { return d.id === id; })[0];
+      return found ? id + " · " + found.name : id;
+    }
+    function choice(label, count, onClick) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "gate-option";
+      var name = document.createElement("span");
+      name.textContent = label;
+      var n = document.createElement("span");
+      n.className = "gate-count";
+      n.textContent = count + (count === 1 ? " Kurs" : " Kurse");
+      b.append(name, n);
+      b.addEventListener("click", onClick);
+      return b;
+    }
+    function coursesIn(p) { return all.filter(function (c) { return inProgramme(c, p); }).length; }
+
+    function showDepartments() {
+      department = null;
+      title.textContent = "Departement wählen";
+      crumbs.replaceChildren();
+      list.replaceChildren();
+      var ids = [];
+      options.forEach(function (p) { if (ids.indexOf(p.department) < 0) ids.push(p.department); });
+      var order = departments.map(function (d) { return d.id; });
+      ids.sort(function (a, b) {
+        var ia = a === "other" ? 999 : order.indexOf(a), ib = b === "other" ? 999 : order.indexOf(b);
+        return ia - ib || (a < b ? -1 : 1);
+      });
+      ids.forEach(function (id) {
+        var count = all.filter(function (c) { return c.department === id; }).length;
+        list.append(choice(deptName(id), count, function () { showYears(id); }));
+      });
+      focusFirst();
+    }
+    function showYears(id) {
+      var mine = options.filter(function (p) { return p.department === id; });
+      if (mine.length === 1) return done(mine[0]);   // nothing left to choose
+      department = id;
+      title.textContent = "Studienjahr wählen";
+      crumbs.replaceChildren();
+      var back = document.createElement("button");
+      back.type = "button";
+      back.className = "crumb";
+      back.textContent = id === "other" ? "Weitere Fächer" : id;
+      back.addEventListener("click", showDepartments);
+      crumbs.append(back);
+      list.replaceChildren();
+      mine.sort(function (a, b) { return (a.degree === b.degree ? 0 : a.degree === "bsc" ? -1 : 1) || a.studyYear - b.studyYear; });
+      mine.forEach(function (p) {
+        list.append(choice((p.degree === "msc" ? "Master" : "Bachelor") + " · " + p.studyYear + ". Jahr", coursesIn(p), function () { done(p); }));
+      });
+      focusFirst();
+    }
+    function focusFirst() { var b = list.querySelector("button"); if (b) b.focus({ preventScroll: true }); }
+
+    loadingEl.classList.add("gone");
+    gate.hidden = false;
+    showDepartments();
+  }
+
+  function start(DATA, context) {
 
   var REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -753,11 +871,22 @@
     brand.append(dot);
     el.trail.append(brand);
 
-    function sep() {
+    // The programme (department, degree, year) the planets were picked from; clicking it chooses another
+    el.trail.append(crumb(context.label, context.change, false));
+    el.trail.append(sepNode());
+
+    function sep() { return sepNode(); }
+    function sepNode() {
       var s = document.createElement("span");
       s.className = "sep";
       s.textContent = "▸";
       return s;
+    }
+
+    // Opening a course here also selects it in the Liste view, so switching views lands on the same course
+    if (state.course !== null) {
+      var shown = DATA[state.course];
+      writeStored(SELECTION_KEY, { courseId: shown.id, department: shown.department, degree: shown.degree, studyYear: shown.studyYear });
     }
 
     el.trail.append(crumb("Galaxie", state.level === "galaxy" ? null : toGalaxy, state.level === "galaxy"));
@@ -780,7 +909,7 @@
     window.dispatchEvent(new CustomEvent("viscon:course-documents", { detail: { courseId: state.course === null ? null : DATA[state.course].id } }));
 
     if (state.level === "galaxy") {
-      el.eyebrow.textContent = "Herbstsemester 2026 · ETH Zürich";
+      el.eyebrow.textContent = context.label + " · ETH Zürich";
       el.title.textContent = "Lernraum";
       el.sub.textContent = DATA.length + " Kurse umkreisen dich. Wähle einen Planeten, um seine Vorlesungen zu sehen.";
       DATA.forEach(function (c, i) {
@@ -1352,6 +1481,7 @@
     syncURL(true);
   }
 
+  document.getElementById("gate").hidden = true;
   setTimeout(function () { loadingEl.classList.add("gone"); }, 350);
 
   }

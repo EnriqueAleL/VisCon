@@ -1,4 +1,5 @@
 openai>=3.27
 pydantic>=2.7
+pypdf>=4.0
 python-dotenv>=1.0
 pytest>=8

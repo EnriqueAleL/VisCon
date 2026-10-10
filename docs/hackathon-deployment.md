@@ -71,6 +71,54 @@ The managed hostname and SSH details must come from the team portal.
    tools to confirm Socket.IO starts with HTTP polling. Keep **default transports**;
    the managed proxy does not support a raw WebSocket-only connection.
 
+## ETH account guard
+
+The whole API, the lecture media and both Socket.IO namespaces require an account with a confirmed ETH student
+email (see [`auth/README.md`](../auth/README.md)). Before deploying: set `AUTH_SMTP_URL` and `AUTH_MAIL_FROM` so codes
+can be sent, set `AUTH_CLIENT_IP_HEADER=x-forwarded-for` so rate limits are per person behind the proxy, and make sure the
+front end has a register/log-in screen. Leave `AUTH_REQUIRE_VERIFIED` unset. For `check:deployment`, log in once in a
+browser and pass the `ba_session` cookie through `CHECK_COOKIE_FILE`.
+
+## Email for verification codes
+
+Nobody can sign up until the app can send mail. Pick one sender and put it in the untracked `.env` (Compose passes
+these variables into the container; `AUTH_REQUIRE_VERIFIED` is intentionally not passed, so the guard cannot be
+switched off in the deployed app):
+
+```dotenv
+AUTH_MAIL_FROM="VIScon <sender@example.org>"   # must be an address the SMTP account may send as
+AUTH_SMTP_HOST=smtp.gmail.com                   # your provider's SMTP server
+AUTH_SMTP_PORT=465                              # 465 = TLS, 587 = STARTTLS
+AUTH_SMTP_USER=sender@example.org
+AUTH_SMTP_PASSWORD=app-password-here
+AUTH_CLIENT_IP_HEADER=x-forwarded-for
+```
+
+Then test from the VM, before anyone tries the website, with a real `@student.ethz.ch` mailbox as the recipient:
+
+```sh
+docker compose up -d app
+docker compose exec app npm run auth -- smtp-check                       # login only, sends nothing
+docker compose exec app npm run auth -- smtp-check someone@student.ethz.ch   # also sends a test mail
+```
+
+`smtp-check` says whether the problem is the password, the host/port, or outbound SMTP being blocked on the VM.
+Look in the recipient's spam folder as well: ETH filters unknown senders. `AUTH_MAIL_TRANSPORT=console` is refused in
+production on purpose, because it would print every code into the logs.
+
+## Student uploads
+
+Submitted material is stored under `UPLOADS_DIR` (`/app/.data/uploads`, on the persistent volume, so it survives restarts and counts against
+the disk). The limits are in `.env.example`; a lecture video may be up to 2 GB by default. Before relying on it, upload a large file through the
+managed URL: the proxy in front of the VM may cap request size or duration, and the app cannot raise that. Back up `.data` if the material matters.
+
+## Indexing approved material
+
+Approved lectures are indexed with an LLM and approved PDFs are text-extracted, in the background (`indexing/README.md`). That needs Python, so build the
+Python image (`DOCKER_TARGET=qa-runtime` in `.env`; it installs `qa/requirements.txt`) and set `OPENAI_API_KEY` and `QA_INDEX_MODEL`. Without them
+approvals still work and items simply wait; `GET /api/platform/courses/<id>/index` shows why. Check Python with
+`docker compose exec app /opt/qa-venv/bin/python -c "import openai, pypdf"`. Published material and indexes live under `/app/.data/courses`.
+
 ## Trust the managed identity explicitly
 
 `X-User-Id` and `X-User-Name` are honored only when `MANIA_TRUST_PROXY=true`.

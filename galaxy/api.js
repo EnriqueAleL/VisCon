@@ -61,6 +61,10 @@ window.GalaxyAPI = (function () {
           color: toNumberColour(course.color),
           css: course.color || "#526cb7",
           lecturer: own.length ? own[0].lecturer : "",
+          // Where the course sits in the study programme ("other" while nobody has placed it)
+          department: course.department || "other",
+          degree: course.department ? course.degree : "unspecified",
+          studyYear: course.department ? course.studyYear : 0,
           lectures: own,
         };
       })
@@ -68,7 +72,7 @@ window.GalaxyAPI = (function () {
       .filter(function (course) { return course.lectures.length > 0; });
 
     if (!courses.length) throw new Error("Der Lernraum enthält noch keine Vorlesungen.");
-    return courses;
+    return { courses: courses, departments: courseData.departments || [] };
   }
 
   async function lectureDetail(id) {

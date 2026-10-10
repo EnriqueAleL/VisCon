@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
 
 const baseURL = process.env.VISCON_TEST_URL || 'http://127.0.0.1:5173';
@@ -19,15 +19,27 @@ try {
       : { status: 'ready' };
     await route.fulfill({ json: body });
   });
+  if (process.env.VISCON_TEST_CATALOG) {
+    const fixture = JSON.parse(await readFile(process.env.VISCON_TEST_CATALOG, 'utf8'));
+    await page.route('**/api/courses', route => route.fulfill({ json: { courses: fixture.courses, departments: fixture.departments } }));
+    await page.route('**/api/lectures', route => route.fulfill({ json: { lectures: fixture.lectures } }));
+  }
   await page.goto(baseURL);
+  const department = page.locator('#gate-list button').filter({ hasText: 'D-INFK' });
+  if (process.env.VISCON_TEST_CATALOG) {
+    await department.click();
+    if (await page.locator('#gate').isVisible()) await page.locator('#gate-list button').first().click();
+  }
   await page.locator('#list button').first().waitFor();
   assert.equal(await page.locator('#open-documents').count(), 0);
   assert.equal(await page.locator('#course-documents').isVisible(), false);
   await page.goto(`${baseURL}/#/analysis`);
+  await page.reload();
   await page.locator('#course-documents:not([hidden])').waitFor();
   await page.locator('#document-empty').filter({ hasText: 'Noch keine Dokumente' }).waitFor();
   assert.equal(await page.locator('#document-list .course-document').count(), 0);
   await page.goto(`${baseURL}/#/informatics`);
+  await page.reload();
   await page.locator('#document-list .course-document').waitFor();
   assert.equal(await page.locator('#document-count').textContent(), '1');
   const routeBefore = page.url();

@@ -11,12 +11,13 @@ import {
   X,
 } from 'lucide-react';
 import { selectionLabel } from '../data/courseSelection';
-import type { Course, CourseSelection, Lecture, QuestionHistoryEntry } from '../types';
+import type { Course, CourseSelection, Department, Lecture, QuestionHistoryEntry } from '../types';
 import { CoursePicker } from './CoursePicker';
 import { ArenaIcon } from './ArenaIcon';
 
 interface IconSidebarProps {
   courses: Course[];
+  departments: Department[];
   lectures: Lecture[];
   view: 'questions' | 'library' | 'saved' | 'documents';
   selectedCourse: CourseSelection | null;
@@ -33,6 +34,7 @@ interface IconSidebarProps {
 
 export function IconSidebar({
   courses,
+  departments,
   lectures,
   view,
   selectedCourse,
@@ -176,7 +178,7 @@ export function IconSidebar({
                   <div className="history-panel-list">
                     {history.map((entry) => (
                       <button
-                        key={`${entry.year}-${entry.semester}-${entry.degree}-${entry.studyYear}-${entry.courseId}-${entry.question}`}
+                        key={`${entry.department}-${entry.degree}-${entry.studyYear}-${entry.courseId}-${entry.question}`}
                         onClick={() => {
                           setPanel(null);
                           onRestoreQuestion(entry);
@@ -231,7 +233,7 @@ export function IconSidebar({
             <div id="course-picker-panel" className="rail-panel">
               <CoursePicker
                 courses={courses}
-                lectures={lectures}
+                departments={departments}
                 selectedCourse={selectedCourse}
                 onClear={onClearCourse}
                 onSelect={(selection) => {

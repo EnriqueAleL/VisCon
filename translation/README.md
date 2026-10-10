@@ -63,7 +63,7 @@ Select a course planet, then choose a PDF in its **Dokumente** list. The Informa
 
 The question panel opens on demand. Dropped/local PDFs support reading and selected-text translation, but document Q&A and background pretranslation are limited to the indexed `ti_book.pdf`; local PDFs are not uploaded. Only selected text is sent for translation.
 
-From the repository root, `npm run dev` and `npm run build` copy the viewer into the app's public assets. Run the Python service separately on port 8788 for translation and book questions. Vite proxies `/translate-api` during development; the Node app proxies the same endpoints in production, configured with `TRANSLATION_SERVICE_URL` (default `http://127.0.0.1:8788`). The PDF remains readable when the service is unavailable. The book still needs its `index-book` index for Q&A.
+From the repository root, `npm run dev` and `npm run build` copy the viewer into the app's public assets. Run the Python service separately on port 8788 for translation and book questions. Both development and production route `/translate-api` through the Node app's verified-account guard before forwarding to Python, configured with `TRANSLATION_SERVICE_URL` (default `http://127.0.0.1:8788`). The PDF remains readable when the service is unavailable. The book still needs its `index-book` index for Q&A.
 
 ## Course document catalogue
 

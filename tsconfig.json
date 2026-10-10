@@ -23,6 +23,10 @@
     "src",
     "server",
     "shared",
+    "auth",
+    "admin",
+    "submissions",
+    "indexing",
     "tests",
     "vite.config.ts",
     "web-interface/src"

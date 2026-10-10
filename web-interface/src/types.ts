@@ -1,12 +1,16 @@
 export type CourseId = string;
 
-export type Semester = 'autumn' | 'spring' | 'unknown';
 export type Degree = 'bsc' | 'msc' | 'unspecified';
 export type StudyYear = 0 | 1 | 2 | 3;
 
+export interface Department {
+  id: string;
+  name: string;
+}
+
+/** A course together with the place the student reached it from (department, degree, study year). */
 export interface CourseSelection {
-  year: string;
-  semester: Semester;
+  department: string;
   degree: Degree;
   studyYear: StudyYear;
   courseId: Exclude<CourseId, 'all'>;
@@ -24,6 +28,9 @@ export interface Course {
   videoCount: number;
   degree: Degree;
   studyYear: StudyYear;
+  /** ETH department code such as D-INFK; null while the course has not been placed. */
+  department?: string | null;
+  semester?: 'autumn' | 'spring' | null;
 }
 
 export interface Segment {

@@ -32,8 +32,11 @@ python -m viscon_qa models      # lists the models your key can use
 python -m viscon_qa index --lectures 1 2 3     # start small; omit --lectures for all
 python -m viscon_qa ask "when did they explain pipelining hazards?" --open
 python -m viscon_qa ask "..." --json           # machine-readable output
-python -m viscon_qa summary 7                  # study notes for lecture 7 (cached in data/summaries/)
+python -m viscon_qa summary 7                  # study notes for lecture 7 from the full transcript (cached in data/summaries/)
+python -m viscon_qa summary --all --from-index # notes for every lecture from the chapter index only (cheap, ~2k tokens each)
 python -m viscon_qa chapters                   # re-export chapter markers (also done after `index`)
+python -m viscon_qa extract slides.pdf out.json  # text of a PDF per page (no model call; used for submitted slides and scripts)
+python -m viscon_qa unindex 7                  # remove lecture 7 from the index, with its markers and summary
 python -m viscon_qa lines 7 --at 29:00         # inspect the compacted transcript
 python -m pytest                               # offline tests, no API key needed
 ```

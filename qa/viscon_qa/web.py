@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
+from pathlib import Path
 
 from . import corpus
 from .ask import ask
@@ -12,11 +14,29 @@ from .index import load_index
 from .llm import OpenAILLM
 
 
+def load_sources(settings, extra_index: Path | None = None, extra_lectures: Path | None = None):
+    """The course's index and lectures: the configured ones, plus optionally a second folder with more lectures.
+
+    A course can have material in two places (the original recordings, and lectures students submitted later).
+    Lecture numbers are unique within a course, so merging is just a union; the first source wins on a clash.
+    """
+    index = load_index(settings.index_path)
+    lectures = corpus.discover(settings.lectures_dir)
+    if extra_index is not None and extra_lectures is not None and extra_index.exists() and extra_lectures.is_dir():
+        extra = load_index(extra_index)
+        merged = {**extra["lectures"], **index["lectures"]}
+        index = {**index, "lectures": dict(sorted(merged.items(), key=lambda item: int(item[0])))}
+        for number, lecture in corpus.discover(extra_lectures).items():
+            lectures.setdefault(number, lecture)
+        lectures = dict(sorted(lectures.items()))
+    return index, lectures
+
+
 def main() -> None:
     request = json.load(sys.stdin)
     settings = load_settings()
-    index = load_index(settings.index_path)
-    lectures = corpus.discover(settings.lectures_dir)
+    extra_index, extra_lectures = os.getenv("QA_EXTRA_INDEX_PATH"), os.getenv("QA_EXTRA_LECTURES_DIR")
+    index, lectures = load_sources(settings, Path(extra_index) if extra_index else None, Path(extra_lectures) if extra_lectures else None)
     lecture_id = request.get("lectureId")
     if lecture_id:
         if not re.fullmatch(r"lec\d+", lecture_id):

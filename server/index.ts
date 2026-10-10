@@ -1,12 +1,21 @@
 import express from 'express';
 import { createServer } from 'node:http';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { randomBytes,randomInt,randomUUID } from 'node:crypto';
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { Server } from 'socket.io';
 import type { BankQuestion,Settings,Player,RoomView,RoundResult,Outcome,Profile,HistoryEntry } from '../shared/types';
 import { subjects,eligible,publicQuestion,correct,answerLabel,demoContent,numericValue,registerCourseQuestions } from './questions';
-import { profile,session,createPlayer,rename,history,leaderboard,saveMatch } from './store';
+import { db,profile,session,createPlayer,rename,history,leaderboard,saveMatch,adoptAccount,anonymizePlayer } from './store';
+import { mountAuth } from '../auth/routes';
+import { mountAdmin, rootAdminsFromEnv } from '../admin/routes';
+import type { AdminService } from '../admin/service';
+import { mountSubmissions } from '../submissions/routes';
+import { mountIndexing } from '../indexing/routes';
+import { createPythonRunner, pythonConfigFromEnv } from '../indexing/runner';
+import type { IndexingService } from '../indexing/service';
+import { createVerifiedGuard } from '../auth/guard';
+import { mountStatic } from './static';
 import { eloDelta } from './rating';
 import { javaAvailable,judge } from './judge';
 import { mountLectures } from './lectures';
@@ -16,10 +25,15 @@ import { mountSocial } from './social';
 import { mountManiaAnswers } from './mania-answers';
 
 const app=express(),http=createServer(app),port=Number(process.env.PORT||3001);
+// Node cuts any request after 5 minutes by default; a large video upload on a slow connection needs longer.
+http.requestTimeout=30*60_000;
 const allowed=new Set((process.env.ALLOWED_ORIGINS||'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3001,http://127.0.0.1:3001').split(','));
 if (process.env.APP_PUBLIC_URL) allowed.add(new URL(process.env.APP_PUBLIC_URL).origin);
 function allowedOrigin(origin:string|undefined){return !origin||allowed.has(origin);}
 const io=new Server(http,{allowRequest:(req,cb)=>cb(null,allowedOrigin(req.headers.origin))});
+app.disable('x-powered-by');
+app.use((_req,res,next)=>{res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','SAMEORIGIN');res.setHeader('Referrer-Policy','same-origin');if(process.env.COOKIE_SECURE==='true')res.setHeader('Strict-Transport-Security','max-age=15552000');next();});
+if(process.env.NODE_ENV==='production'&&process.env.COOKIE_SECURE!=='true')console.warn('COOKIE_SECURE is not true: session cookies are sent without the Secure flag. Set COOKIE_SECURE=true behind HTTPS.');
 app.use(express.json({limit:'48kb'}));
 app.use('/api',(req,res,next)=>{res.setHeader('Cache-Control','no-store');if(!allowedOrigin(req.headers.origin))return res.status(403).json({error:'This origin is not allowed.'});next();});
 const rates=new Map<string,{at:number;count:number}>();
@@ -86,8 +100,47 @@ function leave(r:Room,p:Profile){
   if(r.state==='lobby'){r.players=r.players.filter(x=>x.id!==p.id);active.delete(p.id);if(!r.players.some(x=>!x.bot)){rooms.delete(r.id);return;}r.hostId=r.players.find(x=>!x.bot)!.id;r.players.forEach(x=>x.ready=x.bot);broadcast(r);}
   else if(!['finished','cancelled'].includes(r.state))finish(r,'Opponent left the match',p.id);
 }
+/** A revoked, deleted or password-reset account must lose live Socket.IO connections too, not just future requests. */
+function dropConnections(playerId:string){
+  for(const socket of io.sockets.sockets.values())if(socket.data.playerId===playerId)socket.disconnect(true);
+  for(const socket of io.of('/study').sockets.values())if((socket.data.identity as {id?:string}|undefined)?.id===playerId)socket.disconnect(true);
+}
 const route=(handler:(req:express.Request,res:express.Response,p:Profile)=>unknown)=>async(req:express.Request,res:express.Response)=>{try{const p=user(req,res);limit(p.id);await handler(req,res,p);}catch(e){res.status(400).json({error:e instanceof Error?e.message:'Something went wrong. Try again.'});}};
 app.get('/api/health',(_req,res)=>res.json({ok:true}));
+// Everything below needs a confirmed ETH student email: the API, lecture media, and both Socket.IO namespaces.
+const guard=createVerifiedGuard({db,playerFromCookie:session});
+if(!guard.enabled)console.warn('AUTH_REQUIRE_VERIFIED=false: the API is open to unverified visitors. Never use this in production.');
+let admin:AdminService|undefined;
+const accountsService=mountAuth(app,{db,required:guard.enabled,playerFromCookie:session,createPlayer,secureCookies:process.env.COOKIE_SECURE==='true',clientIpHeader:process.env.AUTH_CLIENT_IP_HEADER?.toLowerCase(),accountOptions:{onVerified:account=>adoptAccount(account.playerId,account.username),onDeleted:(playerId,username)=>{anonymizePlayer(playerId);admin?.forgetUser(username);},onRevoked:dropConnections}});
+app.use(['/api','/media','/translate-api'],guard.http);
+io.use(guard.socket);
+io.of('/study').use(guard.socket);
+const rootAdmins=rootAdminsFromEnv();
+if(!rootAdmins.size)console.warn('AUTH_ADMINS is empty: nobody can administer courses or other admins. Set AUTH_ADMINS=<eth username>.');
+admin=mountAdmin(app,{db,playerFromCookie:session,accounts:accountsService,rootAdmins});
+const coursesDir=process.env.COURSES_DIR||'.data/courses';
+// Lecture numbers of the original DDCA recordings (they live outside the submission system and must not be replaced by it).
+const originalLectures=new Set<number>();
+try{for(const key of Object.keys(JSON.parse(readFileSync('qa/data/index.json','utf8')).lectures??{}))originalLectures.add(Number(key));}catch{/* no original recordings on this machine */}
+let indexing:IndexingService|undefined;
+const submissions=mountSubmissions(app,{db,playerFromCookie:session,admin,uploadsDir:process.env.UPLOADS_DIR||'.data/uploads',
+  isNumberReserved:(courseId,number)=>courseId==='computer-architecture'&&originalLectures.has(number),
+  onApproved:()=>indexing?.kick(),onRemoved:submission=>indexing?.unpublish(submission)});
+submissions.purgeStaleDrafts();
+setInterval(()=>submissions.purgeStaleDrafts(),3_600_000).unref();
+// Approved material is indexed in the background, one item at a time, with the Python tool in qa/.
+indexing=mountIndexing(app,{db,playerFromCookie:session,admin,submissions,coursesDir,
+  runner:createPythonRunner(pythonConfigFromEnv(fileURLToPath(new URL('../',import.meta.url)))),
+  enabled:process.env.INDEXING_ENABLED!=='false',summaries:process.env.INDEXING_SUMMARIES!=='false',maxAttempts:Number(process.env.INDEXING_MAX_ATTEMPTS)||3,
+  maxPaidRuns:process.env.INDEXING_MAX_PAID_RUNS?Math.max(0,Number(process.env.INDEXING_MAX_PAID_RUNS)||0):50});
+indexing.start(Math.max(1,Number(process.env.INDEXING_POLL_SECONDS)||5)*1000);
+// A revoke done from the command line (another process), an expired session or an expired verification must also end
+// connections that are already open, so every open socket is re-checked against the guard on a timer.
+const recheckSeconds=Number(process.env.AUTH_SOCKET_RECHECK_SECONDS||30);
+if(guard.enabled&&recheckSeconds>0)setInterval(()=>{
+  for(const socket of [...io.sockets.sockets.values(),...io.of('/study').sockets.values()])if(guard.accessFor(socket.handshake.headers.cookie)!=='ok')socket.disconnect(true);
+},recheckSeconds*1000).unref();
+
 app.get('/api/bootstrap',route((_req,res,p)=>res.json({profile:p,subjects,history:history(p.id),leaderboard:leaderboard(),javaAvailable,activeRoom:active.get(p.id)||null,demoContent})));
 app.post('/api/profile',route((req,res,p)=>{const name=typeof req.body.name==='string'?req.body.name.trim():'';if(name.length<2||name.length>24||/[\x00-\x1f<>]/.test(name))throw new Error('Use a name with 2–24 characters.');const updated=rename(p.id,name);for(const r of rooms.values()){const player=r.players.find(x=>x.id===p.id);if(player){player.name=name;broadcast(r);}}res.json(updated);}));
 app.post('/api/rooms',route((req,res,p)=>{limit(`create:${p.id}`,15);const settings=validateSettings({...defaultsFor(req.body.settings?.subject),...req.body.settings});const r=newRoom(p,settings);if(req.body.practice){r.settings.ranked=false;r.players.push({id:`bot-${r.id}`,name:'Study partner',rating:1200,createdAt:new Date().toISOString(),bot:true,online:true,ready:true,score:0});}res.json(view(r));}));
@@ -121,7 +174,7 @@ io.on('connection',socket=>{
   socket.on('disconnect',()=>{connections.get(id)?.delete(socket.id);if(connections.get(id)?.size)return;connections.delete(id);for(const r of rooms.values()){const p=r.players.find(x=>x.id===id);if(p){p.online=false;broadcast(r);}}const timer=setTimeout(()=>{const r=rooms.get(active.get(id)||'');if(!r)return;if(r.state==='lobby')leave(r,profile(id));else if(r.players.filter(p=>!p.bot).every(p=>!p.online))cancel(r,'Both players disconnected. No Elo changed.');else finish(r,'Opponent disconnected for over 60 seconds',id);},60000);disconnects.set(id,timer);});
 });
 setInterval(()=>{for(const [key,value]of rates)if(Date.now()-value.at>120000)rates.delete(key);for(const [key,r]of rooms)if(Date.now()-r.createdAt>4*3600000){if(!['finished','cancelled'].includes(r.state))cancel(r,'This room expired. Create a new challenge.');rooms.delete(key);}},60000).unref();
-await mountLectures(app);
+await mountLectures(app,{db,coursesDir});
 const learning = await mountMania(app, io);
 registerCourseQuestions(learning.bundle.bank.map(question => ({
   id: `ddca-${question.id}`, subject: 'ddca', topic: learning.bundle.world.cities.find(city => city.id === question.cityId)!.name,
@@ -146,9 +199,6 @@ mountDocumentTranslation(app);
 mountSocial(app, io);
 await mountManiaAnswers(app);
 app.use('/api',(_req,res)=>res.status(404).json({error:'API route not found.'}));
-if(existsSync('dist/index.html')){app.get(['/learn','/learn/'],(_req,res)=>res.sendFile(resolve('dist/learn.html')));
-// The galaxy is the front page; it must answer before express.static serves dist/index.html for '/'.
-app.get(['/','/galaxy','/galaxy/'],(_req,res)=>res.sendFile(resolve('dist/galaxy/index.html')));
-app.use(express.static('dist'));app.get('/{*path}',(_req,res)=>res.sendFile(resolve('dist/index.html')));}
+mountStatic(app,guard);
 app.use((err:any,_req:express.Request,res:express.Response,_next:express.NextFunction)=>res.status(Number.isInteger(err.status)&&err.status>=400&&err.status<600?err.status:500).json({error:err.status===404?'File not found.':'The request could not be read.'}));
 http.listen(port,process.env.HOST||'0.0.0.0',()=>console.log(`VisCon + Basis Arena ready on http://localhost:${port}`));

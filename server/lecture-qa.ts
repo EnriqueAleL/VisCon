@@ -3,16 +3,21 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AnswerResult, Source } from '../video-pull-up/client/client.mjs';
 import type { LectureCatalog } from './lecture-catalog';
+import { buildPythonEnv } from '../indexing/runner';
 import { projectRoot } from './lecture-catalog';
 
 interface QAResult { found: boolean; answer: string; lecture: number | null; start: number | null; end: number | null; chapter: string | null }
 export interface QARequest { question: string; courseId: string | null; lectureId: string | null }
 
-export function runPythonQA(request: QARequest, signal: AbortSignal): Promise<QAResult> {
+/** The Q&A tool reads these too (the original recordings can be configured with them), besides the model settings. */
+const QA_PASS_THROUGH = ['PATH', 'LANG', 'LC_ALL', 'TMPDIR', 'SYSTEMROOT', 'HOME', 'OPENAI_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_ORG_ID', 'QA_INDEX_MODEL', 'QA_ANSWER_MODEL', 'QA_LECTURES_DIR', 'QA_INDEX_PATH', 'HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY', 'SSL_CERT_FILE', 'REQUESTS_CA_BUNDLE'];
+
+/** `workspace` points the tool at one course's folders (see Snapshot.workspace); `request.lectureId` is then the course-local `lec<N>`. */
+export function runPythonQA(request: QARequest, signal: AbortSignal, workspace: Record<string, string> = {}): Promise<QAResult> {
   const localPython = join(projectRoot, '.venv/bin/python');
   const python = process.env.QA_PYTHON || (existsSync(localPython) ? localPython : 'python3');
   return new Promise((resolve, reject) => {
-    const child = spawn(python, ['-m', 'viscon_qa.web'], { cwd: join(projectRoot, 'qa'), signal, stdio: ['pipe', 'pipe', 'ignore'] });
+    const child = spawn(python, ['-m', 'viscon_qa.web'], { cwd: join(projectRoot, 'qa'), signal, stdio: ['pipe', 'pipe', 'ignore'], env: buildPythonEnv(process.env, workspace, QA_PASS_THROUGH) });
     let output = '';
     const timer = setTimeout(() => { child.kill(); reject(new Error('Q&A timed out')); }, 120_000);
     child.stdout.setEncoding('utf8');
@@ -32,13 +37,14 @@ export function runPythonQA(request: QARequest, signal: AbortSignal): Promise<QA
 }
 
 /** Map only validated transcript timestamps into the existing video-pull-up response. */
-export function qaAnswer(result: QAResult, request: QARequest, catalog: LectureCatalog): AnswerResult {
+export function qaAnswer(result: QAResult, request: QARequest, catalog: LectureCatalog, courseId: string | null = request.courseId): AnswerResult {
   if (typeof result.found !== 'boolean' || typeof result.answer !== 'string') throw new Error('Invalid Q&A response');
   if (!result.found) return {
     ...request, status: 'no_match', answer: { mode: 'generated', text: '', paragraphs: [], notice: result.answer },
     sources: [], playback: null, videos: [],
   };
-  const lecture = catalog.lectures.find(item => item.id === `lec${result.lecture}`);
+  // The tool answers with the lecture number inside one course; find that lecture of that course (no course given: the original recordings).
+  const lecture = catalog.lectures.find(item => item.courseId === (courseId ?? 'computer-architecture') && item.episode === result.lecture && !item.demo);
   if (!lecture || (request.lectureId && lecture.id !== request.lectureId)
     || (request.courseId && lecture.courseId !== request.courseId)
     || result.start === null || result.end === null || !Number.isFinite(result.start) || !Number.isFinite(result.end)

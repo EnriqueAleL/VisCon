@@ -1,47 +1,51 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronRight, X } from 'lucide-react';
 import {
-  availableYears,
-  coursesForStudyYear,
+  OTHER_DEPARTMENT,
+  availableDepartments,
+  availableProgrammes,
+  coursesIn,
   degreeNames,
   degreeShortNames,
-  semesterNames,
-  studyYears,
+  departmentName,
+  selectionForCourse,
 } from '../data/courseSelection';
-import type { Course, CourseSelection, Degree, Lecture, Semester, StudyYear } from '../types';
+import type { Course, CourseSelection, Degree, Department, StudyYear } from '../types';
 
 const stepTitles = {
-  year: 'Jahr auswählen',
-  semester: 'Semester auswählen',
-  study: 'Studienjahr auswählen',
+  department: 'Departement auswählen',
+  programme: 'Studienjahr auswählen',
   course: 'Fach auswählen',
 };
 
 interface CoursePickerProps {
   courses: Course[];
-  lectures: Lecture[];
+  departments: Department[];
   selectedCourse: CourseSelection | null;
   onSelect: (selection: CourseSelection) => void;
   onClear: () => void;
   onClose: () => void;
 }
 
-export function CoursePicker({ courses, lectures, selectedCourse, onSelect, onClear, onClose }: CoursePickerProps) {
-  const [step, setStep] = useState<keyof typeof stepTitles>('year');
-  const [year, setYear] = useState(selectedCourse?.year ?? '');
-  const [semester, setSemester] = useState<Semester | null>(selectedCourse?.semester ?? null);
+export function CoursePicker({ courses, departments, selectedCourse, onSelect, onClear, onClose }: CoursePickerProps) {
+  const [step, setStep] = useState<keyof typeof stepTitles>('department');
+  const [department, setDepartment] = useState(selectedCourse?.department ?? '');
   const [degree, setDegree] = useState<Degree | null>(selectedCourse?.degree ?? null);
   const [studyYear, setStudyYear] = useState<StudyYear | null>(selectedCourse?.studyYear ?? null);
   const optionsRef = useRef<HTMLDivElement>(null);
   const focusNextStep = useRef(false);
-  const availableCourses =
-    semester && degree && studyYear !== null ? coursesForStudyYear(year, semester, degree, studyYear, lectures, courses) : [];
+  const availableCourses = degree && studyYear !== null ? coursesIn(department, degree, studyYear, courses) : [];
 
   useEffect(() => {
     if (!focusNextStep.current) return;
     optionsRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
     focusNextStep.current = false;
   }, [step]);
+
+  const go = (event: { detail: number }, next: keyof typeof stepTitles) => {
+    focusNextStep.current = event.detail === 0;
+    setStep(next);
+  };
 
   return (
     <div className="lecture-picker-content" role="dialog" aria-label="Kursauswahl">
@@ -57,44 +61,15 @@ export function CoursePicker({ courses, lectures, selectedCourse, onSelect, onCl
         </button>
       </div>
 
-      {step !== 'year' && (
+      {step !== 'department' && (
         <div className="picker-breadcrumbs">
-          <button
-            type="button"
-            aria-label="Jahr ändern"
-            onClick={(event) => {
-              focusNextStep.current = event.detail === 0;
-              setStep('year');
-            }}
-          >
-            {year === 'archive' ? 'Aufzeichnungen' : year}
+          <button type="button" aria-label="Departement ändern" onClick={(event) => go(event, 'department')}>
+            {department === OTHER_DEPARTMENT ? 'Weitere Fächer' : department}
           </button>
-          {(step === 'study' || step === 'course') && semester && semester !== 'unknown' && (
-            <>
-              <ChevronRight size={12} aria-hidden="true" />
-              <button
-                type="button"
-                aria-label="Semester ändern"
-                onClick={(event) => {
-                  focusNextStep.current = event.detail === 0;
-                  setStep('semester');
-                }}
-              >
-                {semesterNames[semester]}
-              </button>
-            </>
-          )}
           {step === 'course' && degree && studyYear !== null && studyYear > 0 && (
             <>
               <ChevronRight size={12} aria-hidden="true" />
-              <button
-                type="button"
-                aria-label="Studienjahr ändern"
-                onClick={(event) => {
-                  focusNextStep.current = event.detail === 0;
-                  setStep('study');
-                }}
-              >
+              <button type="button" aria-label="Studienjahr ändern" onClick={(event) => go(event, 'programme')}>
                 {degreeShortNames[degree]} · {studyYear}. Jahr
               </button>
             </>
@@ -106,99 +81,69 @@ export function CoursePicker({ courses, lectures, selectedCourse, onSelect, onCl
         ref={optionsRef}
         className="picker-options"
         role="group"
-        aria-label={
-          step === 'year'
-            ? 'Jahr'
-            : step === 'semester'
-              ? 'Semester'
-              : step === 'study'
-                ? 'Studienjahr'
-                : 'Fach'
-        }
+        aria-label={step === 'department' ? 'Departement' : step === 'programme' ? 'Studienjahr' : 'Fach'}
       >
-        {step === 'year' &&
-          availableYears(lectures, courses).map((item) => (
+        {step === 'department' &&
+          availableDepartments(courses, departments).map((item) => (
             <button
               className="picker-option picker-year"
               type="button"
               key={item}
               onClick={(event) => {
-                focusNextStep.current = event.detail === 0;
-                setYear(item);
-                setSemester(null);
+                setDepartment(item);
                 setDegree(null);
                 setStudyYear(null);
-                if (item === 'archive') { setSemester('unknown'); setDegree('unspecified'); setStudyYear(0); setStep('course'); }
-                else setStep('semester');
                 onClear();
+                if (item === OTHER_DEPARTMENT) {
+                  setDegree('unspecified');
+                  setStudyYear(0);
+                  go(event, 'course');
+                } else go(event, 'programme');
               }}
             >
-              <span>{item === 'archive' ? 'Aufzeichnungen' : item}</span>
+              <span>
+                {item === OTHER_DEPARTMENT ? 'Weitere Fächer' : `${item} · ${departmentName(item, departments)}`}
+              </span>
               <ChevronRight size={16} aria-hidden="true" />
             </button>
           ))}
 
-        {step === 'semester' &&
-          (['spring', 'autumn'] as const).map((item) => (
-            <button
-              className="picker-option"
-              type="button"
-              key={item}
-              onClick={(event) => {
-                focusNextStep.current = event.detail === 0;
-                setSemester(item);
-                setDegree(null);
-                setStudyYear(null);
-                setStep('study');
-                onClear();
-              }}
-            >
-              <span>{semesterNames[item]}</span>
-              <ChevronRight size={16} aria-hidden="true" />
-            </button>
-          ))}
-
-        {step === 'study' &&
-          (['bsc', 'msc'] as const).map((item) => (
-            <div
-              className="picker-study-group"
-              role="group"
-              aria-label={degreeNames[item]}
-              key={item}
-            >
-              <h3 className="picker-study-label">{degreeNames[item]}</h3>
-              <div className="picker-study-years">
-                {studyYears[item].map((itemYear) => (
-                  <button
-                    className="picker-option picker-study-option"
-                    type="button"
-                    key={itemYear}
-                    aria-label={`${degreeNames[item]}, ${itemYear}. Studienjahr`}
-                    onClick={(event) => {
-                      focusNextStep.current = event.detail === 0;
-                      setDegree(item);
-                      setStudyYear(itemYear);
-                      setStep('course');
-                      onClear();
-                    }}
-                  >
-                    {itemYear}
-                  </button>
-                ))}
+        {step === 'programme' &&
+          (['bsc', 'msc'] as const).map((item) => {
+            const years = availableProgrammes(department, courses).filter((programme) => programme.degree === item);
+            if (!years.length) return null;
+            return (
+              <div className="picker-study-group" role="group" aria-label={degreeNames[item]} key={item}>
+                <h3 className="picker-study-label">{degreeNames[item]}</h3>
+                <div className="picker-study-years">
+                  {years.map(({ studyYear: itemYear }) => (
+                    <button
+                      className="picker-option picker-study-option"
+                      type="button"
+                      key={itemYear}
+                      aria-label={`${degreeNames[item]}, ${itemYear}. Studienjahr`}
+                      onClick={(event) => {
+                        setDegree(item);
+                        setStudyYear(itemYear);
+                        onClear();
+                        go(event, 'course');
+                      }}
+                    >
+                      {itemYear}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
         {step === 'course' &&
-          semester &&
-          degree &&
-          studyYear !== null &&
           availableCourses.map((course) => (
             <button
               className="picker-option"
               type="button"
               key={course.id}
-              onClick={() => onSelect({ year, semester, degree, studyYear, courseId: course.id })}
+              onClick={() => onSelect(selectionForCourse(course))}
             >
               <span>{course.name}</span>
               <ChevronRight size={16} aria-hidden="true" />
@@ -208,8 +153,7 @@ export function CoursePicker({ courses, lectures, selectedCourse, onSelect, onCl
 
       {step === 'course' && availableCourses.length === 0 && (
         <p className="lecture-picker-empty" role="status">
-          Für das {semester && semesterNames[semester]} {year} im {studyYear}. Studienjahr (
-          {degree && degreeShortNames[degree]}) sind noch keine Fächer verfügbar.
+          Hier sind noch keine Fächer verfügbar.
         </p>
       )}
     </div>

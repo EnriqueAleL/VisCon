@@ -1,15 +1,17 @@
-"""Command line: `python -m viscon_qa {index,ask,lines,models}`."""
+"""Command line: `python -m viscon_qa {index,ask,chapters,summary,lines,extract,unindex,models}`."""
 from __future__ import annotations
 
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from . import corpus
 from .ask import ask
 from .chapters import export_chapters
 from .config import ConfigError, load_settings
-from .index import build_index, load_index
+from .documents import DocumentError, extract_pdf, limit_resources, save_document
+from .index import build_index, load_index, remove_lectures
 from .llm import OpenAILLM
 from .player import open_at
 from .summary import get_summary, render_summary
@@ -65,18 +67,26 @@ def cmd_ask(args, settings) -> None:
 
 
 def cmd_summary(args, settings) -> None:
-    lecture = corpus.discover(settings.lectures_dir).get(args.lecture)
-    if lecture is None:
-        raise ConfigError(f"No transcript for lecture {args.lecture}")
-    entry = load_index(settings.index_path)["lectures"].get(str(args.lecture))
-    if entry is None:
-        raise ConfigError(f"Lecture {args.lecture} isn't indexed yet. Run `index --lectures {args.lecture}` first.")
+    index = load_index(settings.index_path)
+    lectures = {} if args.from_index else corpus.discover(settings.lectures_dir)
+    if args.all == (args.lecture is not None):
+        raise ConfigError("Give a lecture number, or --all for every indexed lecture.")
+    keys = sorted(index["lectures"], key=int) if args.all else [str(args.lecture)]
     llm = OpenAILLM(settings.require_key())
-    summary = get_summary(
-        llm, settings.require_model("answer"), lecture, entry,
-        settings.index_path.parent / "summaries", force=args.force,
-    )
-    print(json.dumps(summary, indent=2, ensure_ascii=False) if args.json else render_summary(summary))
+    model = settings.require_model("answer")
+    for key in keys:
+        number = int(key)
+        entry = index["lectures"].get(key)
+        if entry is None:
+            raise ConfigError(f"Lecture {number} isn't indexed yet. Run `index --lectures {number}` first.")
+        if not args.from_index and number not in lectures:
+            raise ConfigError(f"No transcript for lecture {number}")
+        summary = get_summary(llm, model, lectures.get(number), entry, settings.index_path.parent / "summaries",
+                              force=args.force, from_index=args.from_index)
+        if args.all:
+            print(f"Lecture {number}: {len(summary['sections'])} sections")
+        else:
+            print(json.dumps(summary, indent=2, ensure_ascii=False) if args.json else render_summary(summary))
 
 
 def cmd_lines(args, settings) -> None:
@@ -86,6 +96,18 @@ def cmd_lines(args, settings) -> None:
     start = parse_time(args.at + ".000") if args.at else 0.0
     lines = [l for l in lecture.lines if l.end >= start][: args.count]
     print(render_lines(lines))
+
+
+def cmd_extract(args, settings) -> None:
+    limit_resources()
+    data = extract_pdf(Path(args.pdf))
+    save_document(data, Path(args.out))
+    print(f"{data['pages_with_text']} of {data['page_count']} pages have text ({data['chars']} characters). Saved to {args.out}")
+
+
+def cmd_unindex(args, settings) -> None:
+    removed = remove_lectures(settings.index_path, args.lectures)
+    print(f"Removed lecture(s) {removed} from {settings.index_path}" if removed else "Nothing to remove.")
 
 
 def cmd_models(args, settings) -> None:
@@ -112,8 +134,10 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("chapters", help="export chapter markers per lecture (JSON + WebVTT); no LLM calls")
     p.set_defaults(func=cmd_chapters)
 
-    p = sub.add_parser("summary", help="summarize a lecture (cached in data/summaries/)")
-    p.add_argument("lecture", type=int)
+    p = sub.add_parser("summary", help="summarize a lecture (cached in data/summaries/); --all does every indexed lecture")
+    p.add_argument("lecture", type=int, nargs="?")
+    p.add_argument("--all", action="store_true", help="summarize every indexed lecture (already cached ones are skipped)")
+    p.add_argument("--from-index", action="store_true", help="cheap: write the notes from the chapter list in the index only (about 2k tokens per lecture instead of the whole transcript)")
     p.add_argument("--force", action="store_true", help="regenerate even if a cached summary exists")
     p.add_argument("--json", action="store_true", help="print the result as JSON")
     p.set_defaults(func=cmd_summary)
@@ -124,13 +148,22 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--count", type=int, default=40)
     p.set_defaults(func=cmd_lines)
 
+    p = sub.add_parser("extract", help="extract the text of a PDF (slides, script) per page into a JSON file; no LLM calls")
+    p.add_argument("pdf")
+    p.add_argument("out")
+    p.set_defaults(func=cmd_extract)
+
+    p = sub.add_parser("unindex", help="remove lectures from the index, with their chapter markers and summaries")
+    p.add_argument("lectures", type=int, nargs="+", metavar="N")
+    p.set_defaults(func=cmd_unindex)
+
     p = sub.add_parser("models", help="list the models your API key can use")
     p.set_defaults(func=cmd_models)
 
     args = parser.parse_args(argv)
     try:
         args.func(args, load_settings())
-    except (ConfigError, FileNotFoundError, ValueError) as e:
+    except (ConfigError, DocumentError, FileNotFoundError, ValueError) as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
     return 0

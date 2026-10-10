@@ -6,6 +6,7 @@ import SemesterMap from './SemesterMap';
 import RecallQuest from './RecallQuest';
 import { maniaApi, timestamp } from './api';
 import { ProductHeader } from '../../shared/design/ProductHeader';
+import { watchSocketAccess } from '../../shared/auth/socketAccess';
 import './mania.css';
 
 const PipelineVisualizer = lazy(() => import('./PipelineVisualizer'));
@@ -67,6 +68,7 @@ export default function ManiaApp() {
       const socket = io('/study', { auth: { demo } });
       socket.on('connect', () => { setConnected(true); socket.emit('city:enter', { cityId: cityId || null }); });
       socket.on('disconnect', () => setConnected(false));
+      watchSocketAccess(socket);
       socket.on('connect_error', () => setConnected(false));
       socket.on('world:live', (data: { cities: LiveCity[] }) => setLive(data.cities));
       dispose = () => socket.disconnect();

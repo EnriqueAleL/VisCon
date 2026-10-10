@@ -21,7 +21,10 @@
     <nav class="trail" id="trail" aria-label="Navigation"></nav>
 
     <nav class="elsewhere" aria-label="Weitere Bereiche">
-      <a href="/learn">VisCon</a>
+      <span class="view-toggle" role="group" aria-label="Ansicht">
+        <a href="/learn" title="Normale Ansicht mit Liste und Fragen">Liste</a>
+        <a href="/" aria-current="page" class="on" title="Galaxie-Ansicht">Galaxie</a>
+      </span>
       <a href="/arena">Arena</a>
       <a href="/world">Study World</a>
     </nav>
@@ -76,6 +79,16 @@
   </div>
 
   <dialog id="document-workspace" class="document-workspace" aria-label="Document reader"><iframe id="document-frame" title="Document reader and translation" data-src="/translation/index.html?embedded=galaxy"></iframe></dialog>
+
+  <div class="gate" id="gate" hidden>
+    <div class="gate-box" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+      <p class="eyebrow">Lernraum · ETH Zürich</p>
+      <h1 id="gate-title">Departement wählen</h1>
+      <nav class="gate-crumbs" id="gate-crumbs" aria-label="Auswahl"></nav>
+      <div class="gate-list" id="gate-list"></div>
+      <p class="gate-note">Danach siehst du die Kurse deines Studienjahrs als Planeten.</p>
+    </div>
+  </div>
 
   <div class="loading" id="loading">
     <div class="loading-inner">
