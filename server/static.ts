@@ -29,6 +29,7 @@ export function mountStatic(app: express.Express, guard: VerifiedGuard, distDir 
   const dist = resolve(distDir);
   if (!existsSync(join(dist, 'index.html'))) return;
   const open = publicAuthFiles(dist);
+  const hasGalaxy = existsSync(join(dist, 'galaxy', 'index.html'));
   const isFont = (path: string) => /\.woff2?$/i.test(path); // licensed OFL, referenced from CSS so not in the manifest
   if (guard.enabled && !existsSync(join(dist, 'auth.html'))) throw new Error('dist/auth.html is missing: rebuild with `npm run build` (the sign-in page is required while AUTH_REQUIRE_VERIFIED is on).');
 
@@ -51,9 +52,11 @@ export function mountStatic(app: express.Express, guard: VerifiedGuard, distDir 
       return res.status(401).json({ error: 'Log in with your ETH account to continue.', code: 'login_required' });
     }
     const learn = /^\/(learn(\/|\.html)?)$/.test(req.path);
+    // The galaxy (course navigation) is the front page; it is a plain page copied into dist/galaxy by the build.
+    const galaxy = hasGalaxy && /^\/(galaxy(\/|\/index\.html)?)?$/.test(req.path);
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Vary', 'Cookie');
-    res.sendFile(join(dist, verified ? (learn ? 'learn.html' : 'index.html') : 'auth.html'));
+    res.sendFile(join(dist, verified ? (learn ? 'learn.html' : galaxy ? 'galaxy/index.html' : 'index.html') : 'auth.html'));
   });
   app.use(express.static(dist, { index: false, dotfiles: 'ignore' }));
 }

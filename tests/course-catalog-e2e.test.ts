@@ -76,6 +76,11 @@ test('approve -> index -> catalogue -> model-backed answer, per course', { skip 
     // the study notes were made automatically after indexing, and the app can read them
     const physics7 = (await get('/api/lectures')).lectures.find((l: { id: string }) => l.id === 'physics-lec7');
     assert.equal(physics7.hasSummary, true);
+    // what the galaxy front page builds its planets, cities and houses from
+    const course = (await get('/api/courses')).courses.find((c: { id: string }) => c.id === 'physics');
+    assert.ok(course.color && course.shortName, 'planet colour and name');
+    assert.ok(physics7.episode === 7 && physics7.duration > 0 && physics7.chapters.length === 2, 'city and houses');
+    assert.ok(physics7.chapters.every((c: { title: string; start: number; end: number }) => c.title && c.end > c.start));
     const notes = (await get('/api/lectures/physics-lec7/summary')).summary;
     assert.ok(notes.overview && notes.sections.length > 0, JSON.stringify(notes).slice(0, 200));
 

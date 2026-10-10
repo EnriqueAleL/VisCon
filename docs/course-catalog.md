@@ -49,3 +49,7 @@ Behind the same login as all of `/media`. Only exact names, only for an approved
 - Slides and scripts are extracted but not used in answers.
 - No semester, degree or year for new courses (so they all sit under *Aufzeichnungen*), no lecturer, date or thumbnail.
 - Videos are served as uploaded: no lower-quality version for slow connections.
+
+## The galaxy front page
+
+`galaxy/` (on `main`) builds its planets, cities and houses from `/api/courses` and `/api/lectures`, so a published course shows up there with no extra work: course = planet (`color`, `shortName`), lecture = city (`episode`, `duration`), chapter = house (`title`, `start`, `end`, `summary`). A course with no lectures yet is hidden. The verified-account guard serves it at `/` and `/galaxy` (the sign-in page for everyone else); the study world is at `/world`.
