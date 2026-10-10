@@ -45,12 +45,31 @@ canvas { display: block; width: 100%; height: 100%; }
     repeating-linear-gradient(0deg, rgba(255, 255, 255, .015) 0 1px, transparent 1px 3px);
 }
 
-.warp {
-  position: fixed; inset: 0; z-index: 4; pointer-events: none;
-  opacity: 0;
-  background: radial-gradient(circle at 50% 50%, var(--accent) 0%, transparent 62%);
-  mix-blend-mode: screen;
+/* Scene changes are hidden behind a veil that belongs to the trip: clouds or a tunnel (transitions.js) */
+.veil { position: fixed; inset: 0; z-index: 7; pointer-events: none; overflow: hidden; }
+.veil[hidden] { display: none; }
+.veil-puff { position: absolute; border-radius: 50%; opacity: 0; filter: blur(2px); }
+.veil-fill { position: absolute; inset: 0; opacity: 0; }
+.veil-iris {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 260vmax; height: 260vmax; border-radius: 50%;
+  box-shadow: 0 0 0 300vmax #040506;
 }
+.veil-lamps { position: absolute; inset: 0; }
+.veil-lamp {
+  position: absolute; left: 50%; top: 50%; width: 16vw; height: 2.4vh; border-radius: 2vh;
+  background: radial-gradient(ellipse, #fff6dc 0%, #ffb84a 55%, rgba(255, 170, 60, 0) 75%);
+  box-shadow: 0 0 5vh 1vh rgba(255, 170, 60, .45);
+}
+.veil-wall {
+  position: absolute; left: 50%; top: 50%; width: 1.2vw; height: 7vh; border-radius: 1vw;
+  background: rgba(255, 196, 120, .55); box-shadow: 0 0 3vh rgba(255, 170, 60, .3);
+}
+.veil-exit {
+  position: absolute; left: 50%; top: 50%; width: 22vmax; height: 22vmax; border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0%, #fff4dc 25%, rgba(255, 236, 200, .5) 50%, rgba(255, 236, 200, 0) 70%);
+}
+.veil-road { position: absolute; left: 50%; top: 50%; width: .9vw; height: 9vh; background: #e8e2cf; border-radius: .4vw; }
 
 /* ---------- HUD ---------- */
 
@@ -567,3 +586,44 @@ body.daylight .hint-city { display: block; }
 @media (max-width: 620px) {
   .ask { top: auto; height: auto; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
 }
+
+/* ---------- Phase 2: the ride, its caption, and rating a chapter ---------- */
+
+.hop .ride {
+  background: var(--accent); color: #07101c; border-color: transparent; font-weight: 600;
+}
+.hop .ride:hover { background: var(--accent); filter: brightness(1.12); border-color: transparent; }
+.hop .ride[hidden] { display: none; }
+
+.ride-toast {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  max-width: min(560px, calc(100vw - 36px));
+  margin: 0; padding: 9px 16px;
+  font-family: var(--display); font-size: 13px; font-weight: 600; letter-spacing: .02em;
+  color: var(--starlight); background: rgba(9, 14, 25, .86);
+  border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  animation: ride-in .25s ease-out;
+}
+.ride-toast[hidden] { display: none; }
+@keyframes ride-in { from { opacity: 0; transform: translate(-50%, 6px); } }
+@media (prefers-reduced-motion: reduce) { .ride-toast { animation: none; } }
+
+.player-rate {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px;
+  padding: 0 16px 14px; font-size: 12px; color: var(--dim);
+}
+.player-rate .rate-buttons { display: inline-flex; gap: 4px; }
+.player-rate button {
+  width: 30px; height: 30px; border-radius: 6px; cursor: pointer;
+  font-family: var(--mono); font-size: 12px; color: var(--starlight);
+  background: rgba(255, 255, 255, .05); border: 1px solid var(--line);
+}
+.player-rate button:hover { border-color: var(--accent); }
+.player-rate button.chosen { background: var(--accent); color: #07101c; border-color: transparent; }
+.player-rate button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.player-rate em { font-style: normal; color: var(--faint); }
+/* In a town the hint sits above the travel bar, and never catches a click meant for it */
+.hint { pointer-events: none; }
+body.daylight .hint { bottom: calc(66px + env(safe-area-inset-bottom, 0px)); }

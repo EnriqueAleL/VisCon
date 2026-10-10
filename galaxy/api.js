@@ -90,5 +90,23 @@ window.GalaxyAPI = (function () {
     });
   }
 
-  return { load, lectureDetail, ask };
+  function postJSON(path, body) {
+    return getJSON(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  }
+
+  // Where this student is (a lecture city and chapter, or nowhere), answered with the
+  // live picture: who is where, and how hard each chapter has turned out to be
+  function here(lectureId, chapterId) {
+    return postJSON("/api/galaxy/here", { lectureId: lectureId || null, chapterId: chapterId || null });
+  }
+
+  function rate(lectureId, chapterId, rating) {
+    return postJSON("/api/galaxy/difficulty", { lectureId, chapterId, rating });
+  }
+
+  return { load, lectureDetail, ask, here, rate };
 })();

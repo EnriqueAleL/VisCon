@@ -95,4 +95,13 @@ export async function mountLectures(app: express.Express, deps: MountLecturesDep
   app.use('/media/lectures', express.static(join(projectRoot, 'lectures'), { index: false, fallthrough: false, dotfiles: 'deny' }));
   app.use('/media/chapters', express.static(join(projectRoot, 'qa/data/chapters'), { index: false, fallthrough: false, dotfiles: 'deny' }));
   app.use('/media', express.static(join(projectRoot, 'video-pull-up/media'), { index: false, fallthrough: false, dotfiles: 'deny' }));
+
+  return {
+    /** True when the lecture is in the current catalogue and, if given, the chapter belongs to it. */
+    async knows(lectureId: string, chapterId: string | null) {
+      const lecture = (await store.snapshot()).catalog.lectures.find(item => item.id === lectureId);
+      if (!lecture) return false;
+      return chapterId === null || [...(lecture.chapters ?? []), ...lecture.segments].some(part => part.id === chapterId);
+    }
+  };
 }

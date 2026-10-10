@@ -4,7 +4,8 @@
  * Galaxy and planet are the same scene, so moving between them is a true camera
  * dolly. A planet surface and a city street are ~4 orders of magnitude apart, far
  * enough that one scene would lose float precision, so landing swaps scenes behind
- * a warp. That cut is deliberate and reads as the landing itself.
+ * a veil that belongs to the trip: the cloud deck on the way down or up, a tunnel
+ * between towns (transitions.js).
  */
 (function () {
   "use strict";
@@ -204,6 +205,44 @@
   var STAR_TEX = discTexture("rgba(255,255,255,1)", "rgba(255,255,255,.35)");
   var GLOW_TEX = discTexture("rgba(255,255,255,.95)", "rgba(255,255,255,.22)");
 
+  // Weather badges over planet cities, drawn once: a sun, a cloud, a storm cloud
+  function badgeTexture(kind) {
+    var c = document.createElement("canvas");
+    c.width = c.height = 64;
+    var ctx = c.getContext("2d");
+    function cloud(fill) {
+      ctx.fillStyle = fill;
+      [[22, 36, 12], [34, 30, 14], [46, 37, 11], [33, 41, 12]].forEach(function (b) {
+        ctx.beginPath(); ctx.arc(b[0], b[1], b[2], 0, Math.PI * 2); ctx.fill();
+      });
+    }
+    if (kind === "sunny") {
+      ctx.strokeStyle = "#ffd25a"; ctx.lineWidth = 4;
+      for (var r = 0; r < 8; r++) {
+        var a = r * Math.PI / 4;
+        ctx.beginPath(); ctx.moveTo(32 + Math.cos(a) * 17, 32 + Math.sin(a) * 17); ctx.lineTo(32 + Math.cos(a) * 26, 32 + Math.sin(a) * 26); ctx.stroke();
+      }
+      ctx.fillStyle = "#ffc93c"; ctx.beginPath(); ctx.arc(32, 32, 13, 0, Math.PI * 2); ctx.fill();
+    } else if (kind === "overcast") {
+      cloud("#c9d0d6");
+    } else {
+      cloud("#59626b");
+      ctx.fillStyle = "#ffd25a";
+      ctx.beginPath(); ctx.moveTo(34, 44); ctx.lineTo(27, 58); ctx.lineTo(33, 56); ctx.lineTo(30, 64); ctx.lineTo(40, 50); ctx.lineTo(34, 52); ctx.closePath(); ctx.fill();
+    }
+    return new THREE.CanvasTexture(c);
+  }
+  var BADGES = { sunny: badgeTexture("sunny"), overcast: badgeTexture("overcast"), storm: badgeTexture("storm") };
+  var WEATHER_GLYPH = { sunny: "☀ ", overcast: "☁ ", storm: "⛈ " };
+  function setWeatherBadge(city, kind) {
+    city.weather = kind;
+    city.badge.visible = !!BADGES[kind];
+    if (BADGES[kind] && city.badge.material.map !== BADGES[kind]) {
+      city.badge.material.map = BADGES[kind];
+      city.badge.material.needsUpdate = true;
+    }
+  }
+
   /* ============================================================
      GALAXY
      ============================================================ */
@@ -379,8 +418,12 @@
     "  surf = mix(surf, vec3(0.93, 0.96, 0.98), step(0.001, uIce) * smoothstep(0.9 - uIce, 1.1 - uIce, lat));",
     "  float wisps = smoothstep(0.58, 0.78, fbm(p * 3.4 + vec3(uTime * 0.02, 0.0, uTime * 0.01)));",
     "  surf = mix(surf, vec3(1.0), wisps * 0.5);",
-    "  float lam = max(dot(n, normalize(vec3(0.55, 0.78, 0.45))), 0.0);",
-    "  vec3 col = surf * (0.18 + 1.00 * lam);",
+    "  vec3 L = normalize(vec3(0.55, 0.78, 0.45));",
+    "  float lam = max(dot(n, L), 0.0);",
+    "  vec3 col = surf * (0.16 + 1.04 * smoothstep(0.0, 0.6, lam));",
+    // Sunlight glinting on the oceans only, and a thin bright rim where the air is thick
+    "  float wet = 1.0 - smoothstep(uSea - 0.02, uSea + 0.02, h);",
+    "  col += vec3(1.0, 0.97, 0.9) * pow(max(dot(reflect(-L, n), v), 0.0), 40.0) * wet * 0.6 * (1.0 - wisps);",
     "  col += uColor * fres * 0.85;",
     "  col += vec3(0.04, 0.05, 0.08) * fres;",
     "  gl_FragColor = vec4(col, 1.0);",
@@ -557,12 +600,44 @@
       hit.position.y = 0.4;
       node.add(hit);
 
+      // Weather over the city (sun, cloud, storm) and a pulse when students are in it
+      var badge = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthWrite: false }));
+      badge.scale.set(1.1, 1.1, 1);
+      badge.position.y = 1.35;
+      badge.visible = false;
+      node.add(badge);
+      var pulse = new THREE.Mesh(
+        new THREE.RingGeometry(1.25, 1.5, 40),
+        new THREE.MeshBasicMaterial({ color: course.color, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })
+      );
+      pulse.rotation.x = -Math.PI / 2;
+      pulse.position.y = 0.02;
+      node.add(pulse);
+
       node.visible = false;
-      cities.push({ node: node, hit: hit, spark: spark, lecture: lec });
+      cities.push({ node: node, hit: hit, spark: spark, lecture: lec, badge: badge, pulse: pulse, online: 0, weather: "fair", dir: dir });
     });
 
+    // Routes between consecutive lectures, so the course reads as a journey across the planet
+    var routes = new THREE.Group();
+    routes.visible = false;
+    globe.add(routes);
+    for (var rj = 1; rj < cities.length; rj++) {
+      var from = cities[rj - 1].dir, to = cities[rj].dir, pts2 = [];
+      for (var sIdx = 0; sIdx <= 24; sIdx++) {
+        var u = sIdx / 24;
+        var v = new THREE.Vector3().copy(from).lerp(to, u).normalize();
+        pts2.push(v.multiplyScalar(PLANET_R * (1.012 + Math.sin(u * Math.PI) * 0.035)));
+      }
+      var routeLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts2),
+        new THREE.LineDashedMaterial({ color: course.color, transparent: true, opacity: 0.4, dashSize: 0.35, gapSize: 0.22, depthWrite: false }));
+      routeLine.computeLineDistances();
+      routeLine.userData.ends = [rj - 1, rj];
+      routes.add(routeLine);
+    }
+
     planets.push({
-      course: course, pivot: pivot, body: body, globe: globe,
+      course: course, pivot: pivot, body: body, globe: globe, routes: routes,
       halo: halo, ring: ring, belt: belt, mat: mat, cities: cities, index: i
     });
   });
@@ -601,6 +676,7 @@
       course: DATA[courseIndex], lecture: DATA[courseIndex].lectures[lectureIndex]
     });
     cityView.houses.forEach(function (h) { houses.push(h); });
+    pushCityLive();
   }
 
   /* ============================================================
@@ -643,20 +719,26 @@
     camera.lookAt(target);
   }
 
-  var warpEl = document.getElementById("warp");
-  function warp(cssColor, ms) {
-    if (REDUCED) return;
-    warpEl.style.background = "radial-gradient(circle at 50% 50%, " + cssColor + " 0%, transparent 62%)";
-    var t0 = performance.now();
-    (function pulse(now) {
-      var t = Math.min(1, ((now || performance.now()) - t0) / ms);
-      var bell = Math.sin(t * Math.PI);
-      warpEl.style.opacity = (bell * 0.72).toFixed(3);
-      camera.fov = 52 + bell * 38;
-      camera.updateProjectionMatrix();
-      if (t < 1) requestAnimationFrame(pulse);
-      else { warpEl.style.opacity = 0; camera.fov = 52; camera.updateProjectionMatrix(); }
-    })();
+  // The sky colour of a course's towns, for the clouds you fall through on the way down
+  function skyTint(courseIndex) {
+    return "#" + THEMES[courseIndex].city.horizon.toString(16).padStart(6, "0");
+  }
+  // Lift a veil only once the new scene has really been drawn, never over a stale
+  // frame: shaders are compiled up front and the reveal waits two frames
+  function afterFirstFrame(fn) {
+    applyCamera();
+    try { renderer.compile(activeScene, camera); } catch (e) { /* compiling early is only a head start */ }
+    requestAnimationFrame(function () { requestAnimationFrame(fn); });
+  }
+  // If anything goes wrong mid-trip, never leave the screen covered or the controls locked
+  function recoverFromTrip(error) {
+    console.error(error);
+    locked = false;
+    window.GalaxyVeil.open({ ms: 300 });
+  }
+  // flyTo as a promise, so a camera move and a veil can be waited on together
+  function fly(toAnchor, toDist, toYaw, toPitch, ms) {
+    return new Promise(function (resolve) { flyTo(toAnchor, toDist, toYaw, toPitch, ms, resolve); });
   }
 
   /* ============================================================
@@ -689,6 +771,7 @@
   }
 
   function syncURL(replace) {
+    reportHereSoon();
     if (routing) return;
     var h = "#" + routeOf(state);
     if (location.hash === h) return;
@@ -959,16 +1042,24 @@
           c.node.getWorldPosition(cityPos);
           // Only label cities on the side of the globe facing us
           if (cityPos.sub(centre).normalize().dot(toCam) < 0.25) return;
-          put(c.node, "VL " + c.lecture.ep, mins(c.lecture.dur), p.course.css,
+          put(c.node, (WEATHER_GLYPH[c.weather] || "") + "VL " + c.lecture.ep,
+            mins(c.lecture.dur) + (c.online ? " · " + c.online + " online" : ""), p.course.css,
             hovered && hovered.kind === "city" && hovered.index === j, 1.25);
         });
       }
     } else {
       var css = DATA[state.course].css;
       houses.forEach(function (h, k) {
-        put(h.grp, String(k + 1).padStart(2, "0"), mmss(h.seg.a), css,
+        put(h.grp, String(k + 1).padStart(2, "0"), mmss(h.seg.a) + (h.online ? " · " + h.online + " hier" : ""), css,
           (hovered && hovered.kind === "house" && hovered.index === k) || state.segment === k,
           h.height + 3.5);
+      });
+      // Tunnel signs, only where a neighbouring lecture lies beyond
+      if (cityView && !riding) cityView.portals.forEach(function (q) {
+        var to = portalTarget(q.side);
+        if (!to) return;
+        put(q.grp, q.side < 0 ? "‹ VL " + to.ep : "VL " + to.ep + " ›", "Tunnel", css,
+          hovered && hovered.kind === "portal" && hovered.side === q.side, q.labelY);
       });
     }
     for (var i = n; i < tagPool.length; i++) tagPool[i].classList.remove("on");
@@ -1078,7 +1169,28 @@
   function toPlanet(i) {
     if (locked) return;
     var p = planets[i];
-    var wasCity = activeScene === ground;
+
+    if (activeScene === ground && !REDUCED) {
+      // Take-off: climb straight up out of the town into the cloud deck, and come out
+      // of it in orbit, close over the planet, drifting back to see it whole
+      locked = true;
+      var climb = anchor.clone();
+      climb.y += 40;
+      Promise.all([
+        fly(climb, orbitDist * 2.4, orbitYaw, 1.32, 1000),
+        window.GalaxyVeil.wait(250).then(function () { return window.GalaxyVeil.close("clouds", { tint: skyTint(i), ms: 750 }); })
+      ]).then(function () {
+        locked = false;
+        enterPlanet(i, true);
+        afterFirstFrame(function () { window.GalaxyVeil.open({ ms: 1300 }); });
+      }).catch(recoverFromTrip);
+      return;
+    }
+    enterPlanet(i, false);
+  }
+
+  function enterPlanet(i, fromCity) {
+    var p = planets[i];
     state.level = "planet"; state.course = i; state.lecture = null; state.segment = null;
     accent(p.course.css);
     activeScene = sky;
@@ -1088,17 +1200,20 @@
     var land = new THREE.Vector3();
     p.body.getWorldPosition(land);
 
-    if (wasCity) {
-      warp(p.course.css, 900);
-      anchor.copy(land); orbitDist = 160; orbitPitch = 0.55;
-      flyTo(land, 26, orbitYaw, 0.24, 1700);
+    if (fromCity) {
+      anchor.copy(land); orbitDist = 12; orbitPitch = 0.5;
+      flyTo(land, 26, orbitYaw, 0.24, 2000);
     } else {
       flyTo(land, 26, orbitYaw, 0.24, 1800);
     }
     renderTrail(); renderPanel(); syncURL();
   }
 
-  function settleInCity(courseIndex, lectureIndex, instant, done) {
+  /* Arriving in a town. How the camera arrives depends on how you travelled:
+       true      straight there (a link, reduced motion)
+       "clouds"  from orbit: high above the town, dropping down through the clouds
+       -1 / 1    by road: out of the tunnel on that side of town, then up to see it */
+  function settleInCity(courseIndex, lectureIndex, arrival, done) {
     state.level = "city";
     state.course = courseIndex;
     state.lecture = lectureIndex;
@@ -1107,20 +1222,38 @@
     activeScene = ground;
     document.body.classList.add("daylight");   // the city is in daylight; the HUD follows
     var framing = Math.max(95, DATA[courseIndex].lectures[lectureIndex].segs.length * 5.6);
-    anchor.set(0, 7, 0);
-    orbitDist = instant ? framing : framing * 2.5;
-    orbitPitch = instant ? 0.56 : 0.95;
-    orbitYaw = 0.6;
+    var centre = new THREE.Vector3(0, 7, 0);
+    function arrived() { locked = false; if (done) done(); }
     renderTrail(); renderPanel(); syncURL();
-    if (instant) {
-      locked = false;
-      if (done) done();
-    } else {
-      flyTo(new THREE.Vector3(0, 7, 0), framing, 0.6, 0.56, 1500, function () {
-        locked = false;
-        if (done) done();
-      });
+
+    if (arrival === true) {
+      anchor.copy(centre); orbitDist = framing; orbitPitch = 0.56; orbitYaw = 0.6;
+      arrived();
+      return;
     }
+    var portal = (arrival === -1 || arrival === 1) && cityView.portals.filter(function (q) { return q.side === arrival; })[0];
+    if (portal) {
+      // In the mouth of the tunnel, looking down the main street into town
+      portal.grp.getWorldPosition(anchor);
+      anchor.y = 4;
+      anchor.x -= arrival * 6;
+      orbitDist = 10; orbitPitch = 0.04; orbitYaw = arrival * Math.PI / 2;
+      var street = anchor.clone();
+      street.x -= arrival * 55;
+      afterFirstFrame(function () {
+        window.GalaxyVeil.open({ ms: 900 });
+        fly(street, 22, orbitYaw, 0.12, 1300).then(function () {
+          return fly(centre, framing, 0.6, 0.56, 1700);
+        }).then(arrived);
+      });
+      return;
+    }
+    // From the clouds: start high and straight overhead, and settle onto the town
+    anchor.copy(centre); orbitDist = framing * 3.6; orbitPitch = 1.38; orbitYaw = 0.6 - 0.8;
+    afterFirstFrame(function () {
+      window.GalaxyVeil.open({ ms: 1400 });
+      fly(centre, framing, 0.6, 0.56, 2300).then(arrived);
+    });
   }
 
   function toCity(courseIndex, lectureIndex, instant, done) {
@@ -1138,11 +1271,14 @@
     var land = new THREE.Vector3();
     p.cities[lectureIndex].node.getWorldPosition(land);
 
-    // Dive at the marker, warp, then rise into the city.
-    flyTo(land, 6.5, orbitYaw, 0.1, 1100, function () {
-      warp(p.course.css, 950);
-      setTimeout(function () { settleInCity(courseIndex, lectureIndex, false, done); }, 260);
-    });
+    // Atmospheric entry: dive at the city, the clouds close in around you halfway down,
+    // and the town appears below once they part
+    Promise.all([
+      fly(land, 6.5, orbitYaw, 0.1, 1100),
+      window.GalaxyVeil.wait(450).then(function () {
+        return window.GalaxyVeil.close("clouds", { tint: skyTint(courseIndex), ms: 700 });
+      })
+    ]).then(function () { settleInCity(courseIndex, lectureIndex, "clouds", done); }).catch(recoverFromTrip);
   }
 
   function selectHouse(k, play) {
@@ -1223,6 +1359,8 @@
     document.getElementById("player-title").textContent = seg.t;
     if (seg.summary) playerNote.textContent = seg.summary;
     syncPlayerNav();
+    rateNote.textContent = "";
+    syncRating();
   }
 
   // One step back or forward from the current chapter: the neighbouring chapter in
@@ -1291,10 +1429,45 @@
   function hopToCity(courseIndex, lectureIndex, done) {
     if (locked) return;
     if (activeScene !== ground) { toCity(courseIndex, lectureIndex, false, done); return; }
-    if (REDUCED) { settleInCity(courseIndex, lectureIndex, true, done); return; }
+    var side = lectureIndex - state.lecture;
+    if (courseIndex === state.course && (side === 1 || side === -1)) { tunnelTo(side, done); return; }
+    settleInCity(courseIndex, lectureIndex, true, done);
+  }
+
+  // Leaving by road: the camera drives down the main street into that side's tunnel
+  // and comes out of the facing tunnel of the next town
+  function tunnelTo(side, done) {
+    if (locked || state.level !== "city") return;
+    var to = state.lecture + side;
+    if (to < 0 || to >= DATA[state.course].lectures.length) return;
+    var portal = cityView && cityView.portals.filter(function (q) { return q.side === side; })[0];
+    closePlayer();
+    if (!portal || REDUCED) { settleInCity(state.course, to, true, done); return; }
     locked = true;
-    warp(DATA[courseIndex].css, 950);
-    setTimeout(function () { settleInCity(courseIndex, lectureIndex, false, done); }, 260);
+    var course = state.course;
+    var mouth = new THREE.Vector3();
+    portal.grp.getWorldPosition(mouth);
+    mouth.y = 4;
+    var yaw = -side * Math.PI / 2;          // behind us is the town, ahead the tunnel
+    var inside = mouth.clone();
+    inside.x += side * 30;
+    fly(mouth, 18, yaw, 0.08, 1100)
+      .then(function () {
+        return Promise.all([fly(inside, 6, yaw, 0.02, 650), window.GalaxyVeil.close("tunnel", { ms: 600 })]);
+      })
+      .then(function () { return window.GalaxyVeil.wait(650); })     // the lamps rush past in the dark
+      .then(function () { settleInCity(course, to, -side, done); })
+      .catch(recoverFromTrip);
+  }
+
+  var hopRide = document.getElementById("hop-ride");
+  var rideToast = document.getElementById("ride-toast");
+  var riding = false;
+
+  function nextChapterIndex() {
+    if (state.level !== "city") return null;
+    var next = state.segment === null ? 0 : state.segment + 1;
+    return next < DATA[state.course].lectures[state.lecture].segs.length ? next : null;
   }
 
   function syncHop() {
@@ -1304,11 +1477,117 @@
     var before = lectures[state.lecture - 1], after = lectures[state.lecture + 1];
     hopPrev.hidden = !before;
     hopNext.hidden = !after;
-    if (before) hopPrev.textContent = "‹ VL " + before.ep + " · " + before.title;
-    if (after) hopNext.textContent = "VL " + after.ep + " · " + after.title + " ›";
+    if (before) hopPrev.textContent = "‹ Tunnel · VL " + before.ep;
+    if (after) hopNext.textContent = "Tunnel · VL " + after.ep + " ›";
+    if (before) hopPrev.title = before.title;
+    if (after) hopNext.title = after.title;
+    var next = nextChapterIndex();
+    var rideKind = THEMES[state.course].city.ride || { label: "Taxi" };
+    hopRide.hidden = next === null;
+    if (next !== null) {
+      hopRide.textContent = rideKind.label + " → Kapitel " + String(next + 1).padStart(2, "0");
+      hopRide.title = lectures[state.lecture].segs[next].t;
+    }
   }
-  hopPrev.addEventListener("click", function () { hopToCity(state.course, state.lecture - 1); });
-  hopNext.addEventListener("click", function () { hopToCity(state.course, state.lecture + 1); });
+  hopPrev.addEventListener("click", function () { tunnelTo(-1); });
+  hopNext.addEventListener("click", function () { tunnelTo(1); });
+
+  // The ride to the next chapter building: a short themed trip through the streets,
+  // with the camera tagging along behind, ending at the door with the chapter playing
+  function rideToNext() {
+    var next = nextChapterIndex();
+    if (next === null || locked || !cityView) return;
+    closePlayer();
+    if (state.segment === null || REDUCED) { selectHouse(next, true); return; }
+    var target = DATA[state.course].lectures[state.lecture].segs[next];
+    var ride = THEMES[state.course].city.ride || { caption: "Taxi zum nächsten Termin" };
+    var started = cityView.ride(state.segment, next, function () {
+      riding = false;
+      locked = false;
+      rideToast.hidden = true;
+      selectHouse(next, true);
+    });
+    if (!started) return;
+    riding = true;
+    locked = true;
+    tween = null;
+    rideToast.textContent = ride.caption + " · Kapitel " + String(next + 1).padStart(2, "0") + " · " + target.t;
+    rideToast.hidden = false;
+  }
+  hopRide.addEventListener("click", rideToNext);
+
+  /* ============================================================
+     LIVE — who is where, and how hard each chapter is (crowds and weather)
+     ============================================================ */
+  var live = null;
+  var liveTimer = null;
+
+  function whereAmI() {
+    if (state.level !== "city" || state.course === null || state.lecture === null) return { lectureId: null, chapterId: null };
+    var lecture = DATA[state.course].lectures[state.lecture];
+    return { lectureId: lecture.id, chapterId: state.segment === null ? null : lecture.segs[state.segment].id };
+  }
+
+  function reportHere() {
+    var at = whereAmI();
+    window.GalaxyAPI.here(at.lectureId, at.chapterId).then(applyLive).catch(function () { /* live extras are optional */ });
+  }
+  function reportHereSoon() {
+    clearTimeout(liveTimer);
+    liveTimer = setTimeout(reportHere, 350);
+  }
+  setInterval(function () { if (!document.hidden) reportHere(); }, 15000);
+
+  function lectureScore(lecture) {
+    var d = live && live.difficulty.lectures[lecture.id];
+    return d ? d.score : null;
+  }
+
+  function pushCityLive() {
+    if (!live || !cityView || state.level !== "city") return;
+    var lecture = DATA[state.course].lectures[state.lecture];
+    var chapters = {};
+    lecture.segs.forEach(function (seg) {
+      var d = live.difficulty.chapters[seg.id];
+      chapters[seg.id] = { online: live.online.chapters[seg.id] || 0, score: d ? d.score : null };
+    });
+    cityView.setLive({ chapters: chapters, lectureScore: lectureScore(lecture) });
+  }
+
+  function applyLive(snapshot) {
+    if (!snapshot || !snapshot.online) return;
+    live = snapshot;
+    pushCityLive();
+    planets.forEach(function (p) {
+      p.cities.forEach(function (c) {
+        c.online = live.online.lectures[c.lecture.id] || 0;
+        setWeatherBadge(c, window.GalaxyCity.weatherFor(lectureScore(c.lecture)));
+      });
+    });
+    syncRating();
+  }
+
+  // Rating a chapter, right under its video
+  var rateBox = document.getElementById("player-rate");
+  var rateNote = document.getElementById("player-rate-note");
+  function syncRating() {
+    var at = whereAmI();
+    var mine = live && at.chapterId ? live.mine[at.chapterId] : null;
+    rateBox.querySelectorAll("button").forEach(function (b) {
+      b.classList.toggle("chosen", Number(b.dataset.rating) === mine);
+      b.setAttribute("aria-pressed", Number(b.dataset.rating) === mine ? "true" : "false");
+    });
+  }
+  rateBox.addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-rating]");
+    var at = whereAmI();
+    if (!b || !at.chapterId) return;
+    rateNote.textContent = "…";
+    window.GalaxyAPI.rate(at.lectureId, at.chapterId, Number(b.dataset.rating)).then(function (snapshot) {
+      applyLive(snapshot);
+      rateNote.textContent = "Danke! Das Wetter dieser Stadt folgt euren Einschätzungen.";
+    }).catch(function (error) { rateNote.textContent = error.message; });
+  });
 
   /* ============================================================
      ASK — the same lecture Q&A the rest of VisCon uses, flown to
@@ -1416,8 +1695,20 @@
       if (hits.length) {
         for (i = 0; i < houses.length; i++) if (houses[i].hit === hits[0].object) return { kind: "house", index: i };
       }
+      // A tunnel counts only if there is a lecture on the other side of it
+      var open = cityView ? cityView.portals.filter(function (q) { return portalTarget(q.side) !== null; }) : [];
+      hits = ray.intersectObjects(open.map(function (q) { return q.hit; }), false);
+      if (hits.length) {
+        for (i = 0; i < open.length; i++) if (open[i].hit === hits[0].object) return { kind: "portal", side: open[i].side };
+      }
     }
     return null;
+  }
+
+  function portalTarget(side) {
+    if (state.level !== "city") return null;
+    var lecture = DATA[state.course].lectures[state.lecture + side];
+    return lecture || null;
   }
 
   /* In the city the camera can also travel: right-drag or shift-drag pans across the
@@ -1478,6 +1769,7 @@
     else if (hit.kind === "planet") toPlanet(hit.index);
     else if (hit.kind === "city") toCity(hit.course, hit.index);
     else if (hit.kind === "house") selectHouse(hit.index, true);
+    else if (hit.kind === "portal") tunnelTo(hit.side);
   });
 
   canvas.addEventListener("wheel", function (e) {
@@ -1501,8 +1793,7 @@
       e.preventDefault();
     } else if ((k === "[" || k === "]") && !locked) {
       // Previous / next lecture city
-      var to = state.lecture + (k === "]" ? 1 : -1);
-      if (to >= 0 && to < DATA[state.course].lectures.length) hopToCity(state.course, to);
+      tunnelTo(k === "]" ? 1 : -1);
     }
   });
   window.addEventListener("keyup", function (e) { delete heldKeys[e.key.toLowerCase()]; });
@@ -1601,6 +1892,18 @@
       fp.globe.rotation.y += Math.atan2(Math.sin(turnBy), Math.cos(turnBy)) * Math.min(1, dt * 4);
     }
 
+    // Riding along: the camera sits just behind and above the vehicle
+    var onRide = riding && cityView && cityView.rideState();
+    if (onRide) {
+      worldTmp.copy(onRide.position);
+      worldTmp.y = 3;
+      anchor.lerp(worldTmp, Math.min(1, dt * 8));
+      orbitDist += (26 - orbitDist) * Math.min(1, dt * 4);
+      orbitPitch += (0.32 - orbitPitch) * Math.min(1, dt * 4);
+      var behind = onRide.heading + Math.PI - orbitYaw;
+      orbitYaw += Math.atan2(Math.sin(behind), Math.cos(behind)) * Math.min(1, dt * 3);
+    }
+
     // Walking the city with the keyboard: speed scales with how far out the camera is
     if (activeScene === ground && !locked) {
       var step = Math.max(14, orbitDist * 0.45) * dt;
@@ -1633,6 +1936,20 @@
       if (p.belt) {
         var wantBelt = state.level === "planet" && state.course === i ? 0.12 : 0.5;
         p.belt.material.opacity += (wantBelt - p.belt.material.opacity) * 0.08;
+      }
+      // On its planet: the route between lectures, brighter next to the city you point at
+      var here = state.level === "planet" && state.course === i;
+      p.routes.visible = here;
+      if (here) {
+        var lit = hovered && hovered.kind === "city" ? hovered.index : -1;
+        p.routes.children.forEach(function (line) {
+          var near = line.userData.ends[0] === lit || line.userData.ends[1] === lit;
+          line.material.opacity += ((near ? 0.95 : 0.35) - line.material.opacity) * 0.15;
+        });
+        p.cities.forEach(function (c, j) {
+          c.pulse.material.opacity = c.online ? 0.35 + 0.35 * Math.sin(t * 3 + j) : 0;
+          if (c.online) { var ps = 1 + 0.12 * Math.sin(t * 3 + j); c.pulse.scale.set(ps, ps, ps); }
+        });
       }
     });
 
