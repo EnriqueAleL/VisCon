@@ -1,0 +1,632 @@
+.vm-viz {
+  --vm-ink: var(--ink);
+  --vm-dim: var(--muted);
+  --vm-accent: var(--accent);
+  --vm-line: var(--line);
+  color: var(--vm-ink);
+  font-family: var(--font-ui);
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--vm-line);
+  border-radius: 8px;
+}
+.vm-viz button,
+.vm-viz input,
+.vm-viz select {
+  font: inherit;
+}
+.vm-viz button {
+  cursor: pointer;
+  border: 1px solid var(--vm-line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--vm-ink);
+  padding: 10px 13px;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
+}
+.vm-viz button:hover {
+  background: var(--surface-raised);
+  border-color: var(--line);
+}
+.vm-viz button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.vm-viz button:focus-visible,
+.vm-viz input:focus-visible,
+.vm-viz select:focus-visible,
+.vm-viz a:focus-visible {
+  outline: 2px solid var(--vm-accent);
+  outline-offset: 3px;
+}
+.vm-viz__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.vm-viz__kicker {
+  color: var(--vm-accent);
+  letter-spacing: 0;
+  font-size: 11px;
+  font-weight: 600;
+}
+.vm-viz__header h2 {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0;
+  margin: 9px 0;
+}
+.vm-viz__header h2 span {
+  color: var(--vm-accent);
+}
+.vm-viz__header p {
+  font-size: 12px;
+  margin: 0;
+  color: var(--vm-dim);
+}
+.vm-viz__model {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  white-space: nowrap;
+  color: var(--vm-accent);
+  background: var(--surface);
+  padding: 10px;
+  border-radius: 8px;
+}
+.vm-viz__architecture {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--vm-dim);
+  margin: 22px 0;
+}
+.vm-viz__architecture span:last-child {
+  margin-left: auto;
+}
+.vm-viz__presets {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.vm-viz__presets button {
+  font-size: 11px;
+  padding: 8px 11px;
+}
+.vm-viz button.selected {
+  background: var(--accent-soft);
+  color: var(--muted);
+  border-color: var(--accent);
+}
+.vm-viz__controls {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.vm-viz__controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: var(--vm-dim);
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.vm-viz__controls input,
+.vm-viz__controls select {
+  border: 1px solid var(--vm-line);
+  background: var(--surface);
+  color: var(--vm-ink);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 12px;
+  height: 38px;
+  box-sizing: border-box;
+}
+.vm-viz__controls input {
+  width: 155px;
+  font-family: ui-monospace, monospace;
+}
+.vm-viz__controls button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 38px;
+  font-size: 11px;
+}
+.vm-viz__controls button[type="submit"] {
+  background: var(--vm-accent);
+  color: var(--muted);
+}
+.vm-viz__controls .vm-viz__quiet {
+  background: transparent;
+  margin-left: auto;
+  color: var(--vm-dim);
+}
+.vm-viz__error {
+  color: var(--danger);
+  font-size: 12px;
+}
+.vm-viz__address {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  margin: 22px 0;
+  gap: 5px;
+}
+.vm-viz__address div {
+  border: 1px solid var(--vm-line);
+  padding: 15px;
+  border-radius: 8px;
+  background: var(--surface);
+}
+.vm-viz__address div:nth-child(2) {
+  background: var(--surface);
+}
+.vm-viz__address div:last-child {
+  background: var(--surface);
+  border-color: var(--line);
+}
+.vm-viz__address span {
+  font-size: 11px;
+  color: var(--vm-dim);
+  letter-spacing: 0;
+  display: block;
+}
+.vm-viz__address strong {
+  font-family: ui-monospace, monospace;
+  color: var(--vm-accent);
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0;
+  display: block;
+  margin: 12px 0;
+}
+.vm-viz__address small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.vm-viz__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(230px, 1fr);
+  gap: 20px;
+}
+.vm-viz__panel-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+.vm-viz__panel-title h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.vm-viz__panel-title > span {
+  font-size: 11px;
+  letter-spacing: 0;
+  color: var(--vm-dim);
+}
+.vm-viz__tlb {
+  background: var(--surface);
+  border: 1px solid var(--vm-line);
+  border-radius: 8px;
+  padding: 16px;
+}
+.vm-viz__tlb-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.vm-viz__tlb-slots > div {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 10px 8px;
+  border-radius: 8px;
+  min-width: 0;
+}
+.vm-viz__tlb-slots > div.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.vm-viz__tlb-slots small {
+  font-size: 11px;
+  color: var(--vm-dim);
+}
+.vm-viz__tlb-slots strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin: 8px 0;
+  font-size: 11px;
+  font-weight: 500;
+}
+.vm-viz__tlb-slots span {
+  display: block;
+  color: var(--vm-dim);
+  font-size: 11px;
+}
+.vm-viz__tlb p,
+.vm-viz__page-table p {
+  font-size: 11px;
+  color: var(--vm-dim);
+  margin: 12px 0 0;
+  line-height: 1.5;
+}
+.vm-viz__tables {
+  display: grid;
+  grid-template-columns: minmax(135px, 0.8fr) 20px minmax(240px, 1.3fr);
+  align-items: center;
+  gap: 9px;
+  margin: 18px 0;
+}
+.vm-viz__directory,
+.vm-viz__page-table {
+  align-self: stretch;
+  background: var(--surface);
+  border: 1px solid var(--vm-line);
+  border-radius: 8px;
+  padding: 14px;
+}
+.vm-viz__table-arrow {
+  color: var(--muted);
+}
+.vm-viz__directory-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 11px;
+  min-height: 51px;
+  border-top: 1px solid var(--vm-line);
+}
+.vm-viz__directory-row.active,
+.vm-viz__page-row.active {
+  background: var(--accent-soft);
+  box-shadow: none;
+}
+.vm-viz__index {
+  color: var(--vm-accent);
+  font-family: ui-monospace, monospace;
+}
+.vm-viz__directory-row small,
+.vm-viz__page-row small {
+  display: block;
+  color: var(--vm-dim);
+  font-size: 11px;
+  margin-top: 5px;
+}
+.vm-viz__directory-row label {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  color: var(--vm-dim);
+  font-size: 11px;
+}
+.vm-viz input[type="checkbox"] {
+  accent-color: #c7ed9a;
+  cursor: pointer;
+}
+.vm-viz__page-table.absent {
+  border-style: dashed;
+}
+.vm-viz__table-columns,
+.vm-viz__page-row {
+  display: grid;
+  grid-template-columns: 35px 23px 45px minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+}
+.vm-viz__table-columns {
+  margin: 4px 0 8px;
+  font-size: 11px;
+  color: var(--vm-dim);
+}
+.vm-viz__page-row {
+  min-height: 45px;
+  border-top: 1px solid var(--vm-line);
+  font-size: 11px;
+}
+.vm-viz__page-row > span {
+  padding-left: 5px;
+}
+.vm-viz__page-row select {
+  background: var(--surface);
+  color: var(--vm-ink);
+  padding: 5px 3px;
+  min-width: 0;
+  border: 1px solid var(--vm-line);
+  border-radius: 5px;
+  font-size: 11px;
+}
+.vm-viz__physical {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+}
+.vm-viz__physical > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--vm-accent);
+}
+.vm-viz__physical span {
+  font-size: 11px;
+  letter-spacing: 0;
+}
+.vm-viz__physical strong {
+  font-family: ui-monospace, monospace;
+  color: var(--vm-accent);
+  font-size: 22px;
+  font-weight: 400;
+  margin-left: auto;
+}
+.vm-viz__physical p {
+  width: 100%;
+  margin: 0;
+  color: var(--vm-dim);
+  font-size: 11px;
+}
+.vm-viz__physical.fault {
+  background: var(--danger-soft);
+  border-color: var(--line);
+}
+.vm-viz__physical.fault strong,
+.vm-viz__physical.fault > div {
+  color: var(--danger);
+}
+.vm-viz__walk {
+  border: 1px solid var(--vm-line);
+  border-radius: 8px;
+  padding: 17px;
+  background: var(--surface);
+  align-self: start;
+}
+.vm-viz__walk ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.vm-viz__walk li {
+  display: flex;
+  gap: 10px;
+  padding: 13px 0;
+  border-top: 1px solid var(--vm-line);
+  color: var(--muted);
+}
+.vm-viz__walk li > span {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  font-size: 11px;
+}
+.vm-viz__walk li strong {
+  display: block;
+  font-size: 11px;
+  line-height: 1.7;
+  font-weight: 500;
+}
+.vm-viz__walk li.current {
+  color: var(--vm-accent);
+}
+.vm-viz__walk li.current > span,
+.vm-viz__walk li.done > span {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--vm-accent);
+}
+.vm-viz__walk li.done {
+  color: var(--muted);
+}
+.vm-viz__walk li p {
+  color: var(--muted);
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.65;
+}
+.vm-viz__step-buttons {
+  display: flex;
+  gap: 7px;
+  margin-top: 12px;
+}
+.vm-viz__step-buttons button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+.vm-viz__step-buttons button:last-child {
+  background: var(--vm-accent);
+  color: var(--muted);
+  margin-left: auto;
+}
+.vm-viz__stage-status {
+  color: var(--vm-dim);
+  margin-top: 12px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.vm-viz__prediction {
+  margin-top: 22px;
+  padding-top: 21px;
+  border-top: 1px solid var(--vm-line);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+}
+.vm-viz__prediction h3 {
+  margin: 7px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+}
+.vm-viz__prediction-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+.vm-viz__prediction-options button {
+  font-size: 11px;
+}
+.vm-viz__feedback {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  align-items: start;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  background: var(--surface);
+  padding: 14px;
+  border-radius: 8px;
+}
+.vm-viz__feedback.correct {
+  color: var(--vm-accent);
+  background: var(--surface);
+}
+.vm-viz__feedback svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.vm-viz__feedback button {
+  display: flex;
+  gap: 5px;
+  white-space: nowrap;
+  font-size: 11px;
+  margin-left: auto;
+}
+.vm-viz__notice {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--vm-dim);
+}
+.vm-viz__footer {
+  margin-top: 24px;
+  border-top: 1px solid var(--vm-line);
+  padding-top: 15px;
+}
+.vm-viz__footer p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 0 0 12px;
+}
+.vm-viz__footer > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px 16px;
+}
+.vm-viz__footer a {
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  font-size: 11px;
+}
+.vm-viz__footer a:hover {
+  color: var(--vm-accent);
+}
+@media (max-width: 1150px) {
+  .vm-viz__layout {
+    grid-template-columns: 1fr;
+  }
+  .vm-viz__walk ol {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 18px;
+  }
+  .vm-viz__walk li.current {
+    grid-row: span 2;
+  }
+}
+@media (max-width: 650px) {
+  .vm-viz {
+    padding: 18px 12px;
+  }
+  .vm-viz__header {
+    align-items: start;
+  }
+  .vm-viz__model {
+    font-size: 11px;
+    padding: 7px;
+  }
+  .vm-viz__architecture span:last-child {
+    margin-left: 0;
+  }
+  .vm-viz__address {
+    grid-template-columns: 1fr 1fr;
+  }
+  .vm-viz__address div:last-child {
+    grid-column: span 2;
+  }
+  .vm-viz__address div {
+    padding: 12px;
+  }
+  .vm-viz__address strong {
+    font-size: 22px;
+  }
+  .vm-viz__tables {
+    grid-template-columns: 1fr;
+  }
+  .vm-viz__table-arrow {
+    display: none;
+  }
+  .vm-viz__directory-row {
+    min-height: 39px;
+  }
+  .vm-viz__page-row {
+    grid-template-columns: 45px 30px 60px 1fr;
+  }
+  .vm-viz__table-columns {
+    grid-template-columns: 45px 30px 60px 1fr;
+  }
+  .vm-viz__tlb-slots {
+    grid-template-columns: 1fr 1fr;
+  }
+  .vm-viz__controls .vm-viz__quiet {
+    margin-left: 0;
+  }
+  .vm-viz__controls input {
+    width: 140px;
+  }
+  .vm-viz__walk ol {
+    display: block;
+  }
+  .vm-viz__prediction-options {
+    margin-left: 0;
+  }
+  .vm-viz__feedback {
+    flex-wrap: wrap;
+  }
+  .vm-viz__feedback button {
+    margin-left: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vm-viz button {
+    transition: none;
+  }
+}

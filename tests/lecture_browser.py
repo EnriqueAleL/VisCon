@@ -41,6 +41,16 @@ def ask(page, text):
     expect(page.get_by_role('heading', name='Aus dem Transkript', exact=True)).to_be_visible()
 
 
+def check_moment(page, start, available):
+    if available:
+        page.wait_for_function('(start) => Math.abs(document.querySelector("video")?.currentTime - start) < 0.5', arg=start)
+        page.wait_for_function('document.querySelector("video")?.readyState >= 2 && !document.querySelector("video").seeking')
+    else:
+        expect(page.locator('.missing-video')).to_be_visible()
+    minutes, seconds = divmod(int(start), 60)
+    expect(page.locator('.selected-moment')).to_contain_text(f'{minutes}:{seconds:02d}')
+
+
 with sync_playwright() as pw:
     browser = pw.chromium.launch(channel='chrome', headless=True)
     context = browser.new_context(viewport={'width': 1440, 'height': 1000}, reduced_motion='reduce')
@@ -61,9 +71,13 @@ with sync_playwright() as pw:
     assert api.head(BASE + '/media/lectures/lec7.mp4').status == 200
     assert api.get(BASE + '/media/lectures/lec7.vtt').text().startswith('WEBVTT')
     assert api.get(BASE + '/media/chapters/lec7.chapters.vtt').text().startswith('WEBVTT')
+    recording = next(item for item in lectures if item['id'] == 'lec7')
+    recording_available = bool(recording['mediaUrl'])
     assert api.post(BASE + '/api/ask', data={'question': 'MIPS', 'lectureId': 'lec7', 'courseId': 'analysis'}).status == 400
 
     page.goto(BASE + '/learn'); settle(page)
+    assert page.evaluate('getComputedStyle(document.body).backgroundColor') == 'rgb(17, 19, 21)'
+    assert 'Inter' in page.evaluate('getComputedStyle(document.body).fontFamily')
     expect(page.get_by_label('Nachricht eingeben')).to_be_disabled()
     page.get_by_role('button', name='Kurse', exact=True).hover()
     expect(page.get_by_role('dialog', name='Kursauswahl')).to_be_visible()
@@ -76,18 +90,18 @@ with sync_playwright() as pw:
     source = api.post(BASE + '/api/ask', data={'question': 'MIPS byte addressable', 'courseId': 'computer-architecture'}).json()['sources'][0]
     page.locator('.segment-open').first.click()
     expect(page.get_by_role('dialog', name='Lecture 7')).to_be_visible()
-    page.wait_for_function('(start) => Math.abs(document.querySelector("video")?.currentTime - start) < 0.5', arg=source['start'])
-    page.wait_for_function('document.querySelector("video")?.readyState >= 2 && !document.querySelector("video").seeking')
-    page.locator('video').evaluate('async video => { video.muted = true; await video.play(); }')
-    page.wait_for_function('!document.querySelector("video").paused')
-    page.locator('video').evaluate('video => video.pause()')
+    check_moment(page, source['start'], recording_available)
+    if recording_available:
+        page.locator('video').evaluate('async video => { video.muted = true; await video.play(); }')
+        page.wait_for_function('!document.querySelector("video").paused')
+        page.locator('video').evaluate('video => video.pause()')
     page.get_by_role('button', name='Aktuelle Stelle speichern', exact=True).click()
     capture(page, 'integration-player-desktop.png')
     page.set_viewport_size({'width': 390, 'height': 844})
     capture(page, 'integration-player-mobile.png')
     chapter = next(item for item in lectures if item['id'] == 'lec7')['chapters'][2]
     page.locator('.viewer-segment-select').nth(2).click()
-    page.wait_for_function('(start) => Math.abs(document.querySelector("video")?.currentTime - start) < 0.5', arg=chapter['start'])
+    check_moment(page, chapter['start'], recording_available)
     page.get_by_role('button', name='Transkript', exact=True).click()
     expect(page.locator('.viewer-segment-select p').first).not_to_be_empty()
     page.get_by_role('button', name='Vorlesung schliessen', exact=True).click()
@@ -98,7 +112,7 @@ with sync_playwright() as pw:
     page.reload(); settle(page)
     expect(page.locator('.lecture-card')).to_have_count(1)
     page.locator('.segment-open').first.click()
-    page.wait_for_function('(start) => Math.abs(document.querySelector("video")?.currentTime - start) < 0.5', arg=source['start'])
+    check_moment(page, source['start'], recording_available)
     page.keyboard.press('Escape')
 
     page.set_viewport_size({'width': 1440, 'height': 1000})
@@ -107,7 +121,11 @@ with sync_playwright() as pw:
     expect(page.locator('.lecture-card')).to_have_count(1)
     expect(page.locator('.lecture-title')).to_contain_text('Demo')
     page.locator('.segment-open').first.click()
-    page.wait_for_function('document.querySelector("video")?.readyState >= 1')
+    demo_source = api.post(BASE + '/api/ask', data={'question': 'Eigenwerte und Eigenvektoren', 'courseId': 'linear-algebra'}).json()['sources'][0]
+    check_moment(page, demo_source['start'], True)
+    page.locator('video').evaluate('async video => { video.muted = true; await video.play(); }')
+    page.wait_for_function('!document.querySelector("video").paused')
+    page.locator('video').evaluate('video => video.pause()')
     assert page.locator('video').evaluate('video => video.duration') <= 91
     page.keyboard.press('Escape')
 
@@ -159,7 +177,7 @@ with sync_playwright() as pw:
 
     # The new Arena icon enters the existing app and keeps its session on return.
     page.get_by_role('link', name='Arena', exact=True).click(); settle(page)
-    expect(page.get_by_role('heading', name='A little competition. A better study session.')).to_be_visible()
+    expect(page.get_by_role('heading', name='Arena', exact=True)).to_be_visible()
     profile = api.get(BASE + '/api/bootstrap').json()['profile']['id']
     page.get_by_role('button', name='Practice solo', exact=True).click()
     expect(page.get_by_text('Practice bot · Ready', exact=True)).to_be_visible()
@@ -178,7 +196,7 @@ with sync_playwright() as pw:
     page.get_by_role('button', name='Kursauswahl schliessen', exact=True).click()
     capture(page, 'integration-landing-mobile.png')
     assert not errors, errors
-    report = {'passed': True, 'checks': ['24 real lectures + 3 playable demos', 'latest icon navigation and hover picker', 'archive and year/semester/study-year course selection', 'real search and exact video seek', 'chapter seek and transcript', 'captions and chapter tracks', 'cached notes', 'persistent exact saved moments', 'course-scoped chat history', 'stale-request cancellation', 'recoverable search errors', 'honest no-match', 'HTTP Range and HEAD', 'Arena navigation with leave confirmation', 'same player session', 'desktop/mobile overflow'], 'consoleErrors': errors}
+    report = {'passed': True, 'recordingVideoAvailable': recording_available, 'checks': ['24 real lectures + 3 playable demos', 'latest icon navigation and hover picker', 'archive and year/semester/study-year course selection', 'real search and exact demo video seek/playback', 'chapter selection and transcript', 'missing LFS recording fallback or exact recording seek', 'captions and chapter tracks', 'cached notes', 'persistent exact saved moments', 'course-scoped chat history', 'stale-request cancellation', 'recoverable search errors', 'honest no-match', 'HTTP Range and HEAD', 'Arena navigation with leave confirmation', 'same player session', 'desktop/mobile overflow'], 'consoleErrors': errors}
     (OUT / 'integration-report.json').write_text(json.dumps(report, indent=2))
     print(json.dumps(report))
     browser.close()

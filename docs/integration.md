@@ -5,8 +5,11 @@ Baseline: `ce8e44b` (course selection and hover navigation). Basis Arena remains
 `/java` routes. The imported VisCon interface is at `/learn` with `#questions`,
 `#library` and `#saved` state. Its Arena icon links to the working Arena app.
 
-Vite builds `index.html` and `learn.html` together. Each entry loads its own font
-and stylesheet. In development, `/learn` maps to `learn.html`; `/api`, `/media` and
+Vite builds `index.html` and `learn.html` together. Both entries share the local
+Inter fonts, semantic tokens, base styles, and product header in `shared/design/`.
+Page-specific styles handle layout; [DESIGN.md](../DESIGN.md) is the visual contract.
+The preserved satellite scene is available at `/campus`.
+In development, `/learn` maps to `learn.html`; `/api`, `/media` and
 `/socket.io` reach the shared server. Production Express serves both HTML entries.
 
 `server/lecture-catalog.ts` joins the Q&A index to the original VTT files at startup.

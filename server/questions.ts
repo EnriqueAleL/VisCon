@@ -37,6 +37,14 @@ export const demoContent=!process.env.QUESTION_BANK_PATH;
 export const bank=validateBank(process.env.QUESTION_BANK_PATH?JSON.parse(readFileSync(process.env.QUESTION_BANK_PATH,'utf8')):sample);
 const names:Record<string,{name:string;description:string}>={discrete:{name:'Discrete Mathematics',description:'Sets, counting, and the logic behind it all.'},linear:{name:'Linear Algebra',description:'Matrices, vectors, and a different perspective.'},programming:{name:'Introduction to Programming',description:'Think through a loop. Write a little Java.'}};
 export const subjects:Subject[]=[...new Set(bank.map(q=>q.subject))].map(id=>({id,...(names[id]||{name:id,description:'Imported course questions.'}),topics:[...new Set(bank.filter(q=>q.subject===id).map(q=>q.topic))],formats:[...new Set(bank.filter(q=>q.subject===id).map(q=>q.format))],count:bank.filter(q=>q.subject===id).length}));
+/** Add the grounded city recall bank without replacing existing imported questions. */
+export function registerCourseQuestions(questions: BankQuestion[], meta: { id: string; name: string; description: string }) {
+  const fresh = questions.filter(question => !bank.some(existing => existing.id === question.id));
+  validateBank([...bank, ...fresh]); bank.push(...fresh);
+  const course = { ...meta, topics: [...new Set(bank.filter(q => q.subject === meta.id).map(q => q.topic))], formats: [...new Set(bank.filter(q => q.subject === meta.id).map(q => q.format))], count: bank.filter(q => q.subject === meta.id).length };
+  const existing = subjects.findIndex(subject => subject.id === meta.id);
+  if (existing >= 0) subjects[existing] = course; else subjects.push(course);
+}
 export function eligible(settings:Settings){return bank.filter(q=>q.subject===settings.subject&&q.format===settings.format&&(settings.topic==='all'||q.topic===settings.topic)&&(settings.difficulty==='mixed'||q.difficulty===settings.difficulty));}
 export function publicQuestion(q:BankQuestion):Question { const {answer,tolerance,explanation,tests,...visible}=q; return visible; }
 export function numericValue(input:string):number | null {

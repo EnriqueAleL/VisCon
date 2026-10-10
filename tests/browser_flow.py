@@ -50,11 +50,13 @@ with sync_playwright() as pw:
     a,b = host.new_page(),guest.new_page()
     for page in (a,b):
         page.on('pageerror',lambda error: errors.append(str(error)))
-        page.goto(BASE);settle(page)
+        page.goto(BASE+'/arena');settle(page)
     host.request.post(BASE+'/api/profile',data={'name':'Mateo'})
     guest.request.post(BASE+'/api/profile',data={'name':'Alex'})
     a.reload();settle(a)
-    expect(a.get_by_role('heading',name='A little competition. A better study session.')).to_be_visible()
+    expect(a.get_by_role('heading',name='Arena',exact=True)).to_be_visible()
+    assert a.evaluate('getComputedStyle(document.body).backgroundColor') == 'rgb(17, 19, 21)'
+    assert 'Inter' in a.evaluate('getComputedStyle(document.body).fontFamily')
     capture(a,'home-desktop.png')
     a.get_by_role('button',name='Create a room',exact=True).click()
     a.wait_for_url('**/room/*');settle(a)
@@ -160,7 +162,7 @@ with sync_playwright() as pw:
     a.goto(BASE+'/room/0000000000');settle(a)
     expect(a.get_by_role('heading',name='That room is unavailable.')).to_be_visible()
     # Practice bot is explicit, friendly only, and uses the same match state machine.
-    a.goto(BASE);settle(a)
+    a.goto(BASE+'/arena');settle(a)
     a.get_by_role('button',name='Practice solo',exact=True).click();settle(a)
     expect(a.get_by_text('Practice bot · Ready',exact=True)).to_be_visible()
     expect(a.get_by_label('Match mode').locator('option[value="ranked"]')).to_be_disabled()

@@ -1,320 +1,141 @@
----
-name: Basis Arena
-description: A light Campus scorebook for shared study and friendly competition.
-colors:
-  ground: "#f3f5fa"
-  surface: "#ffffff"
-  ink: "#29264b"
-  plum: "#29264b"
-  accent: "#6b54ad"
-  accent-hover: "#594392"
-  focus: "#a48bce"
-  muted: "#685d75"
-  line: "#dde0ea"
-  success: "#267465"
-  danger: "#9a4555"
-  ochre: "#a2692d"
-  nav-active: "#c6b7ed"
-  nav-label: "#cdc8de"
-  field-border: "#d4d7e2"
-  secondary-border: "#d7d4e2"
-  secondary-hover: "#f6f3fc"
-  lavender-wash: "#e9e4f3"
-  badge-ink: "#68547d"
-  format-selected: "#f5f1fc"
-  player-wash: "#e9e3f6"
-  player-ink: "#5d458d"
-  opponent-wash: "#f5e8d9"
-  opponent-ink: "#885924"
-typography:
-  display:
-    fontFamily: "'Manrope Variable', sans-serif"
-    fontSize: "44px"
-    fontWeight: 750
-    lineHeight: 1.14
-    letterSpacing: "-0.03em"
-  headline:
-    fontFamily: "'Manrope Variable', sans-serif"
-    fontSize: "36px"
-    fontWeight: 750
-    lineHeight: 1.18
-    letterSpacing: "-0.03em"
-  question:
-    fontFamily: "'Manrope Variable', sans-serif"
-    fontSize: "26px"
-    fontWeight: 740
-    lineHeight: 1.28
-    letterSpacing: "-0.025em"
-  title:
-    fontFamily: "'Manrope Variable', sans-serif"
-    fontSize: "20px"
-    fontWeight: 740
-    lineHeight: 1.35
-    letterSpacing: "-0.02em"
-  body:
-    fontFamily: "'Manrope Variable', sans-serif"
-    fontSize: "14px"
-    fontWeight: 400
-    lineHeight: 1.5
-  label:
-    fontFamily: "'Manrope Variable', sans-serif"
-    fontSize: "12px"
-    fontWeight: 700
-    lineHeight: 1.5
-  button:
-    fontFamily: "'Manrope Variable', sans-serif"
-    fontSize: "13px"
-    fontWeight: 700
-    lineHeight: 1.5
-  nav:
-    fontFamily: "'Manrope Variable', sans-serif"
-    fontSize: "13px"
-    fontWeight: 550
-    lineHeight: 1.5
-  badge:
-    fontFamily: "'Manrope Variable', sans-serif"
-    fontSize: "11px"
-    fontWeight: 600
-    lineHeight: 1.5
-  score:
-    fontFamily: "'Manrope Variable', sans-serif"
-    fontSize: "30px"
-    fontWeight: 680
-    lineHeight: 1.5
-    letterSpacing: "-0.03em"
-  code:
-    fontFamily: "ui-monospace, SFMono-Regular, Consolas, monospace"
-    fontSize: "12px"
-rounded:
-  tag: "4px"
-  control: "6px"
-  choice: "7px"
-  readiness: "10px"
-  panel: "12px"
-  badge: "20px"
-  avatar: "50%"
-spacing:
-  "4": "4px"
-  "8": "8px"
-  "12": "12px"
-  "16": "16px"
-  "20": "20px"
-  "24": "24px"
-  "28": "28px"
-  "32": "32px"
-  "40": "40px"
-  "64": "64px"
-components:
-  button-primary:
-    backgroundColor: "{colors.accent}"
-    textColor: "{colors.surface}"
-    typography: "{typography.button}"
-    rounded: "{rounded.control}"
-    padding: "12px 20px"
-  button-primary-hover:
-    backgroundColor: "{colors.accent-hover}"
-  button-secondary:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    typography: "{typography.button}"
-    rounded: "{rounded.control}"
-    padding: "12px 20px"
-  button-secondary-hover:
-    backgroundColor: "{colors.secondary-hover}"
-  button-text:
-    backgroundColor: "transparent"
-    textColor: "{colors.accent}"
-    padding: "3px 0"
-  field:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.control}"
-    padding: "0 13px"
-    height: "47px"
-    width: "100%"
-  nav:
-    backgroundColor: "{colors.plum}"
-    textColor: "{colors.nav-label}"
-    typography: "{typography.nav}"
-    height: "80px"
-  badge:
-    backgroundColor: "{colors.lavender-wash}"
-    textColor: "{colors.badge-ink}"
-    typography: "{typography.badge}"
-    rounded: "{rounded.badge}"
-    padding: "6px 11px"
-  work-panel:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.panel}"
-    padding: "30px"
-  format-option:
-    backgroundColor: "{colors.surface}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.choice}"
-    padding: "15px 14px"
-  format-option-selected:
-    backgroundColor: "{colors.format-selected}"
-    padding: "14px 13px"
-  round-mark:
-    backgroundColor: "#e8e5ef"
-    textColor: "{colors.muted}"
-    rounded: "{rounded.tag}"
-    height: "19px"
-  editor:
-    rounded: "{rounded.choice}"
-    typography: "{typography.code}"
----
+# VisCon Design System
 
-# Design System: Basis Arena
+One visual system for the whole repository: the learning world, Arena, Lectures, Campus, and the
+standalone video demonstration. This replaces the earlier light/plum Arena and
+the separate green/blue lecture interfaces.
 
-## Overview
+## Direction
 
-**Creative North Star: "Campus scorebook"**
+Modern SaaS B2B, influenced by the direct matchup workflow of
+[NeetCode Versus](https://neetcode.io/versus). The product opens into useful work:
+match configuration in Arena and course selection/search in Lectures. No
+marketing hero precedes these workflows.
 
-A clear university score sheet gives shared study a friendly competitive rhythm. Cool paper, white work areas, and a dark plum navigation bar hold the interface together. Violet identifies the player's actions; warm ochre distinguishes the opponent. The light appearance is the user-selected visual identity.
+Use charcoal neutrals, readable Inter typography, compact controls, fine borders,
+and a restrained green action accent. The design supports repeated study sessions:
+questions, video moments, settings, opponents, and results take priority over
+decoration. A common VisCon header identifies the active module.
 
-The atmosphere is composed, approachable, and focused on reading. Strong sentence-case headings sit above compact labels and generous work areas. Paired scores and round marks make the contest visible while questions, formulas, and code remain the main work. Imagery is code-native: Lucide SVG icons, mathematical notation, and a simple SVG rating chart.
+## Source Of Truth
 
-**Key Characteristics:**
-- Cool light ground with flat white work panels.
-- Self-hosted Manrope for headings, controls, and prose.
-- Violet player actions and ochre opponent identity.
-- Paired scores and aligned strips of round outcomes.
-- Restrained borders, moderate corners, and quiet state changes.
+| File                              | Responsibility                                                          |
+| --------------------------------- | ----------------------------------------------------------------------- |
+| `shared/design/tokens.css`        | Semantic colors, font stacks, corners, header dimensions                |
+| `shared/design/fonts.css`         | Local Inter font faces, weights 400/500/600/700                         |
+| `shared/design/fonts/`            | WOFF2 assets and the Inter license                                      |
+| `shared/design/base.css`          | Shared reset, typography, focus, scrollbar, product header              |
+| `shared/design/ProductHeader.tsx` | Shared React navigation shell                                           |
+| `src/styles.css`                  | Arena layouts, rooms, matches, results, tables, profile, editor         |
+| `src/mania/*.css`                 | Learning world, recall, study tables, puzzles, and teaching visualizers |
+| `web-interface/src/styles.css`    | Lecture navigation, search, library, picker, player                     |
+| `video-pull-up/demo/demo.css`     | Standalone video demonstration layout                                   |
+| `src/GlobeArrival.css`            | Campus imagery and scene-specific overlays                              |
 
-This is a scan of the implemented system in `src/tokens.css`, `src/styles.css`, `src/App.tsx`, and `src/JavaEditor.tsx`. The frontmatter owns primitive values; `.impeccable/design.json` supplies preview snippets, metadata, breakpoints, shadows, and motion. Source values take precedence over earlier concept values. Generated tonal ramps are preview metadata, not additional production colors.
+React applications import shared styles through their CSS entry points. The
+standalone demonstration imports `/design/base.css`; its server serves only the
+explicitly allowed shared CSS/font assets. Fonts require no external CDN.
 
-## Colors
+New UI must reuse these tokens and existing controls. Do not introduce a second
+palette, independent font imports, decorative panel shadows, or unrelated
+navigation styling. Satellite imagery, map shading, and code syntax highlighting
+are content-specific exceptions, not alternative interface themes.
 
-The palette feels like cool paper marked with plum ink, violet selections, and warm opponent annotations. Values live in the frontmatter; the names below describe their use.
+## Color
 
-### Primary
+| Token              | Value     | Use                                          |
+| ------------------ | --------- | -------------------------------------------- |
+| `--ground`         | `#111315` | Page and editor canvas                       |
+| `--surface`        | `#191c1f` | Header, inputs, repeated items, dialogs      |
+| `--surface-raised` | `#22262a` | Secondary surfaces and media placeholders    |
+| `--surface-hover`  | `#292e33` | Neutral hover state                          |
+| `--ink`            | `#edf0f3` | Primary text                                 |
+| `--muted`          | `#a5adb7` | Secondary text                               |
+| `--subtle`         | `#818b97` | Low-priority labels and placeholders         |
+| `--line`           | `#30363d` | Separators                                   |
+| `--line-strong`    | `#454e58` | Input boundaries                             |
+| `--accent`         | `#69c49a` | Primary actions, selected states, time links |
+| `--accent-hover`   | `#86d8b0` | Primary hover and focus                      |
+| `--accent-ink`     | `#101e17` | Text on green buttons                        |
+| `--accent-soft`    | `#1c3229` | Selected item background                     |
+| `--danger`         | `#ed9494` | Errors and losses                            |
+| `--ochre`          | `#e1bc7b` | Opponent and warning context                 |
+| `--info`           | `#9bbde1` | Informational context                        |
 
-- **Study Violet** (`accent`, `accent-hover`): primary actions, selected answers, the player's score, and rating-chart strokes.
-- **Focus Lavender** (`focus`): visible keyboard outlines.
-- **Lavender Wash** (`lavender-wash`, `format-selected`): readiness and compact contextual badges, with a lighter tint for a selected format.
+Status colors always have a label or icon. Use dark ink on accent-filled controls,
+not white text. Normal content text should meet a 4.5:1 contrast ratio. Dimmed
+disabled controls are not normal text. Avoid turning every surface green.
 
-### Secondary
+## Typography And Geometry
 
-- **Opponent Ochre** (`ochre`): the opposing score. `opponent-wash` and `opponent-ink` distinguish the opposing avatar.
-- **Success Teal** (`success`): readiness, correct answers, and positive rating changes.
-- **Error Rose** (`danger`): incorrect answers, negative changes, and urgent or failed states. Labels and icons accompany these meanings.
+- Inter is the shared interface font. Java uses the shared monospace stack;
+  formulas retain KaTeX's domain-specific faces.
+- Body text is 14px, compact controls 12-13px, labels 11-12px, panel titles 16-18px,
+  and page titles 28px. True immersive Campus headings may use 36-48px.
+- Ordinary weights are 400, 500, and 600. Letter spacing is zero. Do not scale
+  font size continuously with viewport width.
+- Use tabular numerals for scores, ratings, clocks, and comparable numbers.
+- Spacing follows a 4px rhythm: 8, 12, 16, 24, 32, and 40px.
+- Controls use 6px corners; repeated items and dialogs use at most 8px. Circular
+  radio indicators, status dots, and the Earth are functional exceptions.
+- Controls have stable dimensions. Buttons are typically 36-40px high; icon
+  buttons are square, labeled for assistive technology, and have hover titles.
+- Shadows belong only to overlays. Ordinary sections are unframed layouts or
+  full-width bands, not floating cards. Do not nest cards inside cards.
 
-### Neutral
+## Surface Rules
 
-- **Cool Paper** (`ground`) and **Work White** (`surface`): the page and its working areas.
-- **Plum Ink** (`ink`, `plum`): readable text and the full-width navigation field. These preserve two semantic source tokens with the same color.
-- **Muted Plum** (`muted`): supporting copy, timestamps, chart labels, and placeholders.
-- **Paper Line** (`line`, `field-border`, `secondary-border`): boundaries between panels, controls, and quiet actions.
-- **Navigation Lavender** (`nav-active`, `nav-label`): the wordmark accent, active underline, and inactive navigation text.
-- **Player Lavender** (`player-wash`, `player-ink`) and **Badge Ink** (`badge-ink`): avatar identity and contextual badge copy.
+**Learning world:** The concurrent Mania frontend at `/` uses the same header,
+neutral surfaces, controls, and Inter as the other modules. Its knowledge map and
+teaching diagrams retain their content-specific geometry. Surrounding workspaces
+and visualizer controls use the common compact system, not separate cyan/lime
+themes. Arena remains available at `/arena`.
 
-**The Color Has a Job Rule.** Use violet for the player's actions and selections, ochre for the opposing player, and success or error colors for outcomes with a written or icon cue.
+**Arena:** Immediate subject selection and matchup preview, with a separate
+join-room area. Lobby settings, invitations, and readiness remain visible.
+During matches, paired score/progress strips and a stable mobile timer support
+the question. Results and history use compact summaries and comparable tables.
 
-## Typography
+**Lectures:** Same header and neutrals, with a narrow icon rail for course/chat
+context. Course selection keeps the year/semester/study-year structure. Search
+answers, citations, and lecture thumbnails remain genuine content. The player
+uses native video controls and the same timestamp, tab, bookmark, and dialog
+styles. Missing recording files have an explicit fallback, not a fake player.
 
-**Display and Body Font:** Manrope Variable, self-hosted through `@fontsource-variable/manrope`, with a sans-serif fallback.
+**Campus:** The preserved satellite journey lives at `/campus`, separate from the
+work-first Arena screen. Its scene is full width, with shared type and controls.
+Image attribution remains visible. Reduced motion and unavailable-tile fallbacks
+remain supported.
 
-**Code Font:** the platform monospace stack recorded as `typography.code`. KaTeX retains its mathematical type for formulas.
+**Video demo:** Same header, type, fields, buttons, status colors, and media
+surfaces as the connected app. Retrieval and playback behavior remain unchanged.
 
-Manrope provides one consistent, clear voice. Heavy headings and tabular numbers create hierarchy without an additional display family. Labels remain sentence case. Type is responsive rather than a single proportional scale.
+## Responsive And Accessible
 
-### Hierarchy
+The header is 64px on desktop and 100px below 650px, with navigation on a second
+row. Desktop workspaces use restrained content widths; mobile stacks columns.
+Tables, code, and long navigation scroll locally instead of widening the page.
+Text wraps within its own element and never overlaps adjacent controls.
 
-- **Display:** the home invitation uses `display`; it grows to 48px at the wide breakpoint and becomes 32px on phones.
-- **Headline:** page titles use `headline`; common compact page titles become 29px on phones.
-- **Question:** `question` titles become 23px on compact screens. Prompts use body-sized text with a more open line-height (1.9 desktop, 1.8 mobile) and a reading measure up to 65ch.
-- **Title:** `title` anchors panels. Answer panels use a smaller local title (18px), while question titles retain their own role.
-- **Body:** `body` establishes ordinary text; paragraphs have a maximum measure of 72ch.
-- **Label and controls:** `label`, `button`, `nav`, and `badge` capture their implemented roles. Supporting metadata varies locally from 9–12px; this range is descriptive, not a default for new primary content.
-- **Score and code:** `score` uses tabular numerals. Timers, rating values, result scores, and numeric inputs also use tabular numerals; code remains monospace.
+Keep visible keyboard focus, labeled form controls, dialog focus handling,
+native playback controls, reduced-motion support, and non-color status cues.
+Do not hide a live match timer while the user scrolls to their answer.
 
-**The Stable Numbers Rule.** Use tabular numerals for changing scores, clocks, ratings, and comparable numeric answers so columns and digit widths stay steady.
+## Verification
 
-## Layout
+```sh
+npm test
+npm run build
+npm run test:ui
+cd web-interface
+npm run build
+```
 
-The shared desktop container has a maximum width of 1440px. Navigation and page content align to 64px horizontal gutters; the page begins with 40px of top space. Panels group a task, while rows and separators organize information inside each panel. Spacing commonly uses the recorded 4px steps, with local optical adjustments rather than a rigid universal grid.
+The browser suite covers both connected applications at desktop and mobile
+sizes. It checks match flows, contrast, overflow, course selection, search,
+bookmarks, native demo-video playback, and timestamp seeking. Large imported
+recordings require `git lfs pull`; without them the suite checks the explicit
+missing-video fallback while still checking playback against the bundled demos.
 
-The home uses a wider course area and a narrower companion column. The lobby uses a 1.8:1 split with a minimum 330px player column. Standard matches use two equal working columns separated by 28px; Java grants slightly more width to the editor. Profile uses a 360px identity column beside progress. These are component compositions, not mandatory layouts for every new page.
-
-- At 1150px and below, outer gutters become 32px and inter-panel spacing tightens.
-- At 900px and below, gutters become 24px; home and profile reorganize, while the lobby retains a 300px companion column. Lobby fields stack inside the narrower settings panel.
-- At 650px and below, gutters become 20px, lobby and match work areas become a single column, and primary home actions stack. The navigation wraps into a second row while the profile avatar stays visible. Lobby fields return to two compact columns within the now full-width panel.
-- At 1500px and above, the container stays capped while home headings and top spacing increase.
-
-On phones, the active match has a sticky plum timer strip at the top of the viewport. The question and answer panels scroll naturally beneath it. Tables use local horizontal scrolling; formulas and code can also scroll inside their own boundaries. The rating chart uses a responsive SVG with visible start/latest values, dates, and a chronological caption.
-
-## Elevation & Depth
-
-Ordinary surfaces are flat. White panels, cool page ground, soft lavender regions, and restrained borders establish separation. Depth appears for temporary layers: a plum toast has an ambient shadow, and the leave dialog has a larger soft shadow over a translucent plum scrim. There are no hard offset shadows or decorative gradients in the implemented world.
-
-### Shadow Vocabulary
-
-- **Toast:** `0 8px 28px #29264b22`, for transient confirmation above content.
-- **Dialog:** `0 15px 60px #21162d30`, for a modal decision over the scrim (`#23182b66`).
-
-**The Flat Work Surface Rule.** Keep ordinary cards and answer panels flat; reserve shadows for transient overlays.
-
-## Shapes
-
-Work panels have moderate corners (`rounded.panel`). Buttons and text fields use smaller control corners; answer choices, format tiles, and the editor use `rounded.choice`. Readiness and table containers use the intermediate readiness radius. Small tags and round marks use compact corners, while avatars are circular and contextual badges are pill-shaped.
-
-Borders are generally 1px. Selected formats use a 2px violet stroke with padding reduced by 1px to preserve geometry. The active navigation uses a 3px underline. A dashed avatar outline signals an empty player place. Lucide icons use SVG strokes and familiar silhouettes; icons are not rendered as text glyphs.
-
-## Components
-
-### Buttons
-
-Confident and compact. Primary buttons use Study Violet with white text; secondary buttons use white with a fine border. Both use the frontmatter control radius and padding, a minimum height of 45px, and a 10px icon gap. Readiness actions fill their region and have a minimum height of 48px.
-
-Hover deepens the primary fill or softly tints the secondary fill over 150ms. Text actions remain unfilled and gain an underline on hover. Keyboard focus uses a 3px lavender outline; buttons, inputs, and selects offset it by 4px. Disabled buttons retain their shape at 0.48 opacity and use a not-allowed cursor. Do not synthesize an unimplemented pressed animation.
-
-### Chips and tags
-
-Contextual badges use a lavender wash, compact sentence-case copy, and the badge radius. Small identity tags use compact corners. Outcome tags combine a tinted surface and success, error, or muted text with the explicit words Won, Lost, or Draw. These are information labels, not universal action pills.
-
-### Cards / Containers
-
-White work panels use Paper Line borders and the panel radius. Question, answer, and profile panels use 30px desktop padding; settings uses 28px 32px. Compact layouts reduce padding to roughly 20–24px according to the component. Lists inside panels use separators instead of nested shadows. Lavender readiness areas visually gather status, action, and the short explanation beneath them.
-
-### Inputs / Fields
-
-White text inputs and native selects have a fine field border, the control radius, and the frontmatter field dimensions. Desktop labels sit 9px above the control. On phones, lobby controls are 44px high with 9px horizontal padding. Numeric answers get a larger 65px field and 24px tabular text. Placeholders use Muted Plum at full opacity. Errors remain adjacent to their field; disabled configuration fields receive a pale fill.
-
-Format tiles combine a Lucide icon, a short name, and a description. Selection is conveyed by the violet border, pale fill, and check icon. Multiple-choice answers use a letter marker plus the answer, then add selection color and a check; the chosen answer remains legible after locking.
-
-### Navigation
-
-The plum topbar holds the Manrope wordmark, text navigation, and a profile identity. Active navigation is white with a lavender bottom border; hover turns inactive labels white. Desktop navigation is 80px tall, reduces to 72px on tablets, and wraps on phones. The avatar remains an operable profile target after the profile text is hidden. A keyboard skip link precedes the header.
-
-### Paired scorebook
-
-Two mirrored player identities and scores flank a shared clock. Aligned strips below show the same round positions for both players. Current rounds use player-specific tints; correct and incorrect rounds use semantic color with check or cross marks. On phones the scoreboard becomes compact while the separate sticky timer keeps the deadline visible during answer selection.
-
-### Java editor and mathematical content
-
-The editor is a light CodeMirror surface inside the choice-radius border, with a quiet file tab and a 310px editing area. Code uses the recorded monospace stack. Focus uses a 2px lavender editor outline. Example execution is a secondary button followed by readable notices or test output. The preview sidecar illustrates its visual shell; the production CodeMirror component owns editing and syntax behavior. Mathematical formulas are rendered with KaTeX and can scroll horizontally within the question.
-
-### Feedback and motion
-
-Notices pair an icon with text on a pale contextual surface. Toasts and the keyboard-contained leave dialog use the overlay vocabulary. Round review enters with a 4px upward settle and a slight brightness change over 220ms with ease-out. Loading icons rotate over one second. The reduced-motion preference removes animations and transitions. Motion never changes the scorebook's geometry during reading.
-
-## Do's and Don'ts
-
-### Do:
-
-- **Do** keep the user-selected light ground, white work panels, and plum navigation across new surfaces.
-- **Do** use self-hosted Manrope, sentence-case labels, and tabular numerals for scores and clocks.
-- **Do** preserve written or icon cues beside meaningful status colors.
-- **Do** keep both players' round positions aligned and the active timer visible on phones.
-- **Do** use local scrolling for long code, formulas, and tables while the page fits its viewport.
-- **Do** retain visible keyboard focus and honor reduced-motion preferences.
-
-### Don't:
-
-- **Don't** substitute the earlier sketch's color values for the implemented tokens.
-- **Don't** add decorative photography or illustration to this code-native study world.
-- **Don't** add shadows to ordinary work panels or nest shadowed cards inside them.
-- **Don't** turn score, rating, and time numerals into proportional-width text.
-- **Don't** use a system display face or text glyphs in place of the shipped Manrope and SVG icon vocabulary.
+The standalone demonstration also has
+`video-pull-up/scripts/verify-browser.mjs`. Browser reports/screenshots go into
+`.impeccable/review/` or `video-pull-up/artifacts/`, not production assets.

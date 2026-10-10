@@ -28,7 +28,7 @@ export function LectureCard({ lecture, course, showBestMatch, savedIds, onSave, 
         <span className="video-duration">{formatTime(lecture.duration)}</span>
       </button>
       <div className="lecture-details">
-        <div className="course-label" style={{ color: course.color }}><span className="course-dot" style={{ background: course.color }} />{course.shortName}<span className="lecture-number">{lecture.demo ? 'Demo' : `VL ${String(lecture.episode).padStart(2, '0')}`}</span></div>
+        <div className="course-label"><span className="course-dot" style={{ background: course.color }} />{course.shortName}<span className="lecture-number">{lecture.demo ? 'Demo' : `VL ${String(lecture.episode).padStart(2, '0')}`}</span></div>
         <button className="lecture-title" onClick={() => onOpen(lecture, firstSegment)}>{lecture.title}<ArrowUpRight size={17} /></button>
         <p className="lecture-meta">{lecture.demo ? 'Beispielvideo · kein Kursmaterial' : lecture.mediaUrl ? 'Video mit Transkript und Kapiteln' : 'Transkript verfügbar · Video fehlt'}</p>
         <div className="segments-heading"><Clock3 size={13} />{segments.length} {chapterList ? 'Kapitel' : segments.length === 1 ? 'passende Stelle' : 'passende Stellen'}</div>

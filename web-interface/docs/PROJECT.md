@@ -5,6 +5,7 @@ Studierende stellen eine fachliche Frage und erhalten passende Vorlesungsvideos 
 ## Aktuelle Entscheidungen
 
 - React und TypeScript bilden das Interface ab. Der Root-Vite-Build erzeugt getrennte HTML-/CSS-Einstiegspunkte für Arena und VisCon.
+- Alle Oberflächen teilen Farben, lokale Inter-Schriften und Navigation aus `shared/design/`. Der gemeinsame SaaS-B2B-Designvertrag steht in [DESIGN.md](../../DESIGN.md); die Campus-Ansicht liegt unter `/campus`.
 - Die schmale Icon-Leiste und die Hover-/Klick-Auswahl bleiben erhalten. Das Arena-Icon öffnet die vorhandene Multiplayer-App unter `/`.
 - Datiertes Demo-Material verwendet die Auswahl Jahr → Semester → Studienjahr → Fach. Die 24 realen Aufnahmen ohne bestätigte Studien- und Datumsmetadaten stehen unter „Aufzeichnungen“.
 - Vor der Fachauswahl bleibt der Chat gesperrt. Suche und Verlauf behalten den Fachkontext. Ein Fachwechsel bricht alte Anfragen ab und entfernt veraltete Ergebnisse; „Neuer Chat“ behält die Auswahl.

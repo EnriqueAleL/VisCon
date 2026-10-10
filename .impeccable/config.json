@@ -7,13 +7,13 @@
         "rule": "design-system-font",
         "value": "inter",
         "createdAt": "2026-10-09T20:47:11.957Z",
-        "reason": "Preserved the imported VisCon frontend's existing Inter typography while integrating it with Basis Arena; the user asked to keep both applications."
+        "reason": "Inter is the shared, self-hosted interface font for the user's requested repository-wide modern SaaS B2B redesign."
       },
       {
         "rule": "overused-font",
         "value": "inter",
         "createdAt": "2026-10-09T21:23:15.438Z",
-        "reason": "Preserve the existing Inter typography of the imported VisCon frontend, as requested by the user when integrating both applications. This is an ordinary integration, not a redesign."
+        "reason": "Use one consistent Inter family across Arena, Lectures, Campus, and the video demo, as documented in DESIGN.md."
       }
     ]
   }

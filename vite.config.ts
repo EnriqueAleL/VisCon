@@ -4,6 +4,8 @@ import { resolve } from 'node:path';
 
 export default defineConfig({
   publicDir: 'web-interface/public',
+  // Both frontends must share React, even with legacy web-interface/node_modules present.
+  resolve: { dedupe: ['react', 'react-dom'] },
   plugins: [react(), {
     name: 'viscon-learn-route',
     configureServer(server) {

@@ -1,5 +1,6 @@
-"""Run both frontends against a temporary, isolated production server."""
+"""Run the learning world, lecture library, Arena and campus browser suites."""
 import os
+import argparse
 import socket
 import subprocess
 import sys
@@ -12,12 +13,22 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def run_suite(env):
-    for script in ('lecture_browser.py', 'browser_flow.py'):
+    scripts = {'lectures': 'lecture_browser.py', 'arena': 'browser_flow.py', 'globe': 'globe_browser.py', 'mania': 'mania_browser.py'}
+    selected = env.get('BROWSER_SUITES', ','.join(scripts)).split(',')
+    if any(name not in scripts for name in selected):
+        raise ValueError('BROWSER_SUITES must contain lectures, arena, globe, and/or mania.')
+    for name in selected:
+        script = scripts[name]
         subprocess.run([sys.executable, str(ROOT / 'tests' / script)], cwd=ROOT, env=env, check=True)
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--suites', help='Comma-separated lectures, arena, globe, and/or mania.')
+    args = parser.parse_args()
     env = os.environ.copy()
+    if args.suites:
+        env['BROWSER_SUITES'] = args.suites
     if env.get('TEST_URL'):
         run_suite(env)
         return
@@ -26,7 +37,7 @@ def main():
         port = sock.getsockname()[1]
     with tempfile.TemporaryDirectory(prefix='viscon-browser-') as folder:
         url = f'http://127.0.0.1:{port}'
-        env.update(PORT=str(port), HOST='127.0.0.1', DATABASE_PATH=str(Path(folder) / 'arena.sqlite'), ALLOWED_ORIGINS=url, TEST_URL=url, LECTURE_QA_PROVIDER='local')
+        env.update(PORT=str(port), HOST='127.0.0.1', DATABASE_PATH=str(Path(folder) / 'arena.sqlite'), ALLOWED_ORIGINS=url, TEST_URL=url, LECTURE_QA_PROVIDER='local', MANIA_TRUST_PROXY='false', COOKIE_SECURE='false')
         env.pop('OLLAMA_MODEL', None)
         env.pop('QUESTION_BANK_PATH', None)
         with open(Path(folder) / 'server.log', 'w+') as log:

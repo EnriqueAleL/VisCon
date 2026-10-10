@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  BookOpen,
   Bookmark,
   CircleHelp,
   GraduationCap,
@@ -32,7 +31,8 @@ interface IconSidebarProps {
 }
 
 export function IconSidebar({
-  courses, lectures,
+  courses,
+  lectures,
   view,
   selectedCourse,
   pickerRequest,
@@ -109,20 +109,6 @@ export function IconSidebar({
 
   return (
     <aside ref={sidebarRef} className="sidebar" aria-label="Hauptnavigation">
-      <a
-        className="rail-brand"
-        href="#"
-        title="VisCon Startseite"
-        aria-label="VisCon Startseite"
-        onClick={(event) => {
-          event.preventDefault();
-          navigate('questions');
-        }}
-      >
-        <span className="brand-symbol">
-          <BookOpen size={22} strokeWidth={2.2} />
-        </span>
-      </a>
       <nav className="rail-nav" aria-label="Lernraum">
         <button
           className="rail-button rail-new-chat"
@@ -278,7 +264,9 @@ export function IconSidebar({
         >
           <Bookmark size={20} />
         </button>
-        <a className="rail-button" href="/" title="Arena" aria-label="Arena"><ArenaIcon /></a>
+        <a className="rail-button" href="/arena" title="Arena" aria-label="Arena">
+          <ArenaIcon />
+        </a>
       </nav>
       <div className="rail-bottom">
         <button

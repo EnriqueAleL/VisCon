@@ -5,14 +5,18 @@ import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { Server } from 'socket.io';
 import type { BankQuestion,Settings,Player,RoomView,RoundResult,Outcome,Profile,HistoryEntry } from '../shared/types';
-import { subjects,eligible,publicQuestion,correct,answerLabel,demoContent,numericValue } from './questions';
+import { subjects,eligible,publicQuestion,correct,answerLabel,demoContent,numericValue,registerCourseQuestions } from './questions';
 import { profile,session,createPlayer,rename,history,leaderboard,saveMatch } from './store';
 import { eloDelta } from './rating';
 import { javaAvailable,judge } from './judge';
 import { mountLectures } from './lectures';
+import { mountMania, maniaIdentity } from './mania';
+import { mountSocial } from './social';
+import { mountManiaAnswers } from './mania-answers';
 
 const app=express(),http=createServer(app),port=Number(process.env.PORT||3001);
 const allowed=new Set((process.env.ALLOWED_ORIGINS||'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3001,http://127.0.0.1:3001').split(','));
+if (process.env.APP_PUBLIC_URL) allowed.add(new URL(process.env.APP_PUBLIC_URL).origin);
 function allowedOrigin(origin:string|undefined){return !origin||allowed.has(origin);}
 const io=new Server(http,{allowRequest:(req,cb)=>cb(null,allowedOrigin(req.headers.origin))});
 app.use(express.json({limit:'48kb'}));
@@ -117,6 +121,24 @@ io.on('connection',socket=>{
 });
 setInterval(()=>{for(const [key,value]of rates)if(Date.now()-value.at>120000)rates.delete(key);for(const [key,r]of rooms)if(Date.now()-r.createdAt>4*3600000){if(!['finished','cancelled'].includes(r.state))cancel(r,'This room expired. Create a new challenge.');rooms.delete(key);}},60000).unref();
 await mountLectures(app);
+const learning = await mountMania(app, io);
+registerCourseQuestions(learning.bundle.bank.map(question => ({
+  id: `ddca-${question.id}`, subject: 'ddca', topic: learning.bundle.world.cities.find(city => city.id === question.cityId)!.name,
+  title: question.source.title, prompt: question.prompt, options: question.options,
+  answer: question.answer, explanation: `${question.explanation} · ${question.source.lectureId.toUpperCase()} at ${Math.floor(question.source.start / 60)}:${String(Math.floor(question.source.start % 60)).padStart(2, '0')}`,
+  format: 'quiz' as const, difficulty: 'standard' as const, source: `DDCA lecture-grounded practice · ${question.source.lectureId.toUpperCase()} · ${question.source.title}`,
+})), { id: 'ddca', name: 'DDCA · Your knowledge world', description: 'Lecture-grounded recall across 24 cities. Challenge a friend on your current concept.' });
+app.post('/api/mania/cities/:id/duel', route((req, res, p) => {
+  const city = learning.bundle.world.cities.find(item => item.id === req.params.id);
+  if (!city) throw new Error('That study city was not found.');
+  const identity = maniaIdentity(req, res);
+  if (identity.demo) throw new Error('Switch to your real profile to challenge a friend.');
+  if (identity.source === 'proxy' && p.name !== identity.name) p = rename(p.id, identity.name.slice(0, 24));
+  const settings = validateSettings({ subject: 'ddca', topic: city.name, format: 'quiz', difficulty: 'mixed', rounds: 3, seconds: 60, ranked: false });
+  res.json(view(newRoom(p, settings)));
+}));
+mountSocial(app, io);
+await mountManiaAnswers(app);
 app.use('/api',(_req,res)=>res.status(404).json({error:'API route not found.'}));
 if(existsSync('dist/index.html')){app.get(['/learn','/learn/'],(_req,res)=>res.sendFile(resolve('dist/learn.html')));app.use(express.static('dist'));app.get('/{*path}',(_req,res)=>res.sendFile(resolve('dist/index.html')));}
 app.use((err:any,_req:express.Request,res:express.Response,_next:express.NextFunction)=>res.status(Number.isInteger(err.status)&&err.status>=400&&err.status<600?err.status:500).json({error:err.status===404?'File not found.':'The request could not be read.'}));

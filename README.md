@@ -1,4 +1,33 @@
-# VisCon + Basis Arena
+# The Mania — See the lecture
+
+An interactive DDCA study world built from the existing 24 recordings and chapter
+index: 24 course cities, cited video answers, recall and spaced review, daily
+expeditions, pipeline/cache/virtual-memory visualizers, timed mixed exams,
+optimization puzzles, live boards, and shared study tables.
+The main app is `/`; the preserved Arena is `/arena`, lectures are `/learn`, and
+the campus view is `/campus`. Demo study history is explicitly labelled and separate
+from real progress and public leaderboards. Other subject planets are placeholders.
+
+For the supplied VM, keep the media corpus outside the build image and run:
+
+```sh
+git lfs pull
+cp .env.example .env
+# Set APP_PUBLIC_URL, ALLOWED_ORIGINS, and COOKIE_SECURE for the managed hostname.
+docker compose build app
+docker compose up -d app
+docker compose exec app npm run check:deployment -- http://127.0.0.1:8080 --require-videos
+```
+
+Compose binds `0.0.0.0:8080`, restarts with `unless-stopped`, and persists SQLite
+in a named volume. Keys stay in the backend. Managed identity headers are trusted
+only after an operator explicitly enables `MANIA_TRUST_PROXY` with restricted
+proxy ingress; see the [deployment runbook](docs/hackathon-deployment.md) for that
+trust boundary, the optional Python image, public access setting, and deadline checks.
+Use [the three-minute demo script](docs/demo-script.md) for the final and QR challenge.
+These files prepare deployment; a real VM and managed hostname are still required.
+
+# VisCon
 
 One local app for finding moments in lecture videos and practising with friends.
 The shared server serves both frontends and preserves the existing player profiles,
@@ -15,8 +44,10 @@ npm install
 npm run dev
 ```
 
-- **Basis Arena:** http://localhost:5173/ — rooms, practice, quizzes, numeric answers, Java editor, Elo and history.
-- **VisCon:** http://localhost:5173/learn — course picker, chat, lecture library, native video, chapters, transcripts, bookmarks and available study notes.
+- **Study world:** http://localhost:5173/ — knowledge map, recall, visualizers, puzzles and study tables.
+- **Arena:** http://localhost:5173/arena — rooms, practice, quizzes, numeric answers, Java editor, Elo and history.
+- **Lectures:** http://localhost:5173/learn — course picker, chat, lecture library, native video, chapters, transcripts, bookmarks and available study notes.
+- **Campus:** http://localhost:5173/campus — the preserved satellite journey to ETH Zürich.
 
 Use **Lectures** in Arena or the **Arena** icon in VisCon to switch. Leaving an
 active Arena room through this link asks for confirmation. Both pages use the
@@ -43,19 +74,20 @@ from their original locations, with byte-range seeking, rather than copied into
 
 ## Connected components
 
-| Component | Integration |
-| --- | --- |
-| `src/`, `server/`, `shared/` | Existing Basis Arena, Socket.IO and SQLite |
-| `web-interface/` | Latest course picker and icon sidebar, now connected to real APIs |
-| `video-pull-up/` | Shared retrieval, cited transcript answers, player seeking and playable demos |
-| `lectures/` | 24 recordings and their original WebVTT transcripts |
-| `qa/data/index.json` | Chapter titles, summaries, timestamps and search metadata |
-| `qa/data/summaries/` | Cached study notes, shown when available |
-| `qa/viscon_qa/` | Optional model-based Q&A provider; existing CLI remains available |
+| Component                    | Integration                                                                   |
+| ---------------------------- | ----------------------------------------------------------------------------- |
+| `src/`, `server/`, `shared/` | Existing Basis Arena, Socket.IO and SQLite                                    |
+| `web-interface/`             | Latest course picker and icon sidebar, now connected to real APIs             |
+| `video-pull-up/`             | Shared retrieval, cited transcript answers, player seeking and playable demos |
+| `lectures/`                  | 24 recordings and their original WebVTT transcripts                           |
+| `qa/data/index.json`         | Chapter titles, summaries, timestamps and search metadata                     |
+| `qa/data/summaries/`         | Cached study notes, shown when available                                      |
+| `qa/viscon_qa/`              | Optional model-based Q&A provider; existing CLI remains available             |
 
 The root `npm install`, `npm run dev`, and `npm run build` are sufficient for the
-combined app. The frontend pages have separate CSS entry points so both existing
-designs are preserved. The backend API and media routes are proxied in development
+combined app. All frontends share the design system in `shared/design/`: colors,
+self-hosted Inter, base styles, and the product header. Page-specific CSS handles
+layout, not independent themes. See [DESIGN.md](DESIGN.md). The backend API and media routes are proxied in development
 and served on the same origin in production.
 
 ## Search and optional Q&A
@@ -103,9 +135,12 @@ history, stale request cancellation, video range requests, navigation, Elo,
 reconnection, and desktop/mobile layouts. Reports and screenshots are written to
 `.impeccable/review/`. `TEST_URL` can target an already running shared server.
 
-Arena still uses its separate, explicitly labelled demonstration question bank.
-Lecture transcripts are not automatically converted into verified match questions.
-Java execution still needs the configured isolated Judge0 service.
+Arena retains its explicitly labelled demonstration question banks and now also
+offers DDCA practice. A city challenge uses the city's authored, source-linked
+recall questions in three friendly rounds. The 72 DDCA questions are study
+practice, not official exam questions. Java execution still needs the configured
+isolated Judge0 service. See [the Mania validation record](docs/mania-validation.md)
+for the new study world's browser checks and remaining managed-VM checks.
 
 See [Arena documentation](docs/basis-arena.md), [question import contract](docs/question-contract.md),
 [Q&A documentation](qa/README.md), and [integration notes](docs/integration.md).

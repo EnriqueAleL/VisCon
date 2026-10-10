@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bookmark, BookOpen, Check, ChevronRight, Clock3, FileText, Play, X } from 'lucide-react';
 import { pullUpVideo } from '../../../video-pull-up/client/client.mjs';
+import { lectureVisualizerAt, lectureVisualizerHref } from '../../../shared/lecture-visualizers';
 import { formatTime, getJSON } from '../api';
 import type { Course, Lecture, LectureSummary, Segment } from '../types';
 
@@ -18,6 +19,7 @@ export function LectureViewer({ lecture, course, segment, savedIds, onSave, onCl
   const [tab, setTab] = useState<'moments' | 'transcript' | 'notes'>('moments');
   const [mediaError, setMediaError] = useState('');
   const [mediaAttempt, setMediaAttempt] = useState(0);
+  const [playbackTime, setPlaybackTime] = useState(segment.start);
   const [summary, setSummary] = useState<LectureSummary | null>(null);
   const [notesError, setNotesError] = useState('');
   const [notesLoading, setNotesLoading] = useState(false);
@@ -25,6 +27,7 @@ export function LectureViewer({ lecture, course, segment, savedIds, onSave, onCl
   const dialogRef = useRef<HTMLDialogElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const moments = lecture.chapters?.length ? lecture.chapters : lecture.segments;
+  const visualizer = lectureVisualizerAt(lecture.id, playbackTime);
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
@@ -34,6 +37,7 @@ export function LectureViewer({ lecture, course, segment, savedIds, onSave, onCl
   }, []);
 
   useEffect(() => {
+    setPlaybackTime(activeSegment.start);
     const video = videoRef.current;
     if (!video || !lecture.mediaUrl) return;
     let alive = true;
@@ -57,11 +61,11 @@ export function LectureViewer({ lecture, course, segment, savedIds, onSave, onCl
   return (
     <dialog className="viewer-dialog" ref={dialogRef} onCancel={onClose} onClick={event => { if (event.target === event.currentTarget) onClose(); }} aria-labelledby="viewer-title">
       <div className="viewer-header">
-        <span className="course-label" style={{ color: course.color }}><span className="course-dot" style={{ background: course.color }} />{course.shortName}<ChevronRight size={14} />{lecture.demo ? 'Demo' : `Vorlesung ${lecture.episode}`}</span>
+        <span className="course-label"><span className="course-dot" style={{ background: course.color }} />{course.shortName}<ChevronRight size={14} />{lecture.demo ? 'Demo' : `Vorlesung ${lecture.episode}`}</span>
         <button className="icon-button" title="Schliessen" aria-label="Vorlesung schliessen" onClick={onClose}><X size={20} /></button>
       </div>
       <div className="lecture-player">
-        {lecture.mediaUrl ? <video ref={videoRef} controls playsInline preload="metadata" aria-label={lecture.title} onError={() => setMediaError('Das Video konnte nicht geladen werden. Prüfe die Verbindung und versuche es erneut.')}>
+        {lecture.mediaUrl ? <video ref={videoRef} controls playsInline preload="metadata" aria-label={lecture.title} onTimeUpdate={event => setPlaybackTime(event.currentTarget.currentTime)} onError={() => setMediaError('Das Video konnte nicht geladen werden. Prüfe die Verbindung und versuche es erneut.')}>
           {lecture.captionsUrl && <track kind="captions" src={lecture.captionsUrl} srcLang="en" label="English transcript" />}
           {lecture.chaptersUrl && <track kind="chapters" src={lecture.chaptersUrl} srcLang="en" label="Chapters" />}
         </video> : <div className="missing-video"><FileText size={28} /><p>Für diese Vorlesung ist kein abspielbares Video verfügbar. Kapitel und Transkript kannst du weiterhin lesen.</p></div>}
@@ -71,6 +75,7 @@ export function LectureViewer({ lecture, course, segment, savedIds, onSave, onCl
         <h2 id="viewer-title">{lecture.title}</h2>
         <div className="selected-moment"><span><Clock3 size={15} />{formatTime(activeSegment.start)} · {activeSegment.title}</span><button className={`icon-button ${savedIds.includes(activeSegment.id) ? 'is-saved' : ''}`} aria-label={savedIds.includes(activeSegment.id) ? 'Aktuelle Stelle entfernen' : 'Aktuelle Stelle speichern'} aria-pressed={savedIds.includes(activeSegment.id)} onClick={() => onSave(activeSegment)}><Bookmark size={18} fill={savedIds.includes(activeSegment.id) ? 'currentColor' : 'none'} /></button></div>
         {activeSegment.summary && <p className="chapter-description">{activeSegment.summary}</p>}
+        {visualizer && <div className="selected-moment lecture-concept-link"><span><BookOpen size={15} />{visualizer.title} · Teaching adaptation</span><a className="note-timestamp" href={lectureVisualizerHref(visualizer)}><Play size={12} />Visualize this</a></div>}
         <div className="viewer-tabs" role="group" aria-label="Vorlesungsdetails">
           <button aria-pressed={tab === 'moments'} className={tab === 'moments' ? 'active' : ''} onClick={() => setTab('moments')}><Clock3 size={16} />{lecture.chapters?.length ? 'Kapitel' : 'Stellen'}<span>{moments.length}</span></button>
           <button aria-pressed={tab === 'transcript'} className={tab === 'transcript' ? 'active' : ''} onClick={() => setTab('transcript')}><FileText size={16} />Transkript</button>
