@@ -35,6 +35,11 @@
       <span class="account" id="account">
         <button type="button" class="account-btn" id="account-btn" aria-haspopup="true" aria-expanded="false" aria-controls="account-panel" title="Konto" aria-label="Konto">DU</button>
         <div class="account-panel" id="account-panel" role="group" aria-label="Konto" hidden>
+          <p class="account-label">Sprache</p>
+          <div class="account-lang" role="radiogroup" aria-label="Sprache">
+            <button type="button" role="radio" data-lang="de">Deutsch</button>
+            <button type="button" role="radio" data-lang="en">English</button>
+          </div>
           <p class="account-label">Angemeldet als</p>
           <p class="account-user" id="account-user">…</p>
           <button type="button" class="account-logout" id="account-logout">Abmelden</button>
@@ -163,6 +168,7 @@
   </noscript>
 
   <script src="/brand.js"></script>
+  <script src="/galaxy/i18n.js"></script>
   <script src="/galaxy/vendor/three/three.min.js"></script>
   <script src="/galaxy/api.js"></script>
   <script src="/galaxy/documents.js"></script>
