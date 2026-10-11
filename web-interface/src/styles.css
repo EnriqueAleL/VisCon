@@ -2638,3 +2638,31 @@ textarea::placeholder {
   .lecture-chat { border-left: 0; border-top: 1px solid var(--line); }
   .lc-log { max-height: 50vh; }
 }
+
+.settings-account {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.settings-user {
+  margin: 0 0 10px;
+  font-size: 13px;
+  word-break: break-all;
+}
+.settings-logout {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.settings-logout:hover {
+  background: var(--surface-hover, rgba(0, 0, 0, 0.05));
+}
+
+/* Account and log out live in the DU menu on this page. */
+.auth-chip { display: none; }

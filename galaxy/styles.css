@@ -795,3 +795,27 @@ body.daylight .hint { bottom: calc(66px + env(safe-area-inset-bottom, 0px)); }
 .row.done .idx { color: var(--accent); }
 .row.done .idx::after { content: " ✓"; }
 .row.done .txt { color: var(--dim); }
+
+/* Account button and its menu */
+.account { position: relative; display: inline-flex; margin-left: 6px; }
+.elsewhere .account-btn {
+  width: 30px; height: 30px; padding: 0; border-radius: 50%;
+  border: 1px solid var(--line); background: rgba(255,255,255,.04);
+  color: var(--starlight); font-size: 10px; letter-spacing: .06em;
+  display: grid; place-items: center;
+}
+.elsewhere .account-btn:hover, .elsewhere .account-btn[aria-expanded="true"] { background: rgba(255,255,255,.1); }
+.account-panel {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 30; min-width: 190px;
+  padding: 12px; border: 1px solid var(--line); border-radius: 8px;
+  background: rgba(10, 14, 26, .94); backdrop-filter: blur(10px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.4);
+  text-transform: none; letter-spacing: 0; font-family: var(--body);
+}
+.account-label { margin: 0 0 3px; font: 9.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+.account-user { margin: 0 0 12px; font-size: 13px; color: var(--starlight); word-break: break-all; }
+.elsewhere .account-logout {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px;
+  color: var(--starlight); font: 500 12.5px var(--body); letter-spacing: 0; text-transform: none; text-align: center;
+}
+.elsewhere .account-logout:disabled { opacity: .6; cursor: default; }

@@ -32,6 +32,14 @@
         <a href="/" aria-current="page" class="on" title="Galaxie-Ansicht">Galaxie</a>
       </span>
       <a href="/arena" id="versus-link">Versus</a>
+      <span class="account" id="account">
+        <button type="button" class="account-btn" id="account-btn" aria-haspopup="true" aria-expanded="false" aria-controls="account-panel" title="Konto" aria-label="Konto">DU</button>
+        <div class="account-panel" id="account-panel" role="group" aria-label="Konto" hidden>
+          <p class="account-label">Angemeldet als</p>
+          <p class="account-user" id="account-user">…</p>
+          <button type="button" class="account-logout" id="account-logout">Abmelden</button>
+        </div>
+      </span>
     </nav>
 
     <section class="panel" id="panel" aria-live="polite">
@@ -162,6 +170,7 @@
   <script src="/galaxy/transitions.js"></script>
   <script src="/galaxy/city.js"></script>
   <script src="/galaxy/duel-scene.js"></script>
+  <script src="/galaxy/account.js"></script>
   <script src="/galaxy/app.js"></script>
 </body>
 </html>
