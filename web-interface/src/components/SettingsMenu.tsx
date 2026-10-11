@@ -66,7 +66,7 @@ export function SettingsMenu({ language, onLanguage }: SettingsMenuProps) {
         aria-controls={open ? panelId : undefined}
         onClick={() => setOpen((value) => !value)}
       >
-        DU
+        {t('settings.avatar')}
       </button>
       {open && (
         <div className="settings-panel" id={panelId} role="group" aria-label={t('settings.title')}>

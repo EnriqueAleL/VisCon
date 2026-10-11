@@ -239,6 +239,7 @@ const messages = {
 
   // settings
   'settings.title': { de: 'Einstellungen', en: 'Settings' },
+  'settings.avatar': { de: 'DU', en: 'YOU' },
   'settings.account': { de: 'Angemeldet als', en: 'Signed in as' },
   'settings.logout': { de: 'Abmelden', en: 'Log out' },
   'settings.interface': { de: 'Sprache der Oberfläche', en: 'Interface language' },

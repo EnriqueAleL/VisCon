@@ -28,6 +28,28 @@
     });
   });
 
+  function answerStored() {
+    try {
+      var v = JSON.parse(localStorage.getItem("viscon.answer-language.v1"));
+      if (v === "auto" || v === "de" || v === "en") return v;
+    } catch (e) {}
+    return "auto";
+  }
+  var answerButtons = panel.querySelectorAll("[data-answer]");
+  function paintAnswer() {
+    var cur = answerStored();
+    Array.prototype.forEach.call(answerButtons, function (b) {
+      b.setAttribute("aria-checked", String(b.getAttribute("data-answer") === cur));
+    });
+  }
+  Array.prototype.forEach.call(answerButtons, function (b) {
+    b.addEventListener("click", function () {
+      try { localStorage.setItem("viscon.answer-language.v1", JSON.stringify(b.getAttribute("data-answer"))); } catch (e) {}
+      paintAnswer();
+    });
+  });
+  paintAnswer();
+
   btn.addEventListener("click", function () { setOpen(panel.hidden); });
   document.addEventListener("pointerdown", function (e) {
     if (!panel.hidden && !document.getElementById("account").contains(e.target)) setOpen(false);
