@@ -263,15 +263,17 @@ export function translate(language: UiLanguage, key: MessageKey, vars?: Vars): s
 
 const isLanguage = (value: unknown): value is UiLanguage => value === 'de' || value === 'en';
 
-/** The saved choice, otherwise the browser's language (German for German browsers, English for everything else). */
+/** The saved choice, otherwise English. The rest of the product -- the galaxy, Versus,
+ *  Campus -- is English only, so a German browser used to land on a page that disagreed
+ *  with everything around it. German stays one click away in the settings menu. */
 export function storedLanguage(): UiLanguage {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null');
     if (isLanguage(saved)) return saved;
   } catch {
-    // Storage may be unavailable; fall through to the browser language.
+    // Storage may be unavailable; fall through to the default.
   }
-  return typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('de') ? 'de' : 'en';
+  return 'en';
 }
 
 /** The lookup itself, for helpers that format a label outside a component. */

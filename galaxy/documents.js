@@ -28,8 +28,8 @@
     const available = documents.filter(document => document.courseId === courseId);
     document.getElementById('document-count').textContent = loaded ? available.length : '…';
     empty.hidden = available.length > 0;
-    empty.textContent = failed ? 'Dokumentliste konnte nicht geladen werden. Bitte lade die Seite neu.'
-      : loaded ? 'Noch keine Dokumente für diesen Kurs.' : 'Dokumente werden geladen…';
+    empty.textContent = failed ? 'The document list could not be loaded. Please reload the page.'
+      : loaded ? 'No documents for this course yet.' : 'Loading documents\u2026';
     for (const entry of available) {
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'course-document';

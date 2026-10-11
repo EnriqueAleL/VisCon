@@ -29,7 +29,7 @@ window.GalaxyAPI = (function () {
     const data = await response.json().catch(function () { return null; });
     sendToLogin(response, data);
     if (!response.ok) {
-      throw new Error((data && data.error) || "Die Verbindung zum Lernraum ist unterbrochen.");
+      throw new Error((data && data.error) || "The connection to the study room was interrupted.");
     }
     return data;
   }
@@ -87,7 +87,7 @@ window.GalaxyAPI = (function () {
       // A course with no recordings has nothing to land on
       .filter(function (course) { return course.lectures.length > 0; });
 
-    if (!courses.length) throw new Error("Der Lernraum enthält noch keine Vorlesungen.");
+    if (!courses.length) throw new Error("The study room does not contain any lectures yet.");
     return { courses: courses, departments: courseData.departments || [] };
   }
 

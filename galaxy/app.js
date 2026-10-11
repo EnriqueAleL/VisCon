@@ -29,15 +29,15 @@
   }
 
   if (!window.THREE) {
-    fail("Die 3D-Bibliothek wurde nicht geladen. Lade die Seite neu.");
+    fail("The 3D library did not load. Please reload the page.");
     return;
   }
   if (!hasWebGL()) {
-    fail("Dieser Browser kann kein WebGL darstellen. Die Vorlesungen sind im normalen Lernraum erreichbar.");
+    fail("This browser cannot render WebGL. The lectures are available in the standard study room.");
     return;
   }
 
-  loadingText.textContent = "Lernraum wird geladen";
+  loadingText.textContent = "Loading the study room";
   /* The Liste view (/learn) keeps its selection under this key, so both views open on the same course. */
   var SELECTION_KEY = "viscon.selected-course.v1";
   var PROGRAMME_KEY = "viscon.galaxy-programme.v1";
@@ -66,8 +66,8 @@
     return !!p && course.department === p.department && course.degree === p.degree && course.studyYear === p.studyYear;
   }
   function programmeLabel(p, departments) {
-    if (p.department === "other") return "Weitere Fächer";
-    return p.department + " · " + (p.degree === "msc" ? "MSc" : "BSc") + " · " + p.studyYear + ". Jahr";
+    if (p.department === "other") return "Other courses";
+    return p.department + " · " + (p.degree === "msc" ? "MSc" : "BSc") + " · year " + p.studyYear;
   }
 
   window.GalaxyAPI.load().then(function (loaded) {
@@ -93,7 +93,7 @@
           }
         });
       } catch (err) {
-        fail("Die Galaxie konnte nicht aufgebaut werden: " + err.message);
+        fail("The galaxy could not be built: " + err.message);
         throw err;
       }
     }
@@ -106,7 +106,7 @@
     else if (options.length === 1) begin(options[0]);
     else chooseProgramme(all, departments, options, begin);
   }).catch(function (err) {
-    fail(err.message || "Der Lernraum ist gerade nicht erreichbar.");
+    fail(err.message || "The study room is unavailable right now.");
   });
 
   /* Step 1: department, step 2: degree and study year. The planets (the actual courses) are step 3. */
@@ -118,7 +118,7 @@
     var department = null;
 
     function deptName(id) {
-      if (id === "other") return "Weitere Fächer";
+      if (id === "other") return "Other courses";
       var found = departments.filter(function (d) { return d.id === id; })[0];
       return found ? id + " · " + found.name : id;
     }
@@ -130,7 +130,7 @@
       name.textContent = label;
       var n = document.createElement("span");
       n.className = "gate-count";
-      n.textContent = count + (count === 1 ? " Kurs" : " Kurse");
+      n.textContent = count + (count === 1 ? " course" : " courses");
       b.append(name, n);
       b.addEventListener("click", onClick);
       return b;
@@ -139,7 +139,7 @@
 
     function showDepartments() {
       department = null;
-      title.textContent = "Departement wählen";
+      title.textContent = "Choose your department";
       crumbs.replaceChildren();
       list.replaceChildren();
       var ids = [];
@@ -159,18 +159,18 @@
       var mine = options.filter(function (p) { return p.department === id; });
       if (mine.length === 1) return done(mine[0]);   // nothing left to choose
       department = id;
-      title.textContent = "Studienjahr wählen";
+      title.textContent = "Choose your year";
       crumbs.replaceChildren();
       var back = document.createElement("button");
       back.type = "button";
       back.className = "crumb";
-      back.textContent = id === "other" ? "Weitere Fächer" : id;
+      back.textContent = id === "other" ? "Other courses" : id;
       back.addEventListener("click", showDepartments);
       crumbs.append(back);
       list.replaceChildren();
       mine.sort(function (a, b) { return (a.degree === b.degree ? 0 : a.degree === "bsc" ? -1 : 1) || a.studyYear - b.studyYear; });
       mine.forEach(function (p) {
-        list.append(choice((p.degree === "msc" ? "Master" : "Bachelor") + " · " + p.studyYear + ". Jahr", coursesIn(p), function () { done(p); }));
+        list.append(choice((p.degree === "msc" ? "Master" : "Bachelor") + " · year " + p.studyYear, coursesIn(p), function () { done(p); }));
       });
       focusFirst();
     }
@@ -991,8 +991,8 @@
 
     if (state.level === "galaxy") {
       el.eyebrow.textContent = context.label + " · ETH Zürich";
-      el.title.textContent = "Lernraum";
-      el.sub.textContent = DATA.length + " Kurse umkreisen dich. Wähle einen Planeten, um seine Vorlesungen zu sehen.";
+      el.title.textContent = "Study room";
+      el.sub.textContent = DATA.length + " courses orbit you. Choose a planet to see its lectures.";
       DATA.forEach(function (c, i) {
         el.list.append(row(
           String(i + 1).padStart(2, "0"), c.name, c.lectures.length + " VL", false,
@@ -1005,18 +1005,18 @@
       }, 0);
       var cityCount = DATA.reduce(function (n, c) { return n + c.lectures.length; }, 0);
       el.meta.innerHTML = "";
-      metaItem(DATA.length, "Planeten");
-      metaItem(cityCount, "Städte");
-      metaItem(total, "Kapitel");
+      metaItem(DATA.length, "planets");
+      metaItem(cityCount, "cities");
+      metaItem(total, "chapters");
       return;
     }
 
     var course = DATA[state.course];
 
     if (state.level === "planet") {
-      el.eyebrow.textContent = "Kurs · Planet";
+      el.eyebrow.textContent = "Course · planet";
       el.title.textContent = course.name;
-      el.sub.textContent = course.lecturer + " · jede Stadt ist eine Vorlesung.";
+      el.sub.textContent = course.lecturer + " · every city is a lecture.";
       course.lectures.forEach(function (lec, j) {
         var seen = lec.segs.filter(isWatched).length;
         el.list.append(row(
@@ -1028,17 +1028,17 @@
       });
       var segs = course.lectures.reduce(function (m, l) { return m + l.segs.length; }, 0);
       el.meta.innerHTML = "";
-      metaItem(course.lectures.length, "Vorlesungen");
-      metaItem(segs, "Kapitel");
+      metaItem(course.lectures.length, "lectures");
+      metaItem(segs, "chapters");
       return;
     }
 
     var lec = course.lectures[state.lecture];
-    el.eyebrow.textContent = "Vorlesung " + lec.ep + " · Stadt";
+    el.eyebrow.textContent = "Lecture " + lec.ep + " · city";
     el.title.textContent = lec.title;
     var seen = lec.segs.filter(isWatched).length;
-    el.sub.textContent = "Jedes Haus ist ein Kapitel. Die Höhe entspricht seiner Länge."
-      + (seen ? " " + seen + " von " + lec.segs.length + " gesehen." : "");
+    el.sub.textContent = "Every house is a chapter. Its height is the chapter's length."
+      + (seen ? " " + seen + " of " + lec.segs.length + " watched." : "");
     lec.segs.forEach(function (seg, k) {
       el.list.append(row(
         String(k + 1).padStart(2, "0"), seg.t, mmss(seg.a), state.segment === k,
@@ -1050,11 +1050,11 @@
     el.meta.innerHTML = "";
     if (state.segment !== null) {
       var s = lec.segs[state.segment];
-      metaItem(state.segment + 1, "Kapitel", true);
+      metaItem(state.segment + 1, "chapter", true);
       metaPair(mmss(s.a), "–" + mmss(s.b));
       metaItem(Math.round((s.b - s.a) / 60), "min");
     } else {
-      metaItem(lec.segs.length, "Kapitel");
+      metaItem(lec.segs.length, "chapters");
       metaPair(mins(lec.dur), " gesamt");
     }
   }
@@ -1450,14 +1450,14 @@
     syncChat();
     followTime = false;
     showChapter(lecture, seg);
-    playerNote.textContent = "Vorlesung wird geladen …";
+    playerNote.textContent = "Loading the lecture …";
     videoEl.removeAttribute("src");
 
     try {
       var detail = await window.GalaxyAPI.lectureDetail(lecture.id);
       if (token !== playerToken) return;
       if (!detail.mediaUrl) {
-        playerNote.textContent = "Für diese Vorlesung ist keine Videodatei hinterlegt.";
+        playerNote.textContent = "No video file is available for this lecture.";
         return;
       }
       playerNote.textContent = seg.summary || lecture.title;
@@ -1561,7 +1561,7 @@
     if (moment.lectureId !== currentLectureId && moment.lectureTitle) {
       label = moment.lectureTitle + (label ? " · " + label : "");
     }
-    button.append(node("span", "", label || "Stelle ansehen"));
+    button.append(node("span", "", label || "Watch this moment"));
     button.addEventListener("click", function () { jumpToMoment(moment); });
     return button;
   }
@@ -1570,13 +1570,13 @@
     var box = node("div", "lc-turn lc-" + turn.role + (turn.error ? " lc-error" : ""));
     if (turn.role === "assistant" && turn.scope === "course" && !turn.error && turn.status === "answered") {
       box.append(node("p", "lc-scope",
-        "Das wird in dieser Vorlesung nicht behandelt" +
-        (turn.moment && turn.moment.lectureId !== lecture.id ? " – gefunden in „" + turn.moment.lectureTitle + "“:" : ":")));
+        "This lecture does not cover that" +
+        (turn.moment && turn.moment.lectureId !== lecture.id ? " \u2013 found in \u201c" + turn.moment.lectureTitle + "\u201d:" : ":")));
     }
     box.append(node("p", "lc-text", turn.text));
     if (turn.background) {
       var bg = node("p", "lc-background");
-      bg.append(node("span", "lc-bg-label", turn.backgroundLabel || "Allgemeines Wissen (nicht aus der Vorlesung):"));
+      bg.append(node("span", "lc-bg-label", turn.backgroundLabel || "General knowledge (not from the lecture):"));
       bg.append(document.createTextNode(turn.background));
       box.append(bg);
     }
@@ -1586,9 +1586,9 @@
 
   function starterNode() {
     var box = node("div", "lc-starter");
-    box.append(node("p", "", "Ich kenne den ganzen Transkripttext dieser Vorlesung. Frag mich etwas, lass dir eine Stelle erklären oder such einen Begriff."));
-    var suggestions = ["Fasse diese Vorlesung zusammen", "Was sind die wichtigsten Begriffe hier?"];
-    if (!playerEl.hidden) suggestions.unshift("Erkläre mir die Stelle, an der ich gerade bin");
+    box.append(node("p", "", "I know the whole transcript of this lecture. Ask me something, have a passage explained, or look up a term."));
+    var suggestions = ["Summarize this lecture", "What are the key terms here?"];
+    if (!playerEl.hidden) suggestions.unshift("Explain the part I am at");
     var list = node("div", "lc-suggestions");
     suggestions.forEach(function (text) {
       var b = node("button", "", text);
@@ -1607,7 +1607,7 @@
     var chat = chatOf(lecture);
     if (!chat.turns.length) chatLog.append(starterNode());
     chat.turns.forEach(function (turn) { chatLog.append(turnNode(turn, lecture)); });
-    if (chat.busy) chatLog.append(node("p", "lc-thinking", "Ich lese die Vorlesung …"));
+    if (chat.busy) chatLog.append(node("p", "lc-thinking", "Reading the lecture \u2026"));
     chatSend.disabled = chat.busy;
     chatLog.scrollTop = chatLog.scrollHeight;
   }
@@ -1634,7 +1634,7 @@
         role: "assistant",
         status: r.status,
         scope: r.scope,
-        text: r.status === "answered" ? r.reply : "Dazu habe ich in diesem Kurs keine passende Stelle gefunden.",
+        text: r.status === "answered" ? r.reply : "I could not find a passage about that in this course.",
         background: r.status === "answered" ? r.background : "",
         backgroundLabel: r.backgroundLabel,
         moment: r.status === "answered" ? r.moment : null,
@@ -1706,7 +1706,7 @@
 
   function showChapter(lecture, seg) {
     document.getElementById("player-eyebrow").textContent =
-      "Vorlesung " + lecture.ep + " · ab " + mmss(seg.a);
+      "Lecture " + lecture.ep + " · from " + mmss(seg.a);
     document.getElementById("player-title").textContent = seg.t;
     if (seg.summary) playerNote.textContent = seg.summary;
     syncPlayerNav();
@@ -1729,11 +1729,11 @@
   function labelStep(btn, target, delta) {
     btn.disabled = !target;
     btn.title = "";
-    if (!target) { btn.textContent = delta < 0 ? "‹ Anfang des Kurses" : "Ende des Kurses ›"; return; }
+    if (!target) { btn.textContent = delta < 0 ? "\u2039 Start of the course" : "End of the course \u203a"; return; }
     var lec = DATA[state.course].lectures[target.lecture];
     var text = target.lecture === state.lecture
-      ? "Kapitel " + String(target.segment + 1).padStart(2, "0")
-      : "Vorlesung " + lec.ep;
+      ? "Chapter " + String(target.segment + 1).padStart(2, "0")
+      : "Lecture " + lec.ep;
     btn.textContent = delta < 0 ? "‹ " + text : text + " ›";
     btn.title = lec.segs[target.segment].t;
   }
@@ -1857,7 +1857,7 @@
     var rideKind = THEMES[state.course].city.ride || { label: "Taxi" };
     hopRide.hidden = next === null;
     if (next !== null) {
-      hopRide.textContent = rideKind.label + " → Kapitel " + String(next + 1).padStart(2, "0");
+      hopRide.textContent = rideKind.label + " \u2192 chapter " + String(next + 1).padStart(2, "0");
       hopRide.title = lectures[state.lecture].segs[next].t;
     }
   }
@@ -1872,7 +1872,7 @@
     closePlayer();
     if (state.segment === null || REDUCED) { selectHouse(next, true); return; }
     var target = DATA[state.course].lectures[state.lecture].segs[next];
-    var ride = THEMES[state.course].city.ride || { caption: "Taxi zum nächsten Termin" };
+    var ride = THEMES[state.course].city.ride || { caption: "A taxi to your next appointment" };
     var started = cityView.ride(state.segment, next, function () {
       riding = false;
       locked = false;
@@ -1883,7 +1883,7 @@
     riding = true;
     locked = true;
     tween = null;
-    rideToast.textContent = ride.caption + " · Kapitel " + String(next + 1).padStart(2, "0") + " · " + target.t;
+    rideToast.textContent = ride.caption + " \u00b7 chapter " + String(next + 1).padStart(2, "0") + " \u00b7 " + target.t;
     rideToast.hidden = false;
   }
   hopRide.addEventListener("click", rideToNext);
@@ -1957,7 +1957,7 @@
     rateNote.textContent = "…";
     window.GalaxyAPI.rate(at.lectureId, at.chapterId, Number(b.dataset.rating)).then(function (snapshot) {
       applyLive(snapshot);
-      rateNote.textContent = "Danke! Das Wetter dieser Stadt folgt euren Einschätzungen.";
+      rateNote.textContent = "Thanks! This city's weather follows what everyone reports.";
     }).catch(function (error) { rateNote.textContent = error.message; });
   });
 
@@ -1989,24 +1989,24 @@
     event.preventDefault();
     var question = askInput.value.trim();
     if (!question || locked) return;
-    askStatus.textContent = "Suche läuft …";
+    askStatus.textContent = "Searching \u2026";
     askForm.classList.add("busy");
     try {
       var result = await window.GalaxyAPI.ask(question, state.course !== null ? DATA[state.course].id : null);
       var hit = result.playback || (result.sources && result.sources[0]);
       if (!hit || !hit.lectureId) {
-        askStatus.textContent = (result.answer && result.answer.notice) || "Dazu wurde keine Stelle gefunden.";
+        askStatus.textContent = (result.answer && result.answer.notice) || "No passage was found for that.";
         return;
       }
       var place = locate(hit.lectureId, hit.start || 0);
       if (!place) {
-        askStatus.textContent = "Die gefundene Vorlesung ist in dieser Ansicht nicht vorhanden.";
+        askStatus.textContent = "The lecture it found is not part of this view.";
         return;
       }
       var found = DATA[place.ci].lectures[place.li];
       // The backend distinguishes a confident hit from a near miss; say which this is
       askStatus.textContent =
-        (result.status === "answered" ? "" : "Nächstliegende Stelle · ") +
+        (result.status === "answered" ? "" : "Closest passage \u00b7 ") +
         found.title + " · " + mmss(found.segs[place.k].a);
       if (state.level === "city" && state.course === place.ci && state.lecture === place.li) {
         selectHouse(place.k, true);
