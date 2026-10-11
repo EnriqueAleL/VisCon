@@ -5,15 +5,15 @@
   "type": "module",
   "scripts": {
     "predev": "node web-interface/scripts/sync-document-viewer.mjs",
-    "dev": "concurrently -k -n api,web \"tsx watch server/index.ts\" \"vite --host 0.0.0.0\"",
+    "dev": "concurrently -k -n api,web \"tsx watch --env-file-if-exists=.env server/index.ts\" \"vite --host 0.0.0.0\"",
     "prebuild": "node web-interface/scripts/sync-document-viewer.mjs",
     "build": "tsc --noEmit && vite build",
-    "start": "tsx server/index.ts",
-    "start:production": "node --import tsx server/index.ts",
+    "start": "tsx --env-file-if-exists=.env server/index.ts",
+    "start:production": "node --env-file-if-exists=.env --import tsx server/index.ts",
     "check:deployment": "node scripts/check-deployment.mjs",
     "test": "node --import tsx --test tests/*.test.ts auth/*.test.ts admin/*.test.ts submissions/*.test.ts indexing/*.test.ts video-pull-up/test/*.test.mjs",
     "test:ui": ".venv/bin/python tests/run_browser.py",
-    "auth": "tsx auth/cli.ts",
+    "auth": "tsx --env-file-if-exists=.env auth/cli.ts",
     "check:documents": "node web-interface/scripts/check-galaxy-documents.mjs"
   },
   "dependencies": {
