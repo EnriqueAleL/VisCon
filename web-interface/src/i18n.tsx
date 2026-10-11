@@ -239,6 +239,8 @@ const messages = {
 
   // settings
   'settings.title': { de: 'Einstellungen', en: 'Settings' },
+  'settings.account': { de: 'Angemeldet als', en: 'Signed in as' },
+  'settings.logout': { de: 'Abmelden', en: 'Log out' },
   'settings.interface': { de: 'Sprache der Oberfläche', en: 'Interface language' },
   'settings.answer': { de: 'Sprache der KI-Antwort', en: 'AI answer language' },
   'settings.auto': { de: 'Automatisch', en: 'Automatic' },

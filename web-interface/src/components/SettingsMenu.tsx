@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { authApi } from '../../../shared/auth/authApi';
 import { useI18n, type MessageKey, type UiLanguage } from '../i18n';
 
 export type AnswerLanguage = 'auto' | 'en' | 'de';
@@ -25,6 +26,15 @@ export function SettingsMenu({ language, onLanguage }: SettingsMenuProps) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const panelId = useId();
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    authApi.status().then((status) => setUsername(status.account?.username ?? null)).catch(() => {});
+  }, []);
+
+  const logout = async () => {
+    try { await authApi.logout(); } finally { location.reload(); }
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -93,6 +103,13 @@ export function SettingsMenu({ language, onLanguage }: SettingsMenuProps) {
             ))}
           </div>
           <p className="settings-note">{t('settings.note')}</p>
+          {username && (
+            <div className="settings-account">
+              <p className="settings-title">{t('settings.account')}</p>
+              <p className="settings-user">{username}</p>
+              <button type="button" className="settings-logout" onClick={logout}>{t('settings.logout')}</button>
+            </div>
+          )}
         </div>
       )}
     </div>
