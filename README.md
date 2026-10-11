@@ -78,7 +78,6 @@ and pieces of others:
 | **Versus** | `/arena`, `/room/:id` | Real-time 1v1 quiz duels with invitation links. Multiple-choice, numeric and Java questions; Ranked (Elo) or Friendly; a practice bot. Played from a 3D cockpit where correct answers fire on the opponent's ship. Score alone decides the winner. |
 | **Reader** | in the galaxy and list views | A PDF reader for course scripts: selectable text, translation of any selection, and questions about the book answered with a page number. |
 | **Study world** | `/world` | Recall with spaced review, daily expeditions, pipeline, cache and virtual-memory visualizers, timed mock exams, puzzles and shared study tables. Currently DDCA only. |
-| **Campus** | `/campus` | A satellite journey down to ETH Zürich. |
 
 The interface is in English, with a German translation selectable from the account
 menu.
@@ -98,7 +97,7 @@ land.
 | Part | Built with | Used for |
 | --- | --- | --- |
 | Galaxy | Plain JavaScript, three.js (vendored), WebGL | The 3D course map, lecture cities, weather, cockpit and duel scenes. No build step; served as-is. |
-| Lectures, Versus, Study world, Campus | React 19, TypeScript, Vite | The application pages. CodeMirror for the Java editor, KaTeX for formulas, MapLibre GL for the campus map, Lucide for icons. |
+| Lectures, Versus, Study world | React 19, TypeScript, Vite | The application pages. CodeMirror for the Java editor, KaTeX for formulas, MapLibre GL for the campus map, Lucide for icons. |
 | Server | Node.js 24, Express 5, Socket.IO | One process serves every page, the API and the video files (with byte ranges, so seeking is instant). Socket.IO keeps duels, study tables and live crowds in sync; the server owns timers, answers and scores. |
 | Storage | SQLite (`node:sqlite`) | Accounts, sessions, Elo, match history, study progress, ratings, courses, submissions and the audit log. |
 | Lecture search | BM25 keyword search over transcript windows (`video-pull-up/`) | The default search. Runs locally, needs no API key, returns the original cue timestamps. |
