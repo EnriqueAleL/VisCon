@@ -1,3 +1,4 @@
+import productBrand from '../brand.json';
 import type { ReactNode } from "react";
 import { BookOpen } from "lucide-react";
 
@@ -20,7 +21,7 @@ export function ProductHeader({
   const brand = (
     <>
       <BookOpen size={23} strokeWidth={1.8} />
-      <span>VisCon</span>
+      <span>{productBrand.name}</span>
       <span className="product-module">{module}</span>
     </>
   );
@@ -31,12 +32,12 @@ export function ProductHeader({
           <button
             className="product-brand"
             onClick={onHome}
-            aria-label="VisCon home"
+            aria-label={`${productBrand.name} home`}
           >
             {brand}
           </button>
         ) : (
-          <a className="product-brand" href={homeHref} aria-label="VisCon home">
+          <a className="product-brand" href={homeHref} aria-label={`${productBrand.name} home`}>
             {brand}
           </a>
         )}

@@ -1,3 +1,4 @@
+import brand from '../../shared/brand.json';
 import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ArrowRight, BookOpen, Calendar, Check, Clock, Compass, Cpu, FlaskConical, GitBranch, Globe2, Info, Layers3, LoaderCircle, Map, Route, Search, Settings2, ShieldCheck, Sparkles, Swords, Trophy, Users, X } from 'lucide-react';
 import type { LearningSnapshot, LectureMoment, ReviewResponse, WorldCity, WorldData } from '../../shared/world';
@@ -135,7 +136,7 @@ export default function ManiaApp() {
           {view === 'puzzles' && <><div className="standalone-title"><div className="section-kicker">CURSED CONCEPTS. CLEARER THINKING.</div><h1>Make the machine<br />work for you.</h1><p>Optimize a pipeline. Break a cache. Earn your place on the city board.</p></div><Suspense fallback={<Loading />}><PuzzleHub demo={demo} onProgress={() => void refresh()} onReviewLecture={kind => selectCity(kind === 'pipeline' ? 'pipelining' : 'caches', 'moments')} /></Suspense></>}
           {view === 'tables' && <><div className="standalone-title"><div className="section-kicker">BETTER UNDERSTOOD, TOGETHER</div><h1>Find your people.<br />Figure it out.</h1><p>A real study table, around the concept you’re working on.</p></div><Suspense fallback={<Loading />}><SocialPanel cityId={cityId ?? 'pipelining'} cityName={city?.name ?? 'Pipelining'} demo={demo} cities={world.cities} /></Suspense></>}
         </>}
-        <footer className="mania-footer"><strong>Lectures tell you. The Mania shows you.</strong><span>DDCA · ETH Zürich · VIScon 2026</span><span>{world ? `${world.stats.excludedChapters} administrative moments excluded` : 'Built on your actual lecture recordings'} · <a href="/learn">Lecture library ↗</a></span></footer>
+        <footer className="mania-footer"><strong>Lectures tell you. The Mania shows you.</strong><span>DDCA · ETH Zürich · {brand.name} 2026</span><span>{world ? `${world.stats.excludedChapters} administrative moments excluded` : 'Built on your actual lecture recordings'} · <a href="/learn">Lecture library ↗</a></span></footer>
       </main>
     </div>
   </div>;

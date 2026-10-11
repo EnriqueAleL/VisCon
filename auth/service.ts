@@ -1,3 +1,4 @@
+import brand from '../shared/brand.json';
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
@@ -63,8 +64,8 @@ export function createVerificationService(db: DatabaseSync, mailer: Mailer, over
     const minutes = Math.round(options.codeTtlSeconds / 60);
     try {
       await mailer.send({
-        to, subject: `Your VIScon verification code: ${code}`,
-        text: `Your VIScon verification code is ${code}\n\nIt expires in ${minutes} minutes and works once. If you did not ask for it, ignore this email.\n`,
+        to, subject: `Your ${brand.name} verification code: ${code}`,
+        text: `Your ${brand.name} verification code is ${code}\n\nIt expires in ${minutes} minutes and works once. If you did not ask for it, ignore this email.\n`,
       });
     } catch (error) {
       db.prepare('DELETE FROM email_challenges WHERE id=?').run(id); // a failed send must not burn the rate limit

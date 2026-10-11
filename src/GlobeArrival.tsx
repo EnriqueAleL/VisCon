@@ -1,3 +1,4 @@
+import brand from '../shared/brand.json';
 import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowUpRight, Globe2, MapPin, RotateCcw, SkipForward } from 'lucide-react';
 import type { Map, StyleSpecification } from 'maplibre-gl';
@@ -188,7 +189,7 @@ export function GlobeArrival() {
       {view === 'zurich' && <button onClick={() => controls.current?.replay()}>Replay journey <RotateCcw size={14} /></button>}
       {unavailable && <button onClick={() => setAttempt(value => value + 1)}>Try again <RotateCcw size={14} /></button>}
     </div>
-    <div className="arrival-copy"><span className="arrival-eyebrow">VISCON · ETH ZÜRICH</span><h2>Your world.<br />Your campus.</h2><p>From a new question<br />to a new understanding.</p><div className="arrival-actions"><a className="arrival-primary" href="/learn">Open learning chat <ArrowUpRight size={17} /></a><a className="arrival-secondary" href="/arena#arena-start">Enter Arena <ArrowDown size={16} /></a></div></div>
+    <div className="arrival-copy"><span className="arrival-eyebrow">{brand.name.toUpperCase()} · ETH ZÜRICH</span><h2>Your world.<br />Your campus.</h2><p>From a new question<br />to a new understanding.</p><div className="arrival-actions"><a className="arrival-primary" href="/learn">Open learning chat <ArrowUpRight size={17} /></a><a className="arrival-secondary" href="/arena#arena-start">Enter Arena <ArrowDown size={16} /></a></div></div>
     <div className="arrival-location" role="status"><span className="arrival-location-dot" /><span>{view === 'loading' ? 'Preparing your journey…' : unavailable ? 'Satellite view unavailable' : view === 'earth' ? 'Earth' : view === 'flight' ? 'Approaching Zürich' : 'Zürich, Switzerland'}<small>{view === 'zurich' ? '47.3763° N · 8.5476° E' : unavailable ? 'You can still open the chat or Arena.' : 'EARTH → EUROPE → ZÜRICH'}</small></span>{view === 'zurich' && <MapPin size={16} />}</div>
     {(!rendered || unavailable) && <div className="arrival-fallback-credit"><a href="https://cloudless.eox.at">EOxCloudless</a> by EOX IT Services GmbH · Copernicus Sentinel data 2016</div>}
   </section>;

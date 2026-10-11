@@ -298,7 +298,7 @@ async function loadPdf(source, name) {
     pdf = document;
     pageNumber = 1;
     fitPage = true;
-    window.document.title = `${name} · VisCon`;
+    window.document.title = `${name} · ${(window.BRAND && window.BRAND.name) || "PolyCosmos"}`;
     $('document-name').textContent = name === 'ti_book.pdf' ? 'Theoretische Informatik' : name;
     const local = source.url.startsWith('blob:');
     const entry = documentCatalogue.find(document => document.filename === name);

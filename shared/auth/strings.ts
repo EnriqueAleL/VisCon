@@ -1,7 +1,8 @@
+import brand from '../brand.json';
 export type Locale = 'en' | 'de';
 
 const en = {
-  brand: 'VisCon',
+  brand: brand.name,
   tagline: 'Sign in with your ETH student account to study with the lectures.',
   login: 'Log in', register: 'Create account',
   identifier: 'ETH username or email', identifierHint: 'riordache, riordache@ethz.ch or riordache@student.ethz.ch',
@@ -40,7 +41,7 @@ const en = {
 };
 
 const de: typeof en = {
-  brand: 'VisCon',
+  brand: brand.name,
   tagline: 'Melde dich mit deinem ETH-Studierendenkonto an, um mit den Vorlesungen zu lernen.',
   login: 'Anmelden', register: 'Konto erstellen',
   identifier: 'ETH-Benutzername oder E-Mail', identifierHint: 'riordache, riordache@ethz.ch oder riordache@student.ethz.ch',

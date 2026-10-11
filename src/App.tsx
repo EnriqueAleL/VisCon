@@ -1,3 +1,4 @@
+import brand from '../shared/brand.json';
 import {
   useEffect,
   useRef,
@@ -334,7 +335,7 @@ export default function App({ hosted = false }: { hosted?: boolean } = {}) {
   }, []);
   useEffect(() => {
     if (hosted) return;
-    document.title = path === "/campus" ? "Campus · VisCon" : "Versus · VisCon";
+    document.title = path === "/campus" ? `Campus · ${brand.name}` : `Versus · ${brand.name}`;
   }, [path, hosted]);
   useEffect(() => {
     if (!data?.profile.id) return;
@@ -511,7 +512,7 @@ export default function App({ hosted = false }: { hosted?: boolean } = {}) {
     return (
       <div className={hosted ? "versus-hosted" : "versus-shell"}>{!hosted && <VersusSpace />}<div className="boot">
         <div className="wordmark">
-          VisCon <span>Versus</span>
+          {brand.name} <span>Versus</span>
         </div>
         {error ? (
           <>
@@ -691,7 +692,7 @@ export default function App({ hosted = false }: { hosted?: boolean } = {}) {
       </Container>
       {!hosted && !immersive && <footer className="site-footer">
         <span>
-          VisCon <span className="footer-dot" /> Versus
+          {brand.name} <span className="footer-dot" /> Versus
         </span>
         <span>
           {room?.settings.subject === "ddca"
@@ -1765,7 +1766,7 @@ function Leaderboard({
       <div className="title-row">
         <div>
           <h1>A little friendly rivalry.</h1>
-          <p className="subtitle">Player ratings from this VisCon instance.</p>
+          <p className="subtitle">Player ratings from this {brand.name} instance.</p>
         </div>
         <Button onClick={onPlay}>
           Start a challenge <ArrowRight size={17} />

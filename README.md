@@ -32,7 +32,7 @@ trust boundary, the optional Python image, public access setting, and deadline c
 Use [the three-minute demo script](docs/demo-script.md) for the final and QR challenge.
 These files prepare deployment; a real VM and managed hostname are still required.
 
-# VisCon
+# PolyCosmos
 
 One local app for finding moments in lecture videos and practising with friends.
 The shared server serves both frontends and preserves the existing player profiles,

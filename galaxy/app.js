@@ -943,7 +943,7 @@
 
     var brand = document.createElement("div");
     brand.className = "brand";
-    brand.textContent = "VisCon";
+    brand.textContent = (window.BRAND && window.BRAND.name) || "PolyCosmos";
     var dot = document.createElement("span");
     dot.textContent = ".";
     brand.append(dot);

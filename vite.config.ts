@@ -1,7 +1,15 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { cpSync, createReadStream, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
+
+// One place to rename the product: shared/brand.json.
+const brand = JSON.parse(readFileSync(resolve('shared/brand.json'), 'utf8')) as { name: string };
+const BRAND_JS = `(function(){var b=${JSON.stringify(brand)};window.BRAND=b;` +
+  `document.title=document.title.split('{{BRAND}}').join(b.name);` +
+  `var m=document.querySelector('meta[name=description]');if(m)m.content=m.content.split('{{BRAND}}').join(b.name);` +
+  `document.addEventListener('DOMContentLoaded',function(){document.querySelectorAll('[data-brand-upper]').forEach(function(e){e.textContent=b.name.toUpperCase()})})})();`;
 
 const GALAXY_TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -16,6 +24,22 @@ export default defineConfig({
   // Both frontends must share React, even with legacy web-interface/node_modules present.
   resolve: { dedupe: ['react', 'react-dom'] },
   plugins: [react(), {
+    // Injects the product name into pages Vite processes ({{BRAND}}) and serves /brand.js for the plain pages
+    // (galaxy, translation) that load it as a classic script.
+    name: 'brand',
+    transformIndexHtml: (html) => html.split('{{BRAND}}').join(brand.name),
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if ((req.url || '').split('?')[0] !== '/brand.js') return next();
+        res.setHeader('Content-Type', 'text/javascript; charset=utf-8');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.end(BRAND_JS);
+      });
+    },
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'brand.js', source: BRAND_JS });
+    },
+  }, {
     name: 'viscon-learn-route',
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {

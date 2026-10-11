@@ -1,3 +1,4 @@
+import brand from '../../shared/brand.json';
 import { ArrowLeft, ArrowUpRight, ChevronRight } from "lucide-react";
 import type { MouseEvent, ReactNode } from "react";
 
@@ -22,7 +23,7 @@ export function VersusHeader({ path, inRoom, galaxyHref, actions, navigate, onPl
     <details className="cabin-menu" key={path} onKeyDown={event => {
       if (event.key === 'Escape') { event.currentTarget.open = false; event.currentTarget.querySelector('summary')?.focus(); }
     }}>
-      <summary>VisCon <span> / Versus</span></summary>
+      <summary>{brand.name} <span> / Versus</span></summary>
       <nav aria-label="Versus navigation" onClick={event => { if ((event.target as HTMLElement).closest("button, a")) event.currentTarget.closest("details")?.removeAttribute("open"); }}>
         {tabs.map(tab => <button key={tab.path} onClick={() => navigate(tab.path)}>{tab.label}</button>)}
         <button onClick={() => navigate('/java')}>Java workspace</button>
@@ -34,7 +35,7 @@ export function VersusHeader({ path, inRoom, galaxyHref, actions, navigate, onPl
   return <header className="versus-header">
     <div className="versus-header-top">
       <nav className="versus-trail" aria-label="Platform breadcrumb">
-        <a className="versus-brand" href={galaxyHref} onClick={e => onPlatformLink(e, galaxyHref)} aria-label="VisCon home">VisCon<span>.</span></a>
+        <a className="versus-brand" href={galaxyHref} onClick={e => onPlatformLink(e, galaxyHref)} aria-label={`${brand.name} home`}>{brand.name}<span>.</span></a>
         <a href={galaxyHref} onClick={e => onPlatformLink(e, galaxyHref)}>Galaxy</a>
         <ChevronRight size={12} aria-hidden="true" />
         <span aria-current="page">Versus</span>

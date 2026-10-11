@@ -1,3 +1,4 @@
+import brand from '../shared/brand.json';
 import express from 'express';
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
@@ -204,4 +205,4 @@ await mountManiaAnswers(app);
 app.use('/api',(_req,res)=>res.status(404).json({error:'API route not found.'}));
 mountStatic(app,guard);
 app.use((err:any,_req:express.Request,res:express.Response,_next:express.NextFunction)=>res.status(Number.isInteger(err.status)&&err.status>=400&&err.status<600?err.status:500).json({error:err.status===404?'File not found.':'The request could not be read.'}));
-http.listen(port,process.env.HOST||'0.0.0.0',()=>console.log(`VisCon + Basis Arena ready on http://localhost:${port}`));
+http.listen(port,process.env.HOST||'0.0.0.0',()=>console.log(`${brand.name} + Basis Arena ready on http://localhost:${port}`));

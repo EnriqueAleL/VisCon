@@ -1,3 +1,4 @@
+import brand from '../shared/brand.json';
 import { randomBytes } from 'node:crypto';
 import { AuthError } from './errors';
 import { mailerFromEnv, verifySmtp } from './mailer';
@@ -23,7 +24,7 @@ async function main() {
     console.log(await verifySmtp());
     if (identifier) {
       if (!/^[^\s@]+@[^\s@]+$/.test(identifier)) throw new Error('Give a full email address to send the test to.');
-      await mailerFromEnv().send({ to: identifier, subject: 'VIScon test email', text: 'This is a test from VIScon. If you can read it, verification emails can be delivered.\n' });
+      await mailerFromEnv().send({ to: identifier, subject: `${brand.name} test email`, text: `This is a test from ${brand.name}. If you can read it, verification emails can be delivered.\n` });
       console.log(`Test email sent to ${identifier}. Check the inbox and the spam folder.`);
     }
     return;

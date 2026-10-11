@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mailerFromEnv, optionalMailerFromEnv, smtpSettingsFromEnv, verifySmtp } from './mailer';
 
-const base = { AUTH_MAIL_FROM: 'VIScon <noreply@example.org>' };
+const base = { AUTH_MAIL_FROM: 'PolyCosmos <noreply@example.org>' };
 
 test('separate SMTP fields: 465 is TLS from the start, 587 must use STARTTLS, no URL-encoding needed', () => {
   const tls = smtpSettingsFromEnv({ ...base, AUTH_SMTP_HOST: 'smtp.gmail.com', AUTH_SMTP_PORT: '465', AUTH_SMTP_USER: 'u@example.org', AUTH_SMTP_PASSWORD: 'p@ss/w:rd#1' });

@@ -1,4 +1,4 @@
-# The Mania: VIScon deployment runbook
+# The Mania: PolyCosmos deployment runbook
 
 This runbook packages the app for the supplied Ubuntu VM (4 vCPU, 8 GB RAM,
 80 GB disk). It does not claim that a VM has been accessed or a site published.
@@ -86,7 +86,7 @@ these variables into the container; `AUTH_REQUIRE_VERIFIED` is intentionally not
 switched off in the deployed app):
 
 ```dotenv
-AUTH_MAIL_FROM="VIScon <sender@example.org>"   # must be an address the SMTP account may send as
+AUTH_MAIL_FROM="PolyCosmos <sender@example.org>"   # must be an address the SMTP account may send as
 AUTH_SMTP_HOST=smtp.gmail.com                   # your provider's SMTP server
 AUTH_SMTP_PORT=465                              # 465 = TLS, 587 = STARTTLS
 AUTH_SMTP_USER=sender@example.org

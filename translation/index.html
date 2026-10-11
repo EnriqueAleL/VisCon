@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#070a12">
-  <title>Documents · VisCon</title>
+  <title>Documents · {{BRAND}}</title>
   <link rel="stylesheet" href="vendor/galaxy-fonts/fonts.css">
   <link rel="stylesheet" href="vendor/pdfjs/web/pdf_viewer.css">
   <link rel="stylesheet" href="styles.css">
@@ -12,7 +12,7 @@
 <body>
   <header class="reader-header">
     <a id="return-galaxy" class="return-link" href="/" aria-label="Return to galaxy"><span aria-hidden="true">←</span> <span>Galaxie</span></a>
-    <div class="document-identity"><span class="eyebrow">VISCON / DOCUMENTS</span><h1 id="document-name">Theoretische Informatik</h1></div>
+    <div class="document-identity"><span class="eyebrow"><span data-brand-upper>VISCON</span> / DOCUMENTS</span><h1 id="document-name">Theoretische Informatik</h1></div>
     <div class="reader-actions"><span id="page-indicator" class="page-indicator" aria-label="Current page">— / —</span><button id="open-pdf" class="reader-button" title="Open a local PDF">Open PDF</button><button id="chat-toggle" class="reader-button" aria-controls="chat-panel" aria-expanded="false">Ask document <span aria-hidden="true">↗</span></button></div>
   </header>
   <div class="layout">
@@ -29,6 +29,7 @@
   <p id="status" role="status">Opening your document…</p>
   <div class="drop-overlay"><span>Drop a PDF to start reading</span></div>
   <input id="file-input" type="file" accept="application/pdf,.pdf" hidden>
+  <script src="/brand.js"></script>
   <script type="module" src="app.js"></script>
 </body>
 </html>

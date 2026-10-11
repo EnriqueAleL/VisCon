@@ -1,3 +1,4 @@
+import brand from '../../shared/brand.json';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 export type UiLanguage = 'de' | 'en';
@@ -32,7 +33,7 @@ const messages = {
   'workspace.default': { de: 'Vorlesungen', en: 'Lectures' },
   'workspace.counts': { de: '{lectures} Vorlesungen · {courses} Kurse', en: '{lectures} lectures · {courses} courses' },
   'input.label': { de: 'Nachricht eingeben', en: 'Enter your message' },
-  'input.placeholder': { de: 'Nachricht an VisCon …', en: 'Message VisCon …' },
+  'input.placeholder': { de: `Nachricht an ${brand.name} …`, en: `Message ${brand.name} …` },
   'input.pickFirst': { de: 'Wähle zuerst ein Fach …', en: 'Choose a course first …' },
   'course.change': { de: 'Fach wechseln', en: 'Change course' },
   'course.pick': { de: 'Fach auswählen', en: 'Choose a course' },
@@ -78,7 +79,7 @@ const messages = {
   // help dialog
   'help.close': { de: 'Information schliessen', en: 'Close information' },
   'common.close': { de: 'Schliessen', en: 'Close' },
-  'help.title': { de: 'Dein VisCon Lernraum', en: 'Your VisCon study room' },
+  'help.title': { de: `Dein ${brand.name} Lernraum`, en: `Your ${brand.name} study room` },
   'help.p1': {
     de: 'Hier findest du die Vorlesungsaufzeichnungen mit ihren Transkripten, Kapiteln und vorhandenen Lernnotizen. Die drei kurzen Beispielvideos sind als Demo gekennzeichnet.',
     en: 'Here you will find the lecture recordings with their transcripts, chapters and any available study notes. The three short sample videos are marked as demos.',
@@ -99,7 +100,7 @@ const messages = {
   'sidebar.historyClear': { de: 'Frageverlauf löschen', en: 'Clear question history' },
   'sidebar.historyEmpty': { de: 'Noch keine Fragen gestellt.', en: 'No questions asked yet.' },
   'sidebar.courses': { de: 'Kurse', en: 'Courses' },
-  'sidebar.about': { de: 'Über VisCon', en: 'About VisCon' },
+  'sidebar.about': { de: `Über ${brand.name}`, en: `About ${brand.name}` },
 
   // course picker
   'picker.label': { de: 'Kursauswahl', en: 'Course selection' },
