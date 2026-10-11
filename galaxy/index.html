@@ -33,23 +33,23 @@
       </span>
       <a href="/arena" id="versus-link">Versus</a>
       <span class="account" id="account">
-        <button type="button" class="account-btn" id="account-btn" aria-haspopup="true" aria-expanded="false" aria-controls="account-panel" title="Konto" aria-label="Konto">DU</button>
-        <div class="account-panel" id="account-panel" role="group" aria-label="Konto" hidden>
-          <p class="account-label">Sprache der Oberfläche</p>
-          <div class="account-lang" role="radiogroup" aria-label="Sprache der Oberfläche">
+        <button type="button" class="account-btn" id="account-btn" aria-haspopup="true" aria-expanded="false" aria-controls="account-panel" title="Account" aria-label="Account">YOU</button>
+        <div class="account-panel" id="account-panel" role="group" aria-label="Account" hidden>
+          <p class="account-label" data-t="interface">Interface language</p>
+          <div class="account-lang" role="radiogroup">
             <button type="button" role="radio" data-lang="de">Deutsch</button>
             <button type="button" role="radio" data-lang="en">English</button>
           </div>
-          <p class="account-label">Sprache der KI-Antwort</p>
-          <div class="account-answer" role="radiogroup" aria-label="Sprache der KI-Antwort">
-            <button type="button" role="radio" data-answer="auto"><span>Automatisch</span><small>Wie die Frage</small></button>
-            <button type="button" role="radio" data-answer="de"><span>Deutsch</span><small>Antworten auf Deutsch</small></button>
-            <button type="button" role="radio" data-answer="en"><span>English</span><small>Antworten auf Englisch</small></button>
+          <p class="account-label" data-t="answer">AI answer language</p>
+          <div class="account-answer" role="radiogroup">
+            <button type="button" role="radio" data-answer="auto"><span>Automatic</span><small>Same as the question</small></button>
+            <button type="button" role="radio" data-answer="de"><span>Deutsch</span><small>Answers in German</small></button>
+            <button type="button" role="radio" data-answer="en"><span>English</span><small>Answers in English</small></button>
           </div>
-          <p class="account-note">Die Antwortsprache gilt für Antworten im Chat. Hinweise vom Server können weiterhin Deutsch sein.</p>
-          <p class="account-label">Angemeldet als</p>
+          <p class="account-note" data-t="note">The answer language applies to answers in chat. Some messages from the server may still be in German.</p>
+          <p class="account-label" data-t="signedin">Signed in as</p>
           <p class="account-user" id="account-user">…</p>
-          <button type="button" class="account-logout" id="account-logout">Abmelden</button>
+          <button type="button" class="account-logout" id="account-logout">Log out</button>
         </div>
       </span>
     </nav>

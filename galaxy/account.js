@@ -1,10 +1,46 @@
-/* Account button (top right): shows who is signed in and offers log out. */
+/* Account menu (top right): interface and answer language, who is signed in, log out.
+   Same settings as the DU/YOU menu in the list view. */
 (function () {
   var btn = document.getElementById("account-btn");
   var panel = document.getElementById("account-panel");
   var user = document.getElementById("account-user");
   var logout = document.getElementById("account-logout");
   if (!btn || !panel) return;
+
+  var TEXT = {
+    en: {
+      avatar: "YOU", account: "Account", interfaceLang: "Interface language", answerLang: "AI answer language",
+      auto: "Automatic", autoHint: "Same as the question", deHint: "Answers in German", enHint: "Answers in English",
+      note: "The answer language applies to answers in chat. Some messages from the server may still be in German.",
+      signedIn: "Signed in as", logout: "Log out", notSignedIn: "Not signed in"
+    },
+    de: {
+      avatar: "DU", account: "Konto", interfaceLang: "Sprache der Oberfläche", answerLang: "Sprache der KI-Antwort",
+      auto: "Automatisch", autoHint: "Wie die Frage", deHint: "Antworten auf Deutsch", enHint: "Antworten auf Englisch",
+      note: "Die Antwortsprache gilt für Antworten im Chat. Hinweise vom Server können weiterhin Deutsch sein.",
+      signedIn: "Angemeldet als", logout: "Abmelden", notSignedIn: "Nicht angemeldet"
+    }
+  };
+  var lang = window.I18N ? window.I18N.language : "en";
+  var tx = TEXT[lang] || TEXT.en;
+
+  function setText(selector, value) {
+    var el = panel.querySelector(selector);
+    if (el) el.textContent = value;
+  }
+  btn.textContent = tx.avatar;
+  btn.title = tx.account;
+  btn.setAttribute("aria-label", tx.account);
+  panel.setAttribute("aria-label", tx.account);
+  setText("[data-t=interface]", tx.interfaceLang);
+  setText("[data-t=answer]", tx.answerLang);
+  setText("[data-answer=auto] span", tx.auto);
+  setText("[data-answer=auto] small", tx.autoHint);
+  setText("[data-answer=de] small", tx.deHint);
+  setText("[data-answer=en] small", tx.enHint);
+  setText("[data-t=note]", tx.note);
+  setText("[data-t=signedin]", tx.signedIn);
+  logout.textContent = tx.logout;
 
   function setOpen(open) {
     panel.hidden = !open;
@@ -15,19 +51,33 @@
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (status) {
       var name = status && status.account && status.account.username;
-      user.textContent = name || (window.I18N ? window.I18N.t("Nicht angemeldet") : "Nicht angemeldet");
+      user.textContent = name || tx.notSignedIn;
       if (!name) logout.hidden = true;
     })
-    .catch(function () { user.textContent = (window.I18N ? window.I18N.t("Nicht angemeldet") : "Nicht angemeldet"); logout.hidden = true; });
+    .catch(function () { user.textContent = tx.notSignedIn; logout.hidden = true; });
 
-  Array.prototype.forEach.call(panel.querySelectorAll("[data-lang]"), function (b) {
-    var on = window.I18N && window.I18N.language === b.getAttribute("data-lang");
-    b.setAttribute("aria-checked", String(!!on));
+  // Interface language (shared with the list view).
+  var langButtons = panel.querySelectorAll("[data-lang]");
+  function paintLang() {
+    Array.prototype.forEach.call(langButtons, function (b) {
+      b.setAttribute("aria-checked", String(window.I18N && window.I18N.language === b.getAttribute("data-lang")));
+    });
+  }
+  Array.prototype.forEach.call(langButtons, function (b) {
     b.addEventListener("click", function () {
-      if (window.I18N && !on) window.I18N.set(b.getAttribute("data-lang"));
+      var next = b.getAttribute("data-lang");
+      if (window.I18N && window.I18N.language !== next) {
+        window.I18N.set(next);
+        var t = TEXT[next] || TEXT.en;
+        tx = t;
+        btn.textContent = t.avatar;
+        location.reload();
+      }
     });
   });
+  paintLang();
 
+  // Language of the AI answers (shared with the list view).
   function answerStored() {
     try {
       var v = JSON.parse(localStorage.getItem("viscon.answer-language.v1"));
