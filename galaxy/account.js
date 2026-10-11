@@ -15,10 +15,18 @@
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (status) {
       var name = status && status.account && status.account.username;
-      user.textContent = name || "Nicht angemeldet";
+      user.textContent = name || (window.I18N ? window.I18N.t("Nicht angemeldet") : "Nicht angemeldet");
       if (!name) logout.hidden = true;
     })
-    .catch(function () { user.textContent = "Nicht angemeldet"; logout.hidden = true; });
+    .catch(function () { user.textContent = (window.I18N ? window.I18N.t("Nicht angemeldet") : "Nicht angemeldet"); logout.hidden = true; });
+
+  Array.prototype.forEach.call(panel.querySelectorAll("[data-lang]"), function (b) {
+    var on = window.I18N && window.I18N.language === b.getAttribute("data-lang");
+    b.setAttribute("aria-checked", String(!!on));
+    b.addEventListener("click", function () {
+      if (window.I18N && !on) window.I18N.set(b.getAttribute("data-lang"));
+    });
+  });
 
   btn.addEventListener("click", function () { setOpen(panel.hidden); });
   document.addEventListener("pointerdown", function (e) {

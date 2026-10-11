@@ -820,3 +820,10 @@ body.daylight .hint { bottom: calc(66px + env(safe-area-inset-bottom, 0px)); }
   color: var(--starlight); font: 500 12.5px var(--body); letter-spacing: 0; text-transform: none; text-align: center;
 }
 .elsewhere .account-logout:disabled { opacity: .6; cursor: default; }
+
+.account-lang { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 14px; }
+.elsewhere .account-lang button {
+  padding: 7px 8px; border: 1px solid var(--line); border-radius: 6px;
+  color: var(--faint); font: 500 12px var(--body); letter-spacing: 0; text-transform: none;
+}
+.elsewhere .account-lang button[aria-checked="true"] { color: var(--starlight); background: rgba(255,255,255,.12); border-color: var(--faint); }
