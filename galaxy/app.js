@@ -862,7 +862,7 @@
   changeProgramme.id = "change-programme";
   changeProgramme.className = "change-programme";
   changeProgramme.type = "button";
-  changeProgramme.textContent = "Studiengang wechseln";
+  changeProgramme.textContent = "Change programme";
   changeProgramme.addEventListener("click", context.change);
   document.getElementById("panel").append(changeProgramme);
 
@@ -952,7 +952,7 @@
     // The selected programme is the course galaxy. From a planet or city,
     // this breadcrumb returns to its planets without reloading the page.
     var programmeCrumb = crumb(context.label, state.level === "galaxy" ? context.change : toGalaxy, state.level === "galaxy");
-    programmeCrumb.title = state.level === "galaxy" ? "Studiengang wechseln" : "Zur Galaxie";
+    programmeCrumb.title = state.level === "galaxy" ? "Change programme" : "Back to the galaxy";
     el.trail.append(programmeCrumb);
 
     function sep() { return sepNode(); }
@@ -977,7 +977,7 @@
       ));
     }
     if (state.lecture !== null) {
-      el.trail.append(sep(), crumb("VL " + DATA[state.course].lectures[state.lecture].ep, null, true));
+      el.trail.append(sep(), crumb("Lec " + DATA[state.course].lectures[state.lecture].ep, null, true));
     }
   }
 
@@ -995,7 +995,7 @@
       el.sub.textContent = DATA.length + " courses orbit you. Choose a planet to see its lectures.";
       DATA.forEach(function (c, i) {
         el.list.append(row(
-          String(i + 1).padStart(2, "0"), c.name, c.lectures.length + " VL", false,
+          String(i + 1).padStart(2, "0"), c.name, c.lectures.length + " lec.", false,
           function () { toPlanet(i); },
           { kind: "planet", index: i }
         ));
@@ -1143,7 +1143,7 @@
     if (activeScene === sky) {
       if (state.level === "galaxy") {
         planets.forEach(function (p, i) {
-          put(p.body, p.course.short, p.course.lectures.length + " VL", p.course.css,
+          put(p.body, p.course.short, p.course.lectures.length + " lec.", p.course.css,
             hovered && hovered.kind === "planet" && hovered.index === i, PLANET_R * 1.9);
         });
       } else if (state.level === "planet") {
@@ -1156,7 +1156,7 @@
           c.node.getWorldPosition(cityPos);
           // Only label cities on the side of the globe facing us
           if (cityPos.sub(centre).normalize().dot(toCam) < 0.25) return;
-          put(c.node, (WEATHER_GLYPH[c.weather] || "") + "VL " + c.lecture.ep,
+          put(c.node, (WEATHER_GLYPH[c.weather] || "") + "Lec " + c.lecture.ep,
             mins(c.lecture.dur) + (c.online ? " · " + c.online + " online" : ""), p.course.css,
             hovered && hovered.kind === "city" && hovered.index === j, 1.25);
         });
@@ -1165,7 +1165,7 @@
       var css = DATA[state.course].css;
       houses.forEach(function (h, k) {
         put(h.grp, (isWatched(h.seg) ? "\u2713 " : "") + String(k + 1).padStart(2, "0"),
-          mmss(h.seg.a) + (h.online ? " · " + h.online + " hier" : ""), css,
+          mmss(h.seg.a) + (h.online ? " · " + h.online + " here" : ""), css,
           (hovered && hovered.kind === "house" && hovered.index === k) || state.segment === k,
           h.height + 3.5);
       });
@@ -1173,7 +1173,7 @@
       if (cityView && !riding) cityView.portals.forEach(function (q) {
         var to = portalTarget(q.side);
         if (!to) return;
-        put(q.grp, q.side < 0 ? "‹ VL " + to.ep : "VL " + to.ep + " ›", "Tunnel", css,
+        put(q.grp, q.side < 0 ? "‹ Lec " + to.ep : "Lec " + to.ep + " ›", "Tunnel", css,
           hovered && hovered.kind === "portal" && hovered.side === q.side, q.labelY);
       });
     }
@@ -1849,8 +1849,8 @@
     var before = lectures[state.lecture - 1], after = lectures[state.lecture + 1];
     hopPrev.hidden = !before;
     hopNext.hidden = !after;
-    if (before) hopPrev.textContent = "‹ Tunnel · VL " + before.ep;
-    if (after) hopNext.textContent = "Tunnel · VL " + after.ep + " ›";
+    if (before) hopPrev.textContent = "‹ Tunnel · Lec " + before.ep;
+    if (after) hopNext.textContent = "Tunnel · Lec " + after.ep + " ›";
     if (before) hopPrev.title = before.title;
     if (after) hopNext.title = after.title;
     var next = nextChapterIndex();
