@@ -9,9 +9,25 @@
 window.GalaxyAPI = (function () {
   "use strict";
 
+  // A plain page has no log-in screen of its own. When the server says the session has
+  // ended (or never existed), reload: the same URL now answers with the sign-in page, and
+  // signing in brings the person back here. One reload per 15 s, so a server that keeps
+  // refusing shows its error instead of looping.
+  const ACCESS_CODES = ["login_required", "verification_required", "account_disabled"];
+  function sendToLogin(response, data) {
+    if (response.status !== 401 && !(data && ACCESS_CODES.indexOf(data.code) >= 0)) return;
+    try {
+      const last = Number(sessionStorage.getItem("viscon:login-reload")) || 0;
+      if (Date.now() - last < 15000) return;
+      sessionStorage.setItem("viscon:login-reload", String(Date.now()));
+    } catch (error) { return; }
+    location.reload();
+  }
+
   async function getJSON(path, options) {
     const response = await fetch(path, options);
     const data = await response.json().catch(function () { return null; });
+    sendToLogin(response, data);
     if (!response.ok) {
       throw new Error((data && data.error) || "Die Verbindung zum Lernraum ist unterbrochen.");
     }

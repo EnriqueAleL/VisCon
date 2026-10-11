@@ -1,11 +1,25 @@
+/* The log-in screens wear the galaxy's sky, like the Lernraum list and Versus, so the
+   first screen matches the rest. Same hues as `.app-shell` in web-interface/src/styles.css;
+   the accent stays the green the list view uses. Scoped here, nothing else is re-pointed. */
 .auth-page {
+  --ground: #070a12;
+  --surface: #0d1524;
+  --surface-raised: #121d30;
+  --surface-hover: #182540;
+  --ink: #e9edf6;
+  --muted: #78859f;
+  --subtle: #5a6881;
+  --line: #1e2a40;
+  --line-strong: #2b3a55;
+  --accent-soft: #14283a;
+  --success-soft: #14283a;
   min-height: 100vh;
   min-height: 100dvh;
   display: grid;
   place-items: center;
   padding: 24px 16px;
   background:
-    radial-gradient(900px 480px at 50% -10%, #1c3229 0%, transparent 70%),
+    radial-gradient(900px 480px at 50% -10%, #14283a 0%, transparent 70%),
     var(--ground);
   color: var(--ink);
   font-family: var(--font-ui);

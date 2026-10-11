@@ -45,12 +45,26 @@ function clearTranslationPopover() {
   translatePopover = null;
   translatePopoverPage = null;
 }
+// A plain page has no log-in screen of its own. When the server says the session has ended,
+// reload: the same URL then answers with the sign-in page, and signing in returns here.
+// One reload per 15 s, so a server that keeps refusing shows its error instead of looping.
+const ACCESS_CODES = ['login_required', 'verification_required', 'account_disabled'];
+function sendToLogin(response, data) {
+  if (response.status !== 401 && !ACCESS_CODES.includes(data?.code)) return;
+  try {
+    const last = Number(sessionStorage.getItem('viscon:login-reload')) || 0;
+    if (Date.now() - last < 15000) return;
+    sessionStorage.setItem('viscon:login-reload', String(Date.now()));
+  } catch { return; }
+  location.reload();
+}
 async function requestTranslation(text, pageNumber) {
   const response = await fetch(`${TR_API}/translate`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ text, ...(indexedDocument ? { page: pageNumber } : {}), pdf: activePdfName }),
   });
   const data = await response.json().catch(() => ({ error: 'The reading companion is temporarily unavailable. Please try again.' }));
+  sendToLogin(response, data);
   if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
   return data.translation;
 }
@@ -377,6 +391,7 @@ async function askDocument(question) {
     body: JSON.stringify({ question, pdf: activePdfName }),
   });
   const data = await response.json().catch(() => ({ error: 'The reading companion is temporarily unavailable. Please try again.' }));
+  sendToLogin(response, data);
   if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
   return data;
 }
