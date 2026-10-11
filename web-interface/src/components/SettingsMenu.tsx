@@ -58,7 +58,7 @@ export function SettingsMenu({ language, onLanguage }: SettingsMenuProps) {
     <div className="settings-menu" ref={root}>
       <button
         type="button"
-        className="avatar"
+        className="avatar settings-avatar"
         title={t('settings.title')}
         aria-label={t('settings.title')}
         aria-haspopup="true"
@@ -71,7 +71,7 @@ export function SettingsMenu({ language, onLanguage }: SettingsMenuProps) {
       {open && (
         <div className="settings-panel" id={panelId} role="group" aria-label={t('settings.title')}>
           <p className="settings-title">{t('settings.interface')}</p>
-          <div className="settings-options" role="radiogroup" aria-label={t('settings.interface')}>
+          <div className="settings-options settings-lang" role="radiogroup" aria-label={t('settings.interface')}>
             {INTERFACE_OPTIONS.map((option) => (
               <button
                 key={option.value}
@@ -86,8 +86,8 @@ export function SettingsMenu({ language, onLanguage }: SettingsMenuProps) {
             ))}
           </div>
 
-          <p className="settings-title settings-title-spaced">{t('settings.answer')}</p>
-          <div className="settings-options" role="radiogroup" aria-label={t('settings.answer')}>
+          <p className="settings-title">{t('settings.answer')}</p>
+          <div className="settings-options settings-answer" role="radiogroup" aria-label={t('settings.answer')}>
             {ANSWER_OPTIONS.map((option) => (
               <button
                 key={option.value}
@@ -104,11 +104,11 @@ export function SettingsMenu({ language, onLanguage }: SettingsMenuProps) {
           </div>
           <p className="settings-note">{t('settings.note')}</p>
           {username && (
-            <div className="settings-account">
+            <>
               <p className="settings-title">{t('settings.account')}</p>
               <p className="settings-user">{username}</p>
               <button type="button" className="settings-logout" onClick={logout}>{t('settings.logout')}</button>
-            </div>
+            </>
           )}
         </div>
       )}
