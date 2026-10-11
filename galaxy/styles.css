@@ -790,3 +790,8 @@ body.daylight .hint { bottom: calc(66px + env(safe-area-inset-bottom, 0px)); }
   .hud:has(> .lecture-chat:not([hidden])) .hint { right: 396px; }
   .hud:has(> .lecture-chat:not([hidden])) .hop button { min-width: 0; }   /* long titles shorten rather than overflow */
 }
+
+/* A chapter already watched: ticked in the list, green-roofed on its house in the city. */
+.row.done .idx { color: var(--accent); }
+.row.done .idx::after { content: " ✓"; }
+.row.done .txt { color: var(--dim); }

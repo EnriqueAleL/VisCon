@@ -694,6 +694,7 @@ window.GalaxyCity = (function () {
       grp.position.set(bx + shiftX, KERB, bz - 1 - rand() * 3);
       root.add(grp);
       var mats = [];
+      var roofs = [];        // every roof surface, so progress can recolour them
 
       function shell(width, depth, height, bottom, x, z) {
         var t = tex.clone();
@@ -706,6 +707,7 @@ window.GalaxyCity = (function () {
           color: wallColour.clone().lerp(new THREE.Color(0x56534f), 0.75), roughness: 0.95, emissive: hue, emissiveIntensity: 0
         });
         mats.push(sideMat, roof);
+        roofs.push(roof);
         var mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), [sideMat, sideMat, roof, roof, sideMat, sideMat]);
         mesh.position.set(x || 0, bottom + height / 2, z || 0);
         mesh.castShadow = mesh.receiveShadow = true;
@@ -785,8 +787,9 @@ window.GalaxyCity = (function () {
 
       if (hasHip) {
         // Tiled hip roof, with a chimney where the theme has them
-        var hip = new THREE.Mesh(hipRoofGeometry(THREE),
-          new THREE.MeshPhongMaterial({ color: roofColour(), flatShading: true, shininess: 0 }));
+        var hipMat = new THREE.MeshPhongMaterial({ color: roofColour(), flatShading: true, shininess: 0 });
+        roofs.push(hipMat);
+        var hip = new THREE.Mesh(hipRoofGeometry(THREE), hipMat);
         hip.scale.set(topW + 0.9, topSize * 0.42, topD + 0.9);
         hip.position.y = top + 0.2;
         hip.castShadow = true;
@@ -848,6 +851,7 @@ window.GalaxyCity = (function () {
       return {
         grp: grp, hit: hit, seg: seg, height: top + 2.7, base: 0,
         mats: mats, marker: marker, markerY: top + 4.5, top: top, online: 0, score: null,
+        roofs: roofs, watched: false,
         // The door, and the street in front of it, for crowds and rides
         door: new THREE.Vector3(grp.position.x, KERB, grp.position.z + footD / 2),
         block: chapterBlock[k]
@@ -1252,6 +1256,23 @@ window.GalaxyCity = (function () {
       return { group: g, drops: list, pos: pos, geo: geo, house: h };
     }
 
+    /* ---------- progress: which chapters this student has already watched ---------- */
+    /* From the usual camera you see roofs more than walls, so that is where
+       progress shows: a watched chapter is re-roofed in the course green while
+       the rest of the town keeps its terracotta and slate. Reads at any zoom
+       without putting a badge on anything. */
+    var DONE_ROOF = new THREE.Color(0x3fae7a);
+    function setWatched(done) {
+      done = done || {};
+      houses.forEach(function (h) {
+        h.watched = !!done[h.seg.id];
+        h.roofs.forEach(function (m) {
+          if (!m.userData.baseColour) m.userData.baseColour = m.color.clone();
+          m.color.copy(h.watched ? DONE_ROOF : m.userData.baseColour);
+        });
+      });
+    }
+
     /* ---------- live state: who is here, and how hard it is ---------- */
     function setLive(live) {
       live = live || {};
@@ -1522,7 +1543,7 @@ window.GalaxyCity = (function () {
     }
 
     return {
-      houses: houses, animate: animate, portals: portals, setLive: setLive,
+      houses: houses, animate: animate, portals: portals, setLive: setLive, setWatched: setWatched,
       ride: startRide,
       rideState: function () { return ride ? { position: ride.vehicle.position, heading: ride.heading } : null; },
       weather: function () { return weather.kind; },

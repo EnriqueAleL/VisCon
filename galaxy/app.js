@@ -41,6 +41,9 @@
   /* The Liste view (/learn) keeps its selection under this key, so both views open on the same course. */
   var SELECTION_KEY = "viscon.selected-course.v1";
   var PROGRAMME_KEY = "viscon.galaxy-programme.v1";
+  /* Which chapters this student has already watched, by chapter id. Kept in the
+     browser: it is this person's own progress, not something the course knows. */
+  var WATCHED_KEY = "viscon.watched-chapters.v1";
   function readStored(key) {
     try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; }
   }
@@ -50,6 +53,12 @@
       else localStorage.setItem(key, JSON.stringify(value));
     } catch (e) { /* private mode: the choice just isn't remembered */ }
   }
+  var watched = (function () {
+    var stored = readStored(WATCHED_KEY);
+    return stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {};
+  })();
+  function isWatched(seg) { return !!(seg && watched[seg.id]); }
+
   function programmeOf(course) {
     return { department: course.department, degree: course.degree, studyYear: course.studyYear };
   }
@@ -767,6 +776,7 @@
       course: DATA[courseIndex], lecture: DATA[courseIndex].lectures[lectureIndex]
     });
     cityView.houses.forEach(function (h) { houses.push(h); });
+    cityView.setWatched(watched);
     pushCityLive();
   }
 
@@ -1008,10 +1018,12 @@
       el.title.textContent = course.name;
       el.sub.textContent = course.lecturer + " · jede Stadt ist eine Vorlesung.";
       course.lectures.forEach(function (lec, j) {
+        var seen = lec.segs.filter(isWatched).length;
         el.list.append(row(
-          String(lec.ep).padStart(2, "0"), lec.title, mins(lec.dur), false,
+          String(lec.ep).padStart(2, "0"), lec.title,
+          seen ? seen + "/" + lec.segs.length : mins(lec.dur), false,
           function () { toCity(state.course, j); },
-          { kind: "city", course: state.course, index: j }
+          { kind: "city", course: state.course, index: j }, seen === lec.segs.length
         ));
       });
       var segs = course.lectures.reduce(function (m, l) { return m + l.segs.length; }, 0);
@@ -1024,12 +1036,14 @@
     var lec = course.lectures[state.lecture];
     el.eyebrow.textContent = "Vorlesung " + lec.ep + " · Stadt";
     el.title.textContent = lec.title;
-    el.sub.textContent = "Jedes Haus ist ein Kapitel. Die Höhe entspricht seiner Länge.";
+    var seen = lec.segs.filter(isWatched).length;
+    el.sub.textContent = "Jedes Haus ist ein Kapitel. Die Höhe entspricht seiner Länge."
+      + (seen ? " " + seen + " von " + lec.segs.length + " gesehen." : "");
     lec.segs.forEach(function (seg, k) {
       el.list.append(row(
         String(k + 1).padStart(2, "0"), seg.t, mmss(seg.a), state.segment === k,
         function () { selectHouse(k, true); },
-        { kind: "house", index: k }
+        { kind: "house", index: k }, isWatched(seg)
       ));
     });
 
@@ -1045,9 +1059,9 @@
     }
   }
 
-  function row(idx, text, tail, hot, onClick, hoverKey) {
+  function row(idx, text, tail, hot, onClick, hoverKey, done) {
     var b = document.createElement("button");
-    b.className = "row" + (hot ? " hot" : "");
+    b.className = "row" + (hot ? " hot" : "") + (done ? " done" : "");
 
     var i = document.createElement("span");
     i.className = "idx";
@@ -1150,7 +1164,8 @@
     } else {
       var css = DATA[state.course].css;
       houses.forEach(function (h, k) {
-        put(h.grp, String(k + 1).padStart(2, "0"), mmss(h.seg.a) + (h.online ? " · " + h.online + " hier" : ""), css,
+        put(h.grp, (isWatched(h.seg) ? "\u2713 " : "") + String(k + 1).padStart(2, "0"),
+          mmss(h.seg.a) + (h.online ? " · " + h.online + " hier" : ""), css,
           (hovered && hovered.kind === "house" && hovered.index === k) || state.segment === k,
           h.height + 3.5);
       });
@@ -1744,6 +1759,27 @@
   }
   prevBtn.addEventListener("click", function () { stepChapter(-1); });
   nextBtn.addEventListener("click", function () { stepChapter(1); });
+
+  /* A chapter counts as watched once playback reaches the last tenth of it. That
+     is a heuristic -- seeking into the end of a chapter marks it too -- but it
+     does not mark the chapters you skipped over to get there. */
+  function markWatched(seg) {
+    if (!seg || watched[seg.id]) return;
+    watched[seg.id] = 1;
+    writeStored(WATCHED_KEY, watched);
+    if (cityView) cityView.setWatched(watched);
+    renderPanel();
+  }
+  videoEl.addEventListener("timeupdate", function () {
+    if (playerEl.hidden || videoEl.paused || state.level !== "city" || state.course === null) return;
+    var segs = DATA[state.course].lectures[state.lecture].segs, now = videoEl.currentTime;
+    for (var k = 0; k < segs.length; k++) {
+      if (now >= segs[k].a && now < segs[k].b) {
+        if (now >= segs[k].a + (segs[k].b - segs[k].a) * 0.9) markWatched(segs[k]);
+        return;
+      }
+    }
+  });
 
   // The recording plays on past the chapter it was opened at; keep title, list and URL in step
   videoEl.addEventListener("seeked", function () { followTime = true; });
