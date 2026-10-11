@@ -4,7 +4,7 @@ A study platform for ETH students that turns a semester of lecture recordings,
 scripts and slides into a place you can explore, search and practise in, alone or
 with friends.
 
-Built at the VIScon Hackathon. The repository keeps its original name, `VisCon`.
+Built at the VIScon Hackathon.
 
 ## The problem
 
