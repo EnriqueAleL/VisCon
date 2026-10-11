@@ -420,6 +420,7 @@ canvas { display: block; width: 100%; height: 100%; }
 /* The galaxy is the front door, so the rest of the app stays one click away
    without introducing a second interface on top of it. */
 .elsewhere {
+  z-index: 10; /* above the ask form so the account menu opens on top of it */
   position: absolute;
   top: calc(18px + env(safe-area-inset-top, 0px));
   right: 18px;
