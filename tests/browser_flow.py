@@ -155,7 +155,7 @@ with sync_playwright() as pw:
     capture(a,'profile-desktop.png')
     a.set_viewport_size({'width':390,'height':844});capture(a,'profile-mobile.png')
     a.set_viewport_size({'width':1440,'height':1000})
-    a.goto(BASE+'/java');settle(a)
+    a.goto(BASE+'/arena/java');settle(a)
     expect(a.get_by_text('Java runner not connected.',exact=False)).to_be_visible()
     expect(a.get_by_role('button',name='Run examples',exact=True)).to_be_disabled()
     capture(a,'java-desktop.png')

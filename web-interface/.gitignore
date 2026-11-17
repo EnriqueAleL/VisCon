@@ -1,9 +1,0 @@
-node_modules/
-dist/
-*.local
-*.tsbuildinfo
-.DS_Store
-artifacts/
-
-# Generated from the standalone document viewer
-public/translation/

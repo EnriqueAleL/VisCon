@@ -5,13 +5,11 @@ space, typography and navigation through setup, rooms, matches and results.
 Entering from a planet or chapter keeps that place for the return journey and
 selects a corresponding question bank when one exists. See [Versus integration](docs/versus.md).
 
-An interactive DDCA study world built from the existing 24 recordings and chapter
-index: 24 course cities, cited video answers, recall and spaced review, daily
-expeditions, pipeline/cache/virtual-memory visualizers, timed mixed exams,
-optimization puzzles, live boards, and shared study tables.
-The study world is `/world`; Versus is `/arena`, lectures are `/learn`, and
-the campus view is `/campus`. Demo study history is explicitly labelled and separate
-from real progress and public leaderboards. Other subject planets are placeholders.
+The app has three pages: the galaxy at `/`, the lecture list view at `/learn`,
+and Versus at `/arena` (with `/arena/history`, `/arena/leaderboard`,
+`/arena/profile`, `/arena/java` and `/room/:id` invitations). Every other URL is
+a 404. The route table lives in `shared/routes.ts`. Other subject planets are
+placeholders.
 
 For the supplied VM, keep the media corpus outside the build image and run:
 
@@ -49,10 +47,9 @@ npm install
 npm run dev
 ```
 
-- **Study world:** http://localhost:5173/ — knowledge map, recall, visualizers, puzzles and study tables.
-- **Arena:** http://localhost:5173/arena — rooms, practice, quizzes, numeric answers, Java editor, Elo and history.
+- **Galaxy:** http://localhost:5173/ — the course galaxy, its lecture cities, documents and chats.
+- **Versus:** http://localhost:5173/arena — rooms, practice, quizzes, numeric answers, Java editor, Elo and history.
 - **Lectures:** http://localhost:5173/learn — course picker, chat, lecture library, native video, chapters, transcripts, bookmarks and available study notes.
-- **Campus:** http://localhost:5173/campus — the preserved satellite journey to ETH Zürich.
 
 Use **Lectures** in Arena or the **Arena** icon in VisCon to switch. Leaving an
 active Arena room through this link asks for confirmation. Both pages use the
@@ -142,11 +139,9 @@ reconnection, and desktop/mobile layouts. Reports and screenshots are written to
 `.impeccable/review/`. `TEST_URL` can target an already running shared server.
 
 Arena retains its explicitly labelled demonstration question banks and now also
-offers DDCA practice. A city challenge uses the city's authored, source-linked
-recall questions in three friendly rounds. The 72 DDCA questions are study
-practice, not official exam questions. Java execution still needs the configured
-isolated Judge0 service. See [the Mania validation record](docs/mania-validation.md)
-for the new study world's browser checks and remaining managed-VM checks.
+offers DDCA practice built from authored, source-linked recall questions. The 72
+DDCA questions are study practice, not official exam questions. Java execution
+still needs the configured isolated Judge0 service.
 
 See [Arena documentation](docs/basis-arena.md), [question import contract](docs/question-contract.md),
 [Q&A documentation](qa/README.md), and [integration notes](docs/integration.md).

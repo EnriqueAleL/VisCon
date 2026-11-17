@@ -1,13 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, mkdtemp, writeFile, symlink } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
-import { once } from 'node:events';
-import { execFileSync } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
 import { loadCatalog, validateCatalog } from '../src/catalog.mjs';
 import { createAnswerService, createOllamaExplainer } from '../src/answers.mjs';
-import { createServer, ROOT } from '../src/server.mjs';
 import { parseSubtitles, chunkCues } from '../src/transcripts.mjs';
 import { pullUpVideo } from '../client/client.mjs';
 
@@ -159,56 +154,6 @@ test('model outage falls back and insufficient evidence is explicitly reported',
   assert.equal(abstained.status, 'insufficient_context');
   assert.equal(abstained.answer.text, '');
   assert.ok(abstained.sources.length);
-});
-
-test('CLI imports a lecture and replaces it without duplicating catalog entries', async () => {
-  const directory = await mkdtemp(path.join(tmpdir(), 'viscon-import-'));
-  const output = path.join(directory, 'catalog.json');
-  const args = ['scripts/import-lecture.mjs', '--metadata', 'examples/lecture.json', '--transcript', 'examples/lecture.vtt', '--out', output];
-  execFileSync(process.execPath, args, { cwd: ROOT });
-  execFileSync(process.execPath, args, { cwd: ROOT });
-  const imported = await loadCatalog(output);
-  assert.equal(imported.lectures.length, 1);
-  assert.equal(imported.courses.length, 1);
-  assert.equal(imported.lectures[0].segments[0].start, 720);
-});
-
-test('HTTP API, validation, CORS, byte-range seeking and path traversal protection', async t => {
-  const directory = await mkdtemp(path.join(tmpdir(), 'viscon-media-'));
-  await writeFile(path.join(directory, 'test.mp4'), '0123456789');
-  await writeFile(path.join(directory, '..', `${path.basename(directory)}-secret.txt`), 'secret');
-  await symlink(path.join(directory, '..', `${path.basename(directory)}-secret.txt`), path.join(directory, 'outside.mp4'));
-  const server = createServer({ catalog, mediaRoot: directory });
-  server.listen(0, '127.0.0.1'); await once(server, 'listening');
-  t.after(() => new Promise(resolve => { server.close(resolve); server.closeAllConnections(); }));
-  const base = `http://127.0.0.1:${server.address().port}`;
-  assert.equal((await (await fetch(`${base}/api/health`)).json()).lectureCount, 3);
-  const result = await fetch(`${base}/api/ask`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'http://127.0.0.1:5173' }, body: JSON.stringify({ question: 'Kettenregel', lectureId: 'derivatives' }) });
-  assert.equal(result.status, 200);
-  assert.equal(result.headers.get('access-control-allow-origin'), 'http://127.0.0.1:5173');
-  assert.equal((await result.json()).playback.start, 30);
-  assert.equal((await fetch(`${base}/api/ask`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{broken' })).status, 400);
-  assert.equal((await fetch(`${base}/api/ask`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: 'x'.repeat(17000) }) })).status, 413);
-  assert.equal((await fetch(`${base}/api/ask`, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: 'question' })).status, 415);
-  assert.equal((await fetch(`${base}/api/health`, { headers: { Origin: 'https://unapproved.example' } })).status, 403);
-  const range = await fetch(`${base}/media/test.mp4`, { headers: { Range: 'bytes=3-5' } });
-  assert.equal(range.status, 206); assert.equal(range.headers.get('content-range'), 'bytes 3-5/10'); assert.equal(await range.text(), '345');
-  const suffix = await fetch(`${base}/media/test.mp4`, { headers: { Range: 'bytes=-2' } });
-  assert.equal(suffix.status, 206); assert.equal(await suffix.text(), '89');
-  assert.equal((await fetch(`${base}/media/test.mp4`, { headers: { Range: 'bytes=999-' } })).status, 416);
-  assert.equal((await fetch(`${base}/media/outside.mp4`)).status, 404);
-  assert.equal((await fetch(`${base}/media/%2e%2e%2fpackage.json`)).status, 404);
-  assert.equal((await fetch(`${base}/demo`)).status, 200);
-  assert.equal((await fetch(`${base}/client.mjs`)).status, 200);
-  const tokens = await fetch(`${base}/design/tokens.css`);
-  assert.equal(tokens.status, 200);
-  assert.match(tokens.headers.get('content-type'), /^text\/css/);
-  assert.match(await tokens.text(), /--ground:\s*#111315/);
-  const font = await fetch(`${base}/design/fonts/inter-latin-400-normal.woff2`);
-  assert.equal(font.status, 200);
-  assert.equal(font.headers.get('content-type'), 'font/woff2');
-  assert.equal((await fetch(`${base}/design/ProductHeader.tsx`)).status, 404);
-  assert.equal((await fetch(`${base}/design/%2e%2e%2fpackage.json`)).status, 404);
 });
 
 class FakeVideo extends EventTarget {

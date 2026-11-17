@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import { cpSync, createReadStream, statSync } from 'node:fs';
 import { readFileSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
+import { isDocumentViewerPath, isGalaxyPath, isLearnPath, isVersusPath } from './shared/routes';
 
 // One place to rename the product: shared/brand.json.
 const brand = JSON.parse(readFileSync(resolve('shared/brand.json'), 'utf8')) as { name: string };
@@ -21,8 +22,6 @@ const GALAXY_TYPES: Record<string, string> = {
 
 export default defineConfig({
   publicDir: 'web-interface/public',
-  // Both frontends must share React, even with legacy web-interface/node_modules present.
-  resolve: { dedupe: ['react', 'react-dom'] },
   plugins: [react(), {
     // Injects the product name into pages Vite processes ({{BRAND}}) and serves /brand.js for the plain pages
     // (galaxy, translation) that load it as a classic script.
@@ -40,21 +39,31 @@ export default defineConfig({
       this.emitFile({ type: 'asset', fileName: 'brand.js', source: BRAND_JS });
     },
   }, {
-    name: 'viscon-learn-route',
+    name: 'viscon-page-routes',
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url || '';
-        if (/^\/learn\/?(?:\?|$)/.test(url)) {
+        const [rawPath] = url.split('?');
+        // Page navigations follow shared/routes.ts, like the production server. Unknown pages, and
+        // direct requests for the entry files (/learn.html, /index.html, /auth.html, ...), get the
+        // Versus entry, which renders the 404 page (Vite always answers HTML with status 200).
+        const isPageRequest = req.method === 'GET' && (req.headers.accept || '').includes('text/html')
+          && !/^\/(api|media|socket\.io|translate-api)(\/|$)/.test(rawPath)
+          && (!/\.[a-z0-9]+$/i.test(rawPath) || /\.html$/i.test(rawPath));
+        if (isLearnPath(rawPath)) {
           req.url = url.replace(/^\/learn\/?/, '/learn.html');
+          return next();
+        }
+        if (isPageRequest && !isGalaxyPath(rawPath) && !isVersusPath(rawPath) && !isDocumentViewerPath(rawPath)) {
+          req.url = '/index.html';
           return next();
         }
         // The galaxy is the front page. It is a plain page with classic scripts and
         // vendored three.js, served straight from disk rather than through Vite's
         // pipeline, which would hand back its stylesheet wrapped as a JS module and
         // leave the page unstyled. Its own asset URLs are absolute, so the same file
-        // works whether it is reached at / or at /galaxy/.
-        const [rawPath] = url.split('?');
-        const isGalaxyPage = rawPath === '/' || rawPath === '/galaxy' || rawPath === '/galaxy/';
+        // works from / while its files stay under /galaxy/.
+        const isGalaxyPage = isGalaxyPath(rawPath);
         if (isGalaxyPage) {
           try {
             const response = await fetch('http://127.0.0.1:3001/api/auth/me', {
@@ -73,7 +82,7 @@ export default defineConfig({
             return res.end('Der Lernraum ist vorübergehend nicht erreichbar. Bitte starte den API-Server und lade die Seite neu.');
           }
         }
-        if (isGalaxyPage || /^\/galaxy\//.test(rawPath)) {
+        if (isGalaxyPage || (/^\/galaxy\//.test(rawPath) && !/\.html$/i.test(rawPath))) {
           const relative = isGalaxyPage ? 'galaxy/index.html' : decodeURIComponent(rawPath).slice(1);
           const file = resolve(relative);
           const root = resolve('galaxy') + sep;

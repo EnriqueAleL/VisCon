@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bookmark, BookOpen, Check, ChevronRight, Clock3, FileText, MessageCircle, Play, X } from 'lucide-react';
 import { pullUpVideo } from '../../../video-pull-up/client/client.mjs';
-import { lectureVisualizerAt, lectureVisualizerHref } from '../../../shared/lecture-visualizers';
 import { formatTime, getJSON } from '../api';
 import type { Course, Lecture, LectureSummary, Segment } from '../types';
 import { useI18n } from '../i18n';
@@ -36,7 +35,6 @@ export function LectureViewer({ lecture, course, segment, savedIds, onSave, onCl
   const dialogRef = useRef<HTMLDialogElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const moments = lecture.chapters?.length ? lecture.chapters : lecture.segments;
-  const visualizer = lectureVisualizerAt(lecture.id, playbackTime);
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
@@ -101,7 +99,6 @@ export function LectureViewer({ lecture, course, segment, savedIds, onSave, onCl
         <h2 id="viewer-title">{lecture.title}</h2>
         <div className="selected-moment"><span><Clock3 size={15} />{formatTime(activeSegment.start)} · {activeSegment.title}</span><button className={`icon-button ${savedIds.includes(activeSegment.id) ? 'is-saved' : ''}`} aria-label={savedIds.includes(activeSegment.id) ? t('viewer.removeCurrent') : t('viewer.saveCurrent')} aria-pressed={savedIds.includes(activeSegment.id)} onClick={() => onSave(activeSegment)}><Bookmark size={18} fill={savedIds.includes(activeSegment.id) ? 'currentColor' : 'none'} /></button></div>
         {activeSegment.summary && <p className="chapter-description">{activeSegment.summary}</p>}
-        {visualizer && <div className="selected-moment lecture-concept-link"><span><BookOpen size={15} />{visualizer.title} · Teaching adaptation</span><a className="note-timestamp" href={lectureVisualizerHref(visualizer)}><Play size={12} />Visualize this</a></div>}
         <div className="viewer-tabs" role="group" aria-label={t('viewer.details')}>
           <button aria-pressed={tab === 'moments'} className={tab === 'moments' ? 'active' : ''} onClick={() => setTab('moments')}><Clock3 size={16} />{lecture.chapters?.length ? t('tab.chapters') : t('tab.moments')}<span>{moments.length}</span></button>
           <button aria-pressed={tab === 'transcript'} className={tab === 'transcript' ? 'active' : ''} onClick={() => setTab('transcript')}><FileText size={16} />{t('tab.transcript')}</button>

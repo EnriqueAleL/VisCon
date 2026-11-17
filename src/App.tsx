@@ -56,10 +56,6 @@ import type {
   Format,
 } from "../shared/types";
 import { api } from "./api";
-import { ProductHeader } from "../shared/design/ProductHeader";
-// Campus pulls maplibre; it is a whole page away from a match, and the list
-// view never reaches it at all, so it loads when someone actually goes there.
-const GlobeArrivalImpl = lazy(() => import("./GlobeArrival").then(m => ({ default: m.GlobeArrival })));
 import { watchSocketAccess } from "../shared/auth/socketAccess";
 import { VersusHeader } from "./versus/VersusHeader";
 import { VersusSpace } from "./versus/VersusSpace";
@@ -131,12 +127,15 @@ function usePath(onPop: (destination: string, from: string) => boolean, enabled 
 /* Hosted in the Lernraum list, Versus is one page among others rather than the
  * whole window, so its route lives in the hash — #versus, #versus/room/ABC —
  * and leaves the Lernraum's own path alone. The arena sees the same paths
- * either way ("/arena", "/room/ABC"), so nothing below this line changes. */
-const versusHash = (path: string) => `#versus${path === "/arena" ? "" : path}`;
+ * either way ("/arena", "/arena/history", "/room/ABC"), so nothing below this
+ * line changes. */
+const versusHash = (path: string) => `#versus${path.replace(/^\/arena/, "")}`;
 function useHashPath(onPop: (destination: string, from: string) => boolean, enabled: boolean) {
   const read = () => {
     const hash = decodeURIComponent(location.hash.slice(1));
-    return hash.startsWith("versus/") ? hash.slice("versus".length) : "/arena";
+    if (!hash.startsWith("versus/")) return "/arena";
+    const rest = hash.slice("versus".length);
+    return rest.startsWith("/room/") ? rest : `/arena${rest}`;
   };
   const [path, setPath] = useState(read);
   const onPopRef = useRef(onPop);
@@ -335,7 +334,7 @@ export default function App({ hosted = false }: { hosted?: boolean } = {}) {
   }, []);
   useEffect(() => {
     if (hosted) return;
-    document.title = path === "/campus" ? `Campus · ${brand.name}` : `Versus · ${brand.name}`;
+    document.title = `Versus · ${brand.name}`;
   }, [path, hosted]);
   useEffect(() => {
     if (!data?.profile.id) return;
@@ -484,7 +483,7 @@ export default function App({ hosted = false }: { hosted?: boolean } = {}) {
         await refresh();
         return;
       }
-      if (leaveTo === "/" || leaveTo.startsWith("/#") || ["/learn", "/world", "/galaxy"].includes(leaveTo)) {
+      if (leaveTo === "/" || leaveTo.startsWith("/#") || leaveTo === "/learn") {
         location.assign(leaveTo);
         return;
       }
@@ -551,24 +550,19 @@ export default function App({ hosted = false }: { hosted?: boolean } = {}) {
   };
   const immersive = !hosted && (path === "/arena" || Boolean(currentRoom));
   const profileAction = <button
-    className={`profile-button ${path === "/profile" ? "active" : ""}`}
-    onClick={() => safeNavigate("/profile")}
+    className={`profile-button ${path === "/arena/profile" ? "active" : ""}`}
+    onClick={() => safeNavigate("/arena/profile")}
     aria-label="Your profile"
   >
     <span><strong>{data.profile.name}</strong><small>{number(data.profile.rating)} Elo</small></span>
     <Avatar player={data.profile} />
   </button>;
   return (
-    <div className={hosted ? `versus-hosted ${inMatch ? "versus-in-match" : ""}` : path === "/campus" ? "campus-shell" : `versus-shell ${immersive ? "immersive-cabin" : ""} ${!consoleOpen ? "cabin-exploring" : ""} ${arriving ? "cabin-arriving" : ""} ${inMatch ? "versus-in-match" : ""}`}>
-      {!hosted && path !== "/campus" && !immersive && <VersusSpace />}
+    <div className={hosted ? `versus-hosted ${inMatch ? "versus-in-match" : ""}` : `versus-shell ${immersive ? "immersive-cabin" : ""} ${!consoleOpen ? "cabin-exploring" : ""} ${arriving ? "cabin-arriving" : ""} ${inMatch ? "versus-in-match" : ""}`}>
+      {!hosted && !immersive && <VersusSpace />}
       {immersive && <FlightDeck room={currentRoom ? room : null} me={data.profile} consoleOpen={consoleOpen && !arriving} onReady={() => setCabinReady(true)} onConsole={() => { if (arriving) { setArriving(false); setConsoleOpen(true); } else setConsoleOpen(value => !value); }} />}
       {!hosted && <a className="skip-link" href="#main" onClick={() => setConsoleOpen(true)}>Skip to content</a>}
-      {hosted ? null : path === "/campus" ? <ProductHeader module="Campus" actions={profileAction}>
-        <button onClick={() => safeNavigate("/arena")}>Versus</button>
-        <button onClick={() => safeNavigate("/history")}>Match history</button>
-        <a href="/learn">Lectures</a>
-        <button className="active">Campus</button>
-      </ProductHeader> : <VersusHeader
+      {hosted ? null : <VersusHeader
         immersive={immersive} path={path} inRoom={Boolean(currentRoom)} galaxyHref={versusContext.returnTo}
         actions={profileAction} navigate={safeNavigate} onPlatformLink={followPlatformLink}
       />}
@@ -578,7 +572,7 @@ export default function App({ hosted = false }: { hosted?: boolean } = {}) {
         id={hosted ? undefined : "main"}
         aria-label={hosted ? "Versus" : undefined}
         hidden={immersive && (!consoleOpen || arriving)} tabIndex={-1}
-        className={`page ${inMatch ? "match-page" : ""} ${path === "/campus" ? "campus-page" : ""}`}
+        className={`page ${inMatch ? "match-page" : ""}`}
       >
         {error && (
           <div className="global-error">
@@ -625,7 +619,7 @@ export default function App({ hosted = false }: { hosted?: boolean } = {}) {
                   }
                   onCopy={copyInvite}
                   onLeave={requestLeave}
-                  onJava={() => safeNavigate("/java")}
+                  onJava={() => safeNavigate("/arena/java")}
                 />
               )}
               {inMatch && (
@@ -660,17 +654,13 @@ export default function App({ hosted = false }: { hosted?: boolean } = {}) {
               )}
             </>
           )
-        ) : path === "/campus" ? (
-          <Suspense fallback={<div className="loading"><LoaderCircle className="spin" />Loading campus…</div>}>
-            <GlobeArrivalImpl />
-          </Suspense>
-        ) : path === "/history" ? (
+        ) : path === "/arena/history" ? (
           <History data={data} onPlay={() => navigate("/arena")} />
-        ) : path === "/leaderboard" ? (
+        ) : path === "/arena/leaderboard" ? (
           <Leaderboard data={data} onPlay={() => navigate("/arena")} />
-        ) : path === "/profile" ? (
+        ) : path === "/arena/profile" ? (
           <ProfilePage data={data} refresh={refresh} notify={setToast} />
-        ) : path === "/java" ? (
+        ) : path === "/arena/java" ? (
           <JavaPractice
             available={data.javaAvailable}
             onBack={() =>
@@ -684,9 +674,9 @@ export default function App({ hosted = false }: { hosted?: boolean } = {}) {
             busy={busy}
             onCreate={createRoom}
             onJoin={(id) => navigate(`/room/${id}`)}
-            onProfile={() => navigate("/profile")}
-            onJava={() => navigate("/java")}
-            onHistory={() => navigate("/history")}
+            onProfile={() => navigate("/arena/profile")}
+            onJava={() => navigate("/arena/java")}
+            onHistory={() => navigate("/arena/history")}
           />
         )}
       </Container>

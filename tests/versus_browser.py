@@ -104,9 +104,9 @@ with sync_playwright() as pw:
     page.get_by_role('button', name='Match history', exact=True).click()
     expect(page.get_by_role('alertdialog')).to_be_visible()
     page.get_by_role('alertdialog').get_by_role('button', name='Leave room', exact=True).click()
-    page.wait_for_url('**/history')
+    page.wait_for_url('**/arena/history')
     # The new route-level tokens never leak into the other workspaces.
-    for route in ['/world', '/learn']:
+    for route in ['/learn']:
         page.goto(BASE + route); settle(page)
         expect(page.locator('.versus-shell')).to_have_count(0)
         assert page.evaluate('getComputedStyle(document.body).backgroundColor') == 'rgb(17, 19, 21)'

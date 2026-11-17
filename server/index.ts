@@ -21,9 +21,7 @@ import { eloDelta } from './rating';
 import { javaAvailable,judge } from './judge';
 import { mountLectures } from './lectures';
 import { mountDocumentTranslation } from './document-translation';
-import { mountMania, maniaIdentity } from './mania';
-import { mountSocial } from './social';
-import { mountManiaAnswers } from './mania-answers';
+import { loadWorld } from './world';
 import { mountGalaxyLive } from './galaxy-live';
 
 const app=express(),http=createServer(app),port=Number(process.env.PORT||3001);
@@ -179,29 +177,19 @@ setInterval(()=>{for(const [key,value]of rates)if(Date.now()-value.at>120000)rat
 const lectureCatalog=await mountLectures(app,{db,coursesDir});
 // Who is in which galaxy lecture city right now, and how hard each chapter is (crowds and weather).
 mountGalaxyLive(app,route,{db,knows:lectureCatalog.knows});
-const learning = await mountMania(app, io);
-registerCourseQuestions(learning.bundle.bank.map(question => ({
-  id: `ddca-${question.id}`, subject: 'ddca', topic: learning.bundle.world.cities.find(city => city.id === question.cityId)!.name,
+// The DDCA Versus bank: authored recall questions grouped by the topic cities of the DDCA index.
+const ddca = await loadWorld();
+registerCourseQuestions(ddca.bank.map(question => ({
+  id: `ddca-${question.id}`, subject: 'ddca', topic: ddca.world.cities.find(city => city.id === question.cityId)!.name,
   title: question.source.title, prompt: question.prompt, options: question.options,
   answer: question.answer, explanation: `${question.explanation} · ${question.source.lectureId.toUpperCase()} at ${Math.floor(question.source.start / 60)}:${String(Math.floor(question.source.start % 60)).padStart(2, '0')}`,
   format: 'quiz' as const, difficulty: 'standard' as const, source: `DDCA lecture-grounded practice · ${question.source.lectureId.toUpperCase()} · ${question.source.title}`,
 })), { id: 'ddca', name: 'DDCA · Your knowledge world', description: 'Authored architecture practice and lecture-grounded recall across 24 cities.' });
-app.post('/api/mania/cities/:id/duel', route((req, res, p) => {
-  const city = learning.bundle.world.cities.find(item => item.id === req.params.id);
-  if (!city) throw new Error('That study city was not found.');
-  const identity = maniaIdentity(req, res);
-  if (identity.demo) throw new Error('Switch to your real profile to challenge a friend.');
-  if (identity.source === 'proxy' && p.name !== identity.name) p = rename(p.id, identity.name.slice(0, 24));
-  const settings = validateSettings({ subject: 'ddca', topic: city.name, format: 'quiz', difficulty: 'mixed', rounds: 3, seconds: 60, ranked: false });
-  res.json(view(newRoom(p, settings)));
-}));
 app.use('/translate-api', (req, res, next) => {
   if (!allowedOrigin(req.headers.origin)) return res.status(403).json({ error: 'This origin is not allowed.' });
   try { limit(`document:${req.ip}`); next(); } catch { res.status(429).json({ error: 'Please wait a moment before trying again.' }); }
 });
 mountDocumentTranslation(app);
-mountSocial(app, io);
-await mountManiaAnswers(app);
 app.use('/api',(_req,res)=>res.status(404).json({error:'API route not found.'}));
 mountStatic(app,guard);
 app.use((err:any,_req:express.Request,res:express.Response,_next:express.NextFunction)=>res.status(Number.isInteger(err.status)&&err.status>=400&&err.status<600?err.status:500).json({error:err.status===404?'File not found.':'The request could not be read.'}));

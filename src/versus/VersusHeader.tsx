@@ -15,8 +15,8 @@ interface Props {
 export function VersusHeader({ path, inRoom, galaxyHref, actions, navigate, onPlatformLink, immersive }: Props) {
   const tabs = [
     { path: "/arena", label: "Play", active: path === "/arena" || inRoom },
-    { path: "/history", label: "Match history", active: path === "/history" },
-    { path: "/leaderboard", label: "Leaderboard", active: path === "/leaderboard" },
+    { path: "/arena/history", label: "Match history", active: path === "/arena/history" },
+    { path: "/arena/leaderboard", label: "Leaderboard", active: path === "/arena/leaderboard" },
   ];
   if (immersive) return <header className="cabin-nav">
     <a href={galaxyHref} onClick={e => onPlatformLink(e, galaxyHref)} aria-label="Return to Galaxy"><ArrowLeft size={14} aria-hidden="true" />Galaxy</a>
@@ -26,7 +26,7 @@ export function VersusHeader({ path, inRoom, galaxyHref, actions, navigate, onPl
       <summary>{brand.name} <span> / Versus</span></summary>
       <nav aria-label="Versus navigation" onClick={event => { if ((event.target as HTMLElement).closest("button, a")) event.currentTarget.closest("details")?.removeAttribute("open"); }}>
         {tabs.map(tab => <button key={tab.path} onClick={() => navigate(tab.path)}>{tab.label}</button>)}
-        <button onClick={() => navigate('/java')}>Java workspace</button>
+        <button onClick={() => navigate('/arena/java')}>Java workspace</button>
         <a href="/learn" onClick={e => onPlatformLink(e, '/learn')}>Lectures</a>
         {actions}
       </nav>

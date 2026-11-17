@@ -6,3 +6,6 @@ dist/
 __pycache__/
 .impeccable/review/
 test-results/
+
+# Generated from translation/ by web-interface/scripts/sync-document-viewer.mjs
+web-interface/public/translation/

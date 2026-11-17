@@ -1,5 +1,0 @@
-.env
-data/local-catalog.json
-media/private/
-artifacts/
-*.tmp

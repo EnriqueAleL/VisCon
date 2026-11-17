@@ -2,6 +2,7 @@ import express from 'express';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve, sep } from 'node:path';
 import type { VerifiedGuard } from '../auth/guard';
+import { isDocumentViewerPath, isGalaxyPath, isLearnPath, isVersusPath } from '../shared/routes';
 
 /** Files the sign-in page needs: everything reachable from the `auth` entry in Vite's build manifest. */
 export function publicAuthFiles(distDir: string): Set<string> {
@@ -51,13 +52,16 @@ export function mountStatic(app: express.Express, guard: VerifiedGuard, distDir 
       if (verified || open.has(req.path) || isFont(req.path)) return next();
       return res.status(401).json({ error: 'Log in with your ETH account to continue.', code: 'login_required' });
     }
-    const document = /^\/translation\/(index\.html)?$/.test(req.path);
-    const learn = /^\/(learn(\/|\.html)?)$/.test(req.path);
-    // The galaxy (course navigation) is the front page; it is a plain page copied into dist/galaxy by the build.
-    const galaxy = hasGalaxy && /^\/(galaxy(\/|\/index\.html)?)?$/.test(req.path);
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Vary', 'Cookie');
-    res.sendFile(join(dist, verified ? (learn ? 'learn.html' : document ? 'translation/index.html' : galaxy ? 'galaxy/index.html' : 'index.html') : 'auth.html'));
+    if (!verified) return res.sendFile(join(dist, 'auth.html'));
+    const path = req.path;
+    // The galaxy is a plain page copied into dist/galaxy by the build, not a Vite entry.
+    if (isGalaxyPath(path) && hasGalaxy) return res.sendFile(join(dist, 'galaxy', 'index.html'));
+    if (isLearnPath(path)) return res.sendFile(join(dist, 'learn.html'));
+    if (isDocumentViewerPath(path)) return res.sendFile(join(dist, 'translation', 'index.html'));
+    // Versus, and the 404 page for everything else (index.html renders it for unknown paths).
+    res.status(isVersusPath(path) ? 200 : 404).sendFile(join(dist, 'index.html'));
   });
   app.use(express.static(dist, { index: false, dotfiles: 'ignore' }));
 }

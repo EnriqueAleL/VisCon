@@ -9,8 +9,8 @@ if (help) {
   console.log(`Usage: npm run check:deployment -- [BASE_URL] [--require-videos] [--ask] [--load=N]
 
 Defaults to CHECK_BASE_URL or http://127.0.0.1:8080. Tests health, built pages,
-world, study profile, lecture captions, available video byte ranges, puzzle board,
-and a Socket.IO study connection with its DEFAULT transports.
+the Versus question banks, lecture captions, available video byte ranges, and the
+Versus Socket.IO connection with its DEFAULT transports.
 --require-videos fails unless every real DDCA recording is playable.
 --ask makes one Q&A request (may incur a model charge if enabled).
 --load=N adds N health requests, at most 100, with concurrency at most 4.
@@ -60,7 +60,7 @@ async function check(label, action) {
   catch (error) { failures++; console.error(`FAIL  ${label}: ${error.message}`); }
 }
 console.log(`Checking ${base.origin} with Node ${process.versions.node}`);
-let world, catalog, puzzles;
+let catalog;
 await check('Health endpoint', async () => assert((await json('/api/health')).ok === true, 'Health is not OK.'));
 await check('Built semester and lecture pages', async () => {
   const galaxy = await (await request('/')).text();
@@ -70,13 +70,12 @@ await check('Built semester and lecture pages', async () => {
     assert(body.includes('id="root"') && /\/assets\/[^"']+\.js/.test(body), `${path} is not the production Vite page. Run npm run build.`);
   }
 });
-await check('Grounded world and study profile', async () => {
-  world = await json('/api/mania/world');
-  assert(Array.isArray(world.cities) && world.cities.length >= 20, 'Expected at least 20 DDCA study cities.');
-  assert(world.stats?.lectures === 24 && world.stats?.contentChapters > 0, 'The DDCA index is missing.');
-  const progress = await json('/api/mania/progress');
-  assert(progress.profile?.id && progress.cities?.length === world.cities.length, 'The study profile is missing.');
-  pass(`${world.cities.length} cities / ${world.stats.contentChapters} content chapters / ${progress.profile.source} identity`);
+await check('Player profile and Versus question banks', async () => {
+  const bootstrap = await json('/api/bootstrap');
+  assert(bootstrap.profile?.id, 'The player profile is missing.');
+  const ddca = bootstrap.subjects?.find(subject => subject.id === 'ddca');
+  assert(ddca && ddca.count > 0 && ddca.topics?.length >= 20, 'The DDCA Versus bank is missing.');
+  pass(`${bootstrap.subjects.length} question banks / DDCA: ${ddca.count} questions across ${ddca.topics.length} topics`);
 });
 await check('Lecture index, captions, and available media', async () => {
   catalog = await json('/api/lectures?courseId=computer-architecture');
@@ -95,37 +94,25 @@ await check('Lecture index, captions, and available media', async () => {
     pass('Real video byte-range seeking');
   }
 });
-await check('Puzzle catalog and audience board', async () => {
-  puzzles = await json('/api/puzzles');
-  assert(puzzles.puzzles?.some(puzzle => puzzle.id === 'pipeline-reorder'), 'The audience pipeline puzzle is missing.');
-  const board = await json('/api/puzzles/pipeline-reorder/leaderboard');
-  assert(Array.isArray(board.entries), 'The leaderboard is unavailable.');
-  pass(`Audience: ${new URL('/world?puzzle=pipeline-reorder', base)}`);
-  pass(`Projector: ${new URL('/world?puzzle=pipeline-reorder&projector=1', base)}`);
-});
-await check('Socket.IO presence with default transports', async () => {
-  assert(cookies.size > 0, 'Study session cookie was not created.');
+await check('Versus Socket.IO with default transports', async () => {
+  assert(cookies.size > 0, 'Player session cookie was not created.');
   await new Promise((resolve, reject) => {
     // Do not force websocket transport: managed VIScon proxy needs polling fallback.
-    const socket = io(`${base.origin}/study`, { autoConnect: false, forceNew: true, reconnection: false,
+    const socket = io(base.origin, { autoConnect: false, forceNew: true, reconnection: false,
       extraHeaders: { Cookie: cookieHeader(), Origin: base.origin } });
-    const timer = setTimeout(() => finish(new Error('Study Socket.IO connection timed out.')), 12_000);
+    const timer = setTimeout(() => finish(new Error('Versus Socket.IO connection timed out.')), 12_000);
     function finish(error) { clearTimeout(timer); socket.disconnect(); error ? reject(error) : resolve(); }
-    socket.once('connect_error', () => finish(new Error('Study Socket.IO connection failed. Check managed-origin allowlist, login cookie, and proxy polling.')));
-    socket.once('social:snapshot', data => {
-      if (!Array.isArray(data.presence)) return finish(new Error('Study snapshot is unavailable.'));
-      socket.timeout(4000).emit('city:enter', { cityId: world?.cities?.[0]?.id || 'pipelining' }, (error, result) => {
-        if (error || !result?.ok) return finish(new Error('Live presence acknowledgement failed.'));
-        pass(`Socket.IO established via ${socket.io.engine?.transport.name || 'default transport'}`);
-        finish();
-      });
+    socket.once('connect_error', () => finish(new Error('Versus Socket.IO connection failed. Check managed-origin allowlist, login cookie, and proxy polling.')));
+    socket.once('connect', () => {
+      pass(`Socket.IO established via ${socket.io.engine?.transport.name || 'default transport'}`);
+      finish();
     });
     socket.connect();
   });
 });
 if (args.includes('--ask')) await check('Cited lecture Q&A', async () => {
-  const result = await json('/api/mania/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ question: 'why does a load followed by add stall even with forwarding?', courseId: 'computer-architecture', limit: 3 }) });
+  const result = await json('/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: 'why does a load followed by add stall even with forwarding?', courseId: 'computer-architecture' }) });
   assert(Array.isArray(result.sources) && result.sources.length > 0 && result.sources.every(source => Number.isFinite(source.start)), 'No timestamped lecture sources returned.');
 });
 if (loadSamples) await check(`${loadSamples} health requests with bounded concurrency`, async () => {

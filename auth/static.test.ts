@@ -32,7 +32,7 @@ before(() => {
   dist = mkdtempSync(join(tmpdir(), 'dist-'));
   for (const dir of ['assets', '.vite', 'globe', 'galaxy', 'translation']) mkdirSync(join(dist, dir));
   const files: Record<string, string> = {
-    'translation/index.html': 'APP-DOCUMENT', 'translation/ti_book.pdf': 'PDF-DOCUMENT', 'galaxy/index.html': 'APP-GALAXY', 'galaxy/app.js': 'GALAXY-JS', 'index.html': 'APP-MANIA', 'learn.html': 'APP-LEARN', 'auth.html': 'SIGN-IN',
+    'translation/index.html': 'APP-DOCUMENT', 'translation/ti_book.pdf': 'PDF-DOCUMENT', 'galaxy/index.html': 'APP-GALAXY', 'galaxy/app.js': 'GALAXY-JS', 'index.html': 'APP-VERSUS', 'learn.html': 'APP-LEARN', 'auth.html': 'SIGN-IN',
     'favicon.svg': '<svg/>', 'assets/auth.js': 'auth-js', 'assets/shared.js': 'shared-js', 'assets/auth.css': 'css',
     'assets/app.js': 'COURSE-DATA', 'assets/Inter.woff2': 'font', 'globe/earth.jpg': 'jpg',     '.vite/manifest.json': JSON.stringify({
       'auth.html': { file: 'assets/auth.js', css: ['assets/auth.css'], imports: ['_shared.js'] },
@@ -75,16 +75,30 @@ test('visitors without a verified account get only the sign-in page and its file
 test('a verified account gets the real app, with the right page per route', async () => {
   await serve(true);
   try {
-    for (const front of ['/', '/galaxy', '/galaxy/', '/galaxy/index.html']) assert.equal((await get(front, 'ok')).text, 'APP-GALAXY', front);
+    assert.equal((await get('/', 'ok')).text, 'APP-GALAXY');
     assert.equal((await get('/galaxy/app.js', 'ok')).text, 'GALAXY-JS');
-    assert.equal((await get('/arena', 'ok')).text, 'APP-MANIA');
-    assert.equal((await get('/world', 'ok')).text, 'APP-MANIA');
-    for (const learn of ['/learn', '/learn/', '/learn.html']) assert.equal((await get(learn, 'ok')).text, 'APP-LEARN', learn);
+    for (const versus of ['/arena', '/arena/', '/arena/history', '/arena/leaderboard', '/arena/profile', '/arena/java', '/room/AB12']) {
+      const res = await get(versus, 'ok');
+      assert.deepEqual([res.status, res.text], [200, 'APP-VERSUS'], versus);
+    }
+    for (const learn of ['/learn', '/learn/']) assert.equal((await get(learn, 'ok')).text, 'APP-LEARN', learn);
     assert.equal((await get('/assets/app.js', 'ok')).text, 'COURSE-DATA');
     assert.equal((await get('/globe/earth.jpg', 'ok')).status, 200);
-    assert.equal((await get('/.vite/manifest.json', 'ok')).text, 'APP-MANIA', 'hidden build files are never served');
+    const hidden = await get('/.vite/manifest.json', 'ok');
+    assert.deepEqual([hidden.status, hidden.text], [404, 'APP-VERSUS'], 'hidden build files are never served');
     const name = `${dist.split(/[\\/]/).pop()}-secret.txt`;
     for (const attack of [`/../${name}`, `/%2e%2e/${name}`, `/..%2f${name}`, `/assets/../../${name}`, `/assets/%2e%2e/%2e%2e/${name}`]) assert.doesNotMatch((await raw(attack, 'ok')).text, /OUTSIDE-SECRET/, attack);
+  } finally { server.close(); }
+});
+
+test('removed pages, aliases and unknown paths are a 404, rendered by the app shell', async () => {
+  await serve(true);
+  try {
+    for (const page of ['/world', '/campus', '/history', '/leaderboard', '/profile', '/java', '/galaxy', '/galaxy/', '/galaxy/index.html',
+      '/learn.html', '/index.html', '/auth.html', '/translation/', '/arena/unknown', '/room/', '/some/deep/route']) {
+      const res = await get(page, 'ok');
+      assert.deepEqual([res.status, res.text], [404, 'APP-VERSUS'], page);
+    }
   } finally { server.close(); }
 });
 

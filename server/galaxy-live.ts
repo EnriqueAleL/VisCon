@@ -5,14 +5,13 @@
  * seconds and on every move, and anyone not heard from for HERE_TTL drops out. That keeps
  * it on the ordinary guarded /api routes and needs no client library on the plain page.
  *
- * Difficulty is the hybrid the team chose: students rate a chapter 1-5 after watching,
- * and where the study world has recall answers for the same chapter, its mistake rate
- * counts as extra evidence. Below MIN_WEIGHT of evidence a chapter has no score, and the
- * city shows neutral weather rather than guessing.
+ * Difficulty comes from students rating a chapter 1-5 after watching. Recall-answer
+ * mistake rates can be passed in as extra evidence (`quiz`); nothing supplies them yet.
+ * Below MIN_WEIGHT of evidence a chapter has no score, and the city shows neutral
+ * weather rather than guessing.
  */
 import type express from 'express';
 import type { DatabaseSync } from 'node:sqlite';
-import { cityWeather, getWorld } from './mania';
 
 export interface ChapterQuiz { answers: number; wrongRate: number }
 export interface Difficulty { score: number | null; weight: number; votes: number }
@@ -22,7 +21,7 @@ export interface GalaxyLiveOptions {
   clock?: () => number;
   /** True when the lecture exists and, if given, the chapter belongs to it. */
   knows: (lectureId: string, chapterId: string | null) => boolean | Promise<boolean>;
-  /** Recall-answer evidence per chapter id; defaults to the study world's answers. */
+  /** Recall-answer evidence per chapter id; defaults to none. */
   quiz?: () => Map<string, ChapterQuiz>;
 }
 
@@ -45,26 +44,12 @@ export function difficultyOf(ratingSum: number, votes: number, quiz?: ChapterQui
   return { score, weight: Math.round(weight * 10) / 10, votes };
 }
 
-/** The study world's recall answers, spread over the chapters of each topic city. */
-function studyWorldQuiz(): Map<string, ChapterQuiz> {
-  const out = new Map<string, ChapterQuiz>();
-  try {
-    const weather = new Map(cityWeather().map(item => [item.cityId, item]));
-    for (const city of getWorld().cities) {
-      const w = weather.get(city.id);
-      if (!w || !w.totalAnswers || !city.chapterIds.length) continue;
-      for (const id of city.chapterIds) out.set(id, { answers: w.totalAnswers / city.chapterIds.length, wrongRate: w.wrongRate });
-    }
-  } catch { /* the study world is not mounted (tests, or a deployment without it) */ }
-  return out;
-}
-
 const lectureOf = (chapterId: string) => chapterId.replace(/-chapter-.*$/, '');
 
 export function createGalaxyLive(options: GalaxyLiveOptions) {
   const { db } = options;
   const clock = options.clock ?? Date.now;
-  const quiz = options.quiz ?? studyWorldQuiz;
+  const quiz = options.quiz ?? (() => new Map<string, ChapterQuiz>());
   db.exec(`CREATE TABLE IF NOT EXISTS galaxy_difficulty (playerId TEXT NOT NULL, lectureId TEXT NOT NULL, chapterId TEXT NOT NULL,
     rating INTEGER NOT NULL, at INTEGER NOT NULL, PRIMARY KEY(playerId, chapterId))`);
   const here = new Map<string, { lectureId: string; chapterId: string | null; at: number }>();

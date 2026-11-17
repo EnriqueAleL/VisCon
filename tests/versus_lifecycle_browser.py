@@ -75,6 +75,6 @@ with sync_playwright() as pw:
     solo.get_by_role('button', name='Explore the editor').click()
     expect(solo.get_by_role('alertdialog')).to_be_visible()
     solo.get_by_role('alertdialog').get_by_role('button', name='Leave room', exact=True).click()
-    solo.wait_for_url('**/java')
+    solo.wait_for_url('**/arena/java')
     assert solo_context.request.get(BASE + '/api/bootstrap').json()['activeRoom'] is None
     browser.close()
