@@ -1,5 +1,6 @@
-/* Interface language for the galaxy. The page's own wording is German; when the shared
-   language setting (also used by the list view) is English, text is translated in place.
+/* Interface language for the galaxy.
+   The page's own wording is English. When the shared language setting (the same one the
+   list view uses) is German, text is translated in place by a hand-written dictionary.
    Course names, lecturers and chapter titles come from the catalogue and are left alone. */
 (function () {
   var KEY = "viscon.ui-language.v1";
@@ -8,7 +9,7 @@
       var v = JSON.parse(localStorage.getItem(KEY));
       if (v === "de" || v === "en") return v;
     } catch (e) {}
-    return /^de/i.test(navigator.language || "") ? "de" : "en";
+    return "en";
   }
   var lang = stored();
   window.I18N = {
@@ -16,119 +17,123 @@
     t: function (text) { return text; },
     set: function (next) {
       try { localStorage.setItem(KEY, JSON.stringify(next)); } catch (e) {}
-      location.reload();
+      this.language = next;
     }
   };
-  document.documentElement.lang = lang === "de" ? "de-CH" : "en";
-  if (lang === "de") return;
+  if (lang !== "de") return;
+  document.documentElement.lang = "de-CH";
 
   var EXACT = {
-    "Lernraum Galaxie": "Study galaxy",
-    "Lernraum": "Study room",
-    "Frag den Lernraum": "Ask the study room",
-    "Wo wird Pipelining erklärt?": "Where is pipelining explained?",
-    "Frage stellen": "Ask",
-    "Suche läuft …": "Searching …",
-    "Liste": "List",
-    "Galaxie": "Galaxy",
-    "Ansicht": "View",
-    "Normale Ansicht mit Liste und Fragen": "Standard view with list and questions",
-    "Galaxie-Ansicht": "Galaxy view",
-    "Weitere Bereiche": "More areas",
+    "Study Galaxy": "Lernraum Galaxie",
+    "Study room": "Lernraum",
+    "Ask the study room": "Frag den Lernraum",
+    "Where is pipelining explained?": "Wo wird Pipelining erklärt?",
+    "Ask": "Frage stellen",
+    "Searching …": "Suche läuft …",
+    "List": "Liste",
+    "Galaxy": "Galaxie",
+    "View": "Ansicht",
+    "Standard view with a list and questions": "Normale Ansicht mit Liste und Fragen",
+    "Galaxy view": "Galaxie-Ansicht",
+    "Other areas": "Weitere Bereiche",
     "Navigation": "Navigation",
-    "Konto": "Account",
-    "Angemeldet als": "Signed in as",
-    "Abmelden": "Log out",
-    "Nicht angemeldet": "Not signed in",
-    "Sprache": "Language",
-    "Herbstsemester 2026": "Autumn semester 2026",
-    "Dokumente": "Documents",
-    "Kursdokumente": "Course documents",
-    "Noch keine Dokumente für diesen Kurs.": "No documents for this course yet.",
-    "Ziehen zum Umsehen · Scrollen zum Zoomen": "Drag to look around · Scroll to zoom",
-    "Versus-Schiff betreten": "Board the Versus ship",
-    "Cockpit betreten": "Enter cockpit",
-    "Cockpit wird angeflogen": "Flying to the cockpit",
-    "Versus · Dein nächstes Duell": "Versus · Your next duel",
-    "Abbrechen": "Cancel",
-    "Schliessen": "Close",
-    "Chat zur Vorlesung": "Lecture chat",
-    "Chat ausblenden": "Hide chat",
-    "Nachricht an den Vorlesungs-Chat": "Message to the lecture chat",
-    "Frag etwas zu dieser Vorlesung …": "Ask something about this lecture …",
-    "Senden": "Send",
-    "Nachbarvorlesungen": "Neighbouring lectures",
-    "Wie schwer war dieses Kapitel?": "How hard was this chapter?",
-    "Schwierigkeit von 1 (leicht) bis 5 (schwer)": "Difficulty from 1 (easy) to 5 (hard)",
-    "leicht": "easy",
-    "schwer": "hard",
-    "Danke! Das Wetter dieser Stadt folgt euren Einschätzungen.": "Thanks! This city's weather follows your ratings.",
-    "Departement wählen": "Choose department",
-    "Studienjahr wählen": "Choose study year",
-    "Auswahl": "Selection",
-    "Lernraum · ETH Zürich": "Study room · ETH Zürich",
-    "Danach siehst du die Kurse deines Studienjahrs als Planeten.": "Then you will see the courses of your study year as planets.",
-    "Galaxie wird aufgebaut": "Building the galaxy",
-    "Lernraum wird geladen": "Loading the study room",
-    "Diese Ansicht braucht JavaScript. Die Vorlesungen sind auch im normalen Lernraum erreichbar.": "This view needs JavaScript. The lectures are also available in the regular study room.",
-    "Die 3D-Bibliothek wurde nicht geladen. Lade die Seite neu.": "The 3D library did not load. Reload the page.",
-    "Dieser Browser kann kein WebGL darstellen. Die Vorlesungen sind im normalen Lernraum erreichbar.": "This browser cannot display WebGL. The lectures are available in the regular study room.",
-    "Der Lernraum ist gerade nicht erreichbar.": "The study room is not reachable right now.",
-    "Weitere Fächer": "Other subjects",
-    "Studiengang wechseln": "Change programme",
-    "Zur Galaxie": "Back to the galaxy",
-    "Kurs · Planet": "Course · Planet",
-    "Städte": "Cities",
-    "Kapitel": "Chapters",
-    "Vorlesungen": "Lectures",
-    "Vorlesung wird geladen …": "Loading lecture …",
-    "Für diese Vorlesung ist keine Videodatei hinterlegt.": "No video file is available for this lecture.",
-    "Stelle ansehen": "View passage",
-    "Das wird in dieser Vorlesung nicht behandelt": "This is not covered in this lecture",
-    "Allgemeines Wissen (nicht aus der Vorlesung):": "General knowledge (not from the lecture):",
-    "Ich kenne den ganzen Transkripttext dieser Vorlesung. Frag mich etwas, lass dir eine Stelle erklären oder such einen Begriff.": "I know the full transcript of this lecture. Ask me something, have a passage explained, or look up a term.",
-    "Fasse diese Vorlesung zusammen": "Summarise this lecture",
-    "Was sind die wichtigsten Begriffe hier?": "What are the key terms here?",
-    "Erkläre mir die Stelle, an der ich gerade bin": "Explain the passage I am at right now",
-    "Ich lese die Vorlesung …": "Reading the lecture …",
-    "Dazu habe ich in diesem Kurs keine passende Stelle gefunden.": "I found no matching passage for that in this course.",
-    "Dazu wurde keine Stelle gefunden.": "No matching passage was found.",
-    "Die gefundene Vorlesung ist in dieser Ansicht nicht vorhanden.": "The lecture found is not available in this view.",
-    "Nächstliegende Stelle · ": "Closest passage · ",
-    "‹ Anfang des Kurses": "‹ Start of course",
-    "Ende des Kurses ›": "End of course ›",
-    "Velo": "Bike",
-    "Schlitten": "Sleigh",
-    "Taxi zum nächsten Termin": "Taxi to the next appointment",
-    "Mit dem Tram zum nächsten Termin": "Tram to the next appointment",
-    "Das Shuttle bringt dich zum nächsten Meeting": "The shuttle takes you to the next meeting",
-    "Mit dem Velo zum nächsten Kapitel": "Bike to the next chapter",
-    "Taxi zum nächsten Business-Meeting": "Taxi to the next business meeting",
-    "Mit der Vespa zum nächsten Termin": "Vespa to the next appointment",
-    "Mit dem Rentierschlitten zum nächsten Termin": "Reindeer sleigh to the next appointment"
+    "Autumn semester 2026": "Herbstsemester 2026",
+    "Documents": "Dokumente",
+    "Course documents": "Kursdokumente",
+    "No documents for this course yet.": "Noch keine Dokumente für diesen Kurs.",
+    "Loading documents…": "Dokumente werden geladen …",
+    "The document list could not be loaded. Please reload the page.": "Die Dokumentenliste konnte nicht geladen werden. Lade die Seite neu.",
+    "Document reader": "Dokumentenleser",
+    "Drag to look around · scroll to zoom": "Ziehen zum Umsehen · Scrollen zum Zoomen",
+    "Board the Versus ship": "Versus-Schiff betreten",
+    "Enter the cockpit": "Cockpit betreten",
+    "Approaching the cockpit": "Cockpit wird angeflogen",
+    "Versus · your next duel": "Versus · Dein nächstes Duell",
+    "Cancel": "Abbrechen",
+    "Close": "Schliessen",
+    "Chat about this lecture": "Chat zur Vorlesung",
+    "Hide chat": "Chat ausblenden",
+    "Message the lecture chat": "Nachricht an den Vorlesungs-Chat",
+    "Ask about this lecture …": "Frag etwas zu dieser Vorlesung …",
+    "Send": "Senden",
+    "Neighbouring lectures": "Nachbarvorlesungen",
+    "How hard was this chapter?": "Wie schwer war dieses Kapitel?",
+    "Difficulty from 1 (easy) to 5 (hard)": "Schwierigkeit von 1 (leicht) bis 5 (schwer)",
+    "easy": "leicht",
+    "hard": "schwer",
+    "Thanks! This city's weather follows what everyone reports.": "Danke! Das Wetter dieser Stadt folgt den Einschätzungen aller.",
+    "Study room · ETH Zürich": "Lernraum · ETH Zürich",
+    "Then you will see your year’s courses as planets.": "Danach siehst du die Kurse deines Studienjahrs als Planeten.",
+    "Building the galaxy": "Galaxie wird aufgebaut",
+    "Loading the study room": "Lernraum wird geladen",
+    "This view needs JavaScript. The lectures are also available in the standard study room.": "Diese Ansicht braucht JavaScript. Die Vorlesungen sind auch im normalen Lernraum erreichbar.",
+    "The connection to the study room was interrupted.": "Die Verbindung zum Lernraum ist unterbrochen.",
+    "The study room does not contain any lectures yet.": "Der Lernraum enthält noch keine Vorlesungen.",
+    "The 3D library did not load. Please reload the page.": "Die 3D-Bibliothek wurde nicht geladen. Lade die Seite neu.",
+    "This browser cannot render WebGL. The lectures are available in the standard study room.": "Dieser Browser kann kein WebGL darstellen. Die Vorlesungen sind im normalen Lernraum erreichbar.",
+    "The study room is unavailable right now.": "Der Lernraum ist gerade nicht erreichbar.",
+    "Selection": "Auswahl",
+    "Choose your department": "Departement wählen",
+    "Choose your year": "Studienjahr wählen",
+    "Other courses": "Weitere Fächer",
+    "Change programme": "Studiengang wechseln",
+    "Back to the galaxy": "Zur Galaxie",
+    "Course · planet": "Kurs · Planet",
+    "planets": "Planeten",
+    "cities": "Städte",
+    "chapters": "Kapitel",
+    "chapter": "Kapitel",
+    "lectures": "Vorlesungen",
+    "Loading the lecture …": "Vorlesung wird geladen …",
+    "No video file is available for this lecture.": "Für diese Vorlesung ist keine Videodatei hinterlegt.",
+    "Watch this moment": "Stelle ansehen",
+    "This lecture does not cover that": "Das wird in dieser Vorlesung nicht behandelt",
+    "General knowledge (not from the lecture):": "Allgemeines Wissen (nicht aus der Vorlesung):",
+    "I know the whole transcript of this lecture. Ask me something, have a passage explained, or look up a term.": "Ich kenne den ganzen Transkripttext dieser Vorlesung. Frag mich etwas, lass dir eine Stelle erklären oder such einen Begriff.",
+    "Summarize this lecture": "Fasse diese Vorlesung zusammen",
+    "What are the key terms here?": "Was sind die wichtigsten Begriffe hier?",
+    "Explain the part I am at": "Erkläre mir die Stelle, an der ich gerade bin",
+    "Reading the lecture …": "Ich lese die Vorlesung …",
+    "I could not find a passage about that in this course.": "Dazu habe ich in diesem Kurs keine passende Stelle gefunden.",
+    "No passage was found for that.": "Dazu wurde keine Stelle gefunden.",
+    "The lecture it found is not part of this view.": "Die gefundene Vorlesung ist in dieser Ansicht nicht vorhanden.",
+    "Closest passage ·": "Nächstliegende Stelle ·",
+    "‹ Start of the course": "‹ Anfang des Kurses",
+    "End of the course ›": "Ende des Kurses ›",
+    "Bike": "Velo",
+    "Sleigh": "Schlitten",
+    "Take the tram to your next appointment": "Mit dem Tram zum nächsten Termin",
+    "The shuttle takes you to your next meeting": "Das Shuttle bringt dich zum nächsten Meeting",
+    "Ride to the next chapter": "Mit dem Velo zum nächsten Kapitel",
+    "A taxi to the next business meeting": "Taxi zum nächsten Business-Meeting",
+    "Take the Vespa to your next appointment": "Mit der Vespa zum nächsten Termin",
+    "A reindeer sleigh to your next appointment": "Mit dem Rentierschlitten zum nächsten Termin",
+    "A taxi to your next appointment": "Taxi zum nächsten Termin"
   };
 
+  var LEC = function (n) { return "VL " + n; };
   // [pattern, builder] for text with numbers or catalogue values mixed in.
   var RULES = [
-    [/^(\d+) Kurse?$/, function (m) { return m[1] + (m[1] === "1" ? " course" : " courses"); }],
-    [/^(.+) · (\d+)\. Jahr$/, function (m) { return m[1] + " · year " + m[2]; }],
-    [/^(\d+) Kurse umkreisen dich\. Wähle einen Planeten, um seine Vorlesungen zu sehen\.$/, function (m) { return m[1] + " courses orbit you. Pick a planet to see its lectures."; }],
-    [/^(.*) · jede Stadt ist eine Vorlesung\.$/, function (m) { return m[1] + " · every city is a lecture."; }],
-    [/^Vorlesung (\S+) · Stadt$/, function (m) { return "Lecture " + m[1] + " · City"; }],
-    [/^Jedes Haus ist ein Kapitel\. Die Höhe entspricht seiner Länge\.(?: (\d+) von (\d+) gesehen\.)?$/, function (m) { return "Every house is a chapter. Its height matches its length." + (m[1] ? " " + m[1] + " of " + m[2] + " watched." : ""); }],
-    [/^(\d+) VL$/, function (m) { return m[1] + " lec."; }],
-    [/^(.*) · (\d+) hier$/, function (m) { return m[1] + " · " + m[2] + " here"; }],
-    [/^(‹ )?(Tunnel · )?VL (\S+)( ›)?$/, function (m) { return (m[1] || "") + (m[2] || "") + "Lec " + m[3] + (m[4] || ""); }],
-    [/^Vorlesung (\S+) · ab (\S+)$/, function (m) { return "Lecture " + m[1] + " · from " + m[2]; }],
-    [/^Vorlesung (\S+)$/, function (m) { return "Lecture " + m[1]; }],
-    [/^Kapitel (\d+)$/, function (m) { return "Chapter " + m[1]; }],
-    [/^(.+) → Kapitel (\d+)$/, function (m) { return T(m[1]) + " → Chapter " + m[2]; }],
-    [/^(.+) · Kapitel (\d+) · (.+)$/, function (m) { return T(m[1]) + " · Chapter " + m[2] + " · " + m[3]; }],
-    [/^‹ (Kapitel \d+|Vorlesung \S+)$/, function (m) { return "‹ " + T(m[1]); }],
-    [/^(Kapitel \d+|Vorlesung \S+) ›$/, function (m) { return T(m[1]) + " ›"; }],
-    [/^Das wird in dieser Vorlesung nicht behandelt(.*)$/, function (m) { return "This is not covered in this lecture" + m[1]; }],
-    [/^(.*) – gefunden in „(.*)“:$/, function (m) { return m[1] + " – found in “" + m[2] + "”:"; }],
-    [/^Die Galaxie konnte nicht aufgebaut werden: (.*)$/, function (m) { return "The galaxy could not be built: " + m[1]; }]
+    [/^(\d+) courses?$/, function (m) { return m[1] + (m[1] === "1" ? " Kurs" : " Kurse"); }],
+    [/^(.+) · year (\d+)$/, function (m) { return T(m[1]) + " · " + m[2] + ". Jahr"; }],
+    [/^(\d+) courses orbit you\. Choose a planet to see its lectures\.$/, function (m) { return m[1] + " Kurse umkreisen dich. Wähle einen Planeten, um seine Vorlesungen zu sehen."; }],
+    [/^(.*) · every city is a lecture\.$/, function (m) { return m[1] + " · jede Stadt ist eine Vorlesung."; }],
+    [/^Lecture (\S+) · city$/, function (m) { return "Vorlesung " + m[1] + " · Stadt"; }],
+    [/^Every house is a chapter\. Its height is the chapter's length\.(?: (\d+) of (\d+) watched\.)?$/, function (m) { return "Jedes Haus ist ein Kapitel. Die Höhe entspricht seiner Länge." + (m[1] ? " " + m[1] + " von " + m[2] + " gesehen." : ""); }],
+    [/^(\d+) lec\.$/, function (m) { return m[1] + " VL"; }],
+    [/^(.*) · (\d+) here$/, function (m) { return m[1] + " · " + m[2] + " hier"; }],
+    [/^(‹ )?(Tunnel · )?Lec (\S+)( ›)?$/, function (m) { return (m[1] || "") + (m[2] || "") + LEC(m[3]) + (m[4] || ""); }],
+    [/^(☀ |☁ |⛈ )Lec (\S+)$/, function (m) { return m[1] + LEC(m[2]); }],
+    [/^Lecture (\S+) · from (\S+)$/, function (m) { return "Vorlesung " + m[1] + " · ab " + m[2]; }],
+    [/^Lecture (\S+)$/, function (m) { return "Vorlesung " + m[1]; }],
+    [/^Chapter (\d+)$/, function (m) { return "Kapitel " + m[1]; }],
+    [/^(.+) → chapter (\d+)$/, function (m) { return T(m[1]) + " → Kapitel " + m[2]; }],
+    [/^(.+) · chapter (\d+) · (.+)$/, function (m) { return T(m[1]) + " · Kapitel " + m[2] + " · " + m[3]; }],
+    [/^‹ (Chapter \d+|Lecture \S+)$/, function (m) { return "‹ " + T(m[1]); }],
+    [/^(Chapter \d+|Lecture \S+) ›$/, function (m) { return T(m[1]) + " ›"; }],
+    [/^This lecture does not cover that(.*)$/, function (m) { return "Das wird in dieser Vorlesung nicht behandelt" + m[1].replace(/ – found in “(.*)”:/, " – gefunden in „$1“:"); }],
+    [/^Closest passage · (.*)$/, function (m) { return "Nächstliegende Stelle · " + m[1]; }],
+    [/^The galaxy could not be built: (.*)$/, function (m) { return "Die Galaxie konnte nicht aufgebaut werden: " + m[1]; }]
   ];
 
   function T(text) {
@@ -174,14 +179,14 @@
       if (n.nodeType === 3) fixText(n); else fixAttrs(n);
     }
   }
-  function title() {
-    document.title = document.title.replace("Lernraum Galaxie", T("Lernraum Galaxie"));
+  function head() {
+    document.title = document.title.replace("Study Galaxy", "Lernraum Galaxie");
     var m = document.querySelector("meta[name=description]");
-    if (m) m.content = m.content.replace(/^Die (.+) Lernlandschaft als Galaxie: Kurse sind Planeten, Vorlesungen sind Städte, Kapitel sind Häuser\.$/, "The $1 learning landscape as a galaxy: courses are planets, lectures are cities, chapters are houses.");
+    if (m) m.content = m.content.replace(/^The (.+) study world as a galaxy: courses are planets, lectures are cities, chapters are houses\.$/, "Die $1 Lernlandschaft als Galaxie: Kurse sind Planeten, Vorlesungen sind Städte, Kapitel sind Häuser.");
   }
 
   function start() {
-    title();
+    head();
     walk(document.body);
     new MutationObserver(function (records) {
       if (busy) return;

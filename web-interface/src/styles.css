@@ -540,62 +540,110 @@ button.avatar[aria-expanded='true'] {
 .settings-menu {
   position: relative;
 }
+/* Same look as the account menu in the galaxy view. */
+button.avatar.settings-avatar {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #1e2a40;
+  background: rgba(255, 255, 255, 0.04);
+  color: #e9edf6;
+  font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+button.avatar.settings-avatar:hover,
+button.avatar.settings-avatar[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e9edf6;
+}
 .settings-panel {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
   z-index: 30;
-  width: 252px;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface-raised);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  width: 260px;
+  padding: 12px;
+  border: 1px solid #1e2a40;
+  border-radius: 8px;
+  background: rgba(10, 14, 26, 0.94);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  color: #e9edf6;
+  text-align: left;
 }
 .settings-title {
-  margin: 0 0 8px;
-  font-size: 12px;
-  font-weight: 600;
-}
-.settings-title-spaced {
-  margin-top: 14px;
+  margin: 0 0 3px;
+  font: 400 9.5px 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5a6881;
 }
 .settings-options {
   display: grid;
   gap: 4px;
+  margin-bottom: 14px;
+}
+.settings-lang {
+  grid-template-columns: 1fr 1fr;
+}
+.settings-answer {
+  margin-bottom: 10px;
 }
 .settings-option {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid transparent;
-  border-radius: 8px;
+  padding: 7px 9px;
+  border: 1px solid #1e2a40;
+  border-radius: 6px;
   background: none;
-  color: inherit;
-  font: inherit;
-  font-size: 13px;
+  color: #5a6881;
+  font: 500 12.5px 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
   text-align: left;
   cursor: pointer;
 }
 .settings-option small {
-  color: var(--muted);
-  font-size: 11px;
+  color: #5a6881;
+  font: 400 10.5px 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  opacity: 0.85;
 }
 .settings-option:hover {
-  border-color: var(--line);
+  border-color: #5a6881;
 }
 .settings-option.selected {
-  border-color: currentColor;
-  font-weight: 600;
+  color: #e9edf6;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: #5a6881;
+  font-weight: 500;
 }
 .settings-note {
-  margin: 10px 0 0;
-  color: var(--muted);
-  font-size: 11px;
+  margin: 0 0 14px;
+  color: #5a6881;
+  font-size: 10.5px;
   line-height: 1.4;
+}
+.settings-user {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #e9edf6;
+  word-break: break-all;
+}
+.settings-logout {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #1e2a40;
+  border-radius: 6px;
+  background: none;
+  color: #e9edf6;
+  font: 500 12.5px 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  text-align: center;
+  cursor: pointer;
+}
+.settings-logout:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 .primary-button {
   display: flex;
@@ -2639,30 +2687,6 @@ textarea::placeholder {
   .lc-log { max-height: 50vh; }
 }
 
-.settings-account {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
-}
-.settings-user {
-  margin: 0 0 10px;
-  font-size: 13px;
-  word-break: break-all;
-}
-.settings-logout {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-.settings-logout:hover {
-  background: var(--surface-hover, rgba(0, 0, 0, 0.05));
-}
 
 /* Account and log out live in the DU menu on this page. */
 .auth-chip { display: none; }
